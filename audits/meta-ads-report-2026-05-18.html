@@ -145,6 +145,28 @@
   .flag-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
   .flag-body { font-size: 13px; color: var(--muted); line-height: 1.5; }
 
+  /* ACTION CARDS */
+  .actions-section { margin-bottom: 36px; display: flex; flex-direction: column; gap: 16px; }
+  .action-card { background: white; border-radius: 12px; box-shadow: var(--card-shadow); overflow: hidden; }
+  .action-header { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); }
+  .action-priority {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px;
+  }
+  .action-priority.red { background: #fee2e2; color: #b91c1c; }
+  .action-priority.amber { background: #fef9c3; color: #92400e; }
+  .action-priority.green { background: #dcfce7; color: #15803d; }
+  .action-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .action-sub { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .action-body { padding: 18px 22px; }
+  .action-body ol { padding-left: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .action-body li { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .action-body strong { color: var(--navy); }
+  .action-body code {
+    background: #f1f5f9; border: 1px solid var(--border);
+    padding: 1px 6px; border-radius: 4px; font-size: 12px; font-family: monospace;
+  }
+
   /* FOOTER */
   .footer { text-align: center; font-size: 11px; color: var(--muted); padding: 24px; }
 
@@ -449,6 +471,83 @@
         <div class="flag-body">MOF is running on $25/day — barely enough to generate statistically meaningful data. At 3.58x ROAS with 54 purchases, there's a case for testing a budget increase here to see if the middle-funnel can hold its efficiency at scale. Even $100–200/day would give better signal.</div>
       </div>
     </div>
+  </div>
+
+  <!-- ACTION PLAN -->
+  <div class="section-title">Action Plan — Fix These Now</div>
+  <div class="actions-section">
+
+    <div class="action-card">
+      <div class="action-header">
+        <div class="action-priority red">Fix 1 · Do Today</div>
+        <div class="action-title">Expand BOF audience — it's exhausted</div>
+        <div class="action-sub">BOF reach is only 8,404 people. The retargeting pool is too small to spend efficiently.</div>
+      </div>
+      <div class="action-body">
+        <ol>
+          <li>Go to <strong>Ads Manager → Audiences</strong></li>
+          <li>Click <strong>Create Audience → Custom Audience → Website</strong></li>
+          <li>Set window to <strong>180 days</strong> (website visitors, add to cart, initiated checkout)</li>
+          <li>Name it <code>BOF Retargeting 180d</code> and save</li>
+          <li>Go to <strong>BOF campaign → Ad Set → Edit</strong></li>
+          <li>Swap the audience to <code>BOF Retargeting 180d</code></li>
+          <li>In the <strong>Ads tab</strong> — pause the ad with the lowest CTR</li>
+          <li>Upload 1 fresh creative (try a testimonial or before/after angle)</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-header">
+        <div class="action-priority red">Fix 2 · Do Today</div>
+        <div class="action-title">Stop TOF and BOF cannibalising each other</div>
+        <div class="action-sub">TOF is likely serving ads to warm buyers already in BOF — stealing the conversion credit and inflating TOF ROAS while deflating BOF.</div>
+      </div>
+      <div class="action-body">
+        <ol>
+          <li>Go to <strong>TOF campaign → Ad Set → Edit</strong></li>
+          <li>Scroll to <strong>Audiences → Exclusions</strong></li>
+          <li>Click <strong>Exclude</strong> and add your BOF retargeting audience (website visitors + purchasers)</li>
+          <li>Save — TOF will now only reach genuinely cold traffic</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-header">
+        <div class="action-priority amber">Fix 3 · This Week</div>
+        <div class="action-title">Refresh TOF creatives before frequency causes ROAS to drop</div>
+        <div class="action-sub">Frequency at 3.42 means people are seeing your ads 3–4 times. ROAS will decline if you wait.</div>
+      </div>
+      <div class="action-body">
+        <ol>
+          <li>Go to <strong>TOF campaign → Ad Sets → Ads</strong></li>
+          <li>Sort ads by <strong>Frequency</strong> (highest first)</li>
+          <li>Pause any ad above <strong>4.0 frequency</strong></li>
+          <li>Duplicate your best-performing ad (highest ROAS)</li>
+          <li>Change the <strong>primary text and headline only</strong> — keep the same image/video</li>
+          <li>Publish the duplicate as a new ad alongside the existing ones</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-card">
+      <div class="action-header">
+        <div class="action-priority green">Fix 4 · After BOF is Stable</div>
+        <div class="action-title">Increase MOF budget gradually</div>
+        <div class="action-sub">$25/day is not enough data to optimise. MOF is holding 3.58x — it deserves more budget.</div>
+      </div>
+      <div class="action-body">
+        <ol>
+          <li>Go to <strong>MOF campaign → Edit</strong></li>
+          <li>Change daily budget from <strong>$25 → $75/day</strong></li>
+          <li>Wait <strong>7 days</strong>, check ROAS</li>
+          <li>If ROAS stays above 3x, increase again to <strong>$150/day</strong></li>
+          <li><strong>Never increase by more than 20% in one go</strong> — larger jumps reset Meta's learning phase</li>
+        </ol>
+      </div>
+    </div>
+
   </div>
 
 </div>
