@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lacalut Australia — Meta Ads Report | 18 Apr – 17 May 2026</title>
+<style>
+  :root {
+    --red: #cf102d;
+    --navy: #004a88;
+    --light-bg: #f4f6f9;
+    --white: #ffffff;
+    --border: #e2e8f0;
+    --text: #1a202c;
+    --muted: #64748b;
+    --green: #16a34a;
+    --amber: #d97706;
+    --orange: #ea580c;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--light-bg); color: var(--text); }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, var(--navy) 0%, #005fa3 100%);
+    color: white;
+    padding: 32px 40px;
+  }
+  .header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .logo-mark {
+    width: 44px; height: 44px; background: var(--red); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 18px; letter-spacing: -1px; color: white;
+  }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-meta { font-size: 13px; opacity: 0.75; margin-top: 4px; }
+  .header-badges { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .badge {
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.2px; color: var(--muted); margin-bottom: 14px;
+  }
+
+  /* KPI CARDS */
+  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 36px; }
+  .kpi-card {
+    background: white; border-radius: 12px; padding: 20px 18px;
+    box-shadow: var(--card-shadow); border-top: 3px solid transparent;
+  }
+  .kpi-card.primary { border-top-color: var(--navy); }
+  .kpi-card.success { border-top-color: var(--green); }
+  .kpi-card.warning { border-top-color: var(--amber); }
+  .kpi-card.danger { border-top-color: var(--red); }
+  .kpi-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 8px; }
+  .kpi-value { font-size: 26px; font-weight: 800; letter-spacing: -1px; color: var(--text); line-height: 1; }
+  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  /* ROAS INDICATOR */
+  .roas-pill {
+    display: inline-block; padding: 2px 8px; border-radius: 12px;
+    font-size: 11px; font-weight: 700;
+  }
+  .roas-great { background: #dcfce7; color: #15803d; }
+  .roas-ok { background: #fef9c3; color: #a16207; }
+  .roas-low { background: #fee2e2; color: #b91c1c; }
+
+  /* CAMPAIGN CARDS */
+  .campaign-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 36px; }
+  .campaign-card {
+    background: white; border-radius: 12px; box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+  .campaign-header {
+    padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .campaign-header.tof { background: linear-gradient(135deg, var(--navy), #0062b0); color: white; }
+  .campaign-header.mof { background: linear-gradient(135deg, #1e40af, #2563eb); color: white; }
+  .campaign-header.bof { background: linear-gradient(135deg, #6d28d9, #7c3aed); color: white; }
+  .campaign-name { font-size: 15px; font-weight: 800; letter-spacing: 0.5px; }
+  .campaign-stage { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74,222,128,0.3);
+  }
+  .campaign-body { padding: 18px 20px; }
+  .metric-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .metric-row:last-child { border-bottom: none; }
+  .metric-row .label { color: var(--muted); }
+  .metric-row .value { font-weight: 700; }
+  .campaign-footer {
+    padding: 12px 20px; background: var(--light-bg);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .roas-big { font-size: 22px; font-weight: 900; letter-spacing: -1px; }
+  .roas-big.great { color: var(--green); }
+  .roas-big.ok { color: var(--amber); }
+  .roas-big.low { color: var(--orange); }
+
+  /* BAR CHART */
+  .chart-section { background: white; border-radius: 12px; box-shadow: var(--card-shadow); padding: 24px; margin-bottom: 36px; }
+  .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 20px; }
+  .bar-group { margin-bottom: 20px; }
+  .bar-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .bar-track { background: var(--light-bg); border-radius: 4px; height: 20px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 700; color: white; transition: width 0.6s ease; }
+  .bar-spend { background: var(--navy); }
+  .bar-revenue { background: var(--green); }
+  .bar-legend { display: flex; gap: 16px; margin-bottom: 16px; }
+  .bar-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .bar-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  /* FUNNEL TABLE */
+  .table-section { background: white; border-radius: 12px; box-shadow: var(--card-shadow); padding: 24px; margin-bottom: 36px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 700; padding: 0 12px 12px 0; border-bottom: 2px solid var(--border); }
+  td { padding: 12px 12px 12px 0; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .campaign-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+  }
+  .tag-tof { background: #dbeafe; color: #1e40af; }
+  .tag-mof { background: #ede9fe; color: #6d28d9; }
+  .tag-bof { background: #f3e8ff; color: #7c3aed; }
+  .tag-total { background: #f1f5f9; color: #334155; }
+  tr.total-row { background: #f8fafc; font-weight: 700; }
+  tr.total-row td { border-top: 2px solid var(--border); }
+
+  /* FLAGS */
+  .flags-section { margin-bottom: 36px; }
+  .flag-card {
+    background: white; border-radius: 12px; box-shadow: var(--card-shadow);
+    padding: 18px 20px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start;
+  }
+  .flag-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .flag-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .flag-body { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* FOOTER */
+  .footer { text-align: center; font-size: 11px; color: var(--muted); padding: 24px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 800px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .campaign-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo-mark">L</div>
+    <div>
+      <h1>Meta Ads Performance Report</h1>
+      <div class="header-meta">Lacalut Australia &nbsp;·&nbsp; act_2157906551266386 &nbsp;·&nbsp; AUD</div>
+    </div>
+  </div>
+  <div class="header-badges">
+    <span class="badge">📅 18 Apr – 17 May 2026</span>
+    <span class="badge">🟢 3 Active Campaigns</span>
+    <span class="badge">📊 Last 30 Days</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- KPI CARDS -->
+  <div class="section-title">Account Overview</div>
+  <div class="kpi-grid">
+    <div class="kpi-card primary">
+      <div class="kpi-label">Total Spend</div>
+      <div class="kpi-value">$23,909</div>
+      <div class="kpi-sub">AUD · last 30 days</div>
+    </div>
+    <div class="kpi-card success">
+      <div class="kpi-label">Revenue</div>
+      <div class="kpi-value">$130,480</div>
+      <div class="kpi-sub">Purchase conversion value</div>
+    </div>
+    <div class="kpi-card success">
+      <div class="kpi-label">ROAS</div>
+      <div class="kpi-value">5.45x</div>
+      <div class="kpi-sub">Return on ad spend</div>
+    </div>
+    <div class="kpi-card primary">
+      <div class="kpi-label">Purchases</div>
+      <div class="kpi-value">2,166</div>
+      <div class="kpi-sub">Across all campaigns</div>
+    </div>
+    <div class="kpi-card warning">
+      <div class="kpi-label">Cost Per Purchase</div>
+      <div class="kpi-value">$11.04</div>
+      <div class="kpi-sub">Blended CPA</div>
+    </div>
+  </div>
+
+  <!-- CAMPAIGN CARDS -->
+  <div class="section-title">Campaign Breakdown</div>
+  <div class="campaign-grid">
+
+    <!-- TOF -->
+    <div class="campaign-card">
+      <div class="campaign-header tof">
+        <div>
+          <div class="campaign-name">TOF</div>
+          <div class="campaign-stage">Top of Funnel · Prospecting</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="campaign-body">
+        <div class="metric-row"><span class="label">Spend</span><span class="value">$22,719.62</span></div>
+        <div class="metric-row"><span class="label">Revenue</span><span class="value">$126,395.95</span></div>
+        <div class="metric-row"><span class="label">Purchases</span><span class="value">2,081</span></div>
+        <div class="metric-row"><span class="label">CPA</span><span class="value">$10.92</span></div>
+        <div class="metric-row"><span class="label">CTR</span><span class="value">4.94%</span></div>
+        <div class="metric-row"><span class="label">CPC</span><span class="value">$0.27</span></div>
+        <div class="metric-row"><span class="label">Reach</span><span class="value">496,390</span></div>
+        <div class="metric-row"><span class="label">Frequency</span><span class="value">3.42 ⚠️</span></div>
+        <div class="metric-row"><span class="label">Daily Budget</span><span class="value">$1,440/day</span></div>
+      </div>
+      <div class="campaign-footer">
+        <div>
+          <div class="kpi-label">ROAS</div>
+          <div class="roas-big great">5.56x</div>
+        </div>
+        <span class="roas-pill roas-great">Excellent</span>
+      </div>
+    </div>
+
+    <!-- MOF -->
+    <div class="campaign-card">
+      <div class="campaign-header mof">
+        <div>
+          <div class="campaign-name">MOF</div>
+          <div class="campaign-stage">Middle of Funnel · Warm Audiences</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="campaign-body">
+        <div class="metric-row"><span class="label">Spend</span><span class="value">$740.74</span></div>
+        <div class="metric-row"><span class="label">Revenue</span><span class="value">$2,651.68</span></div>
+        <div class="metric-row"><span class="label">Purchases</span><span class="value">54</span></div>
+        <div class="metric-row"><span class="label">CPA</span><span class="value">$13.72</span></div>
+        <div class="metric-row"><span class="label">CTR</span><span class="value">4.34%</span></div>
+        <div class="metric-row"><span class="label">CPC</span><span class="value">$0.42</span></div>
+        <div class="metric-row"><span class="label">Reach</span><span class="value">17,938</span></div>
+        <div class="metric-row"><span class="label">Frequency</span><span class="value">2.29 ✅</span></div>
+        <div class="metric-row"><span class="label">Daily Budget</span><span class="value">$25/day</span></div>
+      </div>
+      <div class="campaign-footer">
+        <div>
+          <div class="kpi-label">ROAS</div>
+          <div class="roas-big ok">3.58x</div>
+        </div>
+        <span class="roas-pill roas-ok">Solid</span>
+      </div>
+    </div>
+
+    <!-- BOF -->
+    <div class="campaign-card">
+      <div class="campaign-header bof">
+        <div>
+          <div class="campaign-name">BOF</div>
+          <div class="campaign-stage">Bottom of Funnel · Retargeting</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="campaign-body">
+        <div class="metric-row"><span class="label">Spend</span><span class="value">$449.07</span></div>
+        <div class="metric-row"><span class="label">Revenue</span><span class="value">$1,432.05</span></div>
+        <div class="metric-row"><span class="label">Purchases</span><span class="value">31</span></div>
+        <div class="metric-row"><span class="label">CPA</span><span class="value">$14.49</span></div>
+        <div class="metric-row"><span class="label">CTR</span><span class="value">4.07%</span></div>
+        <div class="metric-row"><span class="label">CPC</span><span class="value">$0.47</span></div>
+        <div class="metric-row"><span class="label">Reach</span><span class="value">8,404</span></div>
+        <div class="metric-row"><span class="label">Frequency</span><span class="value">2.80 ✅</span></div>
+        <div class="metric-row"><span class="label">Daily Budget</span><span class="value">$15/day</span></div>
+      </div>
+      <div class="campaign-footer">
+        <div>
+          <div class="kpi-label">ROAS</div>
+          <div class="roas-big low">3.19x</div>
+        </div>
+        <span class="roas-pill roas-low">Investigate</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SPEND VS REVENUE CHART -->
+  <div class="chart-section">
+    <div class="chart-title">Spend vs Revenue by Campaign</div>
+    <div class="bar-legend">
+      <div class="bar-legend-item"><div class="bar-legend-dot" style="background:var(--navy)"></div> Spend</div>
+      <div class="bar-legend-item"><div class="bar-legend-dot" style="background:var(--green)"></div> Revenue</div>
+    </div>
+
+    <div class="bar-group">
+      <div class="bar-label"><span>TOF</span><span>Spend $22,720 · Revenue $126,396</span></div>
+      <div class="bar-track" style="margin-bottom:6px;">
+        <div class="bar-fill bar-spend" style="width:100%;">$22,720</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-revenue" style="width:100%;">$126,396</div>
+      </div>
+    </div>
+
+    <div class="bar-group">
+      <div class="bar-label"><span>MOF</span><span>Spend $741 · Revenue $2,652</span></div>
+      <div class="bar-track" style="margin-bottom:6px;">
+        <div class="bar-fill bar-spend" style="width:3.3%;">$741</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-revenue" style="width:2.1%;">$2,652</div>
+      </div>
+    </div>
+
+    <div class="bar-group">
+      <div class="bar-label"><span>BOF</span><span>Spend $449 · Revenue $1,432</span></div>
+      <div class="bar-track" style="margin-bottom:6px;">
+        <div class="bar-fill bar-spend" style="width:2.0%;">$449</div>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill bar-revenue" style="width:1.1%;">$1,432</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FULL TABLE -->
+  <div class="table-section">
+    <div class="chart-title">Full Metrics Table</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Campaign</th>
+          <th>Spend</th>
+          <th>Revenue</th>
+          <th>ROAS</th>
+          <th>Purchases</th>
+          <th>CPA</th>
+          <th>Impressions</th>
+          <th>Reach</th>
+          <th>Clicks</th>
+          <th>CTR</th>
+          <th>CPC</th>
+          <th>Frequency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="campaign-tag tag-tof">TOF</span></td>
+          <td>$22,719.62</td>
+          <td>$126,395.95</td>
+          <td><strong style="color:var(--green)">5.56x</strong></td>
+          <td>2,081</td>
+          <td>$10.92</td>
+          <td>1,697,561</td>
+          <td>496,390</td>
+          <td>83,921</td>
+          <td>4.94%</td>
+          <td>$0.27</td>
+          <td><span style="color:var(--amber)">3.42</span></td>
+        </tr>
+        <tr>
+          <td><span class="campaign-tag tag-mof">MOF</span></td>
+          <td>$740.74</td>
+          <td>$2,651.68</td>
+          <td><strong style="color:var(--amber)">3.58x</strong></td>
+          <td>54</td>
+          <td>$13.72</td>
+          <td>41,102</td>
+          <td>17,938</td>
+          <td>1,782</td>
+          <td>4.34%</td>
+          <td>$0.42</td>
+          <td>2.29</td>
+        </tr>
+        <tr>
+          <td><span class="campaign-tag tag-bof">BOF</span></td>
+          <td>$449.07</td>
+          <td>$1,432.05</td>
+          <td><strong style="color:var(--orange)">3.19x</strong></td>
+          <td>31</td>
+          <td>$14.49</td>
+          <td>23,491</td>
+          <td>8,404</td>
+          <td>957</td>
+          <td>4.07%</td>
+          <td>$0.47</td>
+          <td>2.80</td>
+        </tr>
+        <tr class="total-row">
+          <td><span class="campaign-tag tag-total">TOTAL</span></td>
+          <td>$23,909.43</td>
+          <td>$130,479.68</td>
+          <td><strong style="color:var(--green)">5.45x</strong></td>
+          <td>2,166</td>
+          <td>$11.04</td>
+          <td>1,762,154</td>
+          <td>—</td>
+          <td>86,660</td>
+          <td>—</td>
+          <td>—</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FLAGS -->
+  <div class="section-title">Key Observations</div>
+  <div class="flags-section">
+    <div class="flag-card">
+      <div class="flag-icon">🎯</div>
+      <div>
+        <div class="flag-title">TOF is carrying the entire account</div>
+        <div class="flag-body">95% of spend ($22,720 of $23,909) and 96% of all purchases (2,081 of 2,166) come from TOF. The account's blended 5.45x ROAS is almost entirely TOF's 5.56x. MOF and BOF are tiny at $25/day and $15/day budgets.</div>
+      </div>
+    </div>
+    <div class="flag-card">
+      <div class="flag-icon">⚠️</div>
+      <div>
+        <div class="flag-title">BOF ROAS (3.19x) is lower than TOF — this is backwards</div>
+        <div class="flag-body">Retargeting campaigns should outperform prospecting because the audience is already warm. BOF's CPA at $14.49 is higher than TOF's $10.92. Possible causes: audience exhaustion (only 8,404 reach), creative fatigue, or audience overlap with TOF pulling the same buyers. Worth refreshing creatives or expanding the retargeting window.</div>
+      </div>
+    </div>
+    <div class="flag-card">
+      <div class="flag-icon">⚠️</div>
+      <div>
+        <div class="flag-title">TOF frequency at 3.42 — watch for fatigue</div>
+        <div class="flag-body">Prospecting audiences ideally stay below 3.0 frequency. At 3.42, the same people are seeing TOF ads 3–4 times on average. If ROAS starts declining over the next 2 weeks, creative refresh or audience broadening would be the first lever to pull.</div>
+      </div>
+    </div>
+    <div class="flag-card">
+      <div class="flag-icon">💡</div>
+      <div>
+        <div class="flag-title">MOF budget is extremely low relative to scale</div>
+        <div class="flag-body">MOF is running on $25/day — barely enough to generate statistically meaningful data. At 3.58x ROAS with 54 purchases, there's a case for testing a budget increase here to see if the middle-funnel can hold its efficiency at scale. Even $100–200/day would give better signal.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Lacalut Australia · Meta Ads Report · Generated 18/05/2026 · Data: 18 Apr – 17 May 2026
+</div>
+
+</body>
+</html>
