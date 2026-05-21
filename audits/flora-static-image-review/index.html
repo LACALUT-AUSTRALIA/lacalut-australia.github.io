@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LACALUT Flora — Static Image Ad Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0d; color: #f0f0f0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  header {
+    background: #cf102d;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .intro {
+    max-width: 900px;
+    margin: 32px auto;
+    padding: 0 24px;
+    font-size: 0.9rem;
+    color: #aaa;
+    line-height: 1.6;
+  }
+  .intro strong { color: #fff; }
+
+  .grid {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(580px, 1fr));
+    gap: 40px;
+  }
+
+  .card {
+    background: #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #cf102d; }
+
+  .card-layout {
+    display: flex;
+    gap: 0;
+  }
+
+  .img-wrap {
+    flex-shrink: 0;
+    width: 200px;
+    position: relative;
+  }
+  .img-wrap img {
+    width: 200px;
+    height: 356px;
+    object-fit: cover;
+    display: block;
+  }
+  .frame-label {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.75);
+    color: #fff;
+    font-size: 0.65rem;
+    padding: 3px 7px;
+    border-radius: 4px;
+    font-family: monospace;
+  }
+
+  .copy-panel {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .card-title h2 { font-size: 1rem; font-weight: 700; color: #fff; }
+  .angle-tag {
+    background: #004a88;
+    color: #a8d4ff;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #cf102d;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .primary-text {
+    font-size: 0.78rem;
+    line-height: 1.65;
+    color: #ccc;
+    background: #111;
+    border-left: 3px solid #cf102d;
+    padding: 10px 12px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .headlines-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .headline-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+  .hl-num {
+    color: #cf102d;
+    font-weight: 700;
+    font-size: 0.7rem;
+    min-width: 16px;
+  }
+  .hl-text { color: #e8e8e8; line-height: 1.4; }
+
+  .description-box {
+    font-size: 0.78rem;
+    color: #bbb;
+    background: #0f0f0f;
+    border: 1px solid #2a2a2a;
+    border-radius: 6px;
+    padding: 8px 12px;
+    line-height: 1.5;
+  }
+
+  .char-counts {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .char-pill {
+    font-size: 0.65rem;
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 999px;
+    padding: 2px 8px;
+    color: #888;
+  }
+  .char-pill span { color: #aaa; font-weight: 600; }
+
+  .approve-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-approve { background: #1a6b38; color: #6affa0; }
+  .btn-revise  { background: #4a2800; color: #ffb366; }
+  .btn-skip    { background: #222; color: #888; }
+
+  .status-bar {
+    position: sticky;
+    bottom: 0;
+    background: #111;
+    border-top: 1px solid #2a2a2a;
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.8rem;
+    color: #888;
+    z-index: 10;
+  }
+  .status-bar strong { color: #fff; }
+  #approval-count { color: #6affa0; font-weight: 700; }
+
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .card-layout { flex-direction: column; }
+    .img-wrap { width: 100%; }
+    .img-wrap img { width: 100%; height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>LACALUT® Flora — Static Image Ad Review</h1>
+    <p>8 frame captures from video renders · 9:16 · Ready for Meta Ads upload</p>
+  </div>
+  <span class="badge">21/05/2026</span>
+</header>
+
+<div class="intro">
+  <strong>What you're reviewing:</strong> 8 frames extracted from the 3 Flora video renders. Each frame is a <strong>720×1280 px (9:16)</strong> still image — native Meta Ads story/reel format. Ad copy below is ready to paste directly into Ads Manager. <strong>Approve</strong> the frames you want to upload, <strong>Revise</strong> if you want a different copy angle, or <strong>Skip</strong> frames that aren't working.
+</div>
+
+<div class="grid" id="card-grid">
+
+  <!-- CARD 1 -->
+  <div class="card" id="card-1">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad1_3pm_crash_t0_5s.jpg" alt="Office hero with sparkles" loading="lazy">
+        <span class="frame-label">Ad 1 · 0.5s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>🏢 Office Hero</h2>
+          <span class="angle-tag">Confidence · Workplace</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text" id="pt-1">Struggling with bad breath at work? It's not just bad luck — it's bacteria. LACALUT® Flora targets the bacterial source of mouth odour so you can speak up in every meeting without second-guessing yourself. 100 years of German clinical science. One tube. All-day confidence.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">Stop Bacteria. Start Talking.</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">Bad Breath at Work? This Fixes It.</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">Clinically Proven Fresh Breath. All Day.</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">100 Years of Science vs. Bad Bacteria</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">Speak Confidently. Every Meeting.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora targets the bacterial root cause of mouth odour — not just the symptoms. Fresh breath that lasts all day.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(1,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(1,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(1,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="card" id="card-2">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad1_3pm_crash_t7_5s.jpg" alt="Bacteria science visualisation" loading="lazy">
+        <span class="frame-label">Ad 1 · 7.5s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>🔬 Bacteria Science</h2>
+          <span class="angle-tag">Clinical Proof · Science</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">Bad breath isn't a hygiene problem — it's a bacteria problem. Most toothpastes just mask the smell. LACALUT® Flora is clinically formulated to eliminate the odour-causing bacteria at the source, in your mouth's own microbiome. 100 years of German oral science. One tube. Real results.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">It's Not Your Breath. It's Bacteria.</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">Kill the Source. Not Just the Smell.</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">Clinical-Grade Anti-Halitosis Formula</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">Science You Can See. Results You Can Feel.</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">Your Mouth. Defended by German Science.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora works where other toothpastes can't — at the bacterial source of bad breath. Results from the very first brush.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(2,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(2,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(2,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3 -->
+  <div class="card" id="card-3">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad1_3pm_crash_t14_0s.jpg" alt="Clean marble product hero" loading="lazy">
+        <span class="frame-label">Ad 1 · 14.0s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>🏛️ Product Hero</h2>
+          <span class="angle-tag">Brand · Shop Now</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">LACALUT® Flora. The German toothpaste that actually fixes bad breath — not just masks it. Clinically formulated to fight odour-causing bacteria at the source. Now available in Australia with free shipping.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">LACALUT® Flora — Fresh Breath Formula</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">German Clinical Science for Bad Breath</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">Fights Bacteria. Not Just Odour.</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">Anti-Halitosis Toothpaste. Free AU Shipping.</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">Try LACALUT® Flora. Real Results.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">Clinically formulated to eliminate bad breath at the bacterial source. Order now with free shipping Australia-wide.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(3,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(3,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(3,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 4 -->
+  <div class="card" id="card-4">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad2_dentist_t3_0s.jpg" alt="Dentist reaction close-up" loading="lazy">
+        <span class="frame-label">Ad 2 · 3.0s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>🦷 Dentist Reaction</h2>
+          <span class="angle-tag">Authority · Pattern Interrupt</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">Your dentist noticed something you didn't want them to. Bad breath isn't always about brushing harder — sometimes it's about targeting the right bacteria. LACALUT® Flora is clinically developed to eliminate odour-causing bacteria that regular toothpaste misses. Used across Europe for over a decade.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">Your Dentist Is Noticing Something.</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">What Your Dentist Won't Say Out Loud</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">The Toothpaste Dentists Actually Recommend</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">Clinical Anti-Halitosis. Dentist-Level Results.</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">Stop Guessing. Start Using the Right Formula.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora is a clinically developed anti-halitosis toothpaste. Fight bad breath at the bacterial source — not just the surface.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(4,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(4,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(4,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 5 -->
+  <div class="card" id="card-5">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad2_dentist_t5_0s.jpg" alt="Bacterial shield macro on teeth" loading="lazy">
+        <span class="frame-label">Ad 2 · 5.0s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>🛡️ Bacterial Shield</h2>
+          <span class="angle-tag">Clinical Proof · Transformation</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">This is what's happening inside your mouth right now. Odour-causing bacteria cling to your teeth and gums — and ordinary toothpaste doesn't reach them all. LACALUT® Flora's clinical formula creates a bacteria-fighting shield that works from the very first brush. Because fresh breath starts where you can't see.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">See What's Causing Your Bad Breath</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">Bacteria Hiding Where Toothpaste Can't Reach</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">Clinical Shield Against Odour-Causing Bacteria</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">The Science Behind Lasting Fresh Breath</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">LACALUT® Flora: Built for What You Can't See</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora targets odour-causing bacteria below the surface — where ordinary toothpaste falls short. Clinical-grade anti-halitosis protection.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(5,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(5,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(5,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 6 -->
+  <div class="card" id="card-6">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad2_dentist_t14_0s.jpg" alt="Bathroom lifestyle product shot" loading="lazy">
+        <span class="frame-label">Ad 2 · 14.0s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>🛁 Bathroom Lifestyle</h2>
+          <span class="angle-tag">Lifestyle · Daily Ritual</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">What if fixing bad breath was as simple as switching your toothpaste? LACALUT® Flora replaces your ordinary toothpaste with a clinical anti-halitosis formula — same routine, dramatically better results. No sprays. No mouthwash. Just brush.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">Replace Your Toothpaste. Fix Your Breath.</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">Same Brush. Clinical-Grade Fresh Breath.</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">No Extras. Just Switch Your Toothpaste.</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">Your Morning Routine Just Got an Upgrade</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">LACALUT® Flora — One Switch. All-Day Fresh.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora fits straight into your existing routine. Clinical anti-halitosis protection with every single brush — no extras needed.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(6,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(6,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(6,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 7 -->
+  <div class="card" id="card-7">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad3_conversation_t3_0s.jpg" alt="Cinematic couple close-up" loading="lazy">
+        <span class="frame-label">Ad 3 · 3.0s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>💑 The Moment</h2>
+          <span class="angle-tag">Emotional · Relationships</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">Bad breath doesn't just happen at work — it happens in the moments that matter most. LACALUT® Flora is clinically formulated to eliminate the bacteria that cause mouth odour so you can be close to the people you love without a second thought.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">Don't Let Bacteria Ruin the Moment</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">Be Close. Be Confident. Be Fresh.</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">The Moments That Matter — Breath Included</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">Clinically Fresh Breath for Every Close Moment</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">Bad Breath Is a Bacteria Problem. This Solves It.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora eliminates the bacterial root cause of bad breath. Because the people closest to you deserve your best self.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(7,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(7,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(7,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 8 -->
+  <div class="card" id="card-8">
+    <div class="card-layout">
+      <div class="img-wrap">
+        <img src="images/ad3_conversation_t12_0s.jpg" alt="Woman brushing with blue light" loading="lazy">
+        <span class="frame-label">Ad 3 · 12.0s</span>
+      </div>
+      <div class="copy-panel">
+        <div class="card-title">
+          <h2>✨ Brushing Transform</h2>
+          <span class="angle-tag">Product Action · Sensory</span>
+        </div>
+
+        <div>
+          <div class="section-label">Primary Text</div>
+          <div class="primary-text">This is LACALUT® Flora working. While you brush, its clinical formula actively fights odour-causing bacteria — not just covering the smell, but eliminating the source. A 100-year German formulation. Now available in Australia.</div>
+        </div>
+
+        <div>
+          <div class="section-label">Headlines</div>
+          <div class="headlines-list">
+            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text">This Is What Fighting Bacteria Looks Like</span></div>
+            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text">One Brush. Bacteria Gone.</span></div>
+            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text">Clinical Anti-Halitosis — Every Single Brush</span></div>
+            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text">Feel the Difference From the First Brush</span></div>
+            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text">100 Years of Science. Working Right Now.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-label">Description</div>
+          <div class="description-box">LACALUT® Flora delivers clinical-grade anti-halitosis action with every single brush. Feel the fresh breath difference from day one.</div>
+        </div>
+
+        <div class="approve-row">
+          <button class="btn btn-approve" onclick="setStatus(8,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"  onclick="setStatus(8,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-skip"    onclick="setStatus(8,'skip')">— Skip</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="status-bar">
+  <strong>Review Progress:</strong>
+  <span id="approval-count">0</span> approved &nbsp;·&nbsp;
+  <span id="revise-count" style="color:#ffb366;font-weight:700;">0</span> needs revision &nbsp;·&nbsp;
+  <span id="skip-count" style="color:#666;">0</span> skipped
+  &nbsp;&nbsp;&nbsp;
+  <span style="color:#555;">8 total frames</span>
+</div>
+
+<script>
+const statuses = {};
+function setStatus(id, status) {
+  statuses[id] = status;
+  const card = document.getElementById('card-' + id);
+  card.style.borderColor = status === 'approved' ? '#1a6b38' : status === 'revise' ? '#995500' : '#333';
+  updateCounts();
+}
+function updateCounts() {
+  const vals = Object.values(statuses);
+  document.getElementById('approval-count').textContent = vals.filter(v => v === 'approved').length;
+  document.getElementById('revise-count').textContent   = vals.filter(v => v === 'revise').length;
+  document.getElementById('skip-count').textContent     = vals.filter(v => v === 'skip').length;
+}
+</script>
+</body>
+</html>
