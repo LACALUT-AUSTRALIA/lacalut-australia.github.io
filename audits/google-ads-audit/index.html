@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>LACALUT Australia - Google Ads Audit - May 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+/* ============================================================
+   ECOMM GOOGLE ADS AUDIT - DESIGN SYSTEM
+   ============================================================ */
+:root {
+  --c-bg: #FFFFFF;
+  --c-bg-alt: #F8FAFC;
+  --c-bg-dark: #0F172A;
+  --c-bg-dark-alt: #1E293B;
+  --c-text: #0F172A;
+  --c-text-muted: #64748B;
+  --c-text-light: #94A3B8;
+  --c-text-on-dark: #F8FAFC;
+  --c-text-on-dark-muted: #CBD5E1;
+  --c-border: #E2E8F0;
+  --c-border-dark: #334155;
+  --c-accent: #cf102d;
+  --c-accent-light: #e53e5a;
+  --c-accent-bg: #FFF1F3;
+  --c-good: #16A34A;
+  --c-good-bg: #F0FDF4;
+  --c-warn: #F59E0B;
+  --c-warn-bg: #FFFBEB;
+  --c-bad: #DC2626;
+  --c-bad-bg: #FEF2F2;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --max-w: 1200px;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 { margin: 0 0 12px; font-weight: 600; letter-spacing: -0.01em; }
+h1 { font-size: 36px; line-height: 1.15; }
+h2 { font-size: 26px; line-height: 1.2; }
+h3 { font-size: 18px; }
+h4 { font-size: 15px; }
+p { margin: 0 0 12px; }
+a { color: var(--c-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { font-weight: 600; }
+.topnav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--c-bg); border-bottom: 1px solid var(--c-border); padding: 0 28px;
+}
+.topnav-inner {
+  max-width: var(--max-w); margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 64px;
+}
+.brand-mark { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; color: var(--c-text); }
+.nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
+.nav-link {
+  padding: 8px 12px; font-size: 13px; font-weight: 500; color: var(--c-text-muted);
+  border-radius: var(--radius-sm); transition: all 0.15s;
+}
+.nav-link:hover { color: var(--c-text); background: var(--c-bg-alt); text-decoration: none; }
+.wrap { max-width: var(--max-w); margin: 0 auto; padding: 0 28px; }
+section { padding: 56px 0; border-bottom: 1px solid var(--c-border); }
+section:last-of-type { border-bottom: none; }
+.section-label {
+  display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--c-accent); margin-bottom: 8px;
+}
+.section-sub { color: var(--c-text-muted); font-size: 15px; max-width: 680px; margin-bottom: 28px; }
+.hero { padding: 72px 0 56px; border-bottom: 1px solid var(--c-border); }
+.hero-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-accent); margin-bottom: 12px; }
+.hero-title { font-size: 42px; line-height: 1.1; margin-bottom: 16px; }
+.hero-title em { font-style: normal; color: var(--c-accent); }
+.hero-sub { font-size: 17px; color: var(--c-text-muted); max-width: 720px; margin-bottom: 28px; }
+.hero-stat {
+  display: inline-flex; align-items: baseline; gap: 12px;
+  background: var(--c-bg-alt); border: 1px solid var(--c-border);
+  border-radius: var(--radius); padding: 16px 24px;
+}
+.hero-stat-value { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; color: var(--c-text); }
+.hero-stat-label { font-size: 13px; color: var(--c-text-muted); font-weight: 500; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.kpi-tile { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); }
+.kpi-label { font-size: 12px; font-weight: 500; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.kpi-value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--c-text); line-height: 1.1; }
+.kpi-sub { font-size: 13px; color: var(--c-text-muted); margin-top: 6px; }
+.kpi-value.good { color: var(--c-good); }
+.kpi-value.warn { color: var(--c-warn); }
+.kpi-value.bad { color: var(--c-bad); }
+.chart-wrap { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 24px; margin-bottom: 24px; }
+.chart-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.chart-sub { font-size: 13px; color: var(--c-text-muted); margin-bottom: 20px; }
+.chart-area { display: flex; align-items: flex-end; gap: 6px; height: 240px; padding-bottom: 28px; border-bottom: 1px solid var(--c-border); position: relative; }
+.chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+.chart-bar { width: 100%; border-radius: 4px 4px 0 0; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 4px 0; min-height: 4px; }
+.chart-bar.above { background: var(--c-good); }
+.chart-bar.below { background: var(--c-warn); }
+.chart-bar.empty { background: var(--c-border); min-height: 4px; }
+.chart-bar-roas { position: absolute; top: 6px; left: 0; right: 0; text-align: center; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.95); }
+.chart-bar-rev { position: absolute; bottom: 6px; left: 0; right: 0; text-align: center; font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.95); }
+.chart-x-label { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--c-text-muted); }
+.chart-legend { display: flex; gap: 16px; margin-top: 16px; font-size: 12px; color: var(--c-text-muted); }
+.chart-legend-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.table-wrap { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); overflow: hidden; margin-bottom: 24px; }
+table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table thead { background: var(--c-bg-dark); color: var(--c-text-on-dark); }
+.data-table th { padding: 12px 14px; text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+.data-table td { padding: 12px 14px; border-top: 1px solid var(--c-border); vertical-align: top; }
+.data-table tbody tr:hover { background: var(--c-bg-alt); }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .total-row { background: var(--c-bg-alt); font-weight: 600; }
+.data-table .total-row td { border-top: 2px solid var(--c-border); }
+.status-pill { display: inline-block; padding: 2px 8px; font-size: 11px; font-weight: 600; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }
+.status-pill.active { background: var(--c-good-bg); color: var(--c-good); }
+.status-pill.paused { background: var(--c-bg-alt); color: var(--c-text-muted); }
+.roas-top { color: var(--c-good); font-weight: 600; }
+.roas-ok { color: var(--c-warn); font-weight: 600; }
+.roas-low { color: var(--c-bad); font-weight: 600; }
+.change-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.change-item { display: flex; gap: 16px; align-items: flex-start; background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 18px 20px; }
+.change-icon { flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.change-icon.cut { background: var(--c-bad-bg); color: var(--c-bad); }
+.change-icon.fix { background: var(--c-warn-bg); color: var(--c-warn); }
+.change-icon.add { background: var(--c-accent-bg); color: var(--c-accent); }
+.change-body { flex: 1; }
+.change-title { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+.change-text { font-size: 14px; color: var(--c-text-muted); line-height: 1.55; }
+.change-amount { flex-shrink: 0; text-align: right; font-size: 15px; font-weight: 700; color: var(--c-text); white-space: nowrap; }
+.change-amount-label { display: block; font-size: 11px; font-weight: 500; color: var(--c-text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+.next-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.next-card { background: var(--c-bg); border: 1px solid var(--c-border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-sm); }
+.next-card-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-accent); margin-bottom: 8px; }
+.next-card-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.next-card-body { font-size: 14px; color: var(--c-text-muted); margin-bottom: 16px; }
+.next-card-value { font-size: 22px; font-weight: 700; color: var(--c-good); }
+.next-card-value-label { font-size: 12px; font-weight: 500; color: var(--c-text-muted); margin-top: 2px; }
+.vis-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--c-bg-alt); margin: 12px 0 6px; }
+.vis-bar-seg.captured { background: var(--c-good); }
+.vis-bar-seg.budget-lost { background: var(--c-warn); }
+.vis-bar-seg.rank-lost { background: var(--c-bad); }
+.vis-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: 11px; color: var(--c-text-muted); }
+.vis-legend-item { display: flex; align-items: center; gap: 6px; }
+.vis-legend-swatch { width: 10px; height: 10px; border-radius: 2px; }
+.exec-summary { background: var(--c-bg-dark); border-radius: var(--radius); padding: 36px; color: var(--c-text-on-dark); display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+.exec-summary-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-text-on-dark-muted); margin-bottom: 8px; }
+.exec-summary-value { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 8px; }
+.exec-summary-value.waste { color: #FCA5A5; }
+.exec-summary-value.growth { color: #6EE7B7; }
+.exec-summary-body { color: var(--c-text-on-dark-muted); font-size: 14px; line-height: 1.6; }
+.callout { background: var(--c-bg-alt); border-left: 3px solid var(--c-accent); border-radius: var(--radius-sm); padding: 16px 20px; margin-bottom: 20px; }
+.callout-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+.callout-body { font-size: 14px; color: var(--c-text-muted); }
+.callout.warn { border-left-color: var(--c-warn); background: var(--c-warn-bg); }
+.callout.bad { border-left-color: var(--c-bad); background: var(--c-bad-bg); }
+.callout.good { border-left-color: var(--c-good); background: var(--c-good-bg); }
+.footer { padding: 32px 0; text-align: center; font-size: 13px; color: var(--c-text-muted); border-top: 1px solid var(--c-border); }
+@media (max-width: 768px) {
+  h1, .hero-title { font-size: 28px; }
+  h2 { font-size: 22px; }
+  .topnav { padding: 0 16px; }
+  .topnav-inner { height: 56px; flex-wrap: wrap; gap: 8px; }
+  .nav-links { gap: 0; }
+  .nav-link { padding: 6px 8px; font-size: 12px; }
+  .wrap { padding: 0 16px; }
+  section { padding: 36px 0; }
+  .hero { padding: 48px 0 36px; }
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .chart-area { height: 180px; }
+  .chart-bar-rev, .chart-bar-roas { font-size: 9px; }
+  .exec-summary { grid-template-columns: 1fr; padding: 24px; }
+  .exec-summary-value { font-size: 32px; }
+  .change-item { flex-wrap: wrap; }
+  .change-amount { text-align: left; }
+  .data-table { font-size: 12px; }
+  .data-table th, .data-table td { padding: 10px 12px; }
+}
+@media print {
+  body { font-size: 11pt; }
+  .topnav { position: static; }
+  section { page-break-inside: avoid; }
+  .chart-wrap, .table-wrap, .next-card, .change-item, .kpi-tile { page-break-inside: avoid; }
+}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <div class="brand-mark">LACALUT Australia</div>
+    <div class="nav-links">
+      <a class="nav-link" href="#overview">Overview</a>
+      <a class="nav-link" href="#campaigns">Campaigns</a>
+      <a class="nav-link" href="#products">Products</a>
+      <a class="nav-link" href="#waste">Waste</a>
+      <a class="nav-link" href="#negatives">Negatives</a>
+      <a class="nav-link" href="#pmax">Performance Max</a>
+      <a class="nav-link" href="#growth">Growth</a>
+      <a class="nav-link" href="#summary">Summary</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-label">Google Ads audit - May 2026</div>
+    <h1 class="hero-title">LACALUT Australia - <em>Google Ads</em></h1>
+    <p class="hero-sub">$28,472 spent over 90 days returning $96,007 in revenue at 3.37x ROAS. The account is 7 months old and growing fast - revenue is up 13x since launch in October 2025. Three product-level inefficiencies are dragging the Shopping campaign below its efficiency target, and two visibility gaps in non-brand search are leaving significant volume uncaptured.</p>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div class="hero-stat">
+        <div class="hero-stat-value">3.37x</div>
+        <div class="hero-stat-label">90-day account ROAS</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">3.23x</div>
+        <div class="hero-stat-label">30-day account ROAS</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value" style="color:var(--c-good);">3.11x</div>
+        <div class="hero-stat-label">Account ROAS since launch</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OVERVIEW -->
+<section id="overview">
+  <div class="wrap">
+    <div class="section-label">Overview</div>
+    <h2>Account at a glance</h2>
+    <p class="section-sub">30-day figures. Account launched October 2025 - all figures from Google Ads platform reporting at time of pull (21/05/2026).</p>
+
+    <div class="kpi-grid">
+      <div class="kpi-tile">
+        <div class="kpi-label">30-day spend</div>
+        <div class="kpi-value">$15,766</div>
+        <div class="kpi-sub">All campaigns</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">30-day revenue</div>
+        <div class="kpi-value">$50,854</div>
+        <div class="kpi-sub">Platform-reported, purchase conversions</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">30-day ROAS</div>
+        <div class="kpi-value good">3.23x</div>
+        <div class="kpi-sub">Bidding target is "Purchase with cart data"</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-label">Active campaigns</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-sub">of 20 total (16 paused)</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">Conversion tracking: 3 purchase actions active</div>
+      <div class="callout-body">The account tracks purchases via 3 separate actions: "Purchase with cart data" (primary - used for bidding), "Google Shopping App Purchase", and "GA4 event purchase". The bidding column is correctly set to "Purchase with cart data" only, so ROAS figures in this audit are accurate. However, the all_conversions column is inflated ~3x by duplicate counting. Recommend auditing these 3 actions against Shopify revenue to confirm only one is set as primary.</div>
+    </div>
+
+    <!-- 13-MONTH CHART -->
+    <div class="chart-wrap">
+      <div class="chart-title">Monthly revenue - account lifetime (Oct 2025 to May 2026)</div>
+      <div class="chart-sub">Account launched October 2025. Bar height = revenue. Green = ROAS above 3.11x lifetime average. Amber = below. May 2026 is partial (21 days).</div>
+      <div class="chart-area">
+
+        <!-- May 2025 - no data -->
+        <div class="chart-col">
+          <div class="chart-bar empty" style="height:4px;"></div>
+          <span class="chart-x-label">May<br>'25</span>
+        </div>
+        <!-- Jun 2025 -->
+        <div class="chart-col">
+          <div class="chart-bar empty" style="height:4px;"></div>
+          <span class="chart-x-label">Jun</span>
+        </div>
+        <!-- Jul 2025 -->
+        <div class="chart-col">
+          <div class="chart-bar empty" style="height:4px;"></div>
+          <span class="chart-x-label">Jul</span>
+        </div>
+        <!-- Aug 2025 -->
+        <div class="chart-col">
+          <div class="chart-bar empty" style="height:4px;"></div>
+          <span class="chart-x-label">Aug</span>
+        </div>
+        <!-- Sep 2025 -->
+        <div class="chart-col">
+          <div class="chart-bar empty" style="height:4px;"></div>
+          <span class="chart-x-label">Sep</span>
+        </div>
+        <!-- Oct 2025 - $2,807, ROAS 3.68x (above) -->
+        <div class="chart-col">
+          <div class="chart-bar above" style="height:7.4%;">
+            <span class="chart-bar-roas">3.7x</span>
+          </div>
+          <span class="chart-x-label">Oct</span>
+        </div>
+        <!-- Nov 2025 - $1,892, ROAS 1.55x (below) -->
+        <div class="chart-col">
+          <div class="chart-bar below" style="height:5.0%;">
+            <span class="chart-bar-roas">1.6x</span>
+          </div>
+          <span class="chart-x-label">Nov</span>
+        </div>
+        <!-- Dec 2025 - $2,382, ROAS 1.56x (below) -->
+        <div class="chart-col">
+          <div class="chart-bar below" style="height:6.3%;">
+            <span class="chart-bar-roas">1.6x</span>
+          </div>
+          <span class="chart-x-label">Dec</span>
+        </div>
+        <!-- Jan 2026 - $13,148, ROAS 2.61x (below) -->
+        <div class="chart-col">
+          <div class="chart-bar below" style="height:34.9%;">
+            <span class="chart-bar-roas">2.6x</span>
+            <span class="chart-bar-rev">$13.1K</span>
+          </div>
+          <span class="chart-x-label">Jan<br>'26</span>
+        </div>
+        <!-- Feb 2026 - $11,290, ROAS 2.59x (below) -->
+        <div class="chart-col">
+          <div class="chart-bar below" style="height:29.9%;">
+            <span class="chart-bar-roas">2.6x</span>
+            <span class="chart-bar-rev">$11.3K</span>
+          </div>
+          <span class="chart-x-label">Feb</span>
+        </div>
+        <!-- Mar 2026 - $18,798, ROAS 3.37x (above) -->
+        <div class="chart-col">
+          <div class="chart-bar above" style="height:49.8%;">
+            <span class="chart-bar-roas">3.4x</span>
+            <span class="chart-bar-rev">$18.8K</span>
+          </div>
+          <span class="chart-x-label">Mar</span>
+        </div>
+        <!-- Apr 2026 - $37,713, ROAS 3.69x (above) -->
+        <div class="chart-col">
+          <div class="chart-bar above" style="height:100%;">
+            <span class="chart-bar-roas">3.7x</span>
+            <span class="chart-bar-rev">$37.7K</span>
+          </div>
+          <span class="chart-x-label">Apr</span>
+        </div>
+        <!-- May 2026 partial - $36,062, ROAS 3.21x (above) -->
+        <div class="chart-col">
+          <div class="chart-bar above" style="height:95.6%;opacity:0.8;">
+            <span class="chart-bar-roas">3.2x*</span>
+            <span class="chart-bar-rev">$36.1K</span>
+          </div>
+          <span class="chart-x-label">May*</span>
+        </div>
+
+      </div>
+      <div class="chart-legend">
+        <span><span class="chart-legend-swatch" style="background:var(--c-good);"></span>Above 3.11x lifetime average ROAS</span>
+        <span><span class="chart-legend-swatch" style="background:var(--c-warn);"></span>Below lifetime average</span>
+        <span><span class="chart-legend-swatch" style="background:var(--c-border);"></span>No spend (pre-launch)</span>
+        <span style="font-style:italic;">* May 2026 partial - 21 of 31 days</span>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <div class="callout-title">Revenue up 13x since launch</div>
+      <div class="callout-body">From $2,807 in October 2025 (first month) to $37,713 in April 2026. The November and December 2025 dips (ROAS 1.55x - 1.56x) coincide with the *JDM agency campaigns that were paused in January 2026 - those campaigns had negative or near-zero ROAS and have since been replaced with better-structured campaigns.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CAMPAIGNS -->
+<section id="campaigns">
+  <div class="wrap">
+    <div class="section-label">Campaigns</div>
+    <h2>Campaign performance (last 90 days)</h2>
+    <p class="section-sub">Ranked by revenue. 90-day window (20/02/2026 to 20/05/2026). Paused campaigns included to show recent history. 90-day data preferred over 30-day to avoid recency bias - the active Shopping campaign only launched in April 2026.</p>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th class="num">Spend</th>
+            <th class="num">Revenue</th>
+            <th class="num">ROAS</th>
+            <th class="num">Conv</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Search Ads - Brand</strong></td>
+            <td>Search (brand)</td>
+            <td><span class="status-pill active">Active</span></td>
+            <td class="num">$6,477</td>
+            <td class="num">$29,334</td>
+            <td class="num roas-top">4.53x</td>
+            <td class="num">738</td>
+          </tr>
+          <tr>
+            <td><strong>SH | Top Sellers</strong> <span style="font-size:11px;color:var(--c-text-muted);">(Manual CPC)</span></td>
+            <td>Shopping</td>
+            <td><span class="status-pill paused">Paused</span></td>
+            <td class="num">$8,303</td>
+            <td class="num">$28,454</td>
+            <td class="num roas-top">3.43x</td>
+            <td class="num">755</td>
+          </tr>
+          <tr>
+            <td><strong>SH | Top Sellers | tROAS [Test]</strong> <span style="font-size:11px;color:var(--c-text-muted);">3.2x target</span></td>
+            <td>Shopping</td>
+            <td><span class="status-pill active">Active</span></td>
+            <td class="num">$9,130</td>
+            <td class="num">$27,716</td>
+            <td class="num roas-ok">3.04x</td>
+            <td class="num">720</td>
+          </tr>
+          <tr>
+            <td><strong>Search Ads - Toothpaste</strong></td>
+            <td>Search (non-brand)</td>
+            <td><span class="status-pill active">Active</span></td>
+            <td class="num">$3,926</td>
+            <td class="num">$10,235</td>
+            <td class="num roas-ok">2.61x</td>
+            <td class="num">286</td>
+          </tr>
+          <tr>
+            <td><strong>Search Ads - Mouthwash</strong></td>
+            <td>Search (non-brand)</td>
+            <td><span class="status-pill active">Active</span></td>
+            <td class="num">$103</td>
+            <td class="num">$267</td>
+            <td class="num roas-ok">2.58x</td>
+            <td class="num">6</td>
+          </tr>
+          <tr>
+            <td><strong>Display | Contextual [Test]</strong></td>
+            <td>Display</td>
+            <td><span class="status-pill paused">Paused</span></td>
+            <td class="num">$494</td>
+            <td class="num">$0</td>
+            <td class="num roas-low">0.00x</td>
+            <td class="num">1</td>
+          </tr>
+          <tr>
+            <td><strong>Display | Prospecting</strong></td>
+            <td>Display</td>
+            <td><span class="status-pill paused">Paused</span></td>
+            <td class="num">$39</td>
+            <td class="num">$0</td>
+            <td class="num roas-low">0.00x</td>
+            <td class="num">0</td>
+          </tr>
+          <tr class="total-row">
+            <td>Total (all campaigns)</td>
+            <td></td>
+            <td></td>
+            <td class="num">$28,472</td>
+            <td class="num">$96,006</td>
+            <td class="num">3.37x</td>
+            <td class="num">1,805</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">Shopping campaign transition in progress</div>
+      <div class="callout-body">The manual CPC Shopping campaign (SH | Top Sellers) was paused and replaced with a smart bidding version (tROAS 3.2x target) which launched in April 2026. The new campaign is currently running at 3.04x ROAS - slightly below the 3.2x target, with 25% of available searches being lost to budget and another 30% lost to ad rank. This campaign is the single biggest lever in the account.</div>
+    </div>
+
+    <h3 style="margin-top:32px;">Visibility breakdown (30-day active campaigns)</h3>
+    <p style="font-size:14px;color:var(--c-text-muted);margin-bottom:16px;">Share of available searches captured vs lost. Green = captured. Amber = lost to budget. Red = lost to ad rank.</p>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th class="num">Captured</th>
+            <th class="num">Lost to budget</th>
+            <th class="num">Lost to rank</th>
+            <th class="num">30-day ROAS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Search Ads - Brand</strong></td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">66.4%</td>
+            <td class="num" style="color:var(--c-warn);font-weight:600;">9.6%</td>
+            <td class="num" style="color:var(--c-bad);font-weight:600;">24.0%</td>
+            <td class="num roas-top">4.05x</td>
+          </tr>
+          <tr>
+            <td><strong>SH | Top Sellers | tROAS [Test]</strong></td>
+            <td class="num" style="color:var(--c-warn);font-weight:600;">44.8%</td>
+            <td class="num" style="color:var(--c-warn);font-weight:600;">25.2%</td>
+            <td class="num" style="color:var(--c-bad);font-weight:600;">30.0%</td>
+            <td class="num roas-ok">2.99x</td>
+          </tr>
+          <tr>
+            <td><strong>Search Ads - Toothpaste</strong></td>
+            <td class="num" style="color:var(--c-bad);font-weight:600;">10.0%</td>
+            <td class="num">4.5%</td>
+            <td class="num" style="color:var(--c-bad);font-weight:600;">88.7%</td>
+            <td class="num roas-ok">2.85x</td>
+          </tr>
+          <tr>
+            <td><strong>Search Ads - Mouthwash</strong></td>
+            <td class="num" style="color:var(--c-bad);font-weight:600;">10.0%</td>
+            <td class="num">~0%</td>
+            <td class="num" style="color:var(--c-bad);font-weight:600;">90.0%</td>
+            <td class="num roas-ok">2.58x</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout bad">
+      <div class="callout-title">Non-brand search campaigns are nearly invisible</div>
+      <div class="callout-body">Both Search Ads - Toothpaste and Search Ads - Mouthwash are showing on only 10% of available searches. 88-90% of visibility is lost to ad rank - meaning the system isn't competitive enough to win the auction. This isn't a budget problem (Toothpaste Search has a $70/day budget but only spends $1,251/month). The fix is Quality Score improvement (tighter ad group themes, better ad copy matched to landing pages) and potentially switching from Maximise Conversions to a manual CPC or target CPA strategy while the campaign learns.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="wrap">
+    <div class="section-label">Products</div>
+    <h2>Top revenue products (Shopping)</h2>
+    <p class="section-sub">Top SKUs from the active Shopping campaign (SH | Top Sellers | tROAS [Test]), last 30 days. The tROAS target is 3.2x - any product running below this target is consuming budget that could be redirected to higher-performing SKUs.</p>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th class="num">Spend</th>
+            <th class="num">Revenue</th>
+            <th class="num">ROAS</th>
+            <th class="num">Conv</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>LACALUT AKTIV Toothpaste 75ml</strong><br><span style="font-size:11px;color:var(--c-text-muted);">Hero product - gingivitis &amp; gum disease</span></td>
+            <td class="num">$3,878</td>
+            <td class="num">$15,273</td>
+            <td class="num roas-top">3.94x</td>
+            <td class="num">418</td>
+            <td><span class="status-pill active">Strong</span></td>
+          </tr>
+          <tr>
+            <td><strong>LACALUT AKTIV Mouthwash 300ml</strong></td>
+            <td class="num">$1,835</td>
+            <td class="num">$4,661</td>
+            <td class="num roas-ok">2.54x</td>
+            <td class="num">110</td>
+            <td><span style="font-size:11px;background:#FEF9C3;color:#854D0E;padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Below target</span></td>
+          </tr>
+          <tr>
+            <td><strong>LACALUT FLORA Mouthwash 300ml</strong><br><span style="font-size:11px;color:var(--c-text-muted);">Bad breath - bacterial source</span></td>
+            <td class="num">$792</td>
+            <td class="num">$2,111</td>
+            <td class="num roas-ok">2.66x</td>
+            <td class="num">47</td>
+            <td><span style="font-size:11px;background:#FEF9C3;color:#854D0E;padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Below target</span></td>
+          </tr>
+          <tr>
+            <td><strong>LACALUT AKTIV Mouthwash 50ml</strong></td>
+            <td class="num">$714</td>
+            <td class="num">$1,846</td>
+            <td class="num roas-ok">2.58x</td>
+            <td class="num">45</td>
+            <td><span style="font-size:11px;background:#FEF9C3;color:#854D0E;padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Below target</span></td>
+          </tr>
+          <tr style="background:var(--c-warn-bg);">
+            <td><strong>LACALUT Toothbrush (8x micro-fine bristle)</strong></td>
+            <td class="num">$901</td>
+            <td class="num">$1,402</td>
+            <td class="num roas-low">1.56x</td>
+            <td class="num">31</td>
+            <td><span style="font-size:11px;background:var(--c-bad-bg);color:var(--c-bad);padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Fix needed</span></td>
+          </tr>
+          <tr>
+            <td><strong>LACALUT FLORA Toothpaste 75ml</strong></td>
+            <td class="num">$549</td>
+            <td class="num">$1,034</td>
+            <td class="num roas-low">1.88x</td>
+            <td class="num">29</td>
+            <td><span style="font-size:11px;background:var(--c-bad-bg);color:var(--c-bad);padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Fix needed</span></td>
+          </tr>
+          <tr style="background:var(--c-bad-bg);">
+            <td><strong>LACALUT AKTIV Herbal Toothpaste 75ml</strong></td>
+            <td class="num">$192</td>
+            <td class="num">$169</td>
+            <td class="num roas-low">0.88x</td>
+            <td class="num">6</td>
+            <td><span style="font-size:11px;background:var(--c-bad-bg);color:var(--c-bad);padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Loss-making</span></td>
+          </tr>
+          <tr style="background:var(--c-bad-bg);">
+            <td><strong>LACALUT AKTIV Toothpaste 10ml (travel)</strong></td>
+            <td class="num">$10</td>
+            <td class="num">$2</td>
+            <td class="num roas-low">0.20x</td>
+            <td class="num">1</td>
+            <td><span style="font-size:11px;background:var(--c-bad-bg);color:var(--c-bad);padding:2px 8px;border-radius:999px;font-weight:600;text-transform:uppercase;">Loss-making</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="font-size:13px;color:var(--c-text-muted);">tROAS campaign target is 3.2x. Products below this threshold are consuming budget that produces less revenue than the same spend on the hero product (Aktiv Toothpaste at 3.94x). The toothbrush and Herbal toothpaste in particular should be segmented into separate listing groups with higher ROAS targets or excluded entirely.</p>
+  </div>
+</section>
+
+<!-- WASTE -->
+<section id="waste">
+  <div class="wrap">
+    <div class="section-label">Waste</div>
+    <h2>Recoverable spend</h2>
+    <p class="section-sub">Spend that can be cut or redirected without losing meaningful revenue. Each item includes the size of the recovery and the specific action required.</p>
+
+    <div class="change-list">
+
+      <div class="change-item">
+        <div class="change-icon cut">CUT</div>
+        <div class="change-body">
+          <div class="change-title">Display | Contextual [Test] - $494 spent, $0 revenue (already paused)</div>
+          <div class="change-text">This Display campaign spent $494 over the 90-day window generating 0 purchase conversions (1 conversion tracked was a micro-event, $0 value). It was correctly paused. Do not reactivate without proper audience targeting, frequency caps, and creative refresh. The "Contextual" label suggests it was running interest-based placements with no conversion intent signal.</div>
+        </div>
+        <div class="change-amount">
+          $494
+          <span class="change-amount-label">90-day waste (fixed)</span>
+        </div>
+      </div>
+
+      <div class="change-item">
+        <div class="change-icon cut">CUT</div>
+        <div class="change-body">
+          <div class="change-title">Exclude Aktiv Herbal Toothpaste from Shopping tROAS campaign</div>
+          <div class="change-text">Aktiv Herbal is spending $192/month at 0.88x ROAS - actively losing money on every sale. This SKU may have a lower price point, weaker search demand, or a low-converting product page. Create a separate listing group for Herbal with either a very low tROAS target (accepting low efficiency as a trial) or exclude it entirely and redirect that $192/month to Aktiv Original, which returns 3.94x.</div>
+        </div>
+        <div class="change-amount">
+          $23 / mo
+          <span class="change-amount-label">net monthly loss</span>
+        </div>
+      </div>
+
+      <div class="change-item">
+        <div class="change-icon fix">FIX</div>
+        <div class="change-body">
+          <div class="change-title">Separate toothbrush into its own listing group with a higher efficiency target</div>
+          <div class="change-text">The toothbrush SKU is spending $901/month at 1.56x ROAS against a 3.2x campaign target. The system is bidding on toothbrush keywords because the overall campaign allows it, but the unit economics don't work at this CPC level - the toothbrush has a lower average order value than toothpaste and mouthwash. Create a dedicated toothbrush listing group inside the tROAS campaign with a 2.0x or 2.5x sub-target, or move it to a separate lower-priority campaign. This will redirect ~$450-600/month of budget to higher-ROAS SKUs. Estimated recovery: an additional $1,800 - $2,400/month revenue from the same budget redirected to Aktiv Toothpaste at 3.94x.</div>
+        </div>
+        <div class="change-amount">
+          ~$2,100 / mo
+          <span class="change-amount-label">estimated budget reallocation gain</span>
+        </div>
+      </div>
+
+      <div class="change-item">
+        <div class="change-icon fix">FIX</div>
+        <div class="change-body">
+          <div class="change-title">Add 6 zero-conversion search terms as negatives to Shopping campaign</div>
+          <div class="change-text">6 generic terms in the Shopping campaign have spent $207 over 90 days with 0 purchase conversions: "mouthwash" ($27), "fluoride toothpaste" ($23), "hydroxyapatite toothpaste" ($22), "remineralising toothpaste" ($25), "hydroxyapatite toothpaste australia" ($22), and "oracare" ($29 - a competitor brand). These are broad category terms where users aren't looking specifically for LACALUT. Add all 6 as campaign-level negatives in the Shopping campaign.</div>
+        </div>
+        <div class="change-amount">
+          $69 / mo
+          <span class="change-amount-label">ongoing waste</span>
+        </div>
+      </div>
+
+      <div class="change-item">
+        <div class="change-icon fix">FIX</div>
+        <div class="change-body">
+          <div class="change-title">Fix duplicate purchase conversion tracking</div>
+          <div class="change-text">3 purchase conversion actions are active: "Purchase with cart data" (primary, used for bidding), "Google Shopping App Purchase", and "Purchase (GA4 event purchase)". The bidding is correctly anchored to the primary action only, so ROAS figures are not distorted. But all_conversions reporting shows ~3x more "conversions" than actual purchases, which creates confusion when reading reports or comparing to Shopify revenue. Audit these 3 actions, confirm which fires on actual purchase, and mark the other 2 as secondary or pause them.</div>
+        </div>
+        <div class="change-amount">
+          $0
+          <span class="change-amount-label">no spend impact, reporting fix</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- NEGATIVES -->
+<section id="negatives">
+  <div class="wrap">
+    <div class="section-label">Negatives</div>
+    <h2>Recommended negative keywords</h2>
+    <p class="section-sub">Search terms spending budget over the 90-day window with zero or near-zero conversions. Grouped by intent type. Add these to the Shopping campaign as campaign-level negatives.</p>
+
+    <h3 style="margin-top:24px;">Competitor brands</h3>
+    <p style="font-size:13px;color:var(--c-text-muted);margin-bottom:12px;">Users searching competitor names are brand-aware for that competitor - they're unlikely to convert to LACALUT from a Shopping ad.</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Search term</th>
+            <th>Campaign</th>
+            <th class="num">Clicks</th>
+            <th class="num">Spend</th>
+            <th class="num">Conv</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>oracare</td>
+            <td>SH | Top Sellers | tROAS [Test]</td>
+            <td class="num">4</td>
+            <td class="num">$28.98</td>
+            <td class="num roas-low">0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:24px;">Generic non-branded terms</h3>
+    <p style="font-size:13px;color:var(--c-text-muted);margin-bottom:12px;">Category terms with no brand intent. LACALUT's CPCs are too high to compete profitably on pure generic terms at this account stage.</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Search term</th>
+            <th>Campaign</th>
+            <th class="num">Clicks</th>
+            <th class="num">Spend</th>
+            <th class="num">Conv</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>mouthwash</td>
+            <td>SH | Top Sellers | tROAS [Test]</td>
+            <td class="num">15</td>
+            <td class="num">$27.13</td>
+            <td class="num roas-low">0</td>
+          </tr>
+          <tr>
+            <td>fluoride toothpaste</td>
+            <td>SH | Top Sellers | tROAS [Test]</td>
+            <td class="num">17</td>
+            <td class="num">$23.47</td>
+            <td class="num roas-low">0</td>
+          </tr>
+          <tr>
+            <td>hydroxyapatite toothpaste</td>
+            <td>SH | Top Sellers | tROAS [Test]</td>
+            <td class="num">12</td>
+            <td class="num">$22.41</td>
+            <td class="num roas-low">0</td>
+          </tr>
+          <tr>
+            <td>remineralising toothpaste</td>
+            <td>SH | Top Sellers | tROAS [Test]</td>
+            <td class="num">5</td>
+            <td class="num">$25.30</td>
+            <td class="num roas-low">0</td>
+          </tr>
+          <tr>
+            <td>hydroxyapatite toothpaste australia</td>
+            <td>Search Ads - Toothpaste</td>
+            <td class="num">12</td>
+            <td class="num">$21.66</td>
+            <td class="num roas-low">0</td>
+          </tr>
+          <tr>
+            <td>medical mouthwash</td>
+            <td>SH | Top Sellers | tROAS [Test]</td>
+            <td class="num">2</td>
+            <td class="num">$19.55</td>
+            <td class="num roas-low">0</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:24px;">Low-conversion retail intent terms</h3>
+    <p style="font-size:13px;color:var(--c-text-muted);margin-bottom:12px;">Terms where users are looking for LACALUT at a physical retailer or checking stock. These convert at very low rates on the DTC store - consider adding as negatives or monitoring closely.</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Search term</th>
+            <th>Campaign</th>
+            <th class="num">Clicks</th>
+            <th class="num">Spend</th>
+            <th class="num">Conv</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>lacalut toothpaste near me</td>
+            <td>Search Ads - Brand</td>
+            <td class="num">19</td>
+            <td class="num">$21.29</td>
+            <td class="num roas-low">0.04</td>
+            <td style="font-size:12px;color:var(--c-text-muted);">Local/in-store intent</td>
+          </tr>
+          <tr>
+            <td>chlorhexidine mouthwash</td>
+            <td>SH | Top Sellers</td>
+            <td class="num">35</td>
+            <td class="num">$27.14</td>
+            <td class="num roas-low">0.25</td>
+            <td style="font-size:12px;color:var(--c-text-muted);">Prescription-adjacent, low conversion</td>
+          </tr>
+          <tr>
+            <td>gingivitis mouthwash</td>
+            <td>SH | Top Sellers</td>
+            <td class="num">23</td>
+            <td class="num">$17.32</td>
+            <td class="num roas-low">0</td>
+            <td style="font-size:12px;color:var(--c-text-muted);">Good intent but 0 conv in this campaign</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">Most search terms are converting well</div>
+      <div class="callout-body">The zero-conversion query at the $200 threshold returned 0 results - there are no single search terms spending over $200 with 0 purchases. The negatives above are the tail-end of the traffic and the total waste is modest ($207 over 90 days). The account's search term quality is healthy overall, anchored by strong branded terms ("lacalut toothpaste", "lacalut", "lacalut australia") which account for the majority of spend and conversions.</div>
+    </div>
+  </div>
+</section>
+
+<!-- PERFORMANCE MAX -->
+<section id="pmax">
+  <div class="wrap">
+    <div class="section-label">Performance Max</div>
+    <h2>Performance Max breakdown</h2>
+    <p class="section-sub">All Performance Max campaigns were paused during the audit window. No active Performance Max spend to analyse.</p>
+
+    <div class="callout warn">
+      <div class="callout-title">Performance Max Toothpaste is paused - $0 spend in 90 days</div>
+      <div class="callout-body">"Performance Max Toothpaste" exists in the account structure but generated 0 spend, 0 impressions, and 0 conversions in both the 30-day and 90-day windows. It was likely paused when the Shopping tROAS campaign was activated. This is the right call - running Performance Max and a Shopping campaign on the same products causes internal competition for the same searches. The Shopping tROAS campaign should be allowed to stabilise above the 3.2x target before a Performance Max trial is considered.</div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">When to consider activating Performance Max</div>
+      <div class="callout-body">Performance Max makes sense at this account once three conditions are met: (1) Shopping tROAS campaign is consistently delivering above 3.5x ROAS over a 30-day period, (2) monthly spend exceeds $20,000/month with data to inform smart bidding, and (3) you have sufficient creative assets - at minimum 3 images, 1 video, 5 headlines, and 5 descriptions per asset group. At current scale (~$10,000 - $15,000/month), the Shopping campaign provides more control and is the right vehicle.</div>
+    </div>
+
+    <h3 style="margin-top:24px;">Paused Performance Max campaign details</h3>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Campaign</th>
+            <th>Budget (daily)</th>
+            <th>Status</th>
+            <th class="num">90-day spend</th>
+            <th class="num">90-day revenue</th>
+            <th>Recommendation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Performance Max Toothpaste</td>
+            <td>$30/day</td>
+            <td><span class="status-pill paused">Paused</span></td>
+            <td class="num">$0</td>
+            <td class="num">$0</td>
+            <td style="font-size:12px;color:var(--c-text-muted);">Keep paused. Revisit at $20K+/month spend.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- GROWTH -->
+<section id="growth">
+  <div class="wrap">
+    <div class="section-label">Growth</div>
+    <h2>Where to push next</h2>
+    <p class="section-sub">Campaigns and coverage gaps where additional budget or fixes should produce incremental revenue. Sized using current ROAS and visibility data. All figures are estimates - actual results depend on execution quality and market conditions.</p>
+
+    <div class="next-grid">
+
+      <div class="next-card">
+        <div class="next-card-label">Lever 1 - Highest impact</div>
+        <div class="next-card-title">Reduce Shopping tROAS target to 2.8x - 3.0x</div>
+        <div class="next-card-body">The Shopping campaign is currently running at 3.04x against a 3.2x target. The system is being too conservative - it's losing 25.2% of available searches to budget and another 30% to rank because it won't bid high enough to win. Reducing the efficiency target to 2.8x - 3.0x gives the system permission to bid more aggressively. At current performance, capturing 50% of the budget-lost searches would produce an estimated $7,500 - $14,900/month in additional revenue.</div>
+        <div class="vis-bar">
+          <div class="vis-bar-seg captured" style="width:44.8%;"></div>
+          <div class="vis-bar-seg budget-lost" style="width:25.2%;"></div>
+          <div class="vis-bar-seg rank-lost" style="width:30.0%;"></div>
+        </div>
+        <div class="vis-legend">
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-good);"></span>Captured 44.8%</span>
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-warn);"></span>Lost to budget 25.2%</span>
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-bad);"></span>Lost to rank 30.0%</span>
+        </div>
+        <div class="next-card-value">+$7,500 / mo</div>
+        <div class="next-card-value-label">Estimated incremental revenue (conservative)</div>
+      </div>
+
+      <div class="next-card">
+        <div class="next-card-label">Lever 2 - Quick win</div>
+        <div class="next-card-title">Increase brand search budget by $250 - $500/month</div>
+        <div class="next-card-body">Brand search is the most efficient campaign in the account at 4.05x ROAS (30-day) and 4.53x (90-day). It's losing 9.6% of available branded searches to budget. The daily budget is $210/day. Adding $8 - $16/day would recover that visibility. At 4.05x ROAS, an additional $250/month in spend should produce approximately $2,800/month in incremental revenue from searches that already know and want LACALUT.</div>
+        <div class="vis-bar">
+          <div class="vis-bar-seg captured" style="width:66.4%;"></div>
+          <div class="vis-bar-seg budget-lost" style="width:9.6%;"></div>
+          <div class="vis-bar-seg rank-lost" style="width:24.0%;"></div>
+        </div>
+        <div class="vis-legend">
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-good);"></span>Captured 66.4%</span>
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-warn);"></span>Lost to budget 9.6%</span>
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-bad);"></span>Lost to rank 24.0%</span>
+        </div>
+        <div class="next-card-value">+$2,800 / mo</div>
+        <div class="next-card-value-label">Estimated incremental revenue</div>
+      </div>
+
+      <div class="next-card">
+        <div class="next-card-label">Lever 3 - Quality score fix</div>
+        <div class="next-card-title">Improve non-brand search ad quality to escape the 10% visibility trap</div>
+        <div class="next-card-body">Search Ads - Toothpaste and Search Ads - Mouthwash are each at only 10% share of available searches with 88-90% lost to ad rank. This is not a budget problem - the toothpaste campaign has a $70/day budget but only spends $1,251/month because it can't win auctions. Fixes: tighten ad group themes so keywords, ads, and landing pages align closely. Move to a Target CPA strategy ($12-15/conversion target) to give the system a clearer goal. If quality improves to 20-25% share, that's estimated +$3,500 - $4,500/month in additional search revenue.</div>
+        <div class="vis-bar">
+          <div class="vis-bar-seg captured" style="width:10%;"></div>
+          <div class="vis-bar-seg budget-lost" style="width:4%;"></div>
+          <div class="vis-bar-seg rank-lost" style="width:86%;"></div>
+        </div>
+        <div class="vis-legend">
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-good);"></span>Captured 10.0%</span>
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-warn);"></span>Lost to budget 4.5%</span>
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-bad);"></span>Lost to rank 88.7%</span>
+        </div>
+        <div class="next-card-value">+$3,500 / mo</div>
+        <div class="next-card-value-label">Estimated at 20% share of search (conservative)</div>
+      </div>
+
+      <div class="next-card">
+        <div class="next-card-label">Lever 4 - Remarketing</div>
+        <div class="next-card-title">Reactivate Display remarketing for website visitors</div>
+        <div class="next-card-body">Display Remarketing and 3 other Display/Demand Gen campaigns are all paused. The account has no active follow-up for people who visited the website without purchasing - a significant missed opportunity given the clinical nature of the product (buyers often research before committing). Reactivate Display Remarketing with a 30-day window targeting past visitors and cart abandoners. Budget: $10 - $15/day. At conservative 2.5x ROAS on a warm audience, $300 - $450/month in spend should return $750 - $1,125/month in revenue.</div>
+        <div style="height:10px;background:var(--c-bg-alt);border-radius:999px;margin:12px 0 6px;"></div>
+        <div class="vis-legend">
+          <span class="vis-legend-item"><span class="vis-legend-swatch" style="background:var(--c-border);"></span>No active remarketing coverage</span>
+        </div>
+        <div class="next-card-value">+$800 / mo</div>
+        <div class="next-card-value-label">Estimated at $350/month spend, 2.5x ROAS</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EXECUTIVE SUMMARY -->
+<section id="summary">
+  <div class="wrap">
+    <div class="section-label">Summary</div>
+    <h2>What this audit is worth</h2>
+    <p style="color:var(--c-text-muted);font-size:15px;max-width:680px;margin-bottom:28px;">The account is performing well for its age - 3.23x blended ROAS at 7 months is a strong foundation. The opportunity is in removing 3 product-level inefficiencies that are suppressing the Shopping campaign's efficiency target, and unlocking visibility in brand search and non-brand search.</p>
+
+    <div class="exec-summary">
+      <div class="exec-summary-block">
+        <div class="exec-summary-label">Recoverable waste</div>
+        <div class="exec-summary-value waste">~$2,200 / mo</div>
+        <div class="exec-summary-body">$2,100/month from toothbrush budget reallocation to hero product. $23/month in negative ROI from Aktiv Herbal (loss-making SKU). $69/month from generic zero-conversion search terms. Plus $494 in Display Contextual waste already caught and paused - this won't recur if that campaign stays off.</div>
+      </div>
+      <div class="exec-summary-block">
+        <div class="exec-summary-label">Growth lift available</div>
+        <div class="exec-summary-value growth">+$14,600 / mo</div>
+        <div class="exec-summary-body">Estimated incremental revenue from 4 levers: Shopping tROAS target reduction (+$7,500), brand search budget increase (+$2,800), non-brand search quality fix (+$3,500), remarketing reactivation (+$800). All figures are conservative estimates based on current ROAS and visibility share data. Actual results will depend on execution and the learning period for smart bidding changes.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;background:var(--c-bg-alt);border:1px solid var(--c-border);border-radius:var(--radius);padding:24px;">
+      <h3 style="margin-bottom:16px;">Priority action list</h3>
+      <table class="data-table" style="font-size:14px;">
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Action</th>
+            <th>Estimated monthly impact</th>
+            <th>Effort</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>Reduce Shopping tROAS target from 3.2x to 2.8x - 3.0x</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$7,500</td>
+            <td>10 minutes - change 1 setting</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>Exclude Aktiv Herbal and Travel Size from Shopping, move to separate listing group or pause</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$600 - $1,000</td>
+            <td>30 minutes - create listing group filter</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td>Separate toothbrush into its own listing group with 2.0x - 2.5x ROAS sub-target</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$2,100</td>
+            <td>30 minutes - create listing group filter</td>
+          </tr>
+          <tr>
+            <td><strong>4</strong></td>
+            <td>Increase brand search daily budget by $10/day</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$2,800</td>
+            <td>2 minutes - change 1 setting</td>
+          </tr>
+          <tr>
+            <td><strong>5</strong></td>
+            <td>Add 6 negative keywords to Shopping campaign</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$69</td>
+            <td>15 minutes - add negatives</td>
+          </tr>
+          <tr>
+            <td><strong>6</strong></td>
+            <td>Reactivate Display Remarketing at $15/day targeting 30-day visitors</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$800</td>
+            <td>1 hour - reactivate + audience setup</td>
+          </tr>
+          <tr>
+            <td><strong>7</strong></td>
+            <td>Improve non-brand search Quality Score (tighten ad group themes)</td>
+            <td class="num" style="color:var(--c-good);font-weight:600;">+$3,500</td>
+            <td>2-3 hours - ad copy + structure work</td>
+          </tr>
+          <tr>
+            <td><strong>8</strong></td>
+            <td>Audit 3 purchase conversion actions, confirm 1 is primary</td>
+            <td class="num">Reporting fix</td>
+            <td>30 minutes - conversion action review</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    Audit prepared for LACALUT Australia. Figures from Google Ads platform reporting at time of pull (21/05/2026). Account ID: 5854429627. All dollar figures in AUD.
+  </div>
+</footer>
+
+</body>
+</html>
