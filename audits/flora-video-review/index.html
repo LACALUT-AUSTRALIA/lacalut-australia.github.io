@@ -101,6 +101,40 @@
 
   footer { text-align:center; margin-top:48px; padding-top:24px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; }
   footer strong { color:var(--red); }
+
+  /* Approval modal */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,0.85); z-index:100;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal {
+    background:#1a1a1a; border:1px solid #2a2a2a;
+    border-radius:16px; padding:28px 32px;
+    max-width:480px; width:calc(100% - 48px);
+  }
+  .modal h3 { font-size:1rem; font-weight:700; margin-bottom:20px; color:#fff; }
+  .modal-row {
+    display:flex; justify-content:space-between; align-items:baseline;
+    padding:8px 0; border-bottom:1px solid #222;
+    font-size:0.8rem; gap:12px;
+  }
+  .modal-row:last-of-type { border-bottom:none; }
+  .modal-label { color:#888; white-space:nowrap; flex-shrink:0; }
+  .modal-val   { color:#fff; text-align:right; font-weight:600; }
+  .modal-val.green  { color:#6affa0; }
+  .modal-val.blue   { color:#a8d4ff; }
+  .modal-val.orange { color:#ffb366; }
+  .modal-warning {
+    background:#2a1500; border:1px solid #994400; border-radius:8px;
+    padding:10px 14px; font-size:0.75rem; color:#ffb366;
+    margin-top:16px; line-height:1.5;
+  }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; }
+  .modal-actions .btn { flex:1; padding:10px; font-size:0.75rem; }
+  .btn-confirm { background:#1a6b38; color:#6affa0; }
+  .btn-cancel  { background:#2a2a2a; color:#aaa; }
 </style>
 </head>
 <body>
@@ -120,7 +154,7 @@
 <div class="grid">
 
   <!-- AD 1 -->
-  <div class="card" id="card-1">
+  <div class="card" id="card-1" data-creative-name="The 3pm Crash" data-video="videos/flora_ad1_3pm_crash.mp4">
     <div class="card-header"><span class="ad-number">Ad 1</span><div><h3>⏰ The 3pm Crash</h3><div class="angle-tag">Angle: Time-of-day biology — your toothpaste clocked off at 9am</div></div></div>
     <div class="video-wrap"><video controls playsinline><source src="videos/flora_ad1_3pm_crash.mp4" type="video/mp4"></video></div>
     <div class="meta-row"><span class="duration-badge">⏱ 15s</span><span class="format-badge">9:16 Reels / Stories</span></div>
@@ -165,7 +199,7 @@ Most toothpastes are built for the first 30 minutes. After that, you're on your 
   </div>
 
   <!-- AD 2 -->
-  <div class="card" id="card-2">
+  <div class="card" id="card-2" data-creative-name="The Dentist Was Surprised" data-video="videos/flora_ad2_dentist_surprised.mp4">
     <div class="card-header"><span class="ad-number">Ad 2</span><div><h3>🦷 The Dentist Was Surprised</h3><div class="angle-tag">Angle: Third-party Australian dentist validation</div></div></div>
     <div class="video-wrap"><video controls playsinline><source src="videos/flora_ad2_dentist_surprised.mp4" type="video/mp4"></video></div>
     <div class="meta-row"><span class="duration-badge">⏱ 15s</span><span class="format-badge">9:16 Reels / Stories</span></div>
@@ -212,7 +246,7 @@ LACALUT® FLORA uses a specialized Zinc-Complex to bind and neutralize them befo
   </div>
 
   <!-- AD 3 -->
-  <div class="card" id="card-3">
+  <div class="card" id="card-3" data-creative-name="The Conversation You Can't Have" data-video="videos/flora_ad3_conversation.mp4">
     <div class="card-header"><span class="ad-number">Ad 3</span><div><h3>💔 The Conversation You Can't Have</h3><div class="angle-tag">Angle: Intimacy and relationship closeness</div></div></div>
     <div class="video-wrap"><video controls playsinline><source src="videos/flora_ad3_conversation.mp4" type="video/mp4"></video></div>
     <div class="meta-row"><span class="duration-badge">⏱ 15s</span><span class="format-badge">9:16 Reels / Stories</span></div>
@@ -263,6 +297,23 @@ If you've noticed the distance growing, it might not be what you think. It might
   <p style="margin-top:6px;">Add text overlays in <strong>Meta Ads Manager</strong> or <strong>CapCut</strong></p>
 </footer>
 
+<!-- Approval confirmation modal -->
+<div class="modal-overlay" id="approval-modal">
+  <div class="modal">
+    <h3>📋 Confirm Meta Ads Draft</h3>
+    <div class="modal-row"><span class="modal-label">Creative</span><span class="modal-val" id="modal-creative-name">—</span></div>
+    <div class="modal-row"><span class="modal-label">Ad Set</span><span class="modal-val green">Flora / Bad Breath</span></div>
+    <div class="modal-row"><span class="modal-label">Campaign</span><span class="modal-val blue">TOF — Top of Funnel</span></div>
+    <div class="modal-row"><span class="modal-label">Template Ad</span><span class="modal-val">SI - Stop Broadcasting Sulfur</span></div>
+    <div class="modal-row"><span class="modal-label">Status</span><span class="modal-val orange">PAUSED ⏸</span></div>
+    <div class="modal-warning">⚠️ This will queue a <strong>PAUSED draft ad</strong> in Meta Ads. It will <strong>not go live</strong> until manually enabled by you in Ads Manager.</div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-confirm" onclick="submitApproval()">✅ Confirm &amp; Queue</button>
+    </div>
+  </div>
+</div>
+
 <div class="status-bar">
   <strong>Review Progress:</strong>
   <span id="approval-count">0</span> approved &nbsp;·&nbsp;
@@ -273,15 +324,22 @@ If you've noticed the distance growing, it might not be what you think. It might
 </div>
 
 <script>
+const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+
 const statuses = {};
+let pendingApprovalId = null;
 
 function setStatus(id, status) {
+  if (status === 'approved') {
+    showApprovalModal(id);
+    return;
+  }
   statuses[id] = status;
   const card = document.getElementById('card-' + id);
   card.classList.remove('rejected-creative', 'rejected-copy');
 
   const borderColors = {
-    'approved':         '#1a6b38',
     'revise':           '#995500',
     'reject-creative':  '#6b0010',
     'reject-copy':      '#3a0060',
@@ -300,6 +358,79 @@ function setStatus(id, status) {
   }
 
   updateCounts();
+}
+
+function showApprovalModal(id) {
+  pendingApprovalId = id;
+  const card = document.getElementById('card-' + id);
+  document.getElementById('modal-creative-name').textContent = card.dataset.creativeName || ('Ad ' + id);
+  document.getElementById('approval-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('approval-modal').classList.remove('active');
+  pendingApprovalId = null;
+}
+
+async function submitApproval() {
+  const id   = pendingApprovalId;
+  const card = document.getElementById('card-' + id);
+
+  const primaryText = card.querySelector('.primary-text')?.innerText || '';
+  const headline    = card.querySelector('table td:nth-child(2)')?.innerText || '';
+  const description = card.querySelectorAll('table')[1]?.querySelector('td:nth-child(2)')?.innerText || '';
+  const videoUrl    = 'https://lacalut-australia.github.io/audits/flora-video-review/' + (card.dataset.video || '');
+
+  const payload = [{
+    sku:              'flora',
+    creative_name:    card.dataset.creativeName || ('Ad ' + id),
+    creative_type:    'video',
+    adset_id:         '120244410306410229',
+    adset_name:       'Flora / Bad Breath',
+    campaign_id:      '120241478653830229',
+    template_ad_id:   '120244706626530229',
+    primary_text:     primaryText,
+    headline:         headline,
+    description:      description,
+    image_url:        videoUrl,
+    status:           'pending'
+  }];
+
+  const confirmBtn = document.querySelector('#approval-modal .btn-confirm');
+  confirmBtn.textContent = '⏳ Submitting…';
+  confirmBtn.disabled = true;
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/ad_approvals', {
+      method: 'POST',
+      headers: {
+        'apikey':        SUPABASE_ANON,
+        'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    closeModal();
+    statuses[id] = 'approved';
+    card.style.borderColor = '#004a88';
+
+    const approveBtn = card.querySelector('.btn-approve');
+    approveBtn.textContent = '📋 Queued for Meta';
+    approveBtn.style.background = '#004a88';
+    approveBtn.style.color = '#a8d4ff';
+    approveBtn.disabled = true;
+
+    updateCounts();
+  } catch (err) {
+    confirmBtn.textContent = '✅ Confirm & Queue';
+    confirmBtn.disabled = false;
+    alert('❌ Submission failed: ' + err.message);
+    console.error(err);
+  }
 }
 
 function updateCounts() {
