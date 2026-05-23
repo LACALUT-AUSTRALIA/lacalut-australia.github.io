@@ -203,6 +203,88 @@
     display: inline-block;
   }
 
+  .btn-teach {
+    flex: 0 0 auto;
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: 1px solid #1a4030;
+    background: #0d2318;
+    color: #4affb8;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+  }
+  .btn-teach:hover { background: #143020; border-color: #4affb8; }
+
+  /* Teach modal */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #1a1a1a; border: 1px solid #2a2a2a;
+    border-radius: 16px; padding: 28px 32px;
+    max-width: 560px; width: calc(100% - 48px);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; color: #fff; }
+  .teach-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .teach-tab {
+    flex: 1; padding: 9px 12px; border-radius: 8px;
+    border: 1px solid #333; background: #111; color: #888;
+    font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    transition: all 0.15s; text-align: center;
+  }
+  .teach-tab.active { background: #004a88; color: #a8d4ff; border-color: #004a88; }
+  .teach-tab:hover:not(.active) { border-color: #555; color: #ccc; }
+  .section-label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: #cf102d; font-weight: 700; margin-bottom: 4px;
+  }
+  .teach-modal-body textarea {
+    width: 100%; background: #111; border: 1px solid #333;
+    color: #e8e8e8; border-radius: 6px; padding: 10px;
+    font-size: 0.78rem; line-height: 1.6; resize: vertical;
+    font-family: inherit; margin-bottom: 12px; display: block;
+  }
+  .teach-modal-body textarea:focus { outline: none; border-color: #4affb8; }
+  .teach-creative-thumb {
+    width: 100%; max-height: 180px; object-fit: contain;
+    border-radius: 8px; background: #0a0a0a; margin-bottom: 14px; display: block;
+  }
+  .creative-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .ctag {
+    background: #1a1a1a; border: 1px solid #333; color: #888;
+    font-size: 0.7rem; padding: 4px 10px; border-radius: 999px;
+    cursor: pointer; transition: all 0.15s; user-select: none;
+  }
+  .ctag.selected { background: #2a0d00; border-color: #ff6b8a; color: #ff6b8a; }
+  .teach-ref {
+    font-size: 0.72rem; color: #555; background: #0a0a0a;
+    border: 1px solid #1e1e1e; border-radius: 6px; padding: 8px 12px;
+    max-height: 80px; overflow-y: auto; line-height: 1.5; margin-bottom: 14px;
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-actions .btn-teach-confirm {
+    flex: 1; padding: 10px; font-size: 0.75rem; font-weight: 700;
+    border-radius: 8px; border: none; cursor: pointer;
+    background: #1a6b38; color: #6affa0;
+  }
+  .modal-actions .btn-teach-cancel {
+    flex: 1; padding: 10px; font-size: 0.75rem; font-weight: 700;
+    border-radius: 8px; border: none; cursor: pointer;
+    background: #2a2a2a; color: #aaa;
+  }
+  .trained-badge {
+    font-size: 0.65rem; color: #4affb8; font-style: italic;
+    margin-top: 6px; display: none;
+  }
+  .card.trained .trained-badge { display: block; }
+
   @media (max-width: 800px) {
     .card-inner { grid-template-columns: 1fr; }
     .card-image img { min-height: 300px; }
@@ -252,7 +334,9 @@
         <div class="actions">
           <button class="btn btn-approve" onclick="vote(1,'approved')">Approve</button>
           <button class="btn btn-skip" onclick="vote(1,'skipped')">Skip</button>
+          <button class="btn-teach" onclick="openTeachModal(1)">📚 Teach</button>
         </div>
+        <div class="trained-badge" id="trained-1">📚 Training saved</div>
         <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
       </div>
     </div>
@@ -277,7 +361,9 @@
         <div class="actions">
           <button class="btn btn-approve" onclick="vote(2,'approved')">Approve</button>
           <button class="btn btn-skip" onclick="vote(2,'skipped')">Skip</button>
+          <button class="btn-teach" onclick="openTeachModal(2)">📚 Teach</button>
         </div>
+        <div class="trained-badge" id="trained-2">📚 Training saved</div>
         <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
       </div>
     </div>
@@ -303,7 +389,9 @@
         <div class="actions">
           <button class="btn btn-approve" onclick="vote(3,'approved')">Approve</button>
           <button class="btn btn-skip" onclick="vote(3,'skipped')">Skip</button>
+          <button class="btn-teach" onclick="openTeachModal(3)">📚 Teach</button>
         </div>
+        <div class="trained-badge" id="trained-3">📚 Training saved</div>
         <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
       </div>
     </div>
@@ -328,7 +416,9 @@
         <div class="actions">
           <button class="btn btn-approve" onclick="vote(4,'approved')">Approve</button>
           <button class="btn btn-skip" onclick="vote(4,'skipped')">Skip</button>
+          <button class="btn-teach" onclick="openTeachModal(4)">📚 Teach</button>
         </div>
+        <div class="trained-badge" id="trained-4">📚 Training saved</div>
         <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
       </div>
     </div>
@@ -354,7 +444,9 @@
         <div class="actions">
           <button class="btn btn-approve" onclick="vote(5,'approved')">Approve</button>
           <button class="btn btn-skip" onclick="vote(5,'skipped')">Skip</button>
+          <button class="btn-teach" onclick="openTeachModal(5)">📚 Teach</button>
         </div>
+        <div class="trained-badge" id="trained-5">📚 Training saved</div>
         <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
       </div>
     </div>
@@ -362,8 +454,72 @@
 
 </div>
 
+<!-- Teach Claude modal -->
+<div class="modal-overlay" id="teach-modal">
+  <div class="modal teach-modal-body" style="max-width:560px">
+    <h3>📚 Teach Claude</h3>
+    <div class="teach-tabs">
+      <button class="teach-tab active" id="tab-creative" onclick="switchTab('creative')">🎨 Creative Feedback</button>
+      <button class="teach-tab"        id="tab-copy"     onclick="switchTab('copy')">📝 Copy / Tagline Feedback</button>
+    </div>
+
+    <!-- Creative tab (default) -->
+    <div id="section-creative">
+      <p style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5">Tell Claude what's wrong with this visual and what direction to try instead.</p>
+      <img class="teach-creative-thumb" id="teach-thumb" src="" alt="">
+      <div class="section-label" style="margin-bottom:6px">Quick tags — what's wrong?</div>
+      <div class="creative-tags">
+        <span class="ctag" onclick="toggleTag(this)">Too stock photo</span>
+        <span class="ctag" onclick="toggleTag(this)">Wrong emotion</span>
+        <span class="ctag" onclick="toggleTag(this)">Not visceral enough</span>
+        <span class="ctag" onclick="toggleTag(this)">Wrong setting</span>
+        <span class="ctag" onclick="toggleTag(this)">Wrong lighting</span>
+        <span class="ctag" onclick="toggleTag(this)">Too generic</span>
+        <span class="ctag" onclick="toggleTag(this)">Not scroll-stopping</span>
+        <span class="ctag" onclick="toggleTag(this)">Too polished / safe</span>
+        <span class="ctag" onclick="toggleTag(this)">Concept doesn't land</span>
+      </div>
+      <div class="section-label" style="margin-bottom:6px;margin-top:12px">What's wrong? (describe it)</div>
+      <textarea id="teach-creative-problem" rows="2" placeholder="e.g. Bacteria workers look too cartoonish, scene is too busy, humour doesn't land…"></textarea>
+      <div class="section-label" style="margin-bottom:6px">What direction should we try instead?</div>
+      <textarea id="teach-creative-direction" rows="3" placeholder="e.g. Keep the factory metaphor but make it darker/more cinematic — less Pixar, more industrial horror. Show the bacteria up close."></textarea>
+    </div>
+
+    <!-- Copy tab -->
+    <div id="section-copy" style="display:none">
+      <p style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5">Give feedback on the tagline or headline concept.</p>
+      <div class="section-label" style="margin-bottom:6px">Current Tagline / Headline</div>
+      <div class="teach-ref" id="teach-tagline-ref"></div>
+      <div class="section-label" style="margin-bottom:6px">Your Preferred Version</div>
+      <textarea id="teach-preferred-tagline" rows="3" placeholder="Write your preferred version here…"></textarea>
+      <div class="section-label" style="margin-bottom:6px">What should Claude do differently?</div>
+      <textarea id="teach-copy-notes" rows="2" placeholder="e.g. More punchy, shorter, use ALL CAPS for shock value, avoid medical terms…"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-teach-cancel" onclick="closeTeach()">Cancel</button>
+      <button class="btn-teach-confirm" id="teach-save-btn" onclick="submitTeach()">💾 Save Training</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+
   const votes = {};
+  let pendingTeachId  = null;
+  let activeTab       = 'creative';
+
+  /* Concept names + taglines for reference */
+  const conceptData = {
+    1: { name: 'The Social Distance',    tagline: 'THEY CAN SMELL WHAT YOU CAN\'T SEE.' },
+    2: { name: 'The Bacteria Factory',   tagline: 'YOUR MOUTH IS RUNNING A SULFUR FACTORY.' },
+    3: { name: 'The Mint Lie',           tagline: 'A MINT IS JUST PERFUME ON A CHEMICAL LEAK.' },
+    4: { name: 'The Biohazard Zone',     tagline: 'ORAL BIOHAZARD. AREA UNDER QUARANTINE.' },
+    5: { name: 'The Sulfur Forecast',    tagline: 'TODAY\'S FORECAST: 100% CHANCE OF SULFUR.' }
+  };
+
   function vote(id, decision) {
     votes[id] = decision;
     const card = document.getElementById('card-' + id);
@@ -371,12 +527,100 @@
     card.classList.add(decision);
     updateTally();
   }
+
   function updateTally() {
     const approved = Object.values(votes).filter(v => v === 'approved').length;
     const skipped  = Object.values(votes).filter(v => v === 'skipped').length;
-    document.getElementById('approved-count').textContent = approved;
-    document.getElementById('skipped-count').textContent  = skipped;
+    document.getElementById('approved-count').textContent  = approved;
+    document.getElementById('skipped-count').textContent   = skipped;
     document.getElementById('remaining-count').textContent = 5 - approved - skipped;
+  }
+
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('section-creative').style.display = tab === 'creative' ? '' : 'none';
+    document.getElementById('section-copy').style.display     = tab === 'copy'     ? '' : 'none';
+    document.getElementById('tab-creative').classList.toggle('active', tab === 'creative');
+    document.getElementById('tab-copy').classList.toggle('active',     tab === 'copy');
+  }
+
+  function toggleTag(el) { el.classList.toggle('selected'); }
+
+  function openTeachModal(id) {
+    pendingTeachId = id;
+    const data = conceptData[id] || {};
+    const card = document.getElementById('card-' + id);
+    const img  = card.querySelector('.card-image img');
+
+    document.getElementById('teach-thumb').src         = img ? img.src : '';
+    document.getElementById('teach-tagline-ref').textContent = data.tagline || '';
+    document.getElementById('teach-creative-problem').value  = '';
+    document.getElementById('teach-creative-direction').value = '';
+    document.getElementById('teach-preferred-tagline').value  = '';
+    document.getElementById('teach-copy-notes').value         = '';
+    document.querySelectorAll('.ctag.selected').forEach(t => t.classList.remove('selected'));
+
+    switchTab('creative');
+    document.getElementById('teach-save-btn').textContent = '💾 Save Training';
+    document.getElementById('teach-save-btn').disabled    = false;
+    document.getElementById('teach-modal').classList.add('active');
+  }
+
+  function closeTeach() {
+    document.getElementById('teach-modal').classList.remove('active');
+    pendingTeachId = null;
+  }
+
+  async function submitTeach() {
+    const id      = pendingTeachId;
+    const saveBtn = document.getElementById('teach-save-btn');
+    const data    = conceptData[id] || {};
+    saveBtn.textContent = '⏳ Saving…';
+    saveBtn.disabled    = true;
+
+    let payload = null;
+
+    if (activeTab === 'creative') {
+      const problem   = document.getElementById('teach-creative-problem').value.trim();
+      const direction = document.getElementById('teach-creative-direction').value.trim();
+      const tags      = Array.from(document.querySelectorAll('.ctag.selected')).map(t => t.textContent).join(', ');
+      const notesStr  = [tags, problem].filter(Boolean).join(' · ');
+      if (notesStr || direction) {
+        payload = [{ sku: 'flora', creative_name: data.name || ('Concept ' + id),
+          feedback_type: 'creative', original_copy: null, preferred_copy: null,
+          visual_direction: direction, notes: notesStr }];
+      }
+    } else {
+      const preferred = document.getElementById('teach-preferred-tagline').value.trim();
+      const notes     = document.getElementById('teach-copy-notes').value.trim();
+      if (preferred || notes) {
+        payload = [{ sku: 'flora', creative_name: data.name || ('Concept ' + id),
+          feedback_type: 'copy', original_copy: data.tagline || '',
+          preferred_copy: preferred, visual_direction: null, notes }];
+      }
+    }
+
+    try {
+      if (payload) {
+        const res = await fetch(SUPABASE_URL + '/rest/v1/ad_training', {
+          method: 'POST',
+          headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
+            'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+      }
+      closeTeach();
+      if (payload) {
+        const card = document.getElementById('card-' + id);
+        card.classList.add('trained');
+      }
+    } catch (err) {
+      saveBtn.textContent = '💾 Save Training';
+      saveBtn.disabled    = false;
+      alert('❌ Save failed: ' + err.message + '\n\nCreate the ad_training table in Supabase (run without RLS):\n\nCREATE TABLE ad_training (\n  id bigint generated always as identity primary key,\n  created_at timestamptz default now(),\n  sku text, creative_name text, feedback_type text,\n  original_copy text, preferred_copy text,\n  visual_direction text, notes text\n);\n\nALTER TABLE ad_training ENABLE ROW LEVEL SECURITY;');
+      console.error(err);
+    }
   }
 </script>
 
