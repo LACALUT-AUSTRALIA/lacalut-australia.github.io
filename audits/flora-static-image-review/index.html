@@ -176,26 +176,29 @@
 
   .approve-row {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     margin-top: 4px;
+    flex-wrap: wrap;
   }
   .btn {
     flex: 1;
-    padding: 8px;
+    min-width: 80px;
+    padding: 8px 6px;
     border-radius: 8px;
     border: none;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     cursor: pointer;
     transition: opacity 0.15s;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
   }
   .btn:hover { opacity: 0.85; }
-  .btn-approve { background: #1a6b38; color: #6affa0; }
-  .btn-revise  { background: #4a2800; color: #ffb366; }
-  .btn-save    { background: #004a88; color: #a8d4ff; }
-  .btn-skip    { background: #222; color: #888; }
+  .btn-approve         { background: #1a6b38; color: #6affa0; }
+  .btn-revise          { background: #4a2800; color: #ffb366; }
+  .btn-save            { background: #004a88; color: #a8d4ff; }
+  .btn-reject-creative { background: #4a0010; color: #ff6b8a; }
+  .btn-reject-copy     { background: #1a0030; color: #cc88ff; }
 
   /* Editable fields */
   .editable {
@@ -227,6 +230,18 @@
   }
   .card.editing .edit-hint { display: block; }
 
+  .reject-note {
+    font-size: 0.65rem;
+    color: #888;
+    margin-top: 2px;
+    display: none;
+    font-style: italic;
+  }
+  .card.rejected-creative .reject-note,
+  .card.rejected-copy .reject-note { display: block; }
+  .card.rejected-creative .reject-note { color: #ff6b8a; }
+  .card.rejected-copy .reject-note { color: #cc88ff; }
+
   .status-bar {
     position: sticky;
     bottom: 0;
@@ -239,9 +254,13 @@
     font-size: 0.8rem;
     color: #888;
     z-index: 10;
+    flex-wrap: wrap;
   }
   .status-bar strong { color: #fff; }
-  #approval-count { color: #6affa0; font-weight: 700; }
+  #approval-count        { color: #6affa0; font-weight: 700; }
+  #revise-count          { color: #ffb366; font-weight: 700; }
+  #reject-creative-count { color: #ff6b8a; font-weight: 700; }
+  #reject-copy-count     { color: #cc88ff; font-weight: 700; }
 
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
@@ -262,7 +281,12 @@
 </header>
 
 <div class="intro">
-  <strong>What you're reviewing:</strong> 8 frames extracted from the 3 Flora video renders. Each frame is a <strong>720×1280 px (9:16)</strong> still image — native Meta Ads story/reel format. Ad copy below is ready to paste directly into Ads Manager. <strong>Approve</strong> the frames you want to upload, <strong>Revise</strong> if you want a different copy angle, or <strong>Skip</strong> frames that aren't working.
+  <strong>What you're reviewing:</strong> 8 frames extracted from the 3 Flora video renders. Each frame is a <strong>720×1280 px (9:16)</strong> still image — native Meta Ads story/reel format. Ad copy below is ready to paste directly into Ads Manager.
+  <br><br>
+  <strong>✅ Approve</strong> — ready to upload as-is &nbsp;·&nbsp;
+  <strong>✏️ Revise Copy</strong> — edit the text directly, then save &nbsp;·&nbsp;
+  <strong>❌ Reject Creative</strong> — the image/visual concept is wrong &nbsp;·&nbsp;
+  <strong>🚫 Reject Copy</strong> — the copywriting angle is wrong
 </div>
 
 <div class="grid" id="card-grid">
@@ -302,10 +326,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-1"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(1,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(1,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(1,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(1,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(1,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(1,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(1,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -346,10 +372,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-2"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(2,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(2,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(2,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(2,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(2,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(2,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(2,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -390,10 +418,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-3"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(3,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(3,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(3,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(3,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(3,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(3,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(3,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -434,10 +464,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-4"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(4,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(4,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(4,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(4,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(4,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(4,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(4,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -478,10 +510,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-5"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(5,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(5,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(5,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(5,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(5,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(5,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(5,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -522,10 +556,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-6"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(6,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(6,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(6,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(6,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(6,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(6,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(6,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -566,10 +602,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-7"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(7,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(7,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(7,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(7,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(7,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(7,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(7,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -610,10 +648,12 @@
         </div>
 
         <div class="edit-hint">✏️ All text fields are now editable — click any text to change it. Hit Save when done.</div>
+        <div class="reject-note" id="reject-note-8"></div>
         <div class="approve-row">
-          <button class="btn btn-approve" onclick="setStatus(8,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"  onclick="setStatus(8,'revise')">✏️ Revise Copy</button>
-          <button class="btn btn-skip"    onclick="setStatus(8,'skip')">— Skip</button>
+          <button class="btn btn-approve"         onclick="setStatus(8,'approved')">✅ Approve</button>
+          <button class="btn btn-revise"           onclick="setStatus(8,'revise')">✏️ Revise Copy</button>
+          <button class="btn btn-reject-creative"  onclick="setStatus(8,'reject-creative')">❌ Reject Creative</button>
+          <button class="btn btn-reject-copy"      onclick="setStatus(8,'reject-copy')">🚫 Reject Copy</button>
         </div>
       </div>
     </div>
@@ -624,9 +664,9 @@
 <div class="status-bar">
   <strong>Review Progress:</strong>
   <span id="approval-count">0</span> approved &nbsp;·&nbsp;
-  <span id="revise-count" style="color:#ffb366;font-weight:700;">0</span> needs revision &nbsp;·&nbsp;
-  <span id="skip-count" style="color:#666;">0</span> skipped
-  &nbsp;&nbsp;&nbsp;
+  <span id="revise-count">0</span> needs revision &nbsp;·&nbsp;
+  <span id="reject-creative-count">0</span> rejected creative &nbsp;·&nbsp;
+  <span id="reject-copy-count">0</span> rejected copy &nbsp;&nbsp;&nbsp;
   <span style="color:#555;">8 total frames</span>
 </div>
 
@@ -640,8 +680,28 @@ function setStatus(id, status) {
   }
   exitEditMode(id);
   statuses[id] = status;
+
   const card = document.getElementById('card-' + id);
-  card.style.borderColor = status === 'approved' ? '#1a6b38' : '#333';
+  card.classList.remove('rejected-creative', 'rejected-copy');
+
+  const borderColors = {
+    'approved':         '#1a6b38',
+    'reject-creative':  '#6b0010',
+    'reject-copy':      '#3a0060',
+  };
+  card.style.borderColor = borderColors[status] || '#333';
+
+  const note = document.getElementById('reject-note-' + id);
+  if (status === 'reject-creative') {
+    card.classList.add('rejected-creative');
+    note.textContent = '❌ Creative rejected — visual/concept flagged for Claude';
+  } else if (status === 'reject-copy') {
+    card.classList.add('rejected-copy');
+    note.textContent = '🚫 Copy rejected — copywriting angle flagged for Claude';
+  } else {
+    note.textContent = '';
+  }
+
   updateCounts();
 }
 
@@ -651,12 +711,10 @@ function enterEditMode(id) {
   card.style.borderColor = '#995500';
   statuses[id] = 'revise';
 
-  // Make all editable fields editable
   card.querySelectorAll('.editable').forEach(el => {
     el.contentEditable = 'true';
   });
 
-  // Swap Revise button for Save button
   const reviseBtn = card.querySelector('.btn-revise');
   reviseBtn.textContent = '💾 Save Changes';
   reviseBtn.className = 'btn btn-save';
@@ -669,12 +727,10 @@ function exitEditMode(id) {
   const card = document.getElementById('card-' + id);
   card.classList.remove('editing');
 
-  // Lock all editable fields
   card.querySelectorAll('.editable').forEach(el => {
     el.contentEditable = 'false';
   });
 
-  // Restore Revise button
   const saveBtn = card.querySelector('.btn-save');
   if (saveBtn) {
     saveBtn.textContent = '✏️ Revise Copy';
@@ -685,9 +741,10 @@ function exitEditMode(id) {
 
 function updateCounts() {
   const vals = Object.values(statuses);
-  document.getElementById('approval-count').textContent = vals.filter(v => v === 'approved').length;
-  document.getElementById('revise-count').textContent   = vals.filter(v => v === 'revise').length;
-  document.getElementById('skip-count').textContent     = vals.filter(v => v === 'skip').length;
+  document.getElementById('approval-count').textContent        = vals.filter(v => v === 'approved').length;
+  document.getElementById('revise-count').textContent          = vals.filter(v => v === 'revise').length;
+  document.getElementById('reject-creative-count').textContent = vals.filter(v => v === 'reject-creative').length;
+  document.getElementById('reject-copy-count').textContent     = vals.filter(v => v === 'reject-copy').length;
 }
 </script>
 </body>
