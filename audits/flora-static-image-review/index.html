@@ -199,6 +199,44 @@
   .btn-save            { background: #004a88; color: #a8d4ff; }
   .btn-reject-creative { background: #4a0010; color: #ff6b8a; }
   .btn-reject-copy     { background: #1a0030; color: #cc88ff; }
+  .btn-teach           { background: #0d3020; color: #4affb8; }
+
+  .teach-modal-body textarea {
+    width: 100%;
+    background: #111;
+    border: 1px solid #333;
+    color: #e8e8e8;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    resize: vertical;
+    font-family: inherit;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .teach-modal-body textarea:focus { outline: none; border-color: #4affb8; box-shadow: 0 0 0 2px rgba(74,255,184,0.15); }
+  .teach-ref {
+    font-size: 0.72rem;
+    color: #555;
+    background: #0a0a0a;
+    border: 1px solid #1e1e1e;
+    border-radius: 6px;
+    padding: 8px 12px;
+    max-height: 80px;
+    overflow-y: auto;
+    line-height: 1.5;
+    margin-bottom: 14px;
+    white-space: pre-wrap;
+  }
+  .trained-badge {
+    font-size: 0.65rem;
+    color: #4affb8;
+    font-style: italic;
+    margin-top: 2px;
+    display: none;
+  }
+  .card.trained .trained-badge { display: block; }
 
   /* Editable fields */
   .editable {
@@ -736,6 +774,28 @@
   </div>
 </div>
 
+<!-- Training / Teach Claude modal -->
+<div class="modal-overlay" id="teach-modal">
+  <div class="modal teach-modal-body" style="max-width:560px">
+    <h3>📚 Teach Claude Better Copy</h3>
+    <p style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.5">Your version becomes a training example — Claude will reference it next time it writes Flora copy. Both fields are optional.</p>
+
+    <div class="section-label" style="margin-bottom:6px">Current AI Copy</div>
+    <div class="teach-ref" id="teach-original-copy"></div>
+
+    <div class="section-label" style="margin-bottom:6px">Your Preferred Primary Text</div>
+    <textarea id="teach-preferred-copy" rows="6" placeholder="Paste your version here — emojis, structure, tone and all…"></textarea>
+
+    <div class="section-label" style="margin-bottom:6px">What should Claude do differently? (optional)</div>
+    <textarea id="teach-notes" rows="2" placeholder="e.g. Use emojis throughout, agitate the pain more, start with the problem, shorter sentences…"></textarea>
+
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="skipTeach()">Skip</button>
+      <button class="btn btn-confirm" id="teach-save-btn" onclick="submitTeach()">💾 Save Training &amp; Reject</button>
+    </div>
+  </div>
+</div>
+
 <div class="status-bar">
   <strong>Review Progress:</strong>
   <span id="approval-count">0</span> approved &nbsp;·&nbsp;
@@ -760,6 +820,11 @@ function setStatus(id, status) {
   if (status === 'approved') {
     exitEditMode(id);
     showApprovalModal(id);
+    return;
+  }
+  if (status === 'reject-copy') {
+    exitEditMode(id);
+    openTeachModal(id, true);
     return;
   }
   exitEditMode(id);
@@ -894,6 +959,115 @@ function exitEditMode(id) {
     saveBtn.onclick = () => setStatus(id, 'revise');
   }
 }
+
+/* ── Training / Teach Claude ── */
+let pendingTeachId   = null;
+let teachWillReject  = false;
+
+function openTeachModal(id, willReject) {
+  pendingTeachId  = id;
+  teachWillReject = !!willReject;
+  const card = document.getElementById('card-' + id);
+  document.getElementById('teach-original-copy').textContent =
+    card.querySelector('.primary-text')?.innerText || '';
+  document.getElementById('teach-preferred-copy').value = '';
+  document.getElementById('teach-notes').value = '';
+  const saveBtn = document.getElementById('teach-save-btn');
+  saveBtn.textContent = willReject ? '💾 Save Training & Reject' : '💾 Save Training';
+  saveBtn.disabled = false;
+  document.getElementById('teach-modal').classList.add('active');
+}
+
+function skipTeach() {
+  document.getElementById('teach-modal').classList.remove('active');
+  const id         = pendingTeachId;
+  const willReject = teachWillReject;
+  pendingTeachId   = null;
+  teachWillReject  = false;
+  if (id && willReject) applyRejectCopy(id, false);
+}
+
+function applyRejectCopy(id, trained) {
+  statuses[id] = 'reject-copy';
+  const card = document.getElementById('card-' + id);
+  card.classList.remove('rejected-creative', 'rejected-copy');
+  card.style.borderColor = '#3a0060';
+  card.classList.add('rejected-copy');
+  const note = document.getElementById('reject-note-' + id);
+  note.textContent = '🚫 Copy rejected — copywriting angle flagged for Claude' +
+    (trained ? ' · 📚 Training saved' : '');
+  updateCounts();
+}
+
+async function submitTeach() {
+  const id            = pendingTeachId;
+  const card          = document.getElementById('card-' + id);
+  const preferredCopy = document.getElementById('teach-preferred-copy').value.trim();
+  const notes         = document.getElementById('teach-notes').value.trim();
+  const saveBtn       = document.getElementById('teach-save-btn');
+
+  saveBtn.textContent = '⏳ Saving…';
+  saveBtn.disabled    = true;
+
+  try {
+    if (preferredCopy || notes) {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/copy_training', {
+        method: 'POST',
+        headers: {
+          'apikey':        SUPABASE_ANON,
+          'Authorization': 'Bearer ' + SUPABASE_ANON,
+          'Content-Type':  'application/json',
+          'Prefer':        'return=minimal'
+        },
+        body: JSON.stringify([{
+          sku:            'flora',
+          creative_name:  card.dataset.creativeName || ('Card ' + id),
+          original_copy:  card.querySelector('.primary-text')?.innerText || '',
+          preferred_copy: preferredCopy,
+          notes:          notes
+        }])
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+    }
+
+    document.getElementById('teach-modal').classList.remove('active');
+    const trained = !!(preferredCopy || notes);
+
+    if (teachWillReject) {
+      applyRejectCopy(id, trained);
+    } else if (trained) {
+      card.classList.add('trained');
+      const teachBtn = card.querySelector('.btn-teach');
+      if (teachBtn) teachBtn.textContent = '✅ Trained';
+    }
+
+    pendingTeachId  = null;
+    teachWillReject = false;
+
+  } catch (err) {
+    saveBtn.textContent = teachWillReject ? '💾 Save Training & Reject' : '💾 Save Training';
+    saveBtn.disabled    = false;
+    alert('❌ Save failed: ' + err.message + '\n\nMake sure the copy_training table exists in Supabase.');
+    console.error(err);
+  }
+}
+
+/* ── Inject "📝 Teach" button into every card ── */
+document.querySelectorAll('.approve-row').forEach((row, i) => {
+  const cardId = i + 1;
+  const btn = document.createElement('button');
+  btn.className = 'btn btn-teach';
+  btn.textContent = '📝 Teach';
+  btn.title = 'Add training example — paste your preferred version so Claude learns from it';
+  btn.onclick = () => openTeachModal(cardId, false);
+  row.appendChild(btn);
+
+  const badge = document.createElement('div');
+  badge.className = 'trained-badge';
+  badge.id = 'trained-badge-' + cardId;
+  badge.textContent = '📚 Training saved for this creative';
+  row.parentElement.appendChild(badge);
+});
 
 function updateCounts() {
   const vals = Object.values(statuses);
