@@ -268,6 +268,64 @@
     .img-wrap { width: 100%; }
     .img-wrap img { width: 100%; height: auto; }
   }
+
+  /* Approval modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 16px;
+    padding: 28px 32px;
+    max-width: 480px;
+    width: calc(100% - 48px);
+  }
+  .modal h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  .modal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid #222;
+    font-size: 0.8rem;
+    gap: 12px;
+  }
+  .modal-row:last-of-type { border-bottom: none; }
+  .modal-label { color: #888; white-space: nowrap; flex-shrink: 0; }
+  .modal-val { color: #fff; text-align: right; font-weight: 600; }
+  .modal-val.green  { color: #6affa0; }
+  .modal-val.blue   { color: #a8d4ff; }
+  .modal-val.orange { color: #ffb366; }
+  .modal-warning {
+    background: #2a1500;
+    border: 1px solid #994400;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.75rem;
+    color: #ffb366;
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .modal-actions .btn { flex: 1; padding: 10px; font-size: 0.75rem; }
+  .btn-confirm { background: #1a6b38; color: #6affa0; }
+  .btn-cancel  { background: #2a2a2a; color: #aaa; }
 </style>
 </head>
 <body>
@@ -292,7 +350,7 @@
 <div class="grid" id="card-grid">
 
   <!-- CARD 1 -->
-  <div class="card" id="card-1">
+  <div class="card" id="card-1" data-creative-name="Office Hero — Ad 1 · 0.5s" data-image="images/ad1_3pm_crash_t0_5s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad1_3pm_crash_t0_5s.jpg" alt="Office hero with sparkles" loading="lazy">
@@ -338,7 +396,7 @@
   </div>
 
   <!-- CARD 2 -->
-  <div class="card" id="card-2">
+  <div class="card" id="card-2" data-creative-name="Bacteria Science — Ad 1 · 7.5s" data-image="images/ad1_3pm_crash_t7_5s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad1_3pm_crash_t7_5s.jpg" alt="Bacteria science visualisation" loading="lazy">
@@ -384,7 +442,7 @@
   </div>
 
   <!-- CARD 3 -->
-  <div class="card" id="card-3">
+  <div class="card" id="card-3" data-creative-name="Product Hero — Ad 1 · 14.0s" data-image="images/ad1_3pm_crash_t14_0s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad1_3pm_crash_t14_0s.jpg" alt="Clean marble product hero" loading="lazy">
@@ -430,7 +488,7 @@
   </div>
 
   <!-- CARD 4 -->
-  <div class="card" id="card-4">
+  <div class="card" id="card-4" data-creative-name="Dentist Reaction — Ad 2 · 3.0s" data-image="images/ad2_dentist_t3_0s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad2_dentist_t3_0s.jpg" alt="Dentist reaction close-up" loading="lazy">
@@ -476,7 +534,7 @@
   </div>
 
   <!-- CARD 5 -->
-  <div class="card" id="card-5">
+  <div class="card" id="card-5" data-creative-name="Bacterial Shield — Ad 2 · 5.0s" data-image="images/ad2_dentist_t5_0s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad2_dentist_t5_0s.jpg" alt="Bacterial shield macro on teeth" loading="lazy">
@@ -522,7 +580,7 @@
   </div>
 
   <!-- CARD 6 -->
-  <div class="card" id="card-6">
+  <div class="card" id="card-6" data-creative-name="Bathroom Lifestyle — Ad 2 · 14.0s" data-image="images/ad2_dentist_t14_0s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad2_dentist_t14_0s.jpg" alt="Bathroom lifestyle product shot" loading="lazy">
@@ -568,7 +626,7 @@
   </div>
 
   <!-- CARD 7 -->
-  <div class="card" id="card-7">
+  <div class="card" id="card-7" data-creative-name="The Moment — Ad 3 · 3.0s" data-image="images/ad3_conversation_t3_0s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad3_conversation_t3_0s.jpg" alt="Cinematic couple close-up" loading="lazy">
@@ -614,7 +672,7 @@
   </div>
 
   <!-- CARD 8 -->
-  <div class="card" id="card-8">
+  <div class="card" id="card-8" data-creative-name="Brushing Transform — Ad 3 · 12.0s" data-image="images/ad3_conversation_t12_0s.jpg">
     <div class="card-layout">
       <div class="img-wrap">
         <img src="images/ad3_conversation_t12_0s.jpg" alt="Woman brushing with blue light" loading="lazy">
@@ -661,6 +719,23 @@
 
 </div>
 
+<!-- Approval confirmation modal -->
+<div class="modal-overlay" id="approval-modal">
+  <div class="modal">
+    <h3>📋 Confirm Meta Ads Draft</h3>
+    <div class="modal-row"><span class="modal-label">Creative</span><span class="modal-val" id="modal-creative-name">—</span></div>
+    <div class="modal-row"><span class="modal-label">Ad Set</span><span class="modal-val green">Flora / Bad Breath</span></div>
+    <div class="modal-row"><span class="modal-label">Campaign</span><span class="modal-val blue">TOF — Top of Funnel</span></div>
+    <div class="modal-row"><span class="modal-label">Template Ad</span><span class="modal-val">SI - Stop Broadcasting Sulfur</span></div>
+    <div class="modal-row"><span class="modal-label">Status</span><span class="modal-val orange">PAUSED ⏸</span></div>
+    <div class="modal-warning">⚠️ This will queue a <strong>PAUSED draft ad</strong> in Meta Ads. It will <strong>not go live</strong> until manually enabled by you in Ads Manager.</div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-confirm" onclick="submitApproval()">✅ Confirm &amp; Queue</button>
+    </div>
+  </div>
+</div>
+
 <div class="status-bar">
   <strong>Review Progress:</strong>
   <span id="approval-count">0</span> approved &nbsp;·&nbsp;
@@ -671,11 +746,20 @@
 </div>
 
 <script>
+const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+
 const statuses = {};
+let pendingApprovalId = null;
 
 function setStatus(id, status) {
   if (status === 'revise') {
     enterEditMode(id);
+    return;
+  }
+  if (status === 'approved') {
+    exitEditMode(id);
+    showApprovalModal(id);
     return;
   }
   exitEditMode(id);
@@ -685,7 +769,6 @@ function setStatus(id, status) {
   card.classList.remove('rejected-creative', 'rejected-copy');
 
   const borderColors = {
-    'approved':         '#1a6b38',
     'reject-creative':  '#6b0010',
     'reject-copy':      '#3a0060',
   };
@@ -703,6 +786,79 @@ function setStatus(id, status) {
   }
 
   updateCounts();
+}
+
+function showApprovalModal(id) {
+  pendingApprovalId = id;
+  const card = document.getElementById('card-' + id);
+  document.getElementById('modal-creative-name').textContent = card.dataset.creativeName || ('Card ' + id);
+  document.getElementById('approval-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('approval-modal').classList.remove('active');
+  pendingApprovalId = null;
+}
+
+async function submitApproval() {
+  const id   = pendingApprovalId;
+  const card = document.getElementById('card-' + id);
+
+  const primaryText = card.querySelector('.primary-text')?.innerText || '';
+  const headline    = card.querySelector('.hl-text')?.innerText || '';
+  const description = card.querySelector('.description-box')?.innerText || '';
+  const imageUrl    = 'https://lacalut-australia.github.io/audits/flora-static-image-review/' + (card.dataset.image || '');
+
+  const payload = [{
+    sku:              'flora',
+    creative_name:    card.dataset.creativeName || ('Card ' + id),
+    creative_type:    'image',
+    adset_id:         '120244410306410229',
+    adset_name:       'Flora / Bad Breath',
+    campaign_id:      '120241478653830229',
+    template_ad_id:   '120244706626530229',
+    primary_text:     primaryText,
+    headline:         headline,
+    description:      description,
+    image_url:        imageUrl,
+    status:           'pending'
+  }];
+
+  const confirmBtn = document.querySelector('#approval-modal .btn-confirm');
+  confirmBtn.textContent = '⏳ Submitting…';
+  confirmBtn.disabled = true;
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/ad_approvals', {
+      method: 'POST',
+      headers: {
+        'apikey':       SUPABASE_ANON,
+        'Authorization':'Bearer ' + SUPABASE_ANON,
+        'Content-Type': 'application/json',
+        'Prefer':       'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    closeModal();
+    statuses[id] = 'approved';
+    card.style.borderColor = '#004a88';
+
+    const approveBtn = card.querySelector('.btn-approve');
+    approveBtn.textContent = '📋 Queued for Meta';
+    approveBtn.style.background = '#004a88';
+    approveBtn.style.color = '#a8d4ff';
+    approveBtn.disabled = true;
+
+    updateCounts();
+  } catch (err) {
+    confirmBtn.textContent = '✅ Confirm & Queue';
+    confirmBtn.disabled = false;
+    alert('❌ Submission failed: ' + err.message + '\nCheck console for details.');
+    console.error(err);
+  }
 }
 
 function enterEditMode(id) {
