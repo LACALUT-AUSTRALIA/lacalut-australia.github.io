@@ -238,6 +238,57 @@
   }
   .card.trained .trained-badge { display: block; }
 
+  /* Teach modal tabs */
+  .teach-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .teach-tab {
+    flex: 1;
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #111;
+    color: #888;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .teach-tab.active { background: #004a88; color: #a8d4ff; border-color: #004a88; }
+  .teach-tab:hover:not(.active) { border-color: #555; color: #ccc; }
+
+  /* Creative feedback tags */
+  .creative-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .ctag {
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #888;
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .ctag.selected { background: #2a0d00; border-color: #ff6b8a; color: #ff6b8a; }
+  .teach-creative-thumb {
+    width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #0a0a0a;
+    margin-bottom: 14px;
+    display: block;
+  }
+
   /* Editable fields */
   .editable {
     outline: none;
@@ -776,22 +827,50 @@
 
 <!-- Training / Teach Claude modal -->
 <div class="modal-overlay" id="teach-modal">
-  <div class="modal teach-modal-body" style="max-width:560px">
-    <h3>📚 Teach Claude Better Copy</h3>
-    <p style="font-size:0.78rem;color:#888;margin-bottom:16px;line-height:1.5">Your version becomes a training example — Claude will reference it next time it writes Flora copy. Both fields are optional.</p>
+  <div class="modal teach-modal-body" style="max-width:580px">
+    <h3>📚 Teach Claude</h3>
 
-    <div class="section-label" style="margin-bottom:6px">Current AI Copy</div>
-    <div class="teach-ref" id="teach-original-copy"></div>
+    <div class="teach-tabs">
+      <button class="teach-tab active" id="tab-copy"     onclick="switchTeachTab('copy')">📝 Copy Feedback</button>
+      <button class="teach-tab"        id="tab-creative" onclick="switchTeachTab('creative')">🎨 Creative Feedback</button>
+    </div>
 
-    <div class="section-label" style="margin-bottom:6px">Your Preferred Primary Text</div>
-    <textarea id="teach-preferred-copy" rows="6" placeholder="Paste your version here — emojis, structure, tone and all…"></textarea>
+    <!-- Copy feedback -->
+    <div id="teach-copy-section">
+      <p style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5">Your version becomes a training example — Claude will use it next time it writes Flora copy.</p>
+      <div class="section-label" style="margin-bottom:6px">Current AI Copy</div>
+      <div class="teach-ref" id="teach-original-copy"></div>
+      <div class="section-label" style="margin-bottom:6px">Your Preferred Primary Text</div>
+      <textarea id="teach-preferred-copy" rows="5" placeholder="Paste your version here — emojis, structure, tone and all…"></textarea>
+      <div class="section-label" style="margin-bottom:6px">What should Claude do differently? (optional)</div>
+      <textarea id="teach-copy-notes" rows="2" placeholder="e.g. Agitate the pain more, shorter sentences, start with the problem…"></textarea>
+    </div>
 
-    <div class="section-label" style="margin-bottom:6px">What should Claude do differently? (optional)</div>
-    <textarea id="teach-notes" rows="2" placeholder="e.g. Use emojis throughout, agitate the pain more, start with the problem, shorter sentences…"></textarea>
+    <!-- Creative feedback -->
+    <div id="teach-creative-section" style="display:none">
+      <p style="font-size:0.78rem;color:#888;margin-bottom:14px;line-height:1.5">Tell Claude what's wrong with this visual and what direction to try instead.</p>
+      <img class="teach-creative-thumb" id="teach-creative-thumb" src="" alt="Creative preview">
+      <div class="section-label" style="margin-bottom:6px">Quick tags — what's wrong?</div>
+      <div class="creative-tags" id="teach-creative-tags">
+        <span class="ctag" onclick="toggleTag(this)">Too stock photo</span>
+        <span class="ctag" onclick="toggleTag(this)">Wrong emotion</span>
+        <span class="ctag" onclick="toggleTag(this)">Not visceral enough</span>
+        <span class="ctag" onclick="toggleTag(this)">Wrong setting</span>
+        <span class="ctag" onclick="toggleTag(this)">Wrong lighting</span>
+        <span class="ctag" onclick="toggleTag(this)">Too generic</span>
+        <span class="ctag" onclick="toggleTag(this)">Model looks wrong</span>
+        <span class="ctag" onclick="toggleTag(this)">Not scroll-stopping</span>
+        <span class="ctag" onclick="toggleTag(this)">Too polished / safe</span>
+      </div>
+      <div class="section-label" style="margin-bottom:6px;margin-top:12px">What's wrong? (describe it)</div>
+      <textarea id="teach-creative-problem" rows="2" placeholder="e.g. Model looks too happy, doesn't show the pain/problem, feels like a stock photo…"></textarea>
+      <div class="section-label" style="margin-bottom:6px;margin-top:12px">What direction should we try instead?</div>
+      <textarea id="teach-creative-direction" rows="3" placeholder="e.g. Show the moment of embarrassment — close-up face pulling away, not smiling. Dark moody lighting. No product visible."></textarea>
+    </div>
 
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="skipTeach()">Skip</button>
-      <button class="btn btn-confirm" id="teach-save-btn" onclick="submitTeach()">💾 Save Training &amp; Reject</button>
+      <button class="btn btn-confirm" id="teach-save-btn" onclick="submitTeach()">💾 Save &amp; Reject</button>
     </div>
   </div>
 </div>
@@ -813,43 +892,22 @@ const statuses = {};
 let pendingApprovalId = null;
 
 function setStatus(id, status) {
-  if (status === 'revise') {
-    enterEditMode(id);
-    return;
-  }
-  if (status === 'approved') {
-    exitEditMode(id);
-    showApprovalModal(id);
-    return;
-  }
-  if (status === 'reject-copy') {
-    exitEditMode(id);
-    openTeachModal(id, true);
-    return;
-  }
+  if (status === 'revise') { enterEditMode(id); return; }
+  if (status === 'approved') { exitEditMode(id); showApprovalModal(id); return; }
+  if (status === 'reject-copy') { exitEditMode(id); openTeachModal(id, true, 'copy'); return; }
+  if (status === 'reject-creative') { exitEditMode(id); openTeachModal(id, true, 'creative'); return; }
   exitEditMode(id);
-  statuses[id] = status;
+  updateCounts();
+}
 
+function applyRejectCreative(id, trained) {
+  statuses[id] = 'reject-creative';
   const card = document.getElementById('card-' + id);
   card.classList.remove('rejected-creative', 'rejected-copy');
-
-  const borderColors = {
-    'reject-creative':  '#6b0010',
-    'reject-copy':      '#3a0060',
-  };
-  card.style.borderColor = borderColors[status] || '#333';
-
+  card.style.borderColor = '#6b0010';
+  card.classList.add('rejected-creative');
   const note = document.getElementById('reject-note-' + id);
-  if (status === 'reject-creative') {
-    card.classList.add('rejected-creative');
-    note.textContent = '❌ Creative rejected — visual/concept flagged for Claude';
-  } else if (status === 'reject-copy') {
-    card.classList.add('rejected-copy');
-    note.textContent = '🚫 Copy rejected — copywriting angle flagged for Claude';
-  } else {
-    note.textContent = '';
-  }
-
+  note.textContent = '❌ Creative rejected — visual flagged for Claude' + (trained ? ' · 📚 Training saved' : '');
   updateCounts();
 }
 
@@ -961,30 +1019,59 @@ function exitEditMode(id) {
 }
 
 /* ── Training / Teach Claude ── */
-let pendingTeachId   = null;
-let teachWillReject  = false;
+let pendingTeachId       = null;
+let teachWillReject      = false;
+let pendingTeachFeedbackType = 'copy';
 
-function openTeachModal(id, willReject) {
+function switchTeachTab(tab) {
+  pendingTeachFeedbackType = tab;
+  document.getElementById('teach-copy-section').style.display     = tab === 'copy'     ? '' : 'none';
+  document.getElementById('teach-creative-section').style.display = tab === 'creative' ? '' : 'none';
+  document.getElementById('tab-copy').classList.toggle('active',     tab === 'copy');
+  document.getElementById('tab-creative').classList.toggle('active', tab === 'creative');
+  const saveBtn = document.getElementById('teach-save-btn');
+  if (teachWillReject) {
+    saveBtn.textContent = tab === 'copy' ? '💾 Save & Reject Copy' : '💾 Save & Reject Creative';
+  } else {
+    saveBtn.textContent = '💾 Save Training';
+  }
+}
+
+function toggleTag(el) { el.classList.toggle('selected'); }
+
+function openTeachModal(id, willReject, defaultTab) {
+  defaultTab      = defaultTab || 'copy';
   pendingTeachId  = id;
   teachWillReject = !!willReject;
+  pendingTeachFeedbackType = defaultTab;
+
   const card = document.getElementById('card-' + id);
   document.getElementById('teach-original-copy').textContent =
     card.querySelector('.primary-text')?.innerText || '';
-  document.getElementById('teach-preferred-copy').value = '';
-  document.getElementById('teach-notes').value = '';
-  const saveBtn = document.getElementById('teach-save-btn');
-  saveBtn.textContent = willReject ? '💾 Save Training & Reject' : '💾 Save Training';
-  saveBtn.disabled = false;
+  document.getElementById('teach-preferred-copy').value   = '';
+  document.getElementById('teach-copy-notes').value       = '';
+  document.getElementById('teach-creative-problem').value  = '';
+  document.getElementById('teach-creative-direction').value = '';
+  document.querySelectorAll('.ctag.selected').forEach(t => t.classList.remove('selected'));
+
+  const img = card.querySelector('.img-wrap img');
+  if (img) document.getElementById('teach-creative-thumb').src = img.src;
+
+  switchTeachTab(defaultTab);
   document.getElementById('teach-modal').classList.add('active');
 }
 
 function skipTeach() {
   document.getElementById('teach-modal').classList.remove('active');
-  const id         = pendingTeachId;
-  const willReject = teachWillReject;
+  const id    = pendingTeachId;
+  const type  = pendingTeachFeedbackType;
+  const reject = teachWillReject;
   pendingTeachId   = null;
   teachWillReject  = false;
-  if (id && willReject) applyRejectCopy(id, false);
+  if (id && reject) {
+    if (type === 'copy') applyRejectCopy(id, false);
+    else applyRejectCreative(id, false);
+  }
 }
 
 function applyRejectCopy(id, trained) {
@@ -993,48 +1080,59 @@ function applyRejectCopy(id, trained) {
   card.classList.remove('rejected-creative', 'rejected-copy');
   card.style.borderColor = '#3a0060';
   card.classList.add('rejected-copy');
-  const note = document.getElementById('reject-note-' + id);
-  note.textContent = '🚫 Copy rejected — copywriting angle flagged for Claude' +
-    (trained ? ' · 📚 Training saved' : '');
+  document.getElementById('reject-note-' + id).textContent =
+    '🚫 Copy rejected — angle flagged for Claude' + (trained ? ' · 📚 Training saved' : '');
   updateCounts();
 }
 
 async function submitTeach() {
-  const id            = pendingTeachId;
-  const card          = document.getElementById('card-' + id);
-  const preferredCopy = document.getElementById('teach-preferred-copy').value.trim();
-  const notes         = document.getElementById('teach-notes').value.trim();
-  const saveBtn       = document.getElementById('teach-save-btn');
+  const id       = pendingTeachId;
+  const card     = document.getElementById('card-' + id);
+  const saveBtn  = document.getElementById('teach-save-btn');
+  const fType    = pendingTeachFeedbackType;
 
   saveBtn.textContent = '⏳ Saving…';
   saveBtn.disabled    = true;
 
   try {
-    if (preferredCopy || notes) {
-      const res = await fetch(SUPABASE_URL + '/rest/v1/copy_training', {
+    let payload = null;
+
+    if (fType === 'copy') {
+      const preferredCopy = document.getElementById('teach-preferred-copy').value.trim();
+      const notes         = document.getElementById('teach-copy-notes').value.trim();
+      if (preferredCopy || notes) {
+        payload = [{ sku: 'flora', creative_name: card.dataset.creativeName || ('Card ' + id),
+          feedback_type: 'copy', original_copy: card.querySelector('.primary-text')?.innerText || '',
+          preferred_copy: preferredCopy, visual_direction: null, notes }];
+      }
+    } else {
+      const problem   = document.getElementById('teach-creative-problem').value.trim();
+      const direction = document.getElementById('teach-creative-direction').value.trim();
+      const tags      = Array.from(document.querySelectorAll('.ctag.selected')).map(t => t.textContent).join(', ');
+      const notesStr  = [tags, problem].filter(Boolean).join(' · ');
+      if (notesStr || direction) {
+        payload = [{ sku: 'flora', creative_name: card.dataset.creativeName || ('Card ' + id),
+          feedback_type: 'creative', original_copy: null, preferred_copy: null,
+          visual_direction: direction, notes: notesStr }];
+      }
+    }
+
+    if (payload) {
+      const res = await fetch(SUPABASE_URL + '/rest/v1/ad_training', {
         method: 'POST',
-        headers: {
-          'apikey':        SUPABASE_ANON,
-          'Authorization': 'Bearer ' + SUPABASE_ANON,
-          'Content-Type':  'application/json',
-          'Prefer':        'return=minimal'
-        },
-        body: JSON.stringify([{
-          sku:            'flora',
-          creative_name:  card.dataset.creativeName || ('Card ' + id),
-          original_copy:  card.querySelector('.primary-text')?.innerText || '',
-          preferred_copy: preferredCopy,
-          notes:          notes
-        }])
+        headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
     }
 
     document.getElementById('teach-modal').classList.remove('active');
-    const trained = !!(preferredCopy || notes);
+    const trained = payload !== null;
 
     if (teachWillReject) {
-      applyRejectCopy(id, trained);
+      if (fType === 'copy') applyRejectCopy(id, trained);
+      else applyRejectCreative(id, trained);
     } else if (trained) {
       card.classList.add('trained');
       const teachBtn = card.querySelector('.btn-teach');
@@ -1045,9 +1143,9 @@ async function submitTeach() {
     teachWillReject = false;
 
   } catch (err) {
-    saveBtn.textContent = teachWillReject ? '💾 Save Training & Reject' : '💾 Save Training';
+    saveBtn.textContent = teachWillReject ? '💾 Save & Reject' : '💾 Save Training';
     saveBtn.disabled    = false;
-    alert('❌ Save failed: ' + err.message + '\n\nMake sure the copy_training table exists in Supabase.');
+    alert('❌ Save failed: ' + err.message + '\n\nCreate the ad_training table in Supabase (run without RLS):\n\nCREATE TABLE ad_training (\n  id bigint generated always as identity primary key,\n  created_at timestamptz default now(),\n  sku text, creative_name text, feedback_type text,\n  original_copy text, preferred_copy text,\n  visual_direction text, notes text\n);\n\nALTER TABLE ad_training ENABLE ROW LEVEL SECURITY;');
     console.error(err);
   }
 }
