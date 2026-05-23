@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LACALUT Flora — Gemini Concept Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d0d0d; color: #f0f0f0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+  header {
+    background: #cf102d;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+  .badge {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .intro {
+    max-width: 860px;
+    margin: 32px auto 0;
+    padding: 0 24px;
+    font-size: 0.9rem;
+    color: #aaa;
+    line-height: 1.6;
+  }
+  .intro strong { color: #fff; }
+
+  .tally-bar {
+    max-width: 860px;
+    margin: 20px auto 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #888;
+  }
+  .tally-bar span { color: #fff; font-weight: 700; font-size: 1rem; }
+  #approved-count { color: #2ecc71; }
+  #skipped-count { color: #e74c3c; }
+
+  .grid {
+    max-width: 1100px;
+    margin: 32px auto 80px;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .card {
+    background: #1a1a1a;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid #2a2a2a;
+    transition: border-color 0.25s, transform 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); }
+  .card.approved { border-color: #2ecc71; }
+  .card.skipped { border-color: #e74c3c; opacity: 0.55; }
+
+  .card-inner {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+  }
+
+  .card-image {
+    position: relative;
+    overflow: hidden;
+  }
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    min-height: 420px;
+  }
+  .rank-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 999px;
+    padding: 5px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    backdrop-filter: blur(6px);
+  }
+
+  .card-info {
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border-left: 1px solid #2a2a2a;
+  }
+
+  .concept-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #cf102d;
+  }
+
+  .concept-title {
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #fff;
+  }
+
+  .headline-preview {
+    background: #111;
+    border-left: 3px solid #cf102d;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #ddd;
+    border-radius: 0 8px 8px 0;
+  }
+
+  .description {
+    font-size: 0.88rem;
+    color: #aaa;
+    line-height: 1.65;
+  }
+
+  .verdict {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .verdict.hot   { background: rgba(231,76,60,0.12); border: 1px solid rgba(231,76,60,0.3); color: #e74c3c; }
+  .verdict.good  { background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.25); color: #2ecc71; }
+  .verdict.ok    { background: rgba(241,196,15,0.1); border: 1px solid rgba(241,196,15,0.25); color: #f1c40f; }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 12px 0;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+  }
+  .btn-approve {
+    background: #2ecc71;
+    color: #000;
+  }
+  .btn-approve:hover { background: #27ae60; transform: translateY(-1px); }
+  .btn-skip {
+    background: #2a2a2a;
+    color: #aaa;
+    border: 1px solid #333;
+  }
+  .btn-skip:hover { background: #333; color: #fff; }
+
+  .card.approved .btn-approve { background: #27ae60; box-shadow: 0 0 0 2px #2ecc71; }
+  .card.approved .btn-approve::before { content: "✓ "; }
+  .card.skipped .btn-skip { background: #3a1515; color: #e74c3c; border-color: #e74c3c; }
+
+  .gemini-tag {
+    margin-top: auto;
+    font-size: 0.72rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gemini-dot {
+    width: 8px; height: 8px;
+    background: #4285f4;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  @media (max-width: 800px) {
+    .card-inner { grid-template-columns: 1fr; }
+    .card-image img { min-height: 300px; }
+    .card-info { border-left: none; border-top: 1px solid #2a2a2a; }
+    .concept-title { font-size: 1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>LACALUT Flora — AI Concept Review</h1>
+    <p>5 scroll-stopper concepts generated via Gemini · Flora bad breath campaign · 23/05/2026</p>
+  </div>
+  <span class="badge">Gemini Imagen · 2K · 1:1</span>
+</header>
+
+<div class="intro">
+  <strong>Brief:</strong> Each concept uses the winning scroll-stopper formula — making the invisible problem (sulfur/bacteria) visible and alarming.
+  These are <strong>base visuals only</strong> — text overlays will be added in Canva once approved.
+  Click <strong>Approve</strong> to shortlist for Canva production, or <strong>Skip</strong> to pass.
+</div>
+
+<div class="tally-bar">
+  Approved: <span id="approved-count">0</span> &nbsp;|&nbsp; Skipped: <span id="skipped-count">0</span> &nbsp;|&nbsp; Remaining: <span id="remaining-count">5</span>
+</div>
+
+<div class="grid">
+
+  <!-- Concept 1 -->
+  <div class="card" id="card-1">
+    <div class="card-inner">
+      <div class="card-image">
+        <img src="images/concept-1-social-distance.jpg" alt="The Social Distance">
+        <span class="rank-badge">Concept 1</span>
+      </div>
+      <div class="card-info">
+        <div class="concept-num">Concept 01 · Social Shame</div>
+        <div class="concept-title">The Social Distance</div>
+        <div class="headline-preview">"THEY CAN SMELL WHAT YOU CAN'T SEE."</div>
+        <div class="description">
+          Cinematic dinner party scene — one person talking, toxic green breath cloud visible, everyone around them subtly leaning away.
+          Targets the social anxiety angle. Relatable gut-punch: everyone has been on one side of this situation.
+        </div>
+        <div class="verdict ok">🟡 Good — relatable concept, slightly busy scene</div>
+        <div class="actions">
+          <button class="btn btn-approve" onclick="vote(1,'approved')">Approve</button>
+          <button class="btn btn-skip" onclick="vote(1,'skipped')">Skip</button>
+        </div>
+        <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 2 -->
+  <div class="card" id="card-2">
+    <div class="card-inner">
+      <div class="card-image">
+        <img src="images/concept-2-bacteria-factory.jpg" alt="The Bacteria Factory">
+        <span class="rank-badge">🔥 Concept 2 · Top Pick</span>
+      </div>
+      <div class="card-info">
+        <div class="concept-num">Concept 02 · Absurd Metaphor</div>
+        <div class="concept-title">The Bacteria Factory</div>
+        <div class="headline-preview">"YOUR MOUTH IS RUNNING A SULFUR FACTORY."</div>
+        <div class="description">
+          Inside-mouth view with tiny bacteria workers in yellow hard hats, industrial factory chimneys belching neon green sulfur smoke.
+          Completely unexpected for oral care advertising. The detail is insane — people will stop to look twice.
+        </div>
+        <div class="verdict hot">🔥 Best of 5 — nothing like this exists in oral care ads</div>
+        <div class="actions">
+          <button class="btn btn-approve" onclick="vote(2,'approved')">Approve</button>
+          <button class="btn btn-skip" onclick="vote(2,'skipped')">Skip</button>
+        </div>
+        <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 3 -->
+  <div class="card" id="card-3">
+    <div class="card-inner">
+      <div class="card-image">
+        <img src="images/concept-3-mint-lie.jpg" alt="The Mint Lie">
+        <span class="rank-badge">Concept 3</span>
+      </div>
+      <div class="card-info">
+        <div class="concept-num">Concept 03 · Competitor Takedown</div>
+        <div class="concept-title">The Mint Lie</div>
+        <div class="headline-preview">"A MINT IS JUST PERFUME ON A CHEMICAL LEAK."</div>
+        <div class="description">
+          Macro mint leaf with a neon green skull and crossbones melting through the centre, toxic liquid dripping beneath.
+          Clean, high contrast, dark background. Directly attacks the competitor category (mints, standard toothpaste).
+          Closest in style to the winning "Stop Broadcasting Sulfur" ad.
+        </div>
+        <div class="verdict good">✅ Very strong — clean, punchy, competitive takedown</div>
+        <div class="actions">
+          <button class="btn btn-approve" onclick="vote(3,'approved')">Approve</button>
+          <button class="btn btn-skip" onclick="vote(3,'skipped')">Skip</button>
+        </div>
+        <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 4 -->
+  <div class="card" id="card-4">
+    <div class="card-inner">
+      <div class="card-image">
+        <img src="images/concept-4-biohazard-zone.jpg" alt="The Biohazard Zone">
+        <span class="rank-badge">Concept 4</span>
+      </div>
+      <div class="card-info">
+        <div class="concept-num">Concept 04 · Dark Humour</div>
+        <div class="concept-title">The Biohazard Zone</div>
+        <div class="headline-preview">"ORAL BIOHAZARD. AREA UNDER QUARANTINE."</div>
+        <div class="description">
+          Aerial bird's-eye view of a lone suited man surrounded by yellow hazmat caution tape, neon green mist spreading outward.
+          Cinematic and unique angle — the overhead shot makes it feel like a crime scene. Dark humour that still lands the message.
+        </div>
+        <div class="verdict good">✅ Strong — cinematic, dramatic, unique perspective</div>
+        <div class="actions">
+          <button class="btn btn-approve" onclick="vote(4,'approved')">Approve</button>
+          <button class="btn btn-skip" onclick="vote(4,'skipped')">Skip</button>
+        </div>
+        <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Concept 5 -->
+  <div class="card" id="card-5">
+    <div class="card-inner">
+      <div class="card-image">
+        <img src="images/concept-5-sulfur-forecast.jpg" alt="The Sulfur Forecast">
+        <span class="rank-badge">Concept 5</span>
+      </div>
+      <div class="card-info">
+        <div class="concept-num">Concept 05 · Clever Metaphor</div>
+        <div class="concept-title">The Sulfur Forecast</div>
+        <div class="headline-preview">"TODAY'S FORECAST: 100% CHANCE OF SULFUR."</div>
+        <div class="description">
+          Weather radar screen showing neon green toxic storm system spreading from a central point.
+          Clever, unexpected metaphor — bad breath as a weather event. Needs a strong headline to land.
+          Works best as part of a campaign where the "broadcast" metaphor is already established.
+        </div>
+        <div class="verdict ok">🟡 Clever but needs strong creative context to land</div>
+        <div class="actions">
+          <button class="btn btn-approve" onclick="vote(5,'approved')">Approve</button>
+          <button class="btn btn-skip" onclick="vote(5,'skipped')">Skip</button>
+        </div>
+        <div class="gemini-tag"><span class="gemini-dot"></span> Generated with Gemini Imagen · Tier 1 Postpay</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const votes = {};
+  function vote(id, decision) {
+    votes[id] = decision;
+    const card = document.getElementById('card-' + id);
+    card.classList.remove('approved','skipped');
+    card.classList.add(decision);
+    updateTally();
+  }
+  function updateTally() {
+    const approved = Object.values(votes).filter(v => v === 'approved').length;
+    const skipped  = Object.values(votes).filter(v => v === 'skipped').length;
+    document.getElementById('approved-count').textContent = approved;
+    document.getElementById('skipped-count').textContent  = skipped;
+    document.getElementById('remaining-count').textContent = 5 - approved - skipped;
+  }
+</script>
+
+</body>
+</html>
