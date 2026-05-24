@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>LACALUT Flora — Static Image Ad Review</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -418,6 +419,47 @@
 </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="display:none;position:fixed;inset:0;background:#1a1a1a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="background:#fff;border-radius:12px;padding:40px 48px;text-align:center;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <div style="font-size:2rem;margin-bottom:8px;">🔐</div>
+    <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;margin-bottom:4px;">Lacalut Australia</div>
+    <div style="font-size:0.82rem;color:#666;margin-bottom:24px;">Internal review — authorised access only</div>
+    <input id="gate-input" type="password" placeholder="Enter password" autocomplete="off"
+      style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;outline:none;margin-bottom:12px;"
+      onkeydown="if(event.key==='Enter')checkGate()">
+    <button onclick="checkGate()"
+      style="width:100%;padding:10px;background:#cf102d;color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;">
+      Unlock
+    </button>
+    <div id="gate-err" style="color:#cf102d;font-size:0.82rem;margin-top:10px;display:none;">Incorrect password</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const HASH = 'ec4c88ca7f69534f10c0611c1ecd13e7c2cdf73e1b915e9fd0cf27ac10da43fa';
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  if(localStorage.getItem('lac_auth')===HASH){
+    document.getElementById('gate').style.display='none';
+  }
+  window.checkGate = async function(){
+    const val = document.getElementById('gate-input').value;
+    const h = await sha256(val);
+    if(h===HASH){
+      localStorage.setItem('lac_auth',HASH);
+      document.getElementById('gate').style.display='none';
+    } else {
+      document.getElementById('gate-err').style.display='block';
+      document.getElementById('gate-input').value='';
+    }
+  };
+})();
+</script>
 
 <header>
   <div>
