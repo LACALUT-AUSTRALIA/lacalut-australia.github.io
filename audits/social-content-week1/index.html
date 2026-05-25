@@ -412,44 +412,9 @@
   .ctag.selected { background: #fef2f2; border-color: #cf102d; color: #cf102d; }
 
   /* ── Social Previews ── */
-  .preview-strip { display: none; border-top: 1px solid #e8e8e8; padding: 16px 20px; background: #f0f0f0; }
+  .preview-strip { display: none; border-top: 1px solid #e8e8e8; }
   .preview-strip.active { display: block; }
   .btn-preview { background: #1a1a1a; color: #fff; }
-
-  .fb-preview { background: #fff; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; max-width: 400px; margin: 0 auto; font-family: 'Segoe UI', system-ui, sans-serif; }
-  .fb-header  { display: flex; align-items: center; gap: 8px; padding: 10px 12px 4px; }
-  .fb-avatar  { width: 36px; height: 36px; border-radius: 50%; background: #cf102d; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; overflow: hidden; }
-  .fb-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-  .fb-page-name { font-size: 0.78rem; font-weight: 700; color: #050505; line-height: 1.2; }
-  .fb-post-meta { font-size: 0.67rem; color: #65676b; }
-  .fb-more-btn  { margin-left: auto; color: #606770; font-size: 1.2rem; cursor: pointer; line-height: 1; }
-  .fb-caption-preview { padding: 6px 12px 8px; font-size: 0.80rem; color: #050505; line-height: 1.5; }
-  .fb-see-more { color: #606770; cursor: pointer; font-weight: 600; }
-  .fb-image-wrap { background: #e4e6ea; }
-  .fb-image-wrap img { width: 100%; display: block; aspect-ratio: 1.91/1; object-fit: cover; }
-  .fb-engagements { display: flex; justify-content: space-between; padding: 6px 12px 4px; font-size: 0.72rem; color: #65676b; }
-  .fb-action-bar  { display: flex; border-top: 1px solid #e4e6ea; margin: 0 4px; }
-  .fb-action-btn  { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; font-size: 0.77rem; font-weight: 700; color: #65676b; cursor: pointer; border-radius: 4px; }
-  .fb-action-btn:hover { background: #f2f2f2; }
-
-  .ig-preview      { background: #fff; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; max-width: 320px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
-  .ig-post-header  { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
-  .ig-avatar-wrap  { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); padding: 2px; flex-shrink: 0; display: flex; }
-  .ig-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #cf102d; border: 1.5px solid #fff; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.68rem; overflow: hidden; }
-  .ig-avatar-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-  .ig-post-username { font-size: 0.77rem; font-weight: 700; color: #000; }
-  .ig-follow-btn   { margin-left: 6px; font-size: 0.77rem; color: #0095f6; font-weight: 700; cursor: pointer; }
-  .ig-more-btn     { margin-left: auto; font-size: 1.1rem; cursor: pointer; }
-  .ig-image-wrap img { width: 100%; display: block; aspect-ratio: 4/5; object-fit: cover; }
-  .ig-icon-row     { display: flex; align-items: center; padding: 8px 12px 4px; gap: 14px; }
-  .ig-icon-btn     { font-size: 1.25rem; cursor: pointer; line-height: 1; }
-  .ig-bookmark-btn { margin-left: auto; }
-  .ig-like-count   { padding: 0 12px 4px; font-size: 0.77rem; font-weight: 700; color: #000; }
-  .ig-caption-preview { padding: 0 12px 4px; font-size: 0.77rem; color: #000; line-height: 1.5; }
-  .ig-caption-handle  { font-weight: 700; margin-right: 4px; }
-  .ig-caption-more    { color: #8e8e8e; cursor: pointer; }
-  .ig-hashtag-preview { padding: 0 12px 4px; font-size: 0.77rem; color: #00376b; line-height: 1.5; }
-  .ig-comments-link   { padding: 0 12px 10px; font-size: 0.74rem; color: #8e8e8e; cursor: pointer; }
 
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
@@ -1048,53 +1013,143 @@ function renderPreview(id) {
   const imgSrc   = card.querySelector('.img-wrap img').src;
   const capEl    = card.querySelector(platform === 'fb' ? '.caption-fb' : '.caption-ig');
   const hashEl   = card.querySelector('.hashtags-box');
-  const capText  = capEl   ? capEl.innerText.trim()   : '';
-  const hashText = hashEl  ? hashEl.innerText.trim()  : '';
+  const capText  = capEl  ? capEl.innerText.trim()  : '';
+  const hashText = hashEl ? hashEl.innerText.trim() : '';
   const profPic  = KEYS.profilePic;
-  const avatarImg = profPic ? `<img src="${profPic}" alt="">` : 'L';
+
+  const avatarInner = profPic
+    ? `<img src="${profPic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`
+    : `<span style="font-size:16px;font-weight:700;color:#fff">L</span>`;
+
+  const S = `font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif`;
 
   if (platform === 'fb') {
-    const shortCap = capText.length > 125
-      ? capText.slice(0, 125) + '<span class="fb-see-more">… See more</span>'
-      : capText;
-    strip.innerHTML = `<div class="fb-preview">
-      <div class="fb-header">
-        <div class="fb-avatar">${avatarImg}</div>
-        <div><div class="fb-page-name">Lacalut Australia</div><div class="fb-post-meta">Sponsored · 🌐</div></div>
-        <span class="fb-more-btn">···</span>
+    const LIMIT = 200;
+    const needsMore = capText.length > LIMIT;
+    const capHtml = (needsMore ? capText.slice(0, LIMIT) : capText)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+    const seeMore = needsMore ? `<span style="color:#65676b;cursor:pointer"> … See more</span>` : '';
+
+    strip.innerHTML = `
+<div style="background:#f0f2f5;padding:20px 0;${S}">
+  <div style="max-width:470px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,0.15);overflow:hidden">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;padding:12px 16px 0;gap:10px">
+      <div style="width:40px;height:40px;border-radius:50%;background:#cf102d;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">${avatarInner}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:15px;font-weight:600;color:#050505;line-height:1.2">Lacalut Australia</div>
+        <div style="font-size:12px;color:#65676b;display:flex;align-items:center;gap:3px;margin-top:1px">
+          Just now &nbsp;·&nbsp;
+          <svg viewBox="0 0 16 16" width="12" height="12" fill="#65676b" style="vertical-align:middle"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z"/><path d="M8 3.5a.75.75 0 01.75.75v4.19l2.72 2.72a.75.75 0 11-1.06 1.06L7.47 9.28A.75.75 0 017.25 8.5v-4.25A.75.75 0 018 3.5z" fill="none"/><circle cx="8" cy="8" r="6" fill="none" stroke="#65676b" stroke-width="1.2"/><path d="M4 8h8M8 4v8" stroke="#65676b" stroke-width="0.8"/></svg>
+        </div>
       </div>
-      <div class="fb-caption-preview">${shortCap.replace(/\n/g,'<br>')}</div>
-      <div class="fb-image-wrap"><img src="${imgSrc}" alt=""></div>
-      <div class="fb-engagements"><span>👍❤️😮 1.2K</span><span>48 comments · 12 shares</span></div>
-      <div class="fb-action-bar">
-        <div class="fb-action-btn">👍 Like</div>
-        <div class="fb-action-btn">💬 Comment</div>
-        <div class="fb-action-btn">↗️ Share</div>
+      <div style="display:flex;align-items:center;gap:4px">
+        <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer">
+          <svg viewBox="0 0 20 20" width="20" height="20" fill="#65676b"><circle cx="4" cy="10" r="1.8"/><circle cx="10" cy="10" r="1.8"/><circle cx="16" cy="10" r="1.8"/></svg>
+        </div>
+        <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer">
+          <svg viewBox="0 0 20 20" width="16" height="16" fill="#65676b"><path d="M4 4l12 0M4 10l12 0M4 16l12 0" stroke="#65676b" stroke-width="1.8" fill="none"/></svg>
+        </div>
       </div>
-    </div>`;
+    </div>
+
+    <!-- Caption -->
+    <div style="padding:10px 16px 12px;font-size:15px;color:#050505;line-height:1.3333;word-break:break-word">${capHtml}${seeMore}</div>
+
+    <!-- Image -->
+    <div><img src="${imgSrc}" alt="" style="width:100%;display:block;aspect-ratio:1.91/1;object-fit:cover"></div>
+
+    <!-- Reactions row -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 16px 2px">
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="display:inline-flex">
+          <span style="background:#1877F2;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;margin-right:-3px;z-index:2;position:relative;border:1.5px solid #fff">👍</span>
+          <span style="background:#f33e58;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;position:relative;border:1.5px solid #fff">❤️</span>
+        </span>
+        <span style="font-size:15px;color:#65676b;margin-left:4px">1.2K</span>
+      </div>
+      <div style="font-size:15px;color:#65676b;cursor:pointer">48 comments &nbsp;·&nbsp; 12 shares</div>
+    </div>
+
+    <!-- Divider -->
+    <div style="height:1px;background:#e4e6eb;margin:4px 16px 0"></div>
+
+    <!-- Action bar -->
+    <div style="display:flex;padding:2px 4px 4px">
+      <button style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border:none;background:none;font-size:15px;font-weight:600;color:#65676b;cursor:pointer;border-radius:4px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#65676b" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+        Like
+      </button>
+      <button style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border:none;background:none;font-size:15px;font-weight:600;color:#65676b;cursor:pointer;border-radius:4px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#65676b" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Comment
+      </button>
+      <button style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 4px;border:none;background:none;font-size:15px;font-weight:600;color:#65676b;cursor:pointer;border-radius:4px">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#65676b" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Share
+      </button>
+    </div>
+
+  </div>
+</div>`;
+
   } else {
-    const shortCap = capText.length > 100
-      ? capText.slice(0, 100) + '<span class="ig-caption-more">... more</span>'
-      : capText;
-    strip.innerHTML = `<div class="ig-preview">
-      <div class="ig-post-header">
-        <div class="ig-avatar-wrap"><div class="ig-avatar-inner">${avatarImg}</div></div>
-        <span class="ig-post-username">lacalut.australia</span>
-        <span class="ig-follow-btn">Follow</span>
-        <span class="ig-more-btn">···</span>
+    // Instagram
+    const LIMIT = 125;
+    const needsMore = capText.length > LIMIT;
+    const capHtml = (needsMore ? capText.slice(0, LIMIT) : capText)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,' ');
+    const moreLink = needsMore ? `<span style="color:#8e8e8e;cursor:pointer"> more</span>` : '';
+
+    strip.innerHTML = `
+<div style="background:#fafafa;padding:20px 0;${S}">
+  <div style="max-width:375px;margin:0 auto;background:#fff;border:1px solid #dbdbdb">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;padding:10px 12px;gap:10px">
+      <!-- Gradient story ring -->
+      <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);padding:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+        <div style="width:100%;height:100%;border-radius:50%;background:#cf102d;border:2px solid #fff;display:flex;align-items:center;justify-content:center;overflow:hidden">${avatarInner}</div>
       </div>
-      <div class="ig-image-wrap"><img src="${imgSrc}" alt=""></div>
-      <div class="ig-icon-row">
-        <span class="ig-icon-btn">🤍</span>
-        <span class="ig-icon-btn">💬</span>
-        <span class="ig-icon-btn">📤</span>
-        <span class="ig-icon-btn ig-bookmark-btn">🔖</span>
+      <div style="flex:1;min-width:0">
+        <span style="font-size:14px;font-weight:600;color:#262626">lacalut.australia</span>
+        <span style="font-size:14px;color:#8e8e8e"> · </span>
+        <span style="font-size:14px;color:#0095f6;font-weight:600;cursor:pointer">Follow</span>
       </div>
-      <div class="ig-like-count">❤️ 847 likes</div>
-      <div class="ig-caption-preview"><span class="ig-caption-handle">lacalut.australia</span>${shortCap.replace(/\n/g,' ')}</div>
-      <div class="ig-hashtag-preview">${hashText}</div>
-      <div class="ig-comments-link">View all 23 comments</div>
-    </div>`;
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="#262626" style="cursor:pointer"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+    </div>
+
+    <!-- Image -->
+    <div><img src="${imgSrc}" alt="" style="width:100%;display:block;aspect-ratio:4/5;object-fit:cover"></div>
+
+    <!-- Action icons -->
+    <div style="display:flex;align-items:center;padding:8px 12px 4px;gap:16px">
+      <svg aria-label="Like" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#262626" stroke-width="1.8" style="cursor:pointer"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <svg aria-label="Comment" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#262626" stroke-width="1.8" style="cursor:pointer"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      <svg aria-label="Share" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#262626" stroke-width="1.8" style="cursor:pointer"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      <svg aria-label="Save" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#262626" stroke-width="1.8" style="cursor:pointer;margin-left:auto"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
+    </div>
+
+    <!-- Likes -->
+    <div style="padding:0 12px 6px;font-size:14px;font-weight:600;color:#262626">847 likes</div>
+
+    <!-- Caption -->
+    <div style="padding:0 12px 4px;font-size:14px;color:#262626;line-height:1.5;word-break:break-word">
+      <span style="font-weight:600;margin-right:4px">lacalut.australia</span>${capHtml}${moreLink}
+    </div>
+
+    <!-- Hashtags -->
+    <div style="padding:0 12px 6px;font-size:14px;color:#00376b;line-height:1.5;word-break:break-word">${hashText.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>
+
+    <!-- Comments -->
+    <div style="padding:0 12px 4px;font-size:14px;color:#8e8e8e;cursor:pointer">View all 23 comments</div>
+
+    <!-- Timestamp -->
+    <div style="padding:0 12px 12px;font-size:10px;color:#8e8e8e;text-transform:uppercase;letter-spacing:0.04em">2 hours ago</div>
+
+  </div>
+</div>`;
   }
 }
 
