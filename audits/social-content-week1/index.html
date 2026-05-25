@@ -345,6 +345,15 @@
   }
   .model-chip.active { background: #cf102d; color: #fff; border-color: #cf102d; }
 
+  /* Revise Copy modal */
+  .revise-copy-current { font-size: 0.76rem; line-height: 1.6; color: #555; background: #f8f8f8; border-left: 3px solid #ddd; padding: 8px 10px; border-radius: 0 6px 6px 0; max-height: 100px; overflow-y: auto; margin-bottom: 10px; }
+  .revise-copy-ai-result { font-size: 0.76rem; line-height: 1.6; color: #1a1a1a; background: #f0fdf4; border-left: 3px solid #16a34a; padding: 8px 10px; border-radius: 0 6px 6px 0; margin-bottom: 10px; display: none; white-space: pre-wrap; }
+  .revise-copy-manual { width: 100%; background: #f8f8f8; border: 1px solid #ddd; color: #1a1a1a; border-radius: 6px; padding: 10px; font-size: 0.76rem; line-height: 1.6; resize: vertical; font-family: inherit; margin-bottom: 10px; display: block; }
+  .revise-copy-manual:focus { outline: none; border-color: #d97706; }
+  .revise-copy-ai-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .btn-ai-rewrite { background: #7c3aed; color: #fff; flex: 1; }
+  .btn-ai-retry   { background: #6d28d9; color: #fff; flex: 0 0 auto; display: none; }
+
   /* Teach modal */
   .teach-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
   .teach-tab {
@@ -827,6 +836,26 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
   </div>
 </div>
 
+<!-- Revise Copy modal -->
+<div class="modal-overlay" id="revise-copy-modal">
+  <div class="modal" style="max-width:540px">
+    <h3>✏️ Revise Caption</h3>
+    <div class="section-label" style="margin-bottom:5px">Current Caption</div>
+    <div class="revise-copy-current" id="revise-copy-current"></div>
+    <div class="revise-copy-ai-row">
+      <button class="btn btn-ai-rewrite" id="btn-ai-rewrite" onclick="aiRewriteCopy()">✨ Rewrite with AI</button>
+      <button class="btn btn-ai-retry"   id="btn-ai-retry"   onclick="aiRewriteCopy()">🔄 Try Again</button>
+    </div>
+    <div class="revise-copy-ai-result" id="revise-copy-ai-result"></div>
+    <div class="section-label" style="margin-bottom:5px">Edit Manually</div>
+    <textarea class="revise-copy-manual" id="revise-copy-manual" rows="6" placeholder="Type your revised caption here…"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeReviseCopy()">Cancel</button>
+      <button class="btn btn-confirm" onclick="acceptReviseCopy()">✅ Accept & Apply</button>
+    </div>
+  </div>
+</div>
+
 <!-- Teach modal -->
 <div class="modal-overlay" id="teach-modal">
   <div class="modal teach-modal-body" style="max-width:580px">
@@ -1000,7 +1029,7 @@ function switchCaption(id, mode) {
 
 /* ── Status management ── */
 function setStatus(id, status) {
-  if (status === 'revise')      { enterEditMode(id); return; }
+  if (status === 'revise')      { openReviseCopy(id); return; }
   if (status === 'approved')    { exitEditMode(id); showApprovalModal(id); return; }
   if (status === 'reject-copy') { exitEditMode(id); openTeach(id, 'copy', true); return; }
   exitEditMode(id);
@@ -1216,6 +1245,85 @@ async function submitReviseImage() {
       updateCounts();
     }, 600);
   }
+}
+
+/* ── Revise Copy modal ── */
+let pendingReviseCopyId = null;
+
+function openReviseCopy(id) {
+  pendingReviseCopyId = id;
+  const card = document.getElementById('card-' + id);
+  const platform = captionMode[id] || 'fb';
+  const capEl = card.querySelector(platform === 'fb' ? '.caption-fb' : '.caption-ig');
+  const capText = capEl ? capEl.innerText.trim() : '';
+  document.getElementById('revise-copy-current').textContent = capText;
+  document.getElementById('revise-copy-manual').value = capText;
+  document.getElementById('revise-copy-ai-result').style.display = 'none';
+  document.getElementById('revise-copy-ai-result').textContent = '';
+  document.getElementById('btn-ai-retry').style.display = 'none';
+  document.getElementById('revise-copy-modal').classList.add('active');
+}
+function closeReviseCopy() {
+  document.getElementById('revise-copy-modal').classList.remove('active');
+  pendingReviseCopyId = null;
+}
+async function aiRewriteCopy() {
+  if (!KEYS.claude) { openSettings(); return; }
+  const id = pendingReviseCopyId;
+  const card = document.getElementById('card-' + id);
+  const platform = captionMode[id] || 'fb';
+  const current = document.getElementById('revise-copy-current').textContent;
+  const hashEl  = card.querySelector('.hashtags-box');
+  const hashText = hashEl ? hashEl.innerText.trim() : '';
+  const rewriteBtn = document.getElementById('btn-ai-rewrite');
+  const retryBtn   = document.getElementById('btn-ai-retry');
+  rewriteBtn.textContent = '⏳ Writing…';
+  rewriteBtn.disabled = true;
+  const resultEl = document.getElementById('revise-copy-ai-result');
+  resultEl.style.display = 'none';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': KEYS.claude,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 512,
+        system: 'You are an expert social media copywriter for a clinical dental brand called LACALUT®. Tone: clinical, confident, not salesy. Australian audience. Short, punchy sentences. Never use em dashes.',
+        messages: [{ role: 'user', content: `Rewrite this ${platform === 'fb' ? 'Facebook' : 'Instagram'} caption. Keep the same message but improve flow, punch, and scroll-stopping power. Return ONLY the revised caption — no preamble.\n\nCaption:\n${current}\n\nHashtags (keep as-is):\n${hashText}` }]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'HTTP ' + res.status);
+    const revised = data.content?.[0]?.text || '';
+    resultEl.textContent = revised;
+    resultEl.style.display = 'block';
+    document.getElementById('revise-copy-manual').value = revised;
+    rewriteBtn.textContent = '✨ Rewrite with AI';
+    rewriteBtn.disabled = false;
+    retryBtn.style.display = 'block';
+  } catch (err) {
+    rewriteBtn.textContent = '✨ Rewrite with AI';
+    rewriteBtn.disabled = false;
+    alert('❌ Claude error: ' + err.message);
+  }
+}
+function acceptReviseCopy() {
+  const id = pendingReviseCopyId;
+  if (!id) return;
+  const card = document.getElementById('card-' + id);
+  const platform = captionMode[id] || 'fb';
+  const capEl = card.querySelector(platform === 'fb' ? '.caption-fb' : '.caption-ig');
+  const newText = document.getElementById('revise-copy-manual').value.trim();
+  if (capEl && newText) capEl.innerText = newText;
+  closeReviseCopy();
+  const strip = document.getElementById('preview-strip-' + id);
+  if (strip && strip.classList.contains('active')) renderPreview(id);
 }
 
 /* ── Teach modal ── */
