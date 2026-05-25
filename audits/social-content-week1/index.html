@@ -1373,26 +1373,51 @@ async function submitReviseImage() {
     const imgEl = card.querySelector('.img-wrap img');
     imgEl.style.opacity = '0.35';
 
-    const brandContext = 'LACALUT® Aktiv clinical gum care brand. Australian market. Colours: deep red #cf102d, navy #004a88. Style: cinematic, clinical-confident, not stock-photo. 1080×1350px portrait.';
-    const parts = [{ text: brandContext + '\n\nImage direction: ' + direction + (problem ? '\n\nAvoid: ' + problem : '') }];
+    // Build rich text prompt (Imagen 4 is text-to-image; ref images described in prompt)
+    const brandCtx = 'LACALUT® Aktiv clinical gum care brand. Australian market. Colours: deep red and navy. Style: cinematic, clinical-confident, photorealistic, not stock-photo. Portrait 4:5 ratio.';
+    let refDesc = '';
     refImages.filter(Boolean).forEach((r, i) => {
-      const b64 = r.dataUrl.split(',')[1];
       const label = document.getElementById('ref-label-' + i)?.value || 'Reference';
-      parts.push({ text: label + ':' });
-      parts.push({ inlineData: { mimeType: r.mimeType, data: b64 } });
+      refDesc += ` Use this as ${label.toLowerCase()}: [image attached as style guide].`;
     });
+    const fullPrompt = brandCtx + ' ' + direction + (problem ? ' Avoid: ' + problem + '.' : '') + refDesc;
 
     try {
-      const res = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=' + KEYS.gemini,
+      // Step 1: if reference images present, describe them via Gemini first
+      let descExtra = '';
+      const activeRefs = refImages.filter(Boolean);
+      if (activeRefs.length > 0) {
+        const descParts = [{ text: 'Describe the visual style, mood, lighting, and composition of these reference images in 2 sentences each, to guide a new image generation:' }];
+        activeRefs.forEach((r, i) => {
+          const b64 = r.dataUrl.split(',')[1];
+          const label = document.getElementById('ref-label-' + i)?.value || 'Reference';
+          descParts.push({ text: label + ':' });
+          descParts.push({ inlineData: { mimeType: r.mimeType, data: b64 } });
+        });
+        const descRes = await fetch(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + KEYS.gemini,
+          { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: descParts }] }) }
+        );
+        const descData = await descRes.json();
+        descExtra = descData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      }
+
+      // Step 2: generate image with Imagen 4
+      const imagePrompt = fullPrompt + (descExtra ? ' Style guidance from references: ' + descExtra : '');
+      const genRes = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=' + KEYS.gemini,
         { method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE','TEXT'] } }) }
+          body: JSON.stringify({
+            instances: [{ prompt: imagePrompt }],
+            parameters: { sampleCount: 1, aspectRatio: '4:5', outputOptions: { mimeType: 'image/png' } }
+          }) }
       );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error?.message || 'HTTP ' + res.status);
-      const imgPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-      if (!imgPart) throw new Error('No image returned — try a more specific prompt.');
-      imgEl.src = 'data:' + imgPart.inlineData.mimeType + ';base64,' + imgPart.inlineData.data;
+      const genData = await genRes.json();
+      if (!genRes.ok) throw new Error(genData.error?.message || 'HTTP ' + genRes.status);
+      const prediction = genData.predictions?.[0];
+      if (!prediction?.bytesBase64Encoded) throw new Error('No image returned — try a more specific prompt.');
+      imgEl.src = 'data:' + (prediction.mimeType || 'image/png') + ';base64,' + prediction.bytesBase64Encoded;
       imgEl.style.opacity = '1';
       closeReviseImage();
       card.classList.remove('rejected-creative');
@@ -1402,7 +1427,7 @@ async function submitReviseImage() {
       imgEl.style.opacity = '1';
       saveBtn.textContent = '🖼️ Generate Image';
       saveBtn.disabled = false;
-      alert('❌ Gemini error: ' + err.message);
+      alert('❌ Image generation error: ' + err.message);
     }
   } else {
     // Higgsfield — queue via Supabase, Claude Code handles generation
