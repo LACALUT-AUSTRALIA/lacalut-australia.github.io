@@ -1410,7 +1410,7 @@ async function submitReviseImage() {
         { method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             instances: [{ prompt: imagePrompt }],
-            parameters: { sampleCount: 1, aspectRatio: '4:5', outputOptions: { mimeType: 'image/png' } }
+            parameters: { sampleCount: 1, aspectRatio: '3:4', outputOptions: { mimeType: 'image/png' } }
           }) }
       );
       const genData = await genRes.json();
