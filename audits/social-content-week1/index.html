@@ -321,6 +321,18 @@
   .btn-confirm { background: #16a34a; color: #fff; }
   .btn-cancel  { background: #f0f0f0; color: #555; }
 
+  /* Video queue */
+  .btn-make-video { background: #0f172a; color: #e2e8f0; }
+  .video-queued-badge { font-size: 0.63rem; color: #7c3aed; font-style: italic; display: none; margin-top: 4px; }
+  .card.video-queued .video-queued-badge { display: block; }
+  .video-wrap { padding: 0 0 12px; }
+  .video-wrap video { width: 100%; border-radius: 0 0 8px 8px; display: block; }
+  .video-dl-row { display: flex; gap: 8px; padding: 0 12px 12px; }
+  .btn-dl { flex: 1; background: #f5f5f5; border: 1px solid #ddd; color: #333; border-radius: 6px; padding: 7px; font-size: 0.70rem; font-weight: 700; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+  .btn-dl:hover { background: #e8e8e8; }
+  .make-video-prompt { width: 100%; background: #f8f8f8; border: 1px solid #ddd; color: #1a1a1a; border-radius: 6px; padding: 10px; font-size: 0.76rem; line-height: 1.6; resize: vertical; font-family: inherit; margin-bottom: 10px; display: block; }
+  .make-video-prompt:focus { outline: none; border-color: #7c3aed; }
+
   /* Logo overlay */
   .logo-pos-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 12px; }
   .logo-pos-btn  { padding: 8px 4px; border-radius: 6px; border: 1px solid #ddd; background: #f5f5f5; color: #555; font-size: 0.70rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; }
@@ -526,9 +538,11 @@ LACALUT® Aktiv. 100 years of German clinical science. 🔴
           <button class="btn btn-reject-creative"  onclick="openReviseImage(1)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(1,'reject-copy')">🚫 Copy</button>
           <button class="btn btn-logo"             onclick="applyLogo(1)" id="logo-btn-1" style="display:none">🏷️</button>
+          <button class="btn btn-make-video"       onclick="openMakeVideo(1)">🎬</button>
           <button class="btn btn-preview"          onclick="togglePreview(1)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(1,'creative')">📚</button>
         </div>
+        <div class="video-queued-badge">🎬 Video queued — say "generate video for Post 1" in Claude Code</div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
@@ -587,9 +601,11 @@ LACALUT® Aktiv. Now in Australia. 🇩🇪
           <button class="btn btn-reject-creative"  onclick="openReviseImage(2)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(2,'reject-copy')">🚫 Copy</button>
           <button class="btn btn-logo"             onclick="applyLogo(2)" id="logo-btn-2" style="display:none">🏷️</button>
+          <button class="btn btn-make-video"       onclick="openMakeVideo(2)">🎬</button>
           <button class="btn btn-preview"          onclick="togglePreview(2)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(2,'creative')">📚</button>
         </div>
+        <div class="video-queued-badge">🎬 Video queued — say "generate video for Post 2" in Claude Code</div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
@@ -647,9 +663,11 @@ Your story? 👇</div>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(3)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(3,'reject-copy')">🚫 Copy</button>
           <button class="btn btn-logo"             onclick="applyLogo(3)" id="logo-btn-3" style="display:none">🏷️</button>
+          <button class="btn btn-make-video"       onclick="openMakeVideo(3)">🎬</button>
           <button class="btn btn-preview"          onclick="togglePreview(3)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(3,'creative')">📚</button>
         </div>
+        <div class="video-queued-badge">🎬 Video queued — say "generate video for Post 3" in Claude Code</div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
@@ -708,9 +726,11 @@ LACALUT® Aktiv. Clinical gum care, not just toothpaste. 🦷
           <button class="btn btn-reject-creative"  onclick="openReviseImage(4)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(4,'reject-copy')">🚫 Copy</button>
           <button class="btn btn-logo"             onclick="applyLogo(4)" id="logo-btn-4" style="display:none">🏷️</button>
+          <button class="btn btn-make-video"       onclick="openMakeVideo(4)">🎬</button>
           <button class="btn btn-preview"          onclick="togglePreview(4)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(4,'creative')">📚</button>
         </div>
+        <div class="video-queued-badge">🎬 Video queued — say "generate video for Post 4" in Claude Code</div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
@@ -767,9 +787,11 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
           <button class="btn btn-reject-creative"  onclick="openReviseImage(5)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(5,'reject-copy')">🚫 Copy</button>
           <button class="btn btn-logo"             onclick="applyLogo(5)" id="logo-btn-5" style="display:none">🏷️</button>
+          <button class="btn btn-make-video"       onclick="openMakeVideo(5)">🎬</button>
           <button class="btn btn-preview"          onclick="togglePreview(5)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(5,'creative')">📚</button>
         </div>
+        <div class="video-queued-badge">🎬 Video queued — say "generate video for Post 5" in Claude Code</div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
@@ -777,6 +799,22 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
   </div>
 
 </div><!-- /grid -->
+
+<!-- Make Video modal -->
+<div class="modal-overlay" id="make-video-modal">
+  <div class="modal" style="max-width:520px">
+    <h3>🎬 Make 15s Video</h3>
+    <p style="font-size:0.77rem;color:#888;margin-bottom:6px;line-height:1.5">The static image stays on the card. The video is generated as an <strong>additional asset</strong>.</p>
+    <p style="font-size:0.73rem;color:#7c3aed;background:#f5f3ff;border:1px solid #ddd8fe;border-radius:6px;padding:8px 10px;margin-bottom:14px;line-height:1.5">⚠️ Video generation uses <strong>Higgsfield MCP</strong> — it runs through Claude Code, not the browser. Clicking Queue saves the request; then say <em>"generate video for Post [N]"</em> in Claude Code.</p>
+    <div class="section-label" style="margin-bottom:5px">Motion Prompt</div>
+    <p style="font-size:0.72rem;color:#888;margin-bottom:6px">Auto-generated based on the post. Edit to refine.</p>
+    <textarea class="make-video-prompt" id="make-video-prompt" rows="4"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="document.getElementById('make-video-modal').classList.remove('active')">Cancel</button>
+      <button class="btn btn-confirm" id="make-video-queue-btn" onclick="queueVideo()">🎬 Queue Video</button>
+    </div>
+  </div>
+</div>
 
 <!-- Logo settings modal -->
 <div class="modal-overlay" id="logo-modal">
@@ -1293,6 +1331,58 @@ async function submitReviseImage() {
       saveBtn.disabled = false;
       updateCounts();
     }, 600);
+  }
+}
+
+/* ── Video queue ── */
+let pendingVideoId = null;
+const motionPrompts = {
+  1: 'Slow cinematic zoom in on toothbrush with red bristles. Soft morning bathroom light. Warm golden glow. Clinical-confident mood.',
+  2: 'Gentle camera drift across vintage German laboratory. Warm amber lighting. Old scientific instruments. Cinematic heritage feel.',
+  3: 'Soft focus bokeh pull from background to confident smiling face. Morning light. Warm and hopeful. Authentic, not posed.',
+  4: 'Split-screen slow reveal: left side dark/clinical, right side bright/healthy. Smooth transition. Medical grade precision.',
+  5: 'Product hero shot: slow 360° rotation of LACALUT® tube on clean white surface. Studio lighting. Clinical and premium.'
+};
+function openMakeVideo(id) {
+  pendingVideoId = id;
+  document.getElementById('make-video-prompt').value = motionPrompts[id] || 'Slow cinematic zoom in. Soft warm light. Clinical-confident mood.';
+  document.getElementById('make-video-queue-btn').textContent = '🎬 Queue Video';
+  document.getElementById('make-video-queue-btn').disabled = false;
+  document.getElementById('make-video-modal').classList.add('active');
+}
+async function queueVideo() {
+  const id     = pendingVideoId;
+  const card   = document.getElementById('card-' + id);
+  const prompt = document.getElementById('make-video-prompt').value.trim();
+  const btn    = document.getElementById('make-video-queue-btn');
+  if (!prompt) { alert('Please enter a motion prompt.'); return; }
+  btn.textContent = '⏳ Queuing…';
+  btn.disabled = true;
+
+  const payload = [{
+    sku: 'aktiv-social',
+    creative_name: (card.dataset.creativeName || ('Post ' + id)) + ' · VIDEO',
+    feedback_type: 'video_request',
+    original_copy: null,
+    preferred_copy: null,
+    visual_direction: prompt,
+    notes: 'Image src: ' + card.querySelector('.img-wrap img').src.slice(0, 200)
+  }];
+
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/ad_training', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
+        'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    document.getElementById('make-video-modal').classList.remove('active');
+    card.classList.add('video-queued');
+  } catch (err) {
+    btn.textContent = '🎬 Queue Video';
+    btn.disabled = false;
+    alert('❌ Failed to queue: ' + err.message);
   }
 }
 
