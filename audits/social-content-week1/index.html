@@ -321,6 +321,15 @@
   .btn-confirm { background: #16a34a; color: #fff; }
   .btn-cancel  { background: #f0f0f0; color: #555; }
 
+  /* Logo overlay */
+  .logo-pos-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 12px; }
+  .logo-pos-btn  { padding: 8px 4px; border-radius: 6px; border: 1px solid #ddd; background: #f5f5f5; color: #555; font-size: 0.70rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .logo-pos-btn.active { background: #004a88; color: #fff; border-color: #004a88; }
+  .logo-size-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .logo-size-btn { flex: 1; padding: 7px; border-radius: 6px; border: 1px solid #ddd; background: #f5f5f5; color: #555; font-size: 0.70rem; font-weight: 700; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .logo-size-btn.active { background: #004a88; color: #fff; border-color: #004a88; }
+  .btn-logo { background: #0d9488; color: #fff; flex: 0 0 auto; padding: 7px 10px; }
+
   /* Reference image upload */
   .ref-upload-section { margin-bottom: 12px; }
   .ref-upload-rows { display: flex; flex-direction: column; gap: 8px; }
@@ -443,6 +452,7 @@
   </div>
   <span class="badge">📅 Week of 26/05/2026</span>
   <span class="badge">📱 FB + IG</span>
+  <button onclick="openLogoSettings()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:8px;padding:6px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:0.03em;white-space:nowrap" id="header-logo-btn">🏷️ Logo</button>
   <button onclick="openSettings()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:8px;padding:6px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:0.03em;white-space:nowrap">⚙️ Settings</button>
 </header>
 
@@ -515,6 +525,7 @@ LACALUT® Aktiv. 100 years of German clinical science. 🔴
           <button class="btn btn-revise"           onclick="setStatus(1,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(1)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(1,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-logo"             onclick="applyLogo(1)" id="logo-btn-1" style="display:none">🏷️</button>
           <button class="btn btn-preview"          onclick="togglePreview(1)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(1,'creative')">📚</button>
         </div>
@@ -575,6 +586,7 @@ LACALUT® Aktiv. Now in Australia. 🇩🇪
           <button class="btn btn-revise"           onclick="setStatus(2,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(2)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(2,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-logo"             onclick="applyLogo(2)" id="logo-btn-2" style="display:none">🏷️</button>
           <button class="btn btn-preview"          onclick="togglePreview(2)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(2,'creative')">📚</button>
         </div>
@@ -634,6 +646,7 @@ Your story? 👇</div>
           <button class="btn btn-revise"           onclick="setStatus(3,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(3)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(3,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-logo"             onclick="applyLogo(3)" id="logo-btn-3" style="display:none">🏷️</button>
           <button class="btn btn-preview"          onclick="togglePreview(3)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(3,'creative')">📚</button>
         </div>
@@ -694,6 +707,7 @@ LACALUT® Aktiv. Clinical gum care, not just toothpaste. 🦷
           <button class="btn btn-revise"           onclick="setStatus(4,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(4)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(4,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-logo"             onclick="applyLogo(4)" id="logo-btn-4" style="display:none">🏷️</button>
           <button class="btn btn-preview"          onclick="togglePreview(4)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(4,'creative')">📚</button>
         </div>
@@ -752,6 +766,7 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
           <button class="btn btn-revise"           onclick="setStatus(5,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(5)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(5,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-logo"             onclick="applyLogo(5)" id="logo-btn-5" style="display:none">🏷️</button>
           <button class="btn btn-preview"          onclick="togglePreview(5)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(5,'creative')">📚</button>
         </div>
@@ -762,6 +777,40 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
   </div>
 
 </div><!-- /grid -->
+
+<!-- Logo settings modal -->
+<div class="modal-overlay" id="logo-modal">
+  <div class="modal" style="max-width:420px">
+    <h3>🏷️ Logo Overlay</h3>
+    <p style="font-size:0.77rem;color:#888;margin-bottom:14px;line-height:1.5">Upload your logo once. Then use "🏷️ Apply" on any card to composite it onto the image.</p>
+    <div class="section-label" style="margin-bottom:5px">Logo file <span style="color:#888;font-weight:400;text-transform:none">(PNG with transparency recommended)</span></div>
+    <input type="file" accept="image/*" id="logo-upload-input" onchange="handleLogoUpload(this)" style="font-size:0.72rem;color:#555;margin-bottom:14px;display:block">
+    <div id="logo-preview-wrap" style="margin-bottom:14px;display:none">
+      <img id="logo-preview-img" style="max-height:60px;border-radius:4px;border:1px solid #ddd;padding:4px;background:#f8f8f8" alt="Logo preview">
+    </div>
+    <div class="section-label" style="margin-bottom:8px">Position</div>
+    <div class="logo-pos-grid">
+      <button class="logo-pos-btn active" data-pos="tl" onclick="selectLogoPos(this,'tl')">↖ Top Left</button>
+      <div></div>
+      <button class="logo-pos-btn" data-pos="tr" onclick="selectLogoPos(this,'tr')">Top Right ↗</button>
+      <div></div>
+      <button class="logo-pos-btn" data-pos="c"  onclick="selectLogoPos(this,'c')">Centre</button>
+      <div></div>
+      <button class="logo-pos-btn" data-pos="bl" onclick="selectLogoPos(this,'bl')">↙ Bot Left</button>
+      <div></div>
+      <button class="logo-pos-btn" data-pos="br" onclick="selectLogoPos(this,'br')">Bot Right ↘</button>
+    </div>
+    <div class="section-label" style="margin-bottom:8px">Size</div>
+    <div class="logo-size-row">
+      <button class="logo-size-btn active" data-sz="0.12" onclick="selectLogoSize(this,'0.12')">S · Small</button>
+      <button class="logo-size-btn"        data-sz="0.20" onclick="selectLogoSize(this,'0.20')">M · Medium</button>
+      <button class="logo-size-btn"        data-sz="0.30" onclick="selectLogoSize(this,'0.30')">L · Large</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="document.getElementById('logo-modal').classList.remove('active')">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- Settings modal -->
 <div class="modal-overlay" id="settings-modal">
@@ -1246,6 +1295,96 @@ async function submitReviseImage() {
     }, 600);
   }
 }
+
+/* ── Logo overlay ── */
+let logoDataUrl  = null;
+let logoPos      = 'tl';
+let logoSizeFrac = 0.12;
+const originalSrc = {};
+
+function openLogoSettings() {
+  if (logoDataUrl) {
+    document.getElementById('logo-preview-img').src = logoDataUrl;
+    document.getElementById('logo-preview-wrap').style.display = 'block';
+  }
+  document.getElementById('logo-modal').classList.add('active');
+}
+function handleLogoUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    logoDataUrl = e.target.result;
+    document.getElementById('logo-preview-img').src = logoDataUrl;
+    document.getElementById('logo-preview-wrap').style.display = 'block';
+    document.querySelectorAll('[id^="logo-btn-"]').forEach(b => b.style.display = '');
+    localStorage.setItem('lc_logo', logoDataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+function selectLogoPos(el, pos) {
+  logoPos = pos;
+  document.querySelectorAll('.logo-pos-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  localStorage.setItem('lc_logo_pos', pos);
+}
+function selectLogoSize(el, sz) {
+  logoSizeFrac = parseFloat(sz);
+  document.querySelectorAll('.logo-size-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  localStorage.setItem('lc_logo_size', sz);
+}
+function applyLogo(id) {
+  if (!logoDataUrl) { openLogoSettings(); return; }
+  const card   = document.getElementById('card-' + id);
+  const imgEl  = card.querySelector('.img-wrap img');
+  if (!originalSrc[id]) originalSrc[id] = imgEl.src;
+
+  const baseImg = new Image(); baseImg.crossOrigin = 'anonymous';
+  const logoImg = new Image();
+  let loaded = 0;
+  const onLoad = () => {
+    if (++loaded < 2) return;
+    const canvas = document.createElement('canvas');
+    canvas.width  = baseImg.naturalWidth  || 1080;
+    canvas.height = baseImg.naturalHeight || 1350;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+    const lw = Math.round(canvas.width * logoSizeFrac);
+    const lh = Math.round(lw * (logoImg.naturalHeight / logoImg.naturalWidth));
+    const pad = Math.round(canvas.width * 0.03);
+    const positions = {
+      tl: [pad, pad],
+      tr: [canvas.width - lw - pad, pad],
+      bl: [pad, canvas.height - lh - pad],
+      br: [canvas.width - lw - pad, canvas.height - lh - pad],
+      c:  [Math.round((canvas.width - lw) / 2), Math.round((canvas.height - lh) / 2)]
+    };
+    const [x, y] = positions[logoPos] || positions.tl;
+    ctx.drawImage(logoImg, x, y, lw, lh);
+    imgEl.src = canvas.toDataURL('image/png');
+    const strip = document.getElementById('preview-strip-' + id);
+    if (strip && strip.classList.contains('active')) renderPreview(id);
+  };
+  baseImg.onload = onLoad;
+  logoImg.onload = onLoad;
+  baseImg.src = originalSrc[id] || imgEl.src;
+  logoImg.src = logoDataUrl;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('lc_logo');
+  if (saved) {
+    logoDataUrl = saved;
+    document.querySelectorAll('[id^="logo-btn-"]').forEach(b => b.style.display = '');
+    const prevImg = document.getElementById('logo-preview-img');
+    if (prevImg) { prevImg.src = saved; document.getElementById('logo-preview-wrap').style.display = 'block'; }
+  }
+  const savedPos  = localStorage.getItem('lc_logo_pos');
+  const savedSize = localStorage.getItem('lc_logo_size');
+  if (savedPos)  { logoPos = savedPos;  document.querySelector(`[data-pos="${savedPos}"]`)?.classList.add('active'); }
+  if (savedSize) { logoSizeFrac = parseFloat(savedSize); document.querySelector(`[data-sz="${savedSize}"]`)?.classList.add('active'); }
+});
 
 /* ── Revise Copy modal ── */
 let pendingReviseCopyId = null;
