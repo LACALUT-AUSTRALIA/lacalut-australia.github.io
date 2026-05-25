@@ -4,461 +4,289 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
-<title>LACALUT® Flora — Static Image Ads</title>
+<title>LACALUT® — Static Ads Director</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #f2f3f5; color: #1a1a1a; font-family: 'Segoe UI', system-ui, sans-serif; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f0f2f5; color: #1a1a1a; font-family: 'Segoe UI', system-ui, sans-serif; }
 
-  header {
-    background: #cf102d;
-    padding: 20px 32px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  header h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; }
-  header p  { font-size: 0.82rem; color: rgba(255,255,255,0.85); margin-top: 3px; }
-  .badge {
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.35);
-    border-radius: 999px;
-    padding: 4px 12px;
-    font-size: 0.73rem;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-  }
+/* ── Header ── */
+header { padding: 16px 24px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; transition: background 0.3s; }
+header h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; }
+header p  { font-size: 0.78rem; color: rgba(255,255,255,0.8); margin-top: 2px; }
+.badge { background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; padding: 3px 11px; font-size: 0.7rem; font-weight: 600; color: #fff; }
 
-  .intro {
-    max-width: 960px;
-    margin: 28px auto 0;
-    padding: 0 24px;
-    font-size: 0.85rem;
-    color: #555;
-    line-height: 1.7;
-  }
-  .intro strong { color: #1a1a1a; }
+/* ── Logo panel ── */
+#logo-panel {
+  background: #fff; border-bottom: 1px solid #e5e5e5;
+  padding: 10px 24px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 0.75rem; color: #555;
+}
+#logo-panel label.logo-upload-btn {
+  background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px;
+  padding: 5px 12px; cursor: pointer; font-weight: 600; color: #374151;
+  transition: background 0.15s;
+}
+#logo-panel label.logo-upload-btn:hover { background: #e5e7eb; }
+#logo-panel select {
+  border: 1px solid #d1d5db; border-radius: 6px; padding: 5px 8px;
+  font-size: 0.73rem; background: #fff; cursor: pointer;
+}
+#logo-panel button {
+  background: #fee2e2; border: 1px solid #fca5a5; border-radius: 6px;
+  padding: 5px 10px; font-size: 0.71rem; font-weight: 600; color: #991b1b; cursor: pointer;
+}
+#logo-status { color: #888; font-style: italic; }
+#logo-preview-thumb { height: 28px; border-radius: 4px; object-fit: contain; background: #f3f4f6; padding: 2px; }
 
-  .section-header {
-    max-width: 1300px;
-    margin: 36px auto 0;
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .section-header h2 {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #555;
-    white-space: nowrap;
-  }
-  .section-line { flex: 1; height: 1px; background: #ddd; }
-  .section-badge {
-    font-size: 0.67rem;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 999px;
-    padding: 3px 10px;
-    color: #888;
-    white-space: nowrap;
-  }
+/* ── SKU Tabs ── */
+#sku-tabs {
+  padding: 14px 24px 0;
+  display: flex; gap: 8px; flex-wrap: wrap;
+  max-width: 1320px; margin: 0 auto;
+}
+.sku-tab {
+  padding: 8px 18px; border-radius: 10px 10px 0 0; font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border: 2px solid transparent;
+  transition: all 0.18s; color: #fff; opacity: 0.6;
+}
+.sku-tab:hover { opacity: 0.85; transform: translateY(-1px); }
+.sku-tab.active { opacity: 1; border-bottom: 2px solid #fff; }
 
-  .grid {
-    max-width: 1300px;
-    margin: 18px auto 0;
-    padding: 0 24px 60px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(580px, 1fr));
-    gap: 24px;
-  }
+/* ── Card grid wrapper ── */
+#card-grid { max-width: 1320px; margin: 0 auto; padding: 0 24px 80px; }
 
-  .card {
-    background: #fff;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid #e8e8e8;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    transition: box-shadow 0.2s, border-color 0.2s;
-  }
-  .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-  .card.approved          { border-color: #004a88 !important; box-shadow: 0 0 0 2px rgba(0,74,136,0.15); }
-  .card.rejected-creative { border-color: #e0002a !important; box-shadow: 0 0 0 2px rgba(207,16,45,0.1); }
-  .card.rejected-copy     { border-color: #7c3aed !important; box-shadow: 0 0 0 2px rgba(124,58,237,0.1); }
-  .card.revising          { border-color: #d97706 !important; box-shadow: 0 0 0 2px rgba(217,119,6,0.1); }
+.section-header { display: flex; align-items: center; gap: 14px; padding: 24px 0 6px; }
+.section-header h2 { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; white-space: nowrap; }
+.section-line { flex: 1; height: 1px; background: #d1d5db; }
+.section-badge { font-size: 0.65rem; background: #fff; border: 1px solid #e0e0e0; border-radius: 999px; padding: 3px 10px; color: #888; }
 
-  .card-layout { display: flex; }
+.fb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 22px; margin-top: 10px; }
 
-  .img-wrap {
-    flex-shrink: 0;
-    width: 200px;
-    position: relative;
-    aspect-ratio: 4 / 5;
-    overflow: hidden;
-  }
-  .img-wrap img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .frame-label {
-    position: absolute;
-    bottom: 8px; left: 8px;
-    background: rgba(0,0,0,0.55);
-    color: #fff;
-    font-size: 0.63rem;
-    padding: 3px 7px;
-    border-radius: 4px;
-    font-family: monospace;
-  }
-  .concept-label {
-    position: absolute;
-    bottom: 8px; left: 8px;
-    background: #cf102d;
-    color: #fff;
-    font-size: 0.63rem;
-    padding: 3px 7px;
-    border-radius: 4px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-  }
+/* ── Coming-soon state ── */
+.coming-soon-wrap { padding: 60px 24px; text-align: center; }
+.cs-icon { font-size: 3rem; margin-bottom: 12px; }
+.coming-soon-wrap h2 { font-size: 1.4rem; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+.coming-soon-wrap p { font-size: 0.88rem; color: #666; line-height: 1.7; }
+.cs-cta { display: inline-block; margin-top: 20px; padding: 10px 24px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; color: #fff; cursor: pointer; border: none; }
 
-  .copy-panel {
-    flex: 1;
-    padding: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+/* ── Facebook Ad Card ── */
+.fb-ad-card {
+  background: #fff; border-radius: 12px; border: 1px solid #e8e8e8;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07); overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.fb-ad-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+.fb-ad-card.approved          { border-color: #004a88 !important; box-shadow: 0 0 0 2px rgba(0,74,136,0.18); }
+.fb-ad-card.rejected-creative { border-color: #e0002a !important; box-shadow: 0 0 0 2px rgba(207,16,45,0.1); }
+.fb-ad-card.rejected-copy     { border-color: #7c3aed !important; box-shadow: 0 0 0 2px rgba(124,58,237,0.1); }
+.fb-ad-card.revising          { border-color: #d97706 !important; box-shadow: 0 0 0 2px rgba(217,119,6,0.1); }
 
-  .card-title { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
-  .card-title h2 { font-size: 0.92rem; font-weight: 700; color: #1a1a1a; }
-  .angle-tag {
-    background: #004a88;
-    color: #fff;
-    font-size: 0.65rem;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .canva-tag {
-    background: #fffbeb;
-    color: #92400e;
-    border: 1px solid #fcd34d;
-    font-size: 0.65rem;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-weight: 600;
-  }
+/* Card label row (internal metadata, above FB preview) */
+.card-label-row {
+  padding: 9px 14px 8px; background: #f8f9fa; border-bottom: 1px solid #f0f0f0;
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+}
+.card-label-tag { font-size: 0.62rem; font-weight: 700; color: #fff; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; }
+.card-title-name { font-size: 0.84rem; font-weight: 700; color: #1a1a1a; flex: 1; }
+.angle-tag { background: #004a88; color: #fff; font-size: 0.6rem; padding: 2px 7px; border-radius: 999px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.canva-tag { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; font-size: 0.6rem; padding: 2px 7px; border-radius: 999px; font-weight: 600; }
 
-  .section-label {
-    font-size: 0.62rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #cf102d;
-    font-weight: 700;
-    margin-bottom: 3px;
-  }
+/* Facebook UI */
+.fb-preview { background: #fff; font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; }
 
-  .primary-text {
-    font-size: 0.76rem;
-    line-height: 1.65;
-    color: #333;
-    background: #fafafa;
-    border-left: 3px solid #cf102d;
-    padding: 8px 10px;
-    border-radius: 0 6px 6px 0;
-    border: 1px solid #f0f0f0;
-    border-left: 3px solid #cf102d;
-  }
-  .canva-note {
-    font-size: 0.74rem;
-    color: #92400e;
-    background: #fffbeb;
-    border-left: 3px solid #fcd34d;
-    padding: 7px 10px;
-    border-radius: 0 6px 6px 0;
-    font-style: italic;
-  }
+.fb-hdr { display: flex; align-items: center; gap: 8px; padding: 10px 12px 6px; }
+.fb-av { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; color: #fff; flex-shrink: 0; }
+.fb-pname { font-size: 0.82rem; font-weight: 700; color: #050505; }
+.fb-spons { font-size: 0.7rem; color: #65676b; margin-top: 1px; }
+.fb-dots { margin-left: auto; font-size: 1.1rem; color: #65676b; cursor: pointer; padding: 4px 8px; }
 
-  .headlines-list { display: flex; flex-direction: column; gap: 3px; }
-  .headline-item  { display: flex; align-items: baseline; gap: 6px; font-size: 0.76rem; }
-  .hl-num  { color: #cf102d; font-weight: 700; font-size: 0.67rem; min-width: 16px; }
-  .hl-text { color: #1a1a1a; line-height: 1.4; }
+.fb-body-text {
+  padding: 6px 12px 8px; font-size: 0.82rem; line-height: 1.55; color: #050505;
+  word-break: break-word; white-space: pre-wrap;
+}
 
-  .description-box {
-    font-size: 0.75rem;
-    color: #555;
-    background: #f8f9fa;
-    border: 1px solid #ebebeb;
-    border-radius: 6px;
-    padding: 7px 10px;
-    line-height: 1.5;
-  }
+/* Image container */
+.fb-img-wrap { position: relative; background: #f0f2f5; overflow: hidden; }
+.fb-img-wrap.feed-mode { aspect-ratio: 1 / 1; }
+.fb-img-wrap.story-mode { aspect-ratio: 9 / 16; }
+.fb-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: all 0.3s; }
+.logo-overlay-wrap { position: absolute; inset: 0; pointer-events: none; }
+.logo-overlay-img { position: absolute; width: 22%; opacity: 0.92; }
+.logo-overlay-img.pos-tl { top: 8px; left: 8px; }
+.logo-overlay-img.pos-tr { top: 8px; right: 8px; }
+.logo-overlay-img.pos-bl { bottom: 8px; left: 8px; }
+.logo-overlay-img.pos-br { bottom: 8px; right: 8px; }
+.format-btns { position: absolute; bottom: 8px; right: 8px; display: flex; gap: 4px; }
+.fmtbtn { background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 5px; padding: 3px 7px; font-size: 0.65rem; cursor: pointer; transition: background 0.15s; }
+.fmtbtn.active { background: rgba(0,0,0,0.85); }
+.fmtbtn:hover { background: rgba(0,0,0,0.75); }
 
-  /* Action buttons */
-  .approve-row {
-    display: flex;
-    gap: 5px;
-    margin-top: auto;
-    padding-top: 6px;
-    flex-wrap: wrap;
-  }
-  .btn {
-    flex: 1;
-    min-width: 64px;
-    padding: 7px 4px;
-    border-radius: 7px;
-    border: none;
-    font-size: 0.66rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .btn:hover { filter: brightness(0.92); transform: translateY(-1px); }
-  .btn-approve         { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-  .btn-revise          { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
-  .btn-save            { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
-  .btn-reject-creative { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-  .btn-reject-copy     { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
-  .btn-teach           { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; flex: 0 0 auto; padding: 7px 10px; }
-  .btn-ai              { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; flex: 0 0 auto; padding: 7px 10px; }
+/* Link preview block (below image) */
+.fb-link-block { border-top: 1px solid #e4e6eb; background: #f0f2f5; padding: 9px 12px; display: flex; align-items: center; gap: 8px; }
+.fb-link-text { flex: 1; min-width: 0; }
+.fb-link-domain { font-size: 0.62rem; color: #65676b; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 2px; }
+.fb-link-hl { font-size: 0.82rem; font-weight: 700; color: #050505; line-height: 1.25; word-break: break-word; }
+.fb-link-desc { font-size: 0.73rem; color: #65676b; margin-top: 2px; line-height: 1.35; }
+.fb-cta-btn { flex-shrink: 0; background: #e4e6eb; border: 1px solid #ccd0d5; border-radius: 6px; padding: 6px 12px; font-size: 0.75rem; font-weight: 700; color: #050505; cursor: default; white-space: nowrap; }
 
-  /* Edit mode */
-  .editable { outline: none; transition: background 0.15s; }
-  .editable[contenteditable="true"] {
-    background: #fffbeb !important;
-    border-color: #d97706 !important;
-    border-radius: 4px;
-    cursor: text;
-    caret-color: #d97706;
-  }
-  .editable[contenteditable="true"]:focus { box-shadow: 0 0 0 2px rgba(217,119,6,0.2); }
-  .hl-text.editable[contenteditable="true"] {
-    display: block;
-    background: #fffbeb !important;
-    border: 1px solid #d97706 !important;
-    padding: 2px 6px;
-    border-radius: 4px;
-  }
-  .edit-hint  { font-size: 0.62rem; color: #d97706; margin-bottom: 2px; display: none; }
-  .card.editing .edit-hint { display: block; }
+.fb-engage-row { display: flex; padding: 4px 6px; border-top: 1px solid #e4e6eb; }
+.fb-eng { flex: 1; background: none; border: none; padding: 8px 4px; font-size: 0.77rem; font-weight: 600; color: #65676b; cursor: default; border-radius: 6px; }
 
-  .reject-note { font-size: 0.62rem; color: #888; display: none; font-style: italic; margin-top: 2px; }
-  .card.rejected-creative .reject-note { display: block; color: #991b1b; }
-  .card.rejected-copy     .reject-note { display: block; color: #6b21a8; }
+/* Concept info section */
+.concept-info { padding: 10px 14px 8px; border-top: 1px solid #f0f0f0; }
+.sec-lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #cf102d; font-weight: 700; margin-bottom: 4px; }
+.concept-desc { font-size: 0.75rem; color: #444; line-height: 1.55; margin-bottom: 6px; }
+.canva-note { font-size: 0.72rem; color: #92400e; background: #fffbeb; border-left: 3px solid #fcd34d; padding: 5px 9px; border-radius: 0 5px 5px 0; font-style: italic; }
 
-  .trained-badge { font-size: 0.62rem; color: #065f46; font-style: italic; display: none; margin-top: 2px; }
-  .card.trained .trained-badge { display: block; }
+/* Frame headlines section */
+.hl-section { border-top: 1px solid #f0f0f0; }
+.hl-toggle { width: 100%; background: #f8f9fa; border: none; border-bottom: 1px solid #f0f0f0; padding: 8px 14px; font-size: 0.71rem; font-weight: 700; color: #555; cursor: pointer; text-align: left; transition: background 0.15s; }
+.hl-toggle:hover { background: #f0f2f5; }
+.hl-list { padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; }
+.hl-row { display: flex; align-items: baseline; gap: 7px; font-size: 0.75rem; }
+.hl-num { color: #cf102d; font-weight: 700; font-size: 0.65rem; min-width: 18px; flex-shrink: 0; }
+.hl-text { color: #1a1a1a; line-height: 1.4; flex: 1; }
 
-  /* ── AI Rewrite Panel ── */
-  .ai-panel {
-    margin: 10px 16px 16px;
-    background: #f0f4ff;
-    border: 1px solid #c7d2fe;
-    border-radius: 10px;
-    padding: 14px;
-    display: none;
-  }
-  .ai-panel.open { display: block; }
-  .ai-panel-label {
-    font-size: 0.68rem;
-    font-weight: 700;
-    color: #3730a3;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 8px;
-  }
-  .ai-panel textarea {
-    width: 100%;
-    background: #fff;
-    border: 1px solid #c7d2fe;
-    color: #1a1a1a;
-    border-radius: 6px;
-    padding: 8px 10px;
-    font-size: 0.78rem;
-    line-height: 1.5;
-    resize: vertical;
-    font-family: inherit;
-    margin-bottom: 8px;
-    display: block;
-  }
-  .ai-panel textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.15); }
-  .ai-panel-btns { display: flex; gap: 8px; margin-bottom: 10px; }
-  .btn-ai-generate {
-    background: #4f46e5; color: #fff;
-    border: none; border-radius: 6px;
-    padding: 7px 14px; font-size: 0.73rem;
-    font-weight: 700; cursor: pointer;
-    transition: background 0.15s;
-  }
-  .btn-ai-generate:hover { background: #4338ca; }
-  .btn-ai-generate:disabled { background: #a5b4fc; cursor: not-allowed; }
-  .btn-ai-close {
-    background: #fff; color: #888;
-    border: 1px solid #e0e0e0; border-radius: 6px;
-    padding: 7px 12px; font-size: 0.73rem;
-    font-weight: 700; cursor: pointer;
-  }
-  .ai-result {
-    background: #fff;
-    border: 1px solid #6366f1;
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 6px;
-    display: none;
-  }
-  .ai-result.show { display: block; }
-  .ai-result-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: #6366f1;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    margin-bottom: 8px;
-  }
-  .ai-preview { font-size: 0.78rem; color: #333; line-height: 1.6; white-space: pre-wrap; }
-  .ai-result-btns { display: flex; gap: 8px; margin-top: 10px; }
-  .btn-ai-accept  {
-    background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;
-    border-radius: 6px; padding: 6px 14px; font-size: 0.73rem;
-    font-weight: 700; cursor: pointer;
-  }
-  .btn-ai-discard {
-    background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb;
-    border-radius: 6px; padding: 6px 14px; font-size: 0.73rem;
-    font-weight: 700; cursor: pointer;
-  }
+/* Card toolbar */
+.card-toolbar { display: flex; gap: 4px; padding: 10px 12px; flex-wrap: wrap; border-top: 1px solid #f0f0f0; }
+.btn { flex: 1; min-width: 54px; padding: 6px 3px; border-radius: 6px; border: none; font-size: 0.62rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.03em; }
+.btn:hover { filter: brightness(0.91); transform: translateY(-1px); }
+.btn-approve         { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.btn-revise          { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.btn-save            { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.btn-reject-creative { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.btn-reject-copy     { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+.btn-teach           { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; flex: 0 0 auto; }
+.btn-claude          { background: #eef2ff; color: #3730a3; border: 1px solid #c7d2fe; flex: 0 0 auto; }
+.btn-imggen          { background: #fdf4ff; color: #6b21a8; border: 1px solid #e9d5ff; flex: 0 0 auto; }
+.btn-video           { background: #fff1f2; color: #881337; border: 1px solid #fecdd3; flex: 0 0 auto; }
 
-  /* Status bar */
-  .status-bar {
-    position: sticky;
-    bottom: 0;
-    background: #fff;
-    border-top: 1px solid #e5e5e5;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
-    padding: 10px 32px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    font-size: 0.78rem;
-    color: #888;
-    z-index: 10;
-    flex-wrap: wrap;
-  }
-  .status-bar strong { color: #1a1a1a; }
-  #approval-count        { color: #166534; font-weight: 700; }
-  #revise-count          { color: #9a3412; font-weight: 700; }
-  #reject-creative-count { color: #991b1b; font-weight: 700; }
-  #reject-copy-count     { color: #6b21a8; font-weight: 700; }
+/* Card footer */
+.card-footer { padding: 0 14px 10px; }
+.reject-note  { font-size: 0.62rem; color: #888; display: none; font-style: italic; margin-top: 2px; }
+.fb-ad-card.rejected-creative .reject-note { display: block; color: #991b1b; }
+.fb-ad-card.rejected-copy     .reject-note { display: block; color: #6b21a8; }
+.trained-badge { font-size: 0.62rem; color: #065f46; font-style: italic; display: none; margin-top: 2px; }
+.fb-ad-card.trained .trained-badge { display: block; }
 
-  /* Modals */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.45); z-index: 100;
-    align-items: center; justify-content: center;
-    backdrop-filter: blur(2px);
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: #fff;
-    border: 1px solid #e5e5e5;
-    border-radius: 16px;
-    padding: 28px 32px;
-    max-width: 500px;
-    width: calc(100% - 48px);
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
-  }
-  .modal h3 { font-size: 1rem; font-weight: 700; margin-bottom: 18px; color: #1a1a1a; }
-  .modal-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.8rem; gap: 12px;
-  }
-  .modal-row:last-of-type { border-bottom: none; }
-  .modal-label { color: #888; white-space: nowrap; flex-shrink: 0; }
-  .modal-val   { color: #1a1a1a; text-align: right; font-weight: 600; }
-  .modal-val.green  { color: #166534; }
-  .modal-val.blue   { color: #1e40af; }
-  .modal-val.orange { color: #9a3412; }
-  .modal-warning {
-    background: #fffbeb; border: 1px solid #fcd34d;
-    border-radius: 8px; padding: 10px 14px;
-    font-size: 0.75rem; color: #92400e; margin-top: 14px; line-height: 1.5;
-  }
-  .modal-actions { display: flex; gap: 10px; margin-top: 18px; }
-  .modal-actions .btn { flex: 1; padding: 10px; font-size: 0.75rem; }
-  .btn-confirm { background: #166534; color: #dcfce7; border: none; }
-  .btn-cancel  { background: #f3f4f6; color: #555; border: 1px solid #e5e5e5; }
+/* Editable */
+.editable { outline: none; transition: background 0.15s; border-radius: 3px; }
+.editable[contenteditable="true"] { background: #fffbeb !important; caret-color: #d97706; cursor: text; box-shadow: 0 0 0 2px rgba(217,119,6,0.25); }
+.hl-text[contenteditable="true"] { display: block; background: #fffbeb !important; border: 1px solid #d97706; padding: 2px 5px; border-radius: 4px; }
 
-  /* Teach modal */
-  .teach-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-  .teach-tab {
-    flex: 1; padding: 8px 12px; border-radius: 8px;
-    border: 1px solid #e0e0e0; background: #f3f4f6; color: #888;
-    font-size: 0.73rem; font-weight: 700; cursor: pointer;
-    transition: all 0.15s; text-align: center;
-  }
-  .teach-tab.active { background: #004a88; color: #fff; border-color: #004a88; }
-  .teach-tab:hover:not(.active) { border-color: #aaa; color: #555; }
-  .teach-modal-body textarea {
-    width: 100%; background: #fafafa; border: 1px solid #e0e0e0; color: #1a1a1a;
-    border-radius: 6px; padding: 10px; font-size: 0.77rem; line-height: 1.6;
-    resize: vertical; font-family: inherit; margin-bottom: 10px; display: block;
-  }
-  .teach-modal-body textarea:focus { outline: none; border-color: #004a88; }
-  .teach-ref {
-    font-size: 0.72rem; color: #888; background: #f8f9fa;
-    border: 1px solid #e5e5e5; border-radius: 6px; padding: 8px 12px;
-    max-height: 72px; overflow-y: auto; line-height: 1.5; margin-bottom: 12px;
-  }
-  .teach-creative-thumb {
-    width: 100%; max-height: 150px; object-fit: contain;
-    border-radius: 8px; background: #f0f0f0; margin-bottom: 12px; display: block;
-  }
-  .creative-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
-  .ctag {
-    background: #f3f4f6; border: 1px solid #e0e0e0; color: #555;
-    font-size: 0.68rem; padding: 3px 9px; border-radius: 999px;
-    cursor: pointer; transition: all 0.15s; user-select: none;
-  }
-  .ctag.selected { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+/* ── Panels (Claude, Image, Video) ── */
+.ai-card-panel { border-top: 1px solid #e5e7eb; padding: 12px 14px; background: #fafbff; display: none; }
+.ai-card-panel.open { display: block; }
+.panel-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.panel-label.claude-lbl { color: #3730a3; }
+.panel-label.image-lbl  { color: #6b21a8; }
+.panel-label.video-lbl  { color: #881337; }
+.panel-hint { font-size: 0.68rem; color: #888; margin-bottom: 8px; background: #f3f4f6; padding: 5px 9px; border-radius: 5px; line-height: 1.4; }
+.panel-textarea {
+  width: 100%; background: #fff; border: 1px solid #d1d5db; color: #1a1a1a;
+  border-radius: 6px; padding: 7px 10px; font-size: 0.76rem; line-height: 1.5;
+  resize: vertical; font-family: inherit; margin-bottom: 8px; display: block;
+}
+.panel-textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
+.panel-btn-row { display: flex; gap: 7px; margin-bottom: 8px; }
+.btn-gen { background: #4f46e5; color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: background 0.15s; }
+.btn-gen:hover { background: #4338ca; }
+.btn-gen:disabled { background: #a5b4fc; cursor: not-allowed; }
+.btn-gen.green { background: #16a34a; }
+.btn-gen.green:hover { background: #15803d; }
+.btn-gen.rose  { background: #be123c; }
+.btn-gen.rose:hover { background: #9f1239; }
+.btn-panel-close { background: #fff; color: #6b7280; border: 1px solid #e0e0e0; border-radius: 6px; padding: 7px 12px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+.result-box { background: #fff; border: 1px solid #6366f1; border-radius: 8px; padding: 11px; margin-top: 6px; display: none; }
+.result-box.show { display: block; }
+.result-lbl { font-size: 0.63rem; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; }
+.result-preview { font-size: 0.76rem; color: #333; line-height: 1.6; white-space: pre-wrap; }
+.result-btn-row { display: flex; gap: 7px; margin-top: 9px; }
+.btn-accept  { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; border-radius: 6px; padding: 5px 13px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
+.btn-discard { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 6px; padding: 5px 13px; font-size: 0.72rem; font-weight: 700; cursor: pointer; }
 
-  @media (max-width: 640px) {
-    .grid { grid-template-columns: 1fr; }
-    .card-layout { flex-direction: column; }
-    .img-wrap { width: 100%; aspect-ratio: 4 / 5; }
-  }
+/* Image gen ref slots */
+.ref-slots { display: flex; gap: 7px; margin-bottom: 9px; flex-wrap: wrap; }
+.ref-slot-label { display: block; cursor: pointer; }
+.ref-slot-inner {
+  width: 90px; height: 70px; background: #f3f4f6; border: 2px dashed #d1d5db;
+  border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; color: #888; text-align: center; padding: 5px; transition: all 0.15s; overflow: hidden;
+}
+.ref-slot-inner:hover { border-color: #9333ea; background: #fdf4ff; }
+.ref-slot-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+.gen-img-preview { width: 100%; border-radius: 7px; margin: 8px 0; max-height: 300px; object-fit: contain; background: #f0f0f0; }
+
+/* Video panel specifics */
+.video-instructions { font-size: 0.7rem; color: #555; background: #f8f9fa; border-left: 3px solid #be123c; padding: 7px 10px; border-radius: 0 5px 5px 0; margin-top: 8px; line-height: 1.5; }
+.video-instructions code { background: #fee2e2; color: #9f1239; padding: 1px 5px; border-radius: 3px; font-size: 0.68rem; }
+.video-url-row { display: flex; gap: 6px; margin-top: 9px; }
+.video-url-input { flex: 1; padding: 6px 9px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.73rem; background: #fff; }
+.btn-save-url { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; border-radius: 6px; padding: 6px 11px; font-size: 0.7rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+
+/* ── Status bar ── */
+.status-bar {
+  position: sticky; bottom: 0; background: #fff; border-top: 2px solid #cf102d;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.06); padding: 9px 28px;
+  display: flex; align-items: center; gap: 12px; font-size: 0.76rem; color: #888;
+  z-index: 20; flex-wrap: wrap; transition: border-color 0.3s;
+}
+.status-bar strong { color: #1a1a1a; }
+#approval-count        { color: #166534; font-weight: 700; }
+#revise-count          { color: #9a3412; font-weight: 700; }
+#reject-creative-count { color: #991b1b; font-weight: 700; }
+#reject-copy-count     { color: #6b21a8; font-weight: 700; }
+
+/* ── Modals ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-overlay.active { display: flex; }
+.modal { background: #fff; border: 1px solid #e5e5e5; border-radius: 16px; padding: 26px 30px; max-width: 500px; width: calc(100% - 48px); max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+.modal h3 { font-size: 0.98rem; font-weight: 700; margin-bottom: 16px; color: #1a1a1a; }
+.modal-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.79rem; gap: 12px; }
+.modal-row:last-of-type { border-bottom: none; }
+.modal-label { color: #888; white-space: nowrap; flex-shrink: 0; }
+.modal-val   { color: #1a1a1a; text-align: right; font-weight: 600; }
+.modal-val.green  { color: #166534; }
+.modal-val.blue   { color: #1e40af; }
+.modal-val.orange { color: #9a3412; }
+.modal-warning { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px; padding: 9px 13px; font-size: 0.74rem; color: #92400e; margin-top: 13px; line-height: 1.5; }
+.modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+.modal-actions .btn { flex: 1; padding: 10px; font-size: 0.74rem; }
+.btn-confirm { background: #166534; color: #dcfce7; border: none; }
+.btn-cancel  { background: #f3f4f6; color: #555; border: 1px solid #e5e5e5; }
+
+/* Teach modal */
+.teach-tabs { display: flex; gap: 8px; margin-bottom: 13px; }
+.teach-tab { flex: 1; padding: 7px 10px; border-radius: 7px; border: 1px solid #e0e0e0; background: #f3f4f6; color: #888; font-size: 0.71rem; font-weight: 700; cursor: pointer; transition: all 0.15s; text-align: center; }
+.teach-tab.active { background: #004a88; color: #fff; border-color: #004a88; }
+.teach-modal-body textarea { width: 100%; background: #fafafa; border: 1px solid #e0e0e0; color: #1a1a1a; border-radius: 6px; padding: 9px; font-size: 0.76rem; line-height: 1.6; resize: vertical; font-family: inherit; margin-bottom: 9px; display: block; }
+.teach-modal-body textarea:focus { outline: none; border-color: #004a88; }
+.teach-ref { font-size: 0.71rem; color: #888; background: #f8f9fa; border: 1px solid #e5e5e5; border-radius: 6px; padding: 7px 11px; max-height: 72px; overflow-y: auto; line-height: 1.5; margin-bottom: 11px; }
+.teach-creative-thumb { width: 100%; max-height: 130px; object-fit: contain; border-radius: 7px; background: #f0f0f0; margin-bottom: 11px; display: block; }
+.creative-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; }
+.ctag { background: #f3f4f6; border: 1px solid #e0e0e0; color: #555; font-size: 0.67rem; padding: 3px 8px; border-radius: 999px; cursor: pointer; transition: all 0.15s; user-select: none; }
+.ctag.selected { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+@media (max-width: 680px) {
+  .fb-grid { grid-template-columns: 1fr; }
+  #sku-tabs { gap: 5px; }
+  .sku-tab { padding: 6px 10px; font-size: 0.65rem; }
+}
 </style>
 </head>
 <body>
 
 <!-- PASSWORD GATE -->
-<div id="gate" style="display:none;position:fixed;inset:0;background:#1a1a1a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
-  <div style="background:#fff;border-radius:12px;padding:40px 48px;text-align:center;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-    <div style="font-size:2rem;margin-bottom:8px;">🔐</div>
-    <div style="font-size:1.1rem;font-weight:700;color:#1a1a1a;margin-bottom:4px;">Lacalut Australia</div>
-    <div style="font-size:0.82rem;color:#666;margin-bottom:24px;">Internal review — authorised access only</div>
+<div id="gate" style="display:flex;position:fixed;inset:0;background:#1a1a1a;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="background:#fff;border-radius:12px;padding:38px 46px;text-align:center;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+    <div style="font-size:1.9rem;margin-bottom:7px;">🔐</div>
+    <div style="font-size:1.05rem;font-weight:700;color:#1a1a1a;margin-bottom:3px;">Lacalut Australia</div>
+    <div style="font-size:0.8rem;color:#666;margin-bottom:22px;">Internal review — authorised access only</div>
     <input id="gate-input" type="password" placeholder="Enter password" autocomplete="off"
-      style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:1rem;outline:none;margin-bottom:12px;"
+      style="width:100%;padding:9px 13px;border:2px solid #e0e0e0;border-radius:7px;font-size:1rem;outline:none;margin-bottom:11px;"
       onkeydown="if(event.key==='Enter')checkGate()">
-    <button onclick="checkGate()"
-      style="width:100%;padding:10px;background:#cf102d;color:#fff;border:none;border-radius:8px;font-size:0.95rem;font-weight:600;cursor:pointer;">
-      Unlock
-    </button>
-    <div id="gate-err" style="color:#cf102d;font-size:0.82rem;margin-top:10px;display:none;">Incorrect password</div>
+    <button onclick="checkGate()" style="width:100%;padding:10px;background:#cf102d;color:#fff;border:none;border-radius:7px;font-size:0.93rem;font-weight:600;cursor:pointer;">Unlock</button>
+    <div id="gate-err" style="color:#cf102d;font-size:0.8rem;margin-top:9px;display:none;">Incorrect password</div>
   </div>
 </div>
 
@@ -469,785 +297,79 @@
     const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
     return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
   }
-  if(localStorage.getItem('lac_auth')===HASH){
-    document.getElementById('gate').style.display='none';
-  }
+  if(localStorage.getItem('lac_auth')===HASH){ document.getElementById('gate').style.display='none'; }
   window.checkGate = async function(){
     const val = document.getElementById('gate-input').value;
     const h = await sha256(val);
-    if(h===HASH){
-      localStorage.setItem('lac_auth',HASH);
-      document.getElementById('gate').style.display='none';
-    } else {
-      document.getElementById('gate-err').style.display='block';
-      document.getElementById('gate-input').value='';
-    }
+    if(h===HASH){ localStorage.setItem('lac_auth',HASH); document.getElementById('gate').style.display='none'; }
+    else { document.getElementById('gate-err').style.display='block'; document.getElementById('gate-input').value=''; }
   };
 })();
 </script>
 
-<header>
+<!-- HEADER -->
+<header id="main-header" style="background:#2d8f4e">
   <div style="flex:1">
-    <h1>LACALUT® Flora — Static Image Ads</h1>
-    <p>One source of truth · All static creatives · 1080×1350 · Flora bad breath campaign</p>
+    <h1 id="sku-name">LACALUT® Flora</h1>
+    <p id="sku-tagline">Probiotic bad breath formula · Women 25–45 · Fresh green campaign</p>
   </div>
-  <span class="badge">24/05/2026</span>
+  <span class="badge">Static Ads Director</span>
+  <span class="badge" id="date-badge">26/05/2026</span>
 </header>
 
-<div class="intro">
-  <strong>✅ Approve</strong> — queue as Meta draft &nbsp;·&nbsp;
-  <strong>✏️ Revise</strong> — edit text inline &nbsp;·&nbsp;
-  <strong>❌ Creative</strong> — visual concept wrong &nbsp;·&nbsp;
-  <strong>🚫 Copy</strong> — copywriting angle wrong &nbsp;·&nbsp;
-  <strong>📚 Teach</strong> — give feedback to Claude &nbsp;·&nbsp;
-  <strong>✨ AI</strong> — rewrite copy with Gemini
+<!-- LOGO PANEL -->
+<div id="logo-panel">
+  <span id="logo-status">No logo uploaded</span>
+  <label class="logo-upload-btn">📎 Upload Logo <input type="file" accept="image/png,image/svg+xml" onchange="uploadLogo(event)" style="display:none"></label>
+  <img id="logo-preview-thumb" src="" alt="" style="display:none">
+  <select id="logo-placement" onchange="applyLogoToAll()">
+    <option value="tl">↖ Top Left</option>
+    <option value="tr">↗ Top Right</option>
+    <option value="bl">↙ Bottom Left</option>
+    <option value="br" selected>↘ Bottom Right</option>
+  </select>
+  <select id="logo-size" onchange="applyLogoToAll()">
+    <option value="15">S – 15%</option>
+    <option value="22" selected>M – 22%</option>
+    <option value="30">L – 30%</option>
+  </select>
+  <button onclick="clearLogo()">✕ Remove</button>
 </div>
 
-<!-- ── SECTION 1: AI Concepts ── -->
-<div class="section-header">
-  <h2>🎨 AI Concept Visuals</h2>
-  <div class="section-line"></div>
-  <span class="section-badge">5 Gemini concepts · Base visuals · Text overlays via Canva</span>
-</div>
+<!-- SKU TABS -->
+<div id="sku-tabs"></div>
 
-<div class="grid">
+<!-- CARD GRID -->
+<div id="card-grid"></div>
 
-  <!-- Concept 1 -->
-  <div class="card" id="card-1" data-creative-name="The Social Distance" data-type="concept">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-gemini-concepts/images/concept-1-social-distance.jpg" alt="The Social Distance" loading="lazy">
-        <span class="concept-label">Concept 01</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title">
-          <h2>👥 The Social Distance</h2>
-          <span class="angle-tag">Social Shame</span>
-          <span class="canva-tag">✏️ Canva</span>
-        </div>
-        <div><div class="section-label">Tagline</div>
-          <div class="primary-text editable" id="pt-1">"THEY CAN SMELL WHAT YOU CAN'T SEE."</div>
-        </div>
-        <div><div class="section-label">Concept</div>
-          <div class="description-box">Cinematic dinner party — one person talking, toxic green breath cloud visible, everyone subtly leaning away. Targets social anxiety. Relatable gut-punch.</div>
-        </div>
-        <div class="canva-note">Text overlays to be added in Canva after approval.</div>
-        <div class="edit-hint">✏️ Click any text to edit. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-1"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(1,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(1,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(1,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(1,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(1,'creative')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(1)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-1">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-1" rows="2" placeholder="What do you want to change? e.g. Make tagline punchier · More visceral · Shorter · Different angle · Add humour"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(1)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(1)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-1">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-1"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(1)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(1)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Concept 2 -->
-  <div class="card" id="card-2" data-creative-name="The Bacteria Factory" data-type="concept">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-gemini-concepts/images/concept-2-bacteria-factory.jpg" alt="The Bacteria Factory" loading="lazy">
-        <span class="concept-label">Concept 02 🔥</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title">
-          <h2>🏭 The Bacteria Factory</h2>
-          <span class="angle-tag">Absurd Metaphor</span>
-          <span class="canva-tag">✏️ Canva</span>
-        </div>
-        <div><div class="section-label">Tagline</div>
-          <div class="primary-text editable" id="pt-2">"YOUR MOUTH IS RUNNING A SULFUR FACTORY."</div>
-        </div>
-        <div><div class="section-label">Concept</div>
-          <div class="description-box">Inside-mouth view — bacteria workers in yellow hard hats, factory chimneys belching neon green sulfur smoke. Nothing like this in oral care. People will stop and look twice.</div>
-        </div>
-        <div class="canva-note">Text overlays to be added in Canva after approval.</div>
-        <div class="edit-hint">✏️ Click any text to edit. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-2"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(2,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(2,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(2,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(2,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(2,'creative')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(2)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-2">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-2" rows="2" placeholder="What do you want to change?"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(2)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(2)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-2">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-2"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(2)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(2)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Concept 3 -->
-  <div class="card" id="card-3" data-creative-name="The Mint Lie" data-type="concept">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-gemini-concepts/images/concept-3-mint-lie.jpg" alt="The Mint Lie" loading="lazy">
-        <span class="concept-label">Concept 03</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title">
-          <h2>🌿 The Mint Lie</h2>
-          <span class="angle-tag">Competitor Takedown</span>
-          <span class="canva-tag">✏️ Canva</span>
-        </div>
-        <div><div class="section-label">Tagline</div>
-          <div class="primary-text editable" id="pt-3">"A MINT IS JUST PERFUME ON A CHEMICAL LEAK."</div>
-        </div>
-        <div><div class="section-label">Concept</div>
-          <div class="description-box">Macro mint leaf with neon green skull melting through centre. Clean, high contrast, dark background. Directly attacks masking. Closest in style to the winning "Stop Broadcasting Sulfur" ad.</div>
-        </div>
-        <div class="canva-note">Text overlays to be added in Canva after approval.</div>
-        <div class="edit-hint">✏️ Click any text to edit. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-3"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(3,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(3,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(3,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(3,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(3,'creative')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(3)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-3">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-3" rows="2" placeholder="What do you want to change?"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(3)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(3)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-3">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-3"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(3)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(3)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Concept 4 -->
-  <div class="card" id="card-4" data-creative-name="The Biohazard Zone" data-type="concept">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-gemini-concepts/images/concept-4-biohazard-zone.jpg" alt="The Biohazard Zone" loading="lazy">
-        <span class="concept-label">Concept 04</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title">
-          <h2>☣️ The Biohazard Zone</h2>
-          <span class="angle-tag">Dark Humour</span>
-          <span class="canva-tag">✏️ Canva</span>
-        </div>
-        <div><div class="section-label">Tagline</div>
-          <div class="primary-text editable" id="pt-4">"ORAL BIOHAZARD. AREA UNDER QUARANTINE."</div>
-        </div>
-        <div><div class="section-label">Concept</div>
-          <div class="description-box">Aerial bird's-eye — lone suited man surrounded by yellow hazmat tape, neon green mist spreading outward. Cinematic overhead angle. Dark humour that lands the message.</div>
-        </div>
-        <div class="canva-note">Text overlays to be added in Canva after approval.</div>
-        <div class="edit-hint">✏️ Click any text to edit. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-4"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(4,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(4,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(4,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(4,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(4,'creative')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(4)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-4">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-4" rows="2" placeholder="What do you want to change?"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(4)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(4)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-4">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-4"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(4)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(4)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Concept 5 -->
-  <div class="card" id="card-5" data-creative-name="The Sulfur Forecast" data-type="concept">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-gemini-concepts/images/concept-5-sulfur-forecast.jpg" alt="The Sulfur Forecast" loading="lazy">
-        <span class="concept-label">Concept 05</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title">
-          <h2>🌩️ The Sulfur Forecast</h2>
-          <span class="angle-tag">Clever Metaphor</span>
-          <span class="canva-tag">✏️ Canva</span>
-        </div>
-        <div><div class="section-label">Tagline</div>
-          <div class="primary-text editable" id="pt-5">"TODAY'S FORECAST: 100% CHANCE OF SULFUR."</div>
-        </div>
-        <div><div class="section-label">Concept</div>
-          <div class="description-box">Weather radar with neon green toxic storm spreading from a central point. Bad breath as a weather event. Works best when the "broadcast" metaphor is already established.</div>
-        </div>
-        <div class="canva-note">Text overlays to be added in Canva after approval.</div>
-        <div class="edit-hint">✏️ Click any text to edit. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-5"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(5,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(5,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(5,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(5,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(5,'creative')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(5)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-5">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-5" rows="2" placeholder="What do you want to change?"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(5)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(5)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-5">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-5"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(5)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(5)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- ── SECTION 2: Video Frame Captures ── -->
-<div class="section-header">
-  <h2>🎬 Video Frame Captures</h2>
-  <div class="section-line"></div>
-  <span class="section-badge">8 frames from 3 video renders · Full copy ready</span>
-</div>
-
-<div class="grid">
-
-  <!-- Frame 1 — card-6 -->
-  <div class="card" id="card-6" data-creative-name="Office Hero — Ad 1 · 0.5s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad1_3pm_crash_t0_5s.jpg" alt="Office Hero" loading="lazy">
-        <span class="frame-label">Ad 1 · 0.5s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>🏢 Office Hero</h2><span class="angle-tag">Confidence · Workplace</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-6">Struggling with bad breath at work? It's not just bad luck — it's bacteria. LACALUT® Flora targets the bacterial source of mouth odour so you can speak up in every meeting without second-guessing yourself. 100 years of German clinical science. One tube. All-day confidence.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">Stop Bacteria. Start Talking.</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">Bad Breath at Work? This Fixes It.</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">Clinically Proven Fresh Breath. All Day.</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">100 Years of Science vs. Bad Bacteria</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">Speak Confidently. Every Meeting.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora targets the bacterial root cause of mouth odour — not just the symptoms. Fresh breath that lasts all day.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-6"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(6,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(6,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(6,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(6,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(6,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(6)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-6">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-6" rows="2" placeholder="e.g. Make headlines punchier · Shorter primary text · More emotional · Target women · Add urgency"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(6)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(6)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-6">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-6"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(6)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(6)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 2 — card-7 -->
-  <div class="card" id="card-7" data-creative-name="Bacteria Science — Ad 1 · 7.5s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad1_3pm_crash_t7_5s.jpg" alt="Bacteria Science" loading="lazy">
-        <span class="frame-label">Ad 1 · 7.5s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>🔬 Bacteria Science</h2><span class="angle-tag">Clinical Proof · Science</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-7">Bad breath isn't a hygiene problem — it's a bacteria problem. Most toothpastes just mask the smell. LACALUT® Flora is clinically formulated to eliminate the odour-causing bacteria at the source. 100 years of German oral science. One tube. Real results.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">It's Not Your Breath. It's Bacteria.</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">Kill the Source. Not Just the Smell.</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">Clinical-Grade Anti-Halitosis Formula</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">Science You Can See. Results You Can Feel.</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">Your Mouth. Defended by German Science.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora works where other toothpastes can't — at the bacterial source of bad breath. Results from the very first brush.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-7"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(7,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(7,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(7,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(7,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(7,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(7)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-7">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-7" rows="2" placeholder="e.g. Make headlines punchier · Shorter primary text · More emotional · Target women · Add urgency"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(7)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(7)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-7">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-7"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(7)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(7)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 3 — card-8 -->
-  <div class="card" id="card-8" data-creative-name="Product Hero — Ad 1 · 14.0s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad1_3pm_crash_t14_0s.jpg" alt="Product Hero" loading="lazy">
-        <span class="frame-label">Ad 1 · 14.0s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>🏛️ Product Hero</h2><span class="angle-tag">Brand · Shop Now</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-8">LACALUT® Flora. The German toothpaste that actually fixes bad breath — not just masks it. Clinically formulated to fight odour-causing bacteria at the source. Now available in Australia with free shipping.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">LACALUT® Flora — Fresh Breath Formula</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">German Clinical Science for Bad Breath</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">Fights Bacteria. Not Just Odour.</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">Anti-Halitosis Toothpaste. Free AU Shipping.</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">Try LACALUT® Flora. Real Results.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">Clinically formulated to eliminate bad breath at the bacterial source. Order now with free shipping Australia-wide.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-8"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(8,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(8,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(8,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(8,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(8,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(8)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-8">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-8" rows="2" placeholder="e.g. Make headlines punchier · Shorter primary text · More emotional · Target women · Add urgency"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(8)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(8)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-8">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-8"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(8)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(8)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 4 — card-9 -->
-  <div class="card" id="card-9" data-creative-name="Dentist Reaction — Ad 2 · 3.0s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad2_dentist_t3_0s.jpg" alt="Dentist Reaction" loading="lazy">
-        <span class="frame-label">Ad 2 · 3.0s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>🦷 Dentist Reaction</h2><span class="angle-tag">Authority · Pattern Interrupt</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-9">Your dentist noticed something you didn't want them to. Bad breath isn't always about brushing harder — sometimes it's about targeting the right bacteria. LACALUT® Flora is clinically developed to eliminate odour-causing bacteria that regular toothpaste misses.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">Your Dentist Is Noticing Something.</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">What Your Dentist Won't Say Out Loud</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">The Toothpaste Dentists Actually Recommend</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">Clinical Anti-Halitosis. Dentist-Level Results.</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">Stop Guessing. Start Using the Right Formula.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora is a clinically developed anti-halitosis toothpaste. Fight bad breath at the bacterial source — not just the surface.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-9"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(9,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(9,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(9,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(9,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(9,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(9)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-9">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-9" rows="2" placeholder="e.g. Make headlines punchier · Shorter primary text · More emotional · Add urgency"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(9)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(9)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-9">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-9"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(9)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(9)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 5 — card-10 -->
-  <div class="card" id="card-10" data-creative-name="Bacterial Shield — Ad 2 · 5.0s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad2_dentist_t5_0s.jpg" alt="Bacterial Shield" loading="lazy">
-        <span class="frame-label">Ad 2 · 5.0s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>🛡️ Bacterial Shield</h2><span class="angle-tag">Clinical Proof · Transformation</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-10">This is what's happening inside your mouth right now. Odour-causing bacteria cling to your teeth and gums — and ordinary toothpaste doesn't reach them all. LACALUT® Flora's clinical formula creates a bacteria-fighting shield that works from the very first brush.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">See What's Causing Your Bad Breath</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">Bacteria Hiding Where Toothpaste Can't Reach</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">Clinical Shield Against Odour-Causing Bacteria</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">The Science Behind Lasting Fresh Breath</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">LACALUT® Flora: Built for What You Can't See</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora targets odour-causing bacteria below the surface — where ordinary toothpaste falls short. Clinical-grade anti-halitosis protection.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-10"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(10,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(10,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(10,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(10,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(10,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(10)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-10">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-10" rows="2" placeholder="e.g. Make headlines punchier · More clinical · Add urgency"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(10)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(10)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-10">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-10"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(10)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(10)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 6 — card-11 -->
-  <div class="card" id="card-11" data-creative-name="Bathroom Lifestyle — Ad 2 · 14.0s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad2_dentist_t14_0s.jpg" alt="Bathroom Lifestyle" loading="lazy">
-        <span class="frame-label">Ad 2 · 14.0s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>🛁 Bathroom Lifestyle</h2><span class="angle-tag">Lifestyle · Daily Ritual</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-11">What if fixing bad breath was as simple as switching your toothpaste? LACALUT® Flora replaces your ordinary toothpaste with a clinical anti-halitosis formula — same routine, dramatically better results. No sprays. No mouthwash. Just brush.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">Replace Your Toothpaste. Fix Your Breath.</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">Same Brush. Clinical-Grade Fresh Breath.</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">No Extras. Just Switch Your Toothpaste.</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">Your Morning Routine Just Got an Upgrade</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">LACALUT® Flora — One Switch. All-Day Fresh.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora fits straight into your existing routine. Clinical anti-halitosis protection with every single brush — no extras needed.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-11"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(11,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(11,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(11,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(11,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(11,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(11)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-11">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-11" rows="2" placeholder="e.g. Make it more aspirational · Shorter · Different angle"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(11)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(11)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-11">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-11"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(11)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(11)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 7 — card-12 -->
-  <div class="card" id="card-12" data-creative-name="The Moment — Ad 3 · 3.0s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad3_conversation_t3_0s.jpg" alt="The Moment" loading="lazy">
-        <span class="frame-label">Ad 3 · 3.0s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>💑 The Moment</h2><span class="angle-tag">Emotional · Relationships</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-12">Bad breath doesn't just happen at work — it happens in the moments that matter most. LACALUT® Flora is clinically formulated to eliminate the bacteria that cause mouth odour so you can be close to the people you love without a second thought.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">Don't Let Bacteria Ruin the Moment</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">Be Close. Be Confident. Be Fresh.</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">The Moments That Matter — Breath Included</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">Clinically Fresh Breath for Every Close Moment</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">Bad Breath Is a Bacteria Problem. This Solves It.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora eliminates the bacterial root cause of bad breath. Because the people closest to you deserve your best self.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-12"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(12,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(12,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(12,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(12,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(12,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(12)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-12">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-12" rows="2" placeholder="e.g. More emotional · Add vulnerability · Shorter sentences"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(12)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(12)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-12">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-12"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(12)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(12)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Frame 8 — card-13 -->
-  <div class="card" id="card-13" data-creative-name="Brushing Transform — Ad 3 · 12.0s" data-type="frame">
-    <div class="card-layout">
-      <div class="img-wrap">
-        <img src="../flora-static-image-review/images/ad3_conversation_t12_0s.jpg" alt="Brushing Transform" loading="lazy">
-        <span class="frame-label">Ad 3 · 12.0s</span>
-      </div>
-      <div class="copy-panel">
-        <div class="card-title"><h2>✨ Brushing Transform</h2><span class="angle-tag">Product Action · Sensory</span></div>
-        <div><div class="section-label">Primary Text</div>
-          <div class="primary-text editable" id="pt-13">This is LACALUT® Flora working. While you brush, its clinical formula actively fights odour-causing bacteria — not just covering the smell, but eliminating the source. A 100-year German formulation. Now available in Australia.</div>
-        </div>
-        <div><div class="section-label">Headlines</div>
-          <div class="headlines-list">
-            <div class="headline-item"><span class="hl-num">H1</span><span class="hl-text editable">This Is What Fighting Bacteria Looks Like</span></div>
-            <div class="headline-item"><span class="hl-num">H2</span><span class="hl-text editable">One Brush. Bacteria Gone.</span></div>
-            <div class="headline-item"><span class="hl-num">H3</span><span class="hl-text editable">Clinical Anti-Halitosis — Every Single Brush</span></div>
-            <div class="headline-item"><span class="hl-num">H4</span><span class="hl-text editable">Feel the Difference From the First Brush</span></div>
-            <div class="headline-item"><span class="hl-num">H5</span><span class="hl-text editable">100 Years of Science. Working Right Now.</span></div>
-          </div>
-        </div>
-        <div><div class="section-label">Description</div>
-          <div class="description-box editable">LACALUT® Flora delivers clinical-grade anti-halitosis action with every single brush. Feel the fresh breath difference from day one.</div>
-        </div>
-        <div class="edit-hint">✏️ All text fields editable. Hit Save when done.</div>
-        <div class="reject-note" id="reject-note-13"></div>
-        <div class="approve-row">
-          <button class="btn btn-approve"         onclick="setStatus(13,'approved')">✅ Approve</button>
-          <button class="btn btn-revise"           onclick="setStatus(13,'revise')">✏️ Revise</button>
-          <button class="btn btn-reject-creative"  onclick="setStatus(13,'reject-creative')">❌ Creative</button>
-          <button class="btn btn-reject-copy"      onclick="setStatus(13,'reject-copy')">🚫 Copy</button>
-          <button class="btn btn-teach"            onclick="openTeach(13,'copy')">📚</button>
-          <button class="btn btn-ai"               onclick="toggleAI(13)">✨ AI</button>
-        </div>
-        <div class="trained-badge">📚 Training saved</div>
-      </div>
-    </div>
-    <div class="ai-panel" id="ai-panel-13">
-      <div class="ai-panel-label">✨ AI Rewrite — Gemini Flash</div>
-      <textarea id="ai-input-13" rows="2" placeholder="e.g. Make it more sensory · Punchier product statement · Add Australian feel"></textarea>
-      <div class="ai-panel-btns">
-        <button class="btn-ai-generate" onclick="generateAI(13)">✨ Generate</button>
-        <button class="btn-ai-close" onclick="toggleAI(13)">✕ Close</button>
-      </div>
-      <div class="ai-result" id="ai-result-13">
-        <div class="ai-result-label">Gemini suggests:</div>
-        <div class="ai-preview" id="ai-preview-13"></div>
-        <div class="ai-result-btns">
-          <button class="btn-ai-accept" onclick="acceptAI(13)">✅ Accept</button>
-          <button class="btn-ai-discard" onclick="discardAI(13)">🗑 Discard</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Approval modal -->
+<!-- APPROVAL MODAL -->
 <div class="modal-overlay" id="approval-modal">
   <div class="modal">
-    <h3>📋 Confirm Meta Ads Draft</h3>
+    <h3>🚀 Queue for Meta Ads</h3>
     <div class="modal-row"><span class="modal-label">Creative</span><span class="modal-val" id="modal-creative-name">—</span></div>
-    <div class="modal-row"><span class="modal-label">Ad Set</span><span class="modal-val green">Flora / Bad Breath</span></div>
-    <div class="modal-row"><span class="modal-label">Campaign</span><span class="modal-val blue">TOF — Top of Funnel</span></div>
-    <div class="modal-row"><span class="modal-label">Status</span><span class="modal-val orange">PAUSED ⏸</span></div>
-    <div class="modal-warning">⚠️ This queues a <strong>PAUSED draft ad</strong> — it will <strong>not go live</strong> until you enable it in Ads Manager.</div>
+    <div class="modal-row"><span class="modal-label">SKU</span><span class="modal-val blue" id="modal-sku-name">—</span></div>
+    <div class="modal-row"><span class="modal-label">Ad Set</span><span class="modal-val green" id="modal-adset-name">—</span></div>
+    <div class="modal-row"><span class="modal-label">Status</span><span class="modal-val orange">DRAFT ⏸ — not live until enabled</span></div>
+    <div class="modal-warning">⚠️ This queues a <strong>paused draft ad</strong> in Supabase. Run <code style="background:#fef9c3;padding:1px 5px;border-radius:3px;font-size:0.8em">push_to_meta.py</code> in Claude Code to push to Ads Manager.</div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeApprovalModal()">Cancel</button>
-      <button class="btn btn-confirm" onclick="submitApproval()">✅ Confirm &amp; Queue</button>
+      <button class="btn btn-confirm" onclick="submitApproval()">🚀 Confirm &amp; Queue</button>
     </div>
   </div>
 </div>
 
-<!-- Teach modal -->
+<!-- TEACH MODAL -->
 <div class="modal-overlay" id="teach-modal">
-  <div class="modal teach-modal-body" style="max-width:560px">
+  <div class="modal teach-modal-body" style="max-width:550px">
     <h3>📚 Teach Claude</h3>
     <div class="teach-tabs">
       <button class="teach-tab" id="tab-creative" onclick="switchTab('creative')">🎨 Creative Feedback</button>
       <button class="teach-tab" id="tab-copy"     onclick="switchTab('copy')">📝 Copy Feedback</button>
     </div>
     <div id="section-creative">
-      <p style="font-size:0.77rem;color:#888;margin-bottom:12px;line-height:1.5">Tell Claude what's wrong with this visual and what direction to try instead.</p>
+      <p style="font-size:0.75rem;color:#888;margin-bottom:11px;line-height:1.5">Tell Claude what's wrong with this visual and what direction to try instead.</p>
       <img class="teach-creative-thumb" id="teach-thumb" src="" alt="">
-      <div class="section-label" style="margin-bottom:5px">Quick tags</div>
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:5px">Quick tags</div>
       <div class="creative-tags">
         <span class="ctag" onclick="toggleTag(this)">Too stock photo</span>
         <span class="ctag" onclick="toggleTag(this)">Wrong emotion</span>
@@ -1259,18 +381,18 @@
         <span class="ctag" onclick="toggleTag(this)">Too polished / safe</span>
         <span class="ctag" onclick="toggleTag(this)">Concept doesn't land</span>
       </div>
-      <div class="section-label" style="margin-bottom:5px;margin-top:10px">What's wrong?</div>
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin:9px 0 5px">What's wrong?</div>
       <textarea id="teach-creative-problem" rows="2" placeholder="e.g. Model looks too happy, scene too busy…"></textarea>
-      <div class="section-label" style="margin-bottom:5px">Direction to try instead</div>
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:5px">Direction to try instead</div>
       <textarea id="teach-creative-direction" rows="3" placeholder="e.g. Show the moment of embarrassment — close-up face pulling away. Dark moody lighting."></textarea>
     </div>
     <div id="section-copy" style="display:none">
-      <p style="font-size:0.77rem;color:#888;margin-bottom:12px;line-height:1.5">Paste your preferred version so Claude learns from it next time.</p>
-      <div class="section-label" style="margin-bottom:5px">Current AI Copy</div>
+      <p style="font-size:0.75rem;color:#888;margin-bottom:11px;line-height:1.5">Paste your preferred version so Claude learns from it next time.</p>
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:5px">Current AI Copy</div>
       <div class="teach-ref" id="teach-original-copy"></div>
-      <div class="section-label" style="margin-bottom:5px">Your Preferred Version</div>
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:5px">Your Preferred Version</div>
       <textarea id="teach-preferred-copy" rows="5" placeholder="Paste your version here…"></textarea>
-      <div class="section-label" style="margin-bottom:5px">What should Claude do differently?</div>
+      <div style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:5px">What should Claude do differently?</div>
       <textarea id="teach-copy-notes" rows="2" placeholder="e.g. Shorter sentences, agitate the pain more…"></textarea>
     </div>
     <div class="modal-actions">
@@ -1280,114 +402,479 @@
   </div>
 </div>
 
-<!-- Status bar -->
-<div class="status-bar">
+<!-- STATUS BAR -->
+<div class="status-bar" id="main-status-bar">
   <strong>Review Progress:</strong>
-  <span id="approval-count">0</span> approved &nbsp;·&nbsp;
+  <span id="approval-count">0</span> queued &nbsp;·&nbsp;
   <span id="revise-count">0</span> revising &nbsp;·&nbsp;
   <span id="reject-creative-count">0</span> ❌ creative &nbsp;·&nbsp;
   <span id="reject-copy-count">0</span> 🚫 copy &nbsp;&nbsp;&nbsp;
-  <span style="color:#aaa;">13 total · 5 concepts + 8 frames</span>
+  <span style="color:#aaa" id="total-label">0 total</span>
 </div>
 
 <script>
+/* ── API KEYS ── */
 const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
 const GEMINI_KEY    = 'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
-const GEMINI_URL    = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY;
+const CLAUDE_KEY    = '[YOUR_ANTHROPIC_API_KEY]'; // Add your Anthropic API key here
 
-const statuses = {};
-let pendingApprovalId = null;
-let pendingTeachId    = null;
-let activeTab         = 'creative';
-let teachWillReject   = false;
-let teachRejectType   = 'creative';
+/* ── SKU CONFIG ── */
+const SKU_CONFIG = {
+  'aktiv': {
+    name: 'LACALUT® Aktiv',
+    tabLabel: 'AKTIV',
+    accentColor: '#cf102d',
+    tagline: 'Clinical gum treatment · Bleeding gums & gingivitis · Adults 35+',
+    claudePrompt: 'You are a performance Facebook ads copywriter for LACALUT Aktiv — a clinical gum treatment toothpaste. Australian audience, adults 35+. The customer has bleeding gums and does not realise it is early gingivitis. Create urgency without fear. Tone: clinical, direct, credible. Never salesy. Write for conversion. Australian English.',
+    geminiStyle: 'Clinical, dramatic lighting, dark background, close-up dental or product shot, high contrast, serious mood',
+    campaignId: '[AKTIV_CAMPAIGN_ID]', adsetId: '[AKTIV_ADSET_ID]',
+    adsetName: 'Aktiv / Gingivitis', templateAdId: '[AKTIV_TEMPLATE_AD_ID]',
+    cards: []
+  },
+  'aktiv-herbal': {
+    name: 'LACALUT® Aktiv Herbal',
+    tabLabel: 'AKTIV HERBAL',
+    accentColor: '#5a8a3c',
+    tagline: 'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
+    claudePrompt: 'You are a performance Facebook ads copywriter for LACALUT Aktiv Herbal — a clinical gum toothpaste powered by 9 medicinal herbs. Australian adults 35+ who want to treat bleeding gums and gingivitis but also love premium, natural experiences. This is not basic toothpaste — it is a spa-like oral care ritual that actually works clinically. Lead with the sensory experience AND the clinical proof. Tone: elevated, warm, ingredient-led. Write for conversion. Australian English.',
+    geminiStyle: 'Warm botanical aesthetic, medicinal herbs, lush greenery, apothecary feel, premium and natural, soft earthy tones, sophisticated wellness mood',
+    campaignId: '[HERBAL_CAMPAIGN_ID]', adsetId: '[HERBAL_ADSET_ID]',
+    adsetName: 'Aktiv Herbal / Gingivitis Herbal', templateAdId: '[HERBAL_TEMPLATE_AD_ID]',
+    cards: []
+  },
+  'flora': {
+    name: 'LACALUT® Flora',
+    tabLabel: 'FLORA',
+    accentColor: '#2d8f4e',
+    tagline: 'Probiotic bad breath formula · Eliminates odour bacteria · Women 25–45',
+    claudePrompt: 'You are a performance Facebook ads copywriter for LACALUT Flora — a probiotic toothpaste for bad breath. Australian women 25-45, health-conscious. The customer is embarrassed by persistent bad breath despite brushing. Lead with the science of probiotics restoring oral microbiome balance. Tone: empowering, clean, credible. Write for conversion. Australian English.',
+    geminiStyle: 'Fresh, bright, clean wellness aesthetic, soft natural light, white or sage green tones, modern and premium',
+    campaignId: '120241478653830229', adsetId: '120244410306410229',
+    adsetName: 'Flora / Bad Breath', templateAdId: '120244706626530229',
+    cards: [
+      { id:1, type:'concept', creativeName:'The Social Distance', label:'Concept 01', emoji:'👥', angle:'Social Shame', canva:true,
+        imageUrl:'../flora-gemini-concepts/images/concept-1-social-distance.jpg',
+        tagline:'"THEY CAN SMELL WHAT YOU CAN\'T SEE."',
+        description:'Cinematic dinner party — one person talking, toxic green breath cloud visible, everyone subtly leaning away. Targets social anxiety. Relatable gut-punch.',
+        canvaNotes:'Text overlays to be added in Canva after approval.' },
+      { id:2, type:'concept', creativeName:'The Bacteria Factory', label:'Concept 02 🔥', emoji:'🏭', angle:'Absurd Metaphor', canva:true,
+        imageUrl:'../flora-gemini-concepts/images/concept-2-bacteria-factory.jpg',
+        tagline:'"YOUR MOUTH IS RUNNING A SULFUR FACTORY."',
+        description:'Inside-mouth view — bacteria workers in yellow hard hats, factory chimneys belching neon green sulfur smoke. Nothing like this in oral care. People will stop and look twice.',
+        canvaNotes:'Text overlays to be added in Canva after approval.' },
+      { id:3, type:'concept', creativeName:'The Mint Lie', label:'Concept 03', emoji:'🌿', angle:'Competitor Takedown', canva:true,
+        imageUrl:'../flora-gemini-concepts/images/concept-3-mint-lie.jpg',
+        tagline:'"A MINT IS JUST PERFUME ON A CHEMICAL LEAK."',
+        description:'Macro mint leaf with neon green skull melting through centre. Clean, high contrast, dark background. Directly attacks masking. Closest in style to the winning "Stop Broadcasting Sulfur" ad.',
+        canvaNotes:'Text overlays to be added in Canva after approval.' },
+      { id:4, type:'concept', creativeName:'The Biohazard Zone', label:'Concept 04', emoji:'☣️', angle:'Dark Humour', canva:true,
+        imageUrl:'../flora-gemini-concepts/images/concept-4-biohazard-zone.jpg',
+        tagline:'"ORAL BIOHAZARD. AREA UNDER QUARANTINE."',
+        description:'Aerial bird\'s-eye — lone suited man surrounded by yellow hazmat tape, neon green mist spreading outward. Cinematic overhead angle. Dark humour that lands the message.',
+        canvaNotes:'Text overlays to be added in Canva after approval.' },
+      { id:5, type:'concept', creativeName:'The Sulfur Forecast', label:'Concept 05', emoji:'🌩️', angle:'Clever Metaphor', canva:true,
+        imageUrl:'../flora-gemini-concepts/images/concept-5-sulfur-forecast.jpg',
+        tagline:'"TODAY\'S FORECAST: 100% CHANCE OF SULFUR."',
+        description:'Weather radar with neon green toxic storm spreading from a central point. Bad breath as a weather event. Works best when the "broadcast" metaphor is already established.',
+        canvaNotes:'Text overlays to be added in Canva after approval.' },
+      { id:6, type:'frame', creativeName:'Office Hero — Ad 1 · 0.5s', label:'Ad 1 · 0.5s', emoji:'🏢', angle:'Confidence · Workplace',
+        imageUrl:'../flora-static-image-review/images/ad1_3pm_crash_t0_5s.jpg',
+        primaryText:'Struggling with bad breath at work? It\'s not just bad luck — it\'s bacteria. LACALUT® Flora targets the bacterial source of mouth odour so you can speak up in every meeting without second-guessing yourself. 100 years of German clinical science. One tube. All-day confidence.',
+        headlines:['Stop Bacteria. Start Talking.','Bad Breath at Work? This Fixes It.','Clinically Proven Fresh Breath. All Day.','100 Years of Science vs. Bad Bacteria','Speak Confidently. Every Meeting.'],
+        description:'LACALUT® Flora targets the bacterial root cause of mouth odour — not just the symptoms. Fresh breath that lasts all day.' },
+      { id:7, type:'frame', creativeName:'Bacteria Science — Ad 1 · 7.5s', label:'Ad 1 · 7.5s', emoji:'🔬', angle:'Clinical Proof · Science',
+        imageUrl:'../flora-static-image-review/images/ad1_3pm_crash_t7_5s.jpg',
+        primaryText:'Bad breath isn\'t a hygiene problem — it\'s a bacteria problem. Most toothpastes just mask the smell. LACALUT® Flora is clinically formulated to eliminate the odour-causing bacteria at the source. 100 years of German oral science. One tube. Real results.',
+        headlines:['It\'s Not Your Breath. It\'s Bacteria.','Kill the Source. Not Just the Smell.','Clinical-Grade Anti-Halitosis Formula','Science You Can See. Results You Can Feel.','Your Mouth. Defended by German Science.'],
+        description:'LACALUT® Flora works where other toothpastes can\'t — at the bacterial source of bad breath. Results from the very first brush.' },
+      { id:8, type:'frame', creativeName:'Product Hero — Ad 1 · 14.0s', label:'Ad 1 · 14.0s', emoji:'🏛️', angle:'Brand · Shop Now',
+        imageUrl:'../flora-static-image-review/images/ad1_3pm_crash_t14_0s.jpg',
+        primaryText:'LACALUT® Flora. The German toothpaste that actually fixes bad breath — not just masks it. Clinically formulated to fight odour-causing bacteria at the source. Now available in Australia with free shipping.',
+        headlines:['LACALUT® Flora — Fresh Breath Formula','German Clinical Science for Bad Breath','Fights Bacteria. Not Just Odour.','Anti-Halitosis Toothpaste. Free AU Shipping.','Try LACALUT® Flora. Real Results.'],
+        description:'Clinically formulated to eliminate bad breath at the bacterial source. Order now with free shipping Australia-wide.' },
+      { id:9, type:'frame', creativeName:'Dentist Reaction — Ad 2 · 3.0s', label:'Ad 2 · 3.0s', emoji:'🦷', angle:'Authority · Pattern Interrupt',
+        imageUrl:'../flora-static-image-review/images/ad2_dentist_t3_0s.jpg',
+        primaryText:'Your dentist noticed something you didn\'t want them to. Bad breath isn\'t always about brushing harder — sometimes it\'s about targeting the right bacteria. LACALUT® Flora is clinically developed to eliminate odour-causing bacteria that regular toothpaste misses.',
+        headlines:['Your Dentist Is Noticing Something.','What Your Dentist Won\'t Say Out Loud','The Toothpaste Dentists Actually Recommend','Clinical Anti-Halitosis. Dentist-Level Results.','Stop Guessing. Start Using the Right Formula.'],
+        description:'LACALUT® Flora is a clinically developed anti-halitosis toothpaste. Fight bad breath at the bacterial source — not just the surface.' },
+      { id:10, type:'frame', creativeName:'Bacterial Shield — Ad 2 · 5.0s', label:'Ad 2 · 5.0s', emoji:'🛡️', angle:'Clinical Proof · Transformation',
+        imageUrl:'../flora-static-image-review/images/ad2_dentist_t5_0s.jpg',
+        primaryText:'This is what\'s happening inside your mouth right now. Odour-causing bacteria cling to your teeth and gums — and ordinary toothpaste doesn\'t reach them all. LACALUT® Flora\'s clinical formula creates a bacteria-fighting shield that works from the very first brush.',
+        headlines:['See What\'s Causing Your Bad Breath','Bacteria Hiding Where Toothpaste Can\'t Reach','Clinical Shield Against Odour-Causing Bacteria','The Science Behind Lasting Fresh Breath','LACALUT® Flora: Built for What You Can\'t See'],
+        description:'LACALUT® Flora targets odour-causing bacteria below the surface — where ordinary toothpaste falls short. Clinical-grade anti-halitosis protection.' },
+      { id:11, type:'frame', creativeName:'Bathroom Lifestyle — Ad 2 · 14.0s', label:'Ad 2 · 14.0s', emoji:'🛁', angle:'Lifestyle · Daily Ritual',
+        imageUrl:'../flora-static-image-review/images/ad2_dentist_t14_0s.jpg',
+        primaryText:'What if fixing bad breath was as simple as switching your toothpaste? LACALUT® Flora replaces your ordinary toothpaste with a clinical anti-halitosis formula — same routine, dramatically better results. No sprays. No mouthwash. Just brush.',
+        headlines:['Replace Your Toothpaste. Fix Your Breath.','Same Brush. Clinical-Grade Fresh Breath.','No Extras. Just Switch Your Toothpaste.','Your Morning Routine Just Got an Upgrade','LACALUT® Flora — One Switch. All-Day Fresh.'],
+        description:'LACALUT® Flora fits straight into your existing routine. Clinical anti-halitosis protection with every single brush — no extras needed.' },
+      { id:12, type:'frame', creativeName:'The Moment — Ad 3 · 3.0s', label:'Ad 3 · 3.0s', emoji:'💑', angle:'Emotional · Relationships',
+        imageUrl:'../flora-static-image-review/images/ad3_conversation_t3_0s.jpg',
+        primaryText:'Bad breath doesn\'t just happen at work — it happens in the moments that matter most. LACALUT® Flora is clinically formulated to eliminate the bacteria that cause mouth odour so you can be close to the people you love without a second thought.',
+        headlines:['Don\'t Let Bacteria Ruin the Moment','Be Close. Be Confident. Be Fresh.','The Moments That Matter — Breath Included','Clinically Fresh Breath for Every Close Moment','Bad Breath Is a Bacteria Problem. This Solves It.'],
+        description:'LACALUT® Flora eliminates the bacterial root cause of bad breath. Because the people closest to you deserve your best self.' },
+      { id:13, type:'frame', creativeName:'Brushing Transform — Ad 3 · 12.0s', label:'Ad 3 · 12.0s', emoji:'✨', angle:'Product Action · Sensory',
+        imageUrl:'../flora-static-image-review/images/ad3_conversation_t12_0s.jpg',
+        primaryText:'This is LACALUT® Flora working. While you brush, its clinical formula actively fights odour-causing bacteria — not just covering the smell, but eliminating the source. A 100-year German formulation. Now available in Australia.',
+        headlines:['This Is What Fighting Bacteria Looks Like','One Brush. Bacteria Gone.','Clinical Anti-Halitosis — Every Single Brush','Feel the Difference From the First Brush','100 Years of Science. Working Right Now.'],
+        description:'LACALUT® Flora delivers clinical-grade anti-halitosis action with every single brush. Feel the fresh breath difference from day one.' }
+    ]
+  },
+  'sensitive': {
+    name: 'LACALUT® Sensitive',
+    tabLabel: 'SENSITIVE',
+    accentColor: '#004a88',
+    tagline: 'Fast-acting sensitivity relief · Potassium nitrate formula · Coming soon',
+    claudePrompt: 'You are a performance Facebook ads copywriter for LACALUT Sensitive — a toothpaste for sensitive teeth. Australian adults who avoid hot coffee, cold drinks or sweet foods because of sharp tooth pain. Lead with restored freedom and relief. Tone: warm, empathetic, solution-led. Write for conversion. Australian English.',
+    geminiStyle: 'Warm, soft lighting, lifestyle moment of someone enjoying coffee or cold drinks comfortably, gentle colour palette, relatable and human, relief and joy',
+    campaignId: '[SENSITIVE_CAMPAIGN_ID]', adsetId: '[SENSITIVE_ADSET_ID]',
+    adsetName: 'Sensitive / Tooth Pain', templateAdId: '[SENSITIVE_TEMPLATE_AD_ID]',
+    cards: []
+  },
+  'white-repair': {
+    name: 'LACALUT® White & Repair',
+    tabLabel: 'WHITE & REPAIR',
+    accentColor: '#c9a84c',
+    tagline: 'Hydroxyapatite enamel repair + whitening · Science-led · Coming soon',
+    claudePrompt: 'You are a performance Facebook ads copywriter for LACALUT White & Repair — a remineralising whitening toothpaste. Australian adults 25-45 who want visibly whiter teeth but distrust harsh bleaching products. This is science-led whitening — hydroxyapatite repairs enamel while phosphates remove discolouration. Lead with repair-from-within, not surface bleaching. Tone: smart, results-driven, premium. Write for conversion. Australian English.',
+    geminiStyle: 'Crisp white tones, premium minimalist aesthetic, bright healthy smiles, clean product photography, aspirational but attainable, polished and modern',
+    campaignId: '[WHITE_CAMPAIGN_ID]', adsetId: '[WHITE_ADSET_ID]',
+    adsetName: 'White & Repair / Whitening', templateAdId: '[WHITE_TEMPLATE_AD_ID]',
+    cards: []
+  }
+};
 
-/* ── AI result store (for accept) ── */
-const aiResults = {};
+/* ── State ── */
+let activeSku = 'flora';
+const statuses  = {};
+const claudeResults = {};
+const refImages = {}; // { cardId: [base64, base64, base64] }
+let pendingApprovalId = null, pendingTeachId = null;
+let activeTab = 'creative', teachWillReject = false, teachRejectType = 'creative';
+let logoData = null; // base64
 
-/* ── Status ── */
-function setStatus(id, status) {
-  if (status === 'revise')           { enterEditMode(id); return; }
-  if (status === 'approved')         { exitEditMode(id); showApprovalModal(id); return; }
-  if (status === 'reject-creative')  { exitEditMode(id); openTeach(id, 'creative', true); return; }
-  if (status === 'reject-copy')      { exitEditMode(id); openTeach(id, 'copy', true); return; }
-  exitEditMode(id);
+/* ── HTML escape ── */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── BUILD SKU TABS ── */
+function buildTabs() {
+  const container = document.getElementById('sku-tabs');
+  container.innerHTML = Object.entries(SKU_CONFIG).map(([key, cfg]) =>
+    `<button class="sku-tab${key===activeSku?' active':''}" id="tab-${key}"
+      style="background:${cfg.accentColor};border-color:${cfg.accentColor}"
+      onclick="switchSku('${key}')">${esc(cfg.tabLabel)}</button>`
+  ).join('');
+}
+
+/* ── SWITCH SKU ── */
+function switchSku(sku) {
+  activeSku = sku;
+  document.querySelectorAll('.sku-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + sku).classList.add('active');
+  const cfg = SKU_CONFIG[sku];
+  document.getElementById('main-header').style.background = cfg.accentColor;
+  document.getElementById('sku-name').textContent = cfg.name;
+  document.getElementById('sku-tagline').textContent = cfg.tagline;
+  document.getElementById('main-status-bar').style.borderTopColor = cfg.accentColor;
+  Object.keys(statuses).forEach(k => delete statuses[k]);
+  Object.keys(claudeResults).forEach(k => delete claudeResults[k]);
+  Object.keys(refImages).forEach(k => delete refImages[k]);
   updateCounts();
+  renderCards(sku);
+}
+
+/* ── RENDER CARDS ── */
+function renderCards(sku) {
+  const cfg = SKU_CONFIG[sku];
+  const grid = document.getElementById('card-grid');
+  if (cfg.cards.length === 0) {
+    grid.innerHTML = `<div class="coming-soon-wrap">
+      <div class="cs-icon">🚧</div>
+      <h2>${esc(cfg.name)}</h2>
+      <p>Ad concepts for this SKU are being developed.</p>
+      <p style="margin-top:6px">Switch to <strong>Flora</strong> to see 13 live creatives.</p>
+      <button class="cs-cta" style="background:${cfg.accentColor}" onclick="switchSku('flora')">← Open Flora</button>
+    </div>`;
+    document.getElementById('total-label').textContent = '0 total';
+    return;
+  }
+  const concepts = cfg.cards.filter(c => c.type === 'concept');
+  const frames   = cfg.cards.filter(c => c.type === 'frame');
+  const total    = cfg.cards.length;
+  document.getElementById('total-label').textContent = total + ' total · ' + concepts.length + ' concepts + ' + frames.length + ' frames';
+  let html = '';
+  if (concepts.length > 0) {
+    html += `<div class="section-header"><h2>🎨 AI Concept Visuals</h2><div class="section-line"></div><span class="section-badge">${concepts.length} concepts · Base visuals · Text overlays via Canva</span></div><div class="fb-grid">`;
+    concepts.forEach(c => { html += buildCard(c, cfg); });
+    html += '</div>';
+  }
+  if (frames.length > 0) {
+    html += `<div class="section-header"><h2>🎬 Video Frame Captures</h2><div class="section-line"></div><span class="section-badge">${frames.length} frames · Full copy ready</span></div><div class="fb-grid">`;
+    frames.forEach(c => { html += buildCard(c, cfg); });
+    html += '</div>';
+  }
+  grid.innerHTML = html;
+  applyLogoToAll();
+}
+
+/* ── BUILD CARD HTML ── */
+function buildCard(c, cfg) {
+  const id = c.id;
+  const isFrame = c.type === 'frame';
+  const accentColor = cfg.accentColor;
+  const mainText = isFrame ? esc(c.primaryText) : esc(c.tagline);
+  const headline = isFrame ? esc(c.headlines[0]) : esc(c.creativeName);
+  const description = isFrame ? esc(c.description) : '';
+
+  const headlinesHtml = isFrame ? `
+    <div class="hl-section">
+      <button class="hl-toggle" onclick="toggleHl(${id})">📝 All Headlines (H1–H5) ▾</button>
+      <div class="hl-list" id="hl-list-${id}" style="display:none">
+        ${c.headlines.map((h,i) => `<div class="hl-row"><span class="hl-num">H${i+1}</span><span class="hl-text editable" id="hl${i+1}-${id}">${esc(h)}</span></div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const conceptInfoHtml = !isFrame ? `
+    <div class="concept-info">
+      <div class="sec-lbl">Concept</div>
+      <div class="concept-desc">${esc(c.description)}</div>
+      <div class="canva-note">🖌 ${esc(c.canvaNotes)}</div>
+    </div>` : '';
+
+  return `
+  <div class="fb-ad-card" id="card-${id}" data-id="${id}" data-creative-name="${esc(c.creativeName)}" data-type="${c.type}" data-sku="${activeSku}" data-image="${esc(c.imageUrl)}">
+
+    <div class="card-label-row">
+      <span class="card-label-tag" style="background:${accentColor}">${esc(c.label)}</span>
+      <span class="card-title-name">${c.emoji} ${esc(c.creativeName)}</span>
+      <span class="angle-tag">${esc(c.angle)}</span>
+      ${c.canva ? '<span class="canva-tag">✏️ Canva</span>' : ''}
+    </div>
+
+    <div class="fb-preview">
+      <div class="fb-hdr">
+        <div class="fb-av" style="background:${accentColor}">L</div>
+        <div class="fb-meta">
+          <div class="fb-pname">Lacalut Australia</div>
+          <div class="fb-spons">Sponsored · 🌐</div>
+        </div>
+        <div class="fb-dots">···</div>
+      </div>
+
+      <div class="fb-body-text editable" id="pt-${id}">${mainText}</div>
+
+      <div class="fb-img-wrap feed-mode" id="imgwrap-${id}">
+        <img src="${esc(c.imageUrl)}" id="img-${id}" alt="${esc(c.creativeName)}" loading="lazy">
+        <div class="logo-overlay-wrap" id="logowrap-${id}"></div>
+        <div class="format-btns">
+          <button class="fmtbtn active" onclick="setFmt(${id},'feed',this)">📱 Feed</button>
+          <button class="fmtbtn" onclick="setFmt(${id},'story',this)">📲 Story</button>
+        </div>
+      </div>
+
+      <div class="fb-link-block">
+        <div class="fb-link-text">
+          <div class="fb-link-domain">LACALUT.COM.AU</div>
+          <div class="fb-link-hl editable" id="hl-main-${id}">${headline}</div>
+          ${description ? `<div class="fb-link-desc editable" id="desc-${id}">${description}</div>` : ''}
+        </div>
+        <button class="fb-cta-btn">Shop Now</button>
+      </div>
+
+      <div class="fb-engage-row">
+        <button class="fb-eng">👍 Like</button>
+        <button class="fb-eng">💬 Comment</button>
+        <button class="fb-eng">↗ Share</button>
+      </div>
+    </div>
+
+    ${headlinesHtml}
+    ${conceptInfoHtml}
+
+    <div class="card-toolbar">
+      <button class="btn btn-approve"         onclick="setStatus(${id},'approved')">✅ Approve</button>
+      <button class="btn btn-revise"           id="revbtn-${id}" onclick="setStatus(${id},'revise')">✏️ Revise</button>
+      <button class="btn btn-reject-creative"  onclick="setStatus(${id},'reject-creative')">❌ Creative</button>
+      <button class="btn btn-reject-copy"      onclick="setStatus(${id},'reject-copy')">🚫 Copy</button>
+      <button class="btn btn-teach"            onclick="openTeach(${id},'creative')">📚</button>
+      <button class="btn btn-claude"           onclick="togglePanel('claude',${id})" title="Revise Copy">✍️</button>
+      <button class="btn btn-imggen"           onclick="togglePanel('image',${id})" title="Generate Image">🖼️</button>
+      <button class="btn btn-video"            onclick="togglePanel('video',${id})" title="Make Video">🎬</button>
+    </div>
+
+    <div class="card-footer">
+      <div class="reject-note" id="reject-note-${id}"></div>
+      <div class="trained-badge">📚 Training saved</div>
+    </div>
+
+    <!-- CLAUDE COPY REVISION PANEL -->
+    <div class="ai-card-panel" id="claude-panel-${id}">
+      <div class="panel-label claude-lbl">✍️ Revise Copy — Claude Sonnet</div>
+      <div class="panel-hint">SKU prompt: ${esc(cfg.name)} · ${esc(cfg.claudePrompt.substring(0,80))}…</div>
+      <textarea class="panel-textarea" id="claude-input-${id}" rows="2" placeholder="What to change? e.g. More urgent · Shorter · Different angle · Target women"></textarea>
+      <div class="panel-btn-row">
+        <button class="btn-gen" onclick="runClaude(${id})">✍️ Revise</button>
+        <button class="btn-panel-close" onclick="togglePanel('claude',${id})">✕ Close</button>
+      </div>
+      <div class="result-box" id="claude-result-${id}">
+        <div class="result-lbl">Claude suggests:</div>
+        <div class="result-preview" id="claude-preview-${id}"></div>
+        <div class="result-btn-row">
+          <button class="btn-accept"  onclick="acceptClaude(${id})">✅ Accept</button>
+          <button class="btn-discard" onclick="discardClaude(${id})">🗑 Discard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGE GENERATION PANEL -->
+    <div class="ai-card-panel" id="image-panel-${id}">
+      <div class="panel-label image-lbl">🖼️ Generate Image — Gemini</div>
+      <div class="panel-hint">Style: ${esc(cfg.geminiStyle)}</div>
+      <div class="ref-slots">
+        ${[0,1,2].map(i => `<label class="ref-slot-label"><input type="file" accept="image/*" onchange="addRef(event,${id},${i})" style="display:none"><div class="ref-slot-inner" id="ref-${id}-${i}">+ ${['Style','Composition','Mood'][i]} ref</div></label>`).join('')}
+      </div>
+      <textarea class="panel-textarea" id="img-prompt-${id}" rows="2" placeholder="Additional direction (optional)">${esc(cfg.geminiStyle)}</textarea>
+      <div class="panel-btn-row">
+        <button class="btn-gen green" onclick="runImageGen(${id})">🖼️ Generate</button>
+        <button class="btn-panel-close" onclick="togglePanel('image',${id})">✕ Close</button>
+      </div>
+      <div id="img-result-${id}" style="display:none">
+        <img id="img-preview-${id}" class="gen-img-preview" src="" alt="Generated image">
+        <div class="result-btn-row">
+          <button class="btn-accept"  onclick="acceptImage(${id})">✅ Use This</button>
+          <button class="btn-discard" onclick="runImageGen(${id})">🔄 Retry</button>
+          <button class="btn-discard" onclick="discardImage(${id})">🗑 Discard</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDEO PROMPT PANEL -->
+    <div class="ai-card-panel" id="video-panel-${id}">
+      <div class="panel-label video-lbl">🎬 Make Video — Higgsfield Seedance 2.0</div>
+      <div class="panel-hint">15-second motion brief — paste into Claude Code and run /higgsfield-generate</div>
+      <textarea class="panel-textarea" id="video-prompt-${id}" rows="4" placeholder="Click Generate to auto-write a Higgsfield motion prompt for this image…"></textarea>
+      <div class="panel-btn-row">
+        <button class="btn-gen rose" onclick="genVideoPrompt(${id})">⚡ Generate Prompt</button>
+        <button class="btn-gen" onclick="copyVideoPrompt(${id})">📋 Copy</button>
+        <button class="btn-panel-close" onclick="togglePanel('video',${id})">✕ Close</button>
+      </div>
+      <div class="video-instructions">💡 Copy prompt above → paste in Claude Code terminal → run: <code>/higgsfield-generate</code></div>
+      <div class="video-url-row">
+        <input type="text" class="video-url-input" id="video-url-${id}" placeholder="Paste Higgsfield video URL here once rendered">
+        <button class="btn-save-url" onclick="saveVideoUrl(${id})">💾 Save URL</button>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+/* ── FORMAT TOGGLE (Feed / Story) ── */
+function setFmt(id, fmt, btn) {
+  const wrap = document.getElementById('imgwrap-' + id);
+  wrap.className = 'fb-img-wrap ' + (fmt === 'story' ? 'story-mode' : 'feed-mode');
+  wrap.querySelectorAll('.fmtbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ── HEADLINES TOGGLE ── */
+function toggleHl(id) {
+  const list = document.getElementById('hl-list-' + id);
+  const btn  = list.previousElementSibling;
+  const open = list.style.display === 'none';
+  list.style.display = open ? 'flex' : 'none';
+  btn.textContent = '📝 All Headlines (H1–H5) ' + (open ? '▲' : '▾');
+}
+
+/* ── PANEL TOGGLE ── */
+function togglePanel(type, id) {
+  const panel = document.getElementById(type + '-panel-' + id);
+  const isOpen = panel.classList.contains('open');
+  ['claude','image','video'].forEach(t => {
+    const p = document.getElementById(t + '-panel-' + id);
+    if (p) p.classList.remove('open');
+  });
+  if (!isOpen) panel.classList.add('open');
+}
+
+/* ── STATUS ── */
+function setStatus(id, status) {
+  if (status === 'revise')           { enterEdit(id); return; }
+  if (status === 'approved')         { exitEdit(id); showApprovalModal(id); return; }
+  if (status === 'reject-creative')  { exitEdit(id); openTeach(id,'creative',true); return; }
+  if (status === 'reject-copy')      { exitEdit(id); openTeach(id,'copy',true); return; }
+  exitEdit(id); updateCounts();
+}
+
+function enterEdit(id) {
+  const card = document.getElementById('card-' + id);
+  card.classList.add('revising');
+  statuses[id] = 'revise';
+  card.querySelectorAll('.editable').forEach(el => el.contentEditable = 'true');
+  const btn = document.getElementById('revbtn-' + id);
+  if (btn) { btn.textContent = '💾 Save'; btn.className = 'btn btn-save'; btn.onclick = () => exitEdit(id); }
+  updateCounts();
+}
+
+function exitEdit(id) {
+  const card = document.getElementById('card-' + id);
+  card.classList.remove('revising');
+  card.querySelectorAll('.editable').forEach(el => el.contentEditable = 'false');
+  const btn = document.getElementById('revbtn-' + id);
+  if (btn) { btn.textContent = '✏️ Revise'; btn.className = 'btn btn-revise'; btn.onclick = () => setStatus(id,'revise'); }
+  if (statuses[id] === 'revise') delete statuses[id];
 }
 
 function applyRejectCreative(id, trained) {
   statuses[id] = 'reject-creative';
   const card = document.getElementById('card-' + id);
-  card.classList.remove('approved','rejected-creative','rejected-copy','revising');
-  card.classList.add('rejected-creative');
-  document.getElementById('reject-note-' + id).textContent =
-    '❌ Creative rejected' + (trained ? ' · 📚 Training saved' : '');
+  card.className = card.className.replace(/approved|rejected-creative|rejected-copy|revising/g,'').trim() + ' rejected-creative';
+  document.getElementById('reject-note-' + id).textContent = '❌ Creative rejected' + (trained ? ' · 📚 Training saved' : '');
   updateCounts();
 }
-
 function applyRejectCopy(id, trained) {
   statuses[id] = 'reject-copy';
   const card = document.getElementById('card-' + id);
-  card.classList.remove('approved','rejected-creative','rejected-copy','revising');
-  card.classList.add('rejected-copy');
-  document.getElementById('reject-note-' + id).textContent =
-    '🚫 Copy rejected' + (trained ? ' · 📚 Training saved' : '');
+  card.className = card.className.replace(/approved|rejected-creative|rejected-copy|revising/g,'').trim() + ' rejected-copy';
+  document.getElementById('reject-note-' + id).textContent = '🚫 Copy rejected' + (trained ? ' · 📚 Training saved' : '');
   updateCounts();
 }
 
-/* ── Edit mode ── */
-function enterEditMode(id) {
-  const card = document.getElementById('card-' + id);
-  card.classList.add('editing','revising');
-  statuses[id] = 'revise';
-  card.querySelectorAll('.editable').forEach(el => el.contentEditable = 'true');
-  const revBtn = card.querySelector('.btn-revise');
-  if (revBtn) { revBtn.textContent = '💾 Save'; revBtn.className = 'btn btn-save'; revBtn.onclick = () => exitEditMode(id); }
-  updateCounts();
-}
-
-function exitEditMode(id) {
-  const card = document.getElementById('card-' + id);
-  card.classList.remove('editing','revising');
-  card.querySelectorAll('.editable').forEach(el => el.contentEditable = 'false');
-  const sBtn = card.querySelector('.btn-save');
-  if (sBtn) { sBtn.textContent = '✏️ Revise'; sBtn.className = 'btn btn-revise'; sBtn.onclick = () => setStatus(id, 'revise'); }
-  if (statuses[id] === 'revise') delete statuses[id];
-}
-
-/* ── Approval modal ── */
+/* ── APPROVAL MODAL ── */
 function showApprovalModal(id) {
   pendingApprovalId = id;
   const card = document.getElementById('card-' + id);
+  const cfg = SKU_CONFIG[activeSku];
   document.getElementById('modal-creative-name').textContent = card.dataset.creativeName || ('Card ' + id);
+  document.getElementById('modal-sku-name').textContent = cfg.name;
+  document.getElementById('modal-adset-name').textContent = cfg.adsetName;
   document.getElementById('approval-modal').classList.add('active');
 }
 function closeApprovalModal() {
   document.getElementById('approval-modal').classList.remove('active');
   pendingApprovalId = null;
 }
-
 async function submitApproval() {
   const id = pendingApprovalId;
   const card = document.getElementById('card-' + id);
-  const confirmBtn = document.querySelector('#approval-modal .btn-confirm');
-  confirmBtn.textContent = '⏳ Submitting…'; confirmBtn.disabled = true;
+  const cfg = SKU_CONFIG[activeSku];
+  const btn = document.querySelector('#approval-modal .btn-confirm');
+  btn.textContent = '⏳ Queuing…'; btn.disabled = true;
   const payload = [{
-    sku: 'flora', creative_name: card.dataset.creativeName || ('Card ' + id),
+    sku: activeSku,
+    creative_name: card.dataset.creativeName || ('Card ' + id),
     creative_type: card.dataset.type === 'concept' ? 'concept' : 'image',
-    adset_id: '120244410306410229', adset_name: 'Flora / Bad Breath',
-    campaign_id: '120241478653830229', template_ad_id: '120244706626530229',
-    primary_text: card.querySelector('.primary-text')?.innerText || '',
-    headline: card.querySelector('.hl-text')?.innerText || '',
-    description: card.querySelector('.description-box')?.innerText || '',
-    image_url: card.querySelector('.img-wrap img')?.src || '', status: 'pending'
+    adset_id: cfg.adsetId, adset_name: cfg.adsetName,
+    campaign_id: cfg.campaignId, template_ad_id: cfg.templateAdId,
+    primary_text: document.getElementById('pt-' + id)?.innerText || '',
+    headline: document.getElementById('hl-main-' + id)?.innerText || '',
+    description: document.getElementById('desc-' + id)?.innerText || '',
+    image_url: document.getElementById('img-' + id)?.src || '',
+    status: 'ready_to_push'
   }];
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/ad_approvals', {
       method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1395,161 +882,261 @@ async function submitApproval() {
     statuses[id] = 'approved';
     const c = document.getElementById('card-' + id);
     c.classList.add('approved');
-    const aBtn = c.querySelector('.btn-approve');
-    aBtn.textContent = '📋 Queued'; aBtn.style.background = '#dbeafe'; aBtn.style.color = '#1e40af'; aBtn.disabled = true;
+    const ab = c.querySelector('.btn-approve');
+    if (ab) { ab.textContent = '🚀 Queued'; ab.style.background = '#dbeafe'; ab.style.color = '#1e40af'; ab.disabled = true; }
     updateCounts();
-  } catch (err) {
-    confirmBtn.textContent = '✅ Confirm & Queue'; confirmBtn.disabled = false;
-    alert('❌ Submission failed: ' + err.message); console.error(err);
+  } catch(err) {
+    btn.textContent = '🚀 Confirm & Queue'; btn.disabled = false;
+    alert('❌ Submit failed: ' + err.message);
   }
 }
 
-/* ── AI Rewrite ── */
-function toggleAI(id) {
-  const panel = document.getElementById('ai-panel-' + id);
-  panel.classList.toggle('open');
-  if (!panel.classList.contains('open')) discardAI(id);
-}
-
-async function generateAI(id) {
-  const card      = document.getElementById('card-' + id);
-  const input     = document.getElementById('ai-input-' + id).value.trim();
-  const resultEl  = document.getElementById('ai-result-' + id);
-  const previewEl = document.getElementById('ai-preview-' + id);
-  const genBtn    = document.querySelector('#ai-panel-' + id + ' .btn-ai-generate');
-  const isFrame   = card.dataset.type === 'frame';
-
-  if (!input) { alert('Please describe what you want to change.'); return; }
-
-  genBtn.textContent = '⏳ Generating…'; genBtn.disabled = true;
-  resultEl.classList.remove('show');
-
-  const currentCopy = isFrame ? `
-Primary Text: ${card.querySelector('.primary-text')?.innerText || ''}
-Headlines: ${Array.from(card.querySelectorAll('.hl-text')).map((el,i) => `H${i+1}: ${el.innerText}`).join(' | ')}
-Description: ${card.querySelector('.description-box')?.innerText || ''}`
-  : `Tagline: ${card.querySelector('.primary-text')?.innerText || ''}`;
-
-  const prompt = `You are a Facebook/Instagram ad copywriter for LACALUT® Flora — a 100-year German clinical anti-halitosis toothpaste, sold in Australia. Clinical voice, not casual wellness. Australian English.
-
-Creative: "${card.dataset.creativeName}"
-${currentCopy}
-
-User instruction: ${input}
-
-${isFrame ? `Return ONLY valid JSON (no markdown, no explanation):
-{
-  "primary_text": "rewritten primary text (max 200 chars)",
-  "headlines": ["H1", "H2", "H3", "H4", "H5"],
-  "description": "rewritten description (max 100 chars)"
-}` : `Return ONLY valid JSON (no markdown, no explanation):
-{
-  "tagline": "rewritten tagline (max 60 chars, ALL CAPS)"
-}`}`;
-
+/* ── CLAUDE COPY REVISION ── */
+async function runClaude(id) {
+  const card = document.getElementById('card-' + id);
+  const cfg = SKU_CONFIG[activeSku];
+  const input = document.getElementById('claude-input-' + id)?.value.trim();
+  const resultBox = document.getElementById('claude-result-' + id);
+  const preview = document.getElementById('claude-preview-' + id);
+  const genBtn = document.querySelector('#claude-panel-' + id + ' .btn-gen');
+  if (!input) { alert('Describe what to change first.'); return; }
+  if (CLAUDE_KEY === '[YOUR_ANTHROPIC_API_KEY]') { alert('Add your Anthropic API key to CLAUDE_KEY in the script.'); return; }
+  genBtn.textContent = '⏳ Revising…'; genBtn.disabled = true;
+  resultBox.classList.remove('show');
+  const isFrame = card.dataset.type === 'frame';
+  const currentCopy = isFrame
+    ? 'Primary Text: ' + (document.getElementById('pt-' + id)?.innerText || '') +
+      '\nHeadline: ' + (document.getElementById('hl-main-' + id)?.innerText || '') +
+      '\nDescription: ' + (document.getElementById('desc-' + id)?.innerText || '')
+    : 'Tagline: ' + (document.getElementById('pt-' + id)?.innerText || '');
+  const userMsg = 'Creative: "' + card.dataset.creativeName + '"\n\nCurrent copy:\n' + currentCopy + '\n\nInstruction: ' + input + '\n\n' +
+    (isFrame
+      ? 'Return ONLY valid JSON:\n{"primary_text":"...","headline":"...","description":"..."}'
+      : 'Return ONLY valid JSON:\n{"tagline":"...max 60 chars, ALL CAPS..."}');
   try {
-    const res = await fetch(GEMINI_URL, {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.85, maxOutputTokens: 512 } })
+      headers: { 'x-api-key': CLAUDE_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 600, system: cfg.claudePrompt, messages: [{ role: 'user', content: userMsg }] })
     });
-    if (!res.ok) throw new Error('Gemini API error: HTTP ' + res.status);
     const data = await res.json();
-    let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    let raw = data.content?.[0]?.text || '';
     raw = raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     const parsed = JSON.parse(raw);
-    aiResults[id] = parsed;
-
+    claudeResults[id] = parsed;
     if (isFrame) {
-      previewEl.textContent =
-        `Primary Text:\n${parsed.primary_text}\n\nHeadlines:\n${parsed.headlines.map((h,i)=>`H${i+1}: ${h}`).join('\n')}\n\nDescription:\n${parsed.description}`;
+      preview.textContent = 'Primary Text:\n' + (parsed.primary_text || '') + '\n\nHeadline:\n' + (parsed.headline || '') + '\n\nDescription:\n' + (parsed.description || '');
     } else {
-      previewEl.textContent = `Tagline:\n${parsed.tagline}`;
+      preview.textContent = 'Tagline:\n' + (parsed.tagline || '');
     }
-
-    resultEl.classList.add('show');
-  } catch (err) {
-    alert('❌ Gemini error: ' + err.message + '\n\nCheck your API key or try again.');
-    console.error(err);
+    resultBox.classList.add('show');
+  } catch(err) {
+    alert('❌ Claude error: ' + err.message);
   } finally {
-    genBtn.textContent = '✨ Generate'; genBtn.disabled = false;
+    genBtn.textContent = '✍️ Revise'; genBtn.disabled = false;
   }
 }
-
-function acceptAI(id) {
-  const card   = document.getElementById('card-' + id);
-  const result = aiResults[id];
-  if (!result) return;
-  const isFrame = card.dataset.type === 'frame';
-
-  if (isFrame) {
-    const pt = card.querySelector('.primary-text');
-    if (pt) pt.innerText = result.primary_text || pt.innerText;
-    const hls = card.querySelectorAll('.hl-text');
-    (result.headlines || []).forEach((h, i) => { if (hls[i]) hls[i].innerText = h; });
-    const desc = card.querySelector('.description-box');
-    if (desc) desc.innerText = result.description || desc.innerText;
+function acceptClaude(id) {
+  const card = document.getElementById('card-' + id);
+  const r = claudeResults[id];
+  if (!r) return;
+  if (card.dataset.type === 'frame') {
+    if (r.primary_text) { const el = document.getElementById('pt-' + id); if (el) el.innerText = r.primary_text; }
+    if (r.headline)     { const el = document.getElementById('hl-main-' + id); if (el) el.innerText = r.headline; }
+    if (r.description)  { const el = document.getElementById('desc-' + id); if (el) el.innerText = r.description; }
   } else {
-    const pt = card.querySelector('.primary-text');
-    if (pt && result.tagline) pt.innerText = result.tagline;
+    if (r.tagline) { const el = document.getElementById('pt-' + id); if (el) el.innerText = r.tagline; }
   }
-
-  discardAI(id);
-  card.style.transition = 'box-shadow 0.3s';
-  card.style.boxShadow  = '0 0 0 3px #6366f1';
+  discardClaude(id);
+  card.style.transition = 'box-shadow 0.3s'; card.style.boxShadow = '0 0 0 3px #6366f1';
   setTimeout(() => { card.style.boxShadow = ''; }, 1200);
 }
-
-function discardAI(id) {
-  const resultEl = document.getElementById('ai-result-' + id);
-  if (resultEl) resultEl.classList.remove('show');
-  delete aiResults[id];
+function discardClaude(id) {
+  const r = document.getElementById('claude-result-' + id);
+  if (r) r.classList.remove('show');
+  delete claudeResults[id];
 }
 
-/* ── Teach modal ── */
+/* ── IMAGE GENERATION (Gemini) ── */
+function addRef(event, id, slot) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (!refImages[id]) refImages[id] = [null, null, null];
+    refImages[id][slot] = e.target.result; // full data URL
+    const slotEl = document.getElementById('ref-' + id + '-' + slot);
+    if (slotEl) {
+      slotEl.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;border-radius:4px">';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runImageGen(id) {
+  const cfg = SKU_CONFIG[activeSku];
+  const prompt = document.getElementById('img-prompt-' + id)?.value || cfg.geminiStyle;
+  const genBtn = document.querySelector('#image-panel-' + id + ' .btn-gen.green');
+  const resultEl = document.getElementById('img-result-' + id);
+  const previewEl = document.getElementById('img-preview-' + id);
+  genBtn.textContent = '⏳ Generating…'; genBtn.disabled = true;
+  resultEl.style.display = 'none';
+  const refs = refImages[id] || [];
+  const parts = [];
+  refs.filter(Boolean).forEach(dataUrl => {
+    const [header, b64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg';
+    parts.push({ inlineData: { mimeType: mime, data: b64 } });
+  });
+  parts.push({ text: 'Generate a high-quality Facebook ad image for LACALUT® ' + cfg.name + '. Style: ' + prompt + '. The image should be scroll-stopping, clinically credible, 1080x1080 square format. No text overlays.' });
+  try {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=' + GEMINI_KEY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE','TEXT'] } })
+    });
+    if (!res.ok) throw new Error('Gemini HTTP ' + res.status);
+    const data = await res.json();
+    const imgPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+    if (!imgPart) throw new Error('No image returned');
+    const src = 'data:' + imgPart.inlineData.mimeType + ';base64,' + imgPart.inlineData.data;
+    previewEl.src = src;
+    resultEl.style.display = 'block';
+  } catch(err) {
+    alert('❌ Image generation failed: ' + err.message + '\n\nNote: Gemini image generation requires the gemini-2.0-flash-preview-image-generation model to be enabled for your API key.');
+  } finally {
+    genBtn.textContent = '🖼️ Generate'; genBtn.disabled = false;
+  }
+}
+function acceptImage(id) {
+  const preview = document.getElementById('img-preview-' + id);
+  const mainImg = document.getElementById('img-' + id);
+  if (preview && mainImg) { mainImg.src = preview.src; }
+  discardImage(id);
+  document.getElementById('card-' + id).style.boxShadow = '0 0 0 3px #16a34a';
+  setTimeout(() => { document.getElementById('card-' + id).style.boxShadow = ''; }, 1200);
+}
+function discardImage(id) {
+  const r = document.getElementById('img-result-' + id);
+  if (r) r.style.display = 'none';
+}
+
+/* ── VIDEO PROMPT GENERATION ── */
+async function genVideoPrompt(id) {
+  const card = document.getElementById('card-' + id);
+  const cfg = SKU_CONFIG[activeSku];
+  const ta = document.getElementById('video-prompt-' + id);
+  const btn = document.querySelector('#video-panel-' + id + ' .btn-gen.rose');
+  if (CLAUDE_KEY === '[YOUR_ANTHROPIC_API_KEY]') {
+    ta.value = 'Add your Claude API key to generate prompts automatically.\n\nManual template:\n\nOpening (0-5s): [Describe opening visual motion for ' + card.dataset.creativeName + ']\nPeak (7-10s): [Emotional or scientific revelation moment]\nClose (12-15s): [Product reveal with CTA]\n\nModel: Seedance 2.0 | Duration: 15s';
+    return;
+  }
+  btn.textContent = '⏳ Writing…'; btn.disabled = true;
+  ta.value = '⏳ Generating motion prompt…';
+  const prompt = 'Write a 15-second Higgsfield Seedance 2.0 motion brief for a Facebook video ad.\n\nSKU: ' + cfg.name + '\nCreative: ' + card.dataset.creativeName + '\nVisual style: ' + cfg.geminiStyle + '\nBrand: Clinical, German oral healthcare. 100-year heritage.\n\nWrite 3 short beats:\n1. Opening 0–5s: what moves (camera, particles, elements)\n2. Peak 7–10s: the emotional or scientific moment\n3. Close 12–15s: product + CTA\n\nTone matches ' + cfg.name + ' brand voice. Output the prompt only — no labels, no JSON.';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'x-api-key': CLAUDE_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    ta.value = data.content?.[0]?.text?.trim() || 'No prompt returned.';
+  } catch(err) {
+    ta.value = 'Error: ' + err.message;
+  } finally {
+    btn.textContent = '⚡ Generate Prompt'; btn.disabled = false;
+  }
+}
+function copyVideoPrompt(id) {
+  const ta = document.getElementById('video-prompt-' + id);
+  if (ta) { navigator.clipboard.writeText(ta.value).then(() => { const btn = ta.parentElement.querySelectorAll('.btn-gen')[1]; btn.textContent = '✅ Copied!'; setTimeout(() => { btn.textContent = '📋 Copy'; }, 1800); }); }
+}
+async function saveVideoUrl(id) {
+  const url = document.getElementById('video-url-' + id)?.value.trim();
+  if (!url) return;
+  const card = document.getElementById('card-' + id);
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/ad_approvals?sku=eq.' + activeSku + '&creative_name=eq.' + encodeURIComponent(card.dataset.creativeName), {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ video_url: url })
+    });
+    alert('✅ Video URL saved to Supabase.');
+  } catch(err) { alert('❌ ' + err.message); }
+}
+
+/* ── LOGO UPLOAD ── */
+function uploadLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    logoData = e.target.result;
+    localStorage.setItem('lacalut_logo', logoData);
+    document.getElementById('logo-status').textContent = 'Logo: ' + file.name;
+    const thumb = document.getElementById('logo-preview-thumb');
+    thumb.src = logoData; thumb.style.display = '';
+    applyLogoToAll();
+  };
+  reader.readAsDataURL(file);
+}
+function clearLogo() {
+  logoData = null;
+  localStorage.removeItem('lacalut_logo');
+  document.getElementById('logo-status').textContent = 'No logo uploaded';
+  document.getElementById('logo-preview-thumb').style.display = 'none';
+  document.querySelectorAll('.logo-overlay-wrap').forEach(w => { w.innerHTML = ''; });
+}
+function applyLogoToAll() {
+  const src = logoData || localStorage.getItem('lacalut_logo');
+  if (!src) return;
+  if (!logoData) {
+    logoData = src;
+    document.getElementById('logo-preview-thumb').src = src;
+    document.getElementById('logo-preview-thumb').style.display = '';
+    document.getElementById('logo-status').textContent = 'Logo loaded';
+  }
+  const placement = document.getElementById('logo-placement')?.value || 'br';
+  const size = document.getElementById('logo-size')?.value || '22';
+  document.querySelectorAll('.logo-overlay-wrap').forEach(wrap => {
+    wrap.innerHTML = '<img src="' + src + '" class="logo-overlay-img pos-' + placement + '" style="width:' + size + '%">';
+  });
+}
+
+/* ── TEACH MODAL ── */
 function switchTab(tab) {
   activeTab = tab;
   document.getElementById('section-creative').style.display = tab === 'creative' ? '' : 'none';
   document.getElementById('section-copy').style.display     = tab === 'copy'     ? '' : 'none';
   document.getElementById('tab-creative').classList.toggle('active', tab === 'creative');
-  document.getElementById('tab-copy').classList.toggle('active',     tab === 'copy');
+  document.getElementById('tab-copy').classList.toggle('active', tab === 'copy');
   const btn = document.getElementById('teach-save-btn');
   btn.textContent = teachWillReject
     ? (tab === 'creative' ? '💾 Save & Reject Creative' : '💾 Save & Reject Copy')
     : '💾 Save Training';
 }
-
 function toggleTag(el) { el.classList.toggle('selected'); }
-
 function openTeach(id, defaultTab, willReject) {
-  defaultTab = defaultTab || 'creative';
-  pendingTeachId  = id;
-  teachWillReject = !!willReject;
-  teachRejectType = defaultTab;
+  pendingTeachId = id; teachWillReject = !!willReject; teachRejectType = defaultTab || 'creative';
   const card = document.getElementById('card-' + id);
-  const img  = card.querySelector('.img-wrap img');
+  const img  = card ? card.querySelector('.fb-img-wrap img') : null;
   document.getElementById('teach-thumb').src = img ? img.src : '';
-  document.getElementById('teach-original-copy').textContent = card.querySelector('.primary-text')?.innerText || '';
-  document.getElementById('teach-preferred-copy').value    = '';
-  document.getElementById('teach-copy-notes').value        = '';
-  document.getElementById('teach-creative-problem').value  = '';
+  document.getElementById('teach-original-copy').textContent = document.getElementById('pt-' + id)?.innerText || '';
+  document.getElementById('teach-preferred-copy').value = '';
+  document.getElementById('teach-copy-notes').value = '';
+  document.getElementById('teach-creative-problem').value = '';
   document.getElementById('teach-creative-direction').value = '';
   document.querySelectorAll('.ctag.selected').forEach(t => t.classList.remove('selected'));
-  switchTab(defaultTab);
+  switchTab(teachRejectType);
   document.getElementById('teach-modal').classList.add('active');
 }
-
 function closeTeach() {
   document.getElementById('teach-modal').classList.remove('active');
-  const id = pendingTeachId; const reject = teachWillReject; const rType = teachRejectType;
+  const id = pendingTeachId, reject = teachWillReject, rType = teachRejectType;
   pendingTeachId = null; teachWillReject = false;
-  if (id && reject) {
-    if (rType === 'creative') applyRejectCreative(id, false);
-    else applyRejectCopy(id, false);
-  }
+  if (id && reject) { if (rType === 'creative') applyRejectCreative(id, false); else applyRejectCopy(id, false); }
 }
-
 async function submitTeach() {
   const id = pendingTeachId;
   const card = document.getElementById('card-' + id);
@@ -1561,14 +1148,11 @@ async function submitTeach() {
     const direction = document.getElementById('teach-creative-direction').value.trim();
     const tags      = Array.from(document.querySelectorAll('.ctag.selected')).map(t => t.textContent).join(', ');
     const notesStr  = [tags, problem].filter(Boolean).join(' · ');
-    if (notesStr || direction) payload = [{ sku:'flora', creative_name: card.dataset.creativeName||('Card '+id),
-      feedback_type:'creative', original_copy:null, preferred_copy:null, visual_direction:direction, notes:notesStr }];
+    if (notesStr || direction) payload = [{ sku: activeSku, creative_name: card.dataset.creativeName || ('Card '+id), feedback_type:'creative', original_copy:null, preferred_copy:null, visual_direction:direction, notes:notesStr }];
   } else {
     const preferred = document.getElementById('teach-preferred-copy').value.trim();
     const notes     = document.getElementById('teach-copy-notes').value.trim();
-    if (preferred || notes) payload = [{ sku:'flora', creative_name: card.dataset.creativeName||('Card '+id),
-      feedback_type:'copy', original_copy: card.querySelector('.primary-text')?.innerText||'',
-      preferred_copy:preferred, visual_direction:null, notes }];
+    if (preferred || notes) payload = [{ sku: activeSku, creative_name: card.dataset.creativeName || ('Card '+id), feedback_type:'copy', original_copy: document.getElementById('pt-' + id)?.innerText||'', preferred_copy:preferred, visual_direction:null, notes }];
   }
   try {
     if (payload) {
@@ -1580,23 +1164,35 @@ async function submitTeach() {
       if (!res.ok) throw new Error('HTTP ' + res.status);
     }
     document.getElementById('teach-modal').classList.remove('active');
-    const trained = payload !== null; const reject = teachWillReject; const rType = teachRejectType;
+    const trained = payload !== null, reject = teachWillReject, rType = teachRejectType;
     pendingTeachId = null; teachWillReject = false;
     if (reject) { if (rType === 'creative') applyRejectCreative(id, trained); else applyRejectCopy(id, trained); }
-    else if (trained) { document.getElementById('card-' + id).classList.add('trained'); }
-  } catch (err) {
+    else if (trained) { document.getElementById('card-' + id)?.classList.add('trained'); }
+  } catch(err) {
     saveBtn.textContent = teachWillReject ? '💾 Save & Reject' : '💾 Save Training'; saveBtn.disabled = false;
-    alert('❌ Save failed: ' + err.message + '\n\nEnsure ad_training table exists in Supabase.'); console.error(err);
+    alert('❌ Save failed: ' + err.message);
   }
 }
 
-/* ── Counts ── */
+/* ── COUNTS ── */
 function updateCounts() {
   const vals = Object.values(statuses);
   document.getElementById('approval-count').textContent        = vals.filter(v => v==='approved').length;
   document.getElementById('revise-count').textContent          = vals.filter(v => v==='revise').length;
   document.getElementById('reject-creative-count').textContent = vals.filter(v => v==='reject-creative').length;
   document.getElementById('reject-copy-count').textContent     = vals.filter(v => v==='reject-copy').length;
+}
+
+/* ── INIT ── */
+buildTabs();
+renderCards('flora');
+// Restore logo from localStorage
+const savedLogo = localStorage.getItem('lacalut_logo');
+if (savedLogo) {
+  logoData = savedLogo;
+  document.getElementById('logo-preview-thumb').src = savedLogo;
+  document.getElementById('logo-preview-thumb').style.display = '';
+  document.getElementById('logo-status').textContent = 'Logo loaded';
 }
 </script>
 </body>
