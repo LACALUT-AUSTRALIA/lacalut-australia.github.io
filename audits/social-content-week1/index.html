@@ -369,6 +369,46 @@
   }
   .ctag.selected { background: #fef2f2; border-color: #cf102d; color: #cf102d; }
 
+  /* ── Social Previews ── */
+  .preview-strip { display: none; border-top: 1px solid #e8e8e8; padding: 16px 20px; background: #f0f0f0; }
+  .preview-strip.active { display: block; }
+  .btn-preview { background: #1a1a1a; color: #fff; }
+
+  .fb-preview { background: #fff; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; max-width: 400px; margin: 0 auto; font-family: 'Segoe UI', system-ui, sans-serif; }
+  .fb-header  { display: flex; align-items: center; gap: 8px; padding: 10px 12px 4px; }
+  .fb-avatar  { width: 36px; height: 36px; border-radius: 50%; background: #cf102d; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.85rem; flex-shrink: 0; overflow: hidden; }
+  .fb-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .fb-page-name { font-size: 0.78rem; font-weight: 700; color: #050505; line-height: 1.2; }
+  .fb-post-meta { font-size: 0.67rem; color: #65676b; }
+  .fb-more-btn  { margin-left: auto; color: #606770; font-size: 1.2rem; cursor: pointer; line-height: 1; }
+  .fb-caption-preview { padding: 6px 12px 8px; font-size: 0.80rem; color: #050505; line-height: 1.5; }
+  .fb-see-more { color: #606770; cursor: pointer; font-weight: 600; }
+  .fb-image-wrap { background: #e4e6ea; }
+  .fb-image-wrap img { width: 100%; display: block; aspect-ratio: 1.91/1; object-fit: cover; }
+  .fb-engagements { display: flex; justify-content: space-between; padding: 6px 12px 4px; font-size: 0.72rem; color: #65676b; }
+  .fb-action-bar  { display: flex; border-top: 1px solid #e4e6ea; margin: 0 4px; }
+  .fb-action-btn  { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; font-size: 0.77rem; font-weight: 700; color: #65676b; cursor: pointer; border-radius: 4px; }
+  .fb-action-btn:hover { background: #f2f2f2; }
+
+  .ig-preview      { background: #fff; border-radius: 8px; border: 1px solid #ccc; overflow: hidden; max-width: 320px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+  .ig-post-header  { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+  .ig-avatar-wrap  { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); padding: 2px; flex-shrink: 0; display: flex; }
+  .ig-avatar-inner { width: 100%; height: 100%; border-radius: 50%; background: #cf102d; border: 1.5px solid #fff; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.68rem; overflow: hidden; }
+  .ig-avatar-inner img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+  .ig-post-username { font-size: 0.77rem; font-weight: 700; color: #000; }
+  .ig-follow-btn   { margin-left: 6px; font-size: 0.77rem; color: #0095f6; font-weight: 700; cursor: pointer; }
+  .ig-more-btn     { margin-left: auto; font-size: 1.1rem; cursor: pointer; }
+  .ig-image-wrap img { width: 100%; display: block; aspect-ratio: 4/5; object-fit: cover; }
+  .ig-icon-row     { display: flex; align-items: center; padding: 8px 12px 4px; gap: 14px; }
+  .ig-icon-btn     { font-size: 1.25rem; cursor: pointer; line-height: 1; }
+  .ig-bookmark-btn { margin-left: auto; }
+  .ig-like-count   { padding: 0 12px 4px; font-size: 0.77rem; font-weight: 700; color: #000; }
+  .ig-caption-preview { padding: 0 12px 4px; font-size: 0.77rem; color: #000; line-height: 1.5; }
+  .ig-caption-handle  { font-weight: 700; margin-right: 4px; }
+  .ig-caption-more    { color: #8e8e8e; cursor: pointer; }
+  .ig-hashtag-preview { padding: 0 12px 4px; font-size: 0.77rem; color: #00376b; line-height: 1.5; }
+  .ig-comments-link   { padding: 0 12px 10px; font-size: 0.74rem; color: #8e8e8e; cursor: pointer; }
+
   @media (max-width: 640px) {
     .grid { grid-template-columns: 1fr; }
     .card-layout { flex-direction: column; }
@@ -385,6 +425,7 @@
   </div>
   <span class="badge">📅 Week of 26/05/2026</span>
   <span class="badge">📱 FB + IG</span>
+  <button onclick="openSettings()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);color:#fff;border-radius:8px;padding:6px 14px;font-size:0.75rem;font-weight:700;cursor:pointer;letter-spacing:0.03em;white-space:nowrap">⚙️ Settings</button>
 </header>
 
 <div class="intro">
@@ -456,11 +497,13 @@ LACALUT® Aktiv. 100 years of German clinical science. 🔴
           <button class="btn btn-revise"           onclick="setStatus(1,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(1)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(1,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-preview"          onclick="togglePreview(1)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(1,'creative')">📚</button>
         </div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
+    <div class="preview-strip" id="preview-strip-1"></div>
   </div>
 
   <!-- POST 2 — Tuesday: German Heritage -->
@@ -514,11 +557,13 @@ LACALUT® Aktiv. Now in Australia. 🇩🇪
           <button class="btn btn-revise"           onclick="setStatus(2,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(2)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(2,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-preview"          onclick="togglePreview(2)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(2,'creative')">📚</button>
         </div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
+    <div class="preview-strip" id="preview-strip-2"></div>
   </div>
 
   <!-- POST 3 — Wednesday: Community Confidence -->
@@ -571,11 +616,13 @@ Your story? 👇</div>
           <button class="btn btn-revise"           onclick="setStatus(3,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(3)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(3,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-preview"          onclick="togglePreview(3)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(3,'creative')">📚</button>
         </div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
+    <div class="preview-strip" id="preview-strip-3"></div>
   </div>
 
   <!-- POST 4 — Thursday: Beat the Dentist -->
@@ -629,11 +676,13 @@ LACALUT® Aktiv. Clinical gum care, not just toothpaste. 🦷
           <button class="btn btn-revise"           onclick="setStatus(4,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(4)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(4,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-preview"          onclick="togglePreview(4)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(4,'creative')">📚</button>
         </div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
+    <div class="preview-strip" id="preview-strip-4"></div>
   </div>
 
   <!-- POST 5 — Friday: Product Hero -->
@@ -685,14 +734,34 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
           <button class="btn btn-revise"           onclick="setStatus(5,'revise')">✏️ Revise</button>
           <button class="btn btn-reject-creative"  onclick="openReviseImage(5)">🖼️ New Image</button>
           <button class="btn btn-reject-copy"      onclick="setStatus(5,'reject-copy')">🚫 Copy</button>
+          <button class="btn btn-preview"          onclick="togglePreview(5)">👁️</button>
           <button class="btn btn-teach"            onclick="openTeach(5,'creative')">📚</button>
         </div>
         <div class="trained-badge">📚 Training saved</div>
       </div>
     </div>
+    <div class="preview-strip" id="preview-strip-5"></div>
   </div>
 
 </div><!-- /grid -->
+
+<!-- Settings modal -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal" style="max-width:480px">
+    <h3>⚙️ API Settings</h3>
+    <p style="font-size:0.77rem;color:#888;margin-bottom:18px;line-height:1.5">Keys are stored in your browser only — never uploaded to GitHub or any server.</p>
+    <div class="section-label" style="margin-bottom:5px">Gemini API Key <span style="color:#888;font-weight:400;text-transform:none">(image generation)</span></div>
+    <input id="settings-key-gemini" type="password" placeholder="AIza..." style="width:100%;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;padding:9px 12px;font-size:0.8rem;margin-bottom:14px;font-family:inherit;outline:none;box-sizing:border-box">
+    <div class="section-label" style="margin-bottom:5px">Claude API Key <span style="color:#888;font-weight:400;text-transform:none">(copy revision)</span></div>
+    <input id="settings-key-claude" type="password" placeholder="sk-ant-..." style="width:100%;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;padding:9px 12px;font-size:0.8rem;margin-bottom:14px;font-family:inherit;outline:none;box-sizing:border-box">
+    <div class="section-label" style="margin-bottom:5px">Profile Photo URL <span style="color:#888;font-weight:400;text-transform:none">(optional — for platform previews)</span></div>
+    <input id="settings-profile-pic" type="text" placeholder="https://…" style="width:100%;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;padding:9px 12px;font-size:0.8rem;margin-bottom:18px;font-family:inherit;outline:none;box-sizing:border-box">
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="document.getElementById('settings-modal').classList.remove('active')">Close</button>
+      <button class="btn btn-confirm" onclick="saveSettings()">💾 Save Keys</button>
+    </div>
+  </div>
+</div>
 
 <!-- Approval modal -->
 <div class="modal-overlay" id="approval-modal">
@@ -791,6 +860,95 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
 const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
 
+/* ── API key store (localStorage only — never in source) ── */
+const KEYS = {
+  get gemini()    { return localStorage.getItem('lc_gemini_key')  || ''; },
+  get claude()    { return localStorage.getItem('lc_claude_key')  || ''; },
+  get profilePic(){ return localStorage.getItem('lc_profile_pic') || ''; }
+};
+function openSettings() {
+  document.getElementById('settings-key-gemini').value  = KEYS.gemini;
+  document.getElementById('settings-key-claude').value  = KEYS.claude;
+  document.getElementById('settings-profile-pic').value = KEYS.profilePic;
+  document.getElementById('settings-modal').classList.add('active');
+}
+function saveSettings() {
+  localStorage.setItem('lc_gemini_key',  document.getElementById('settings-key-gemini').value.trim());
+  localStorage.setItem('lc_claude_key',  document.getElementById('settings-key-claude').value.trim());
+  localStorage.setItem('lc_profile_pic', document.getElementById('settings-profile-pic').value.trim());
+  document.getElementById('settings-modal').classList.remove('active');
+}
+window.addEventListener('DOMContentLoaded', () => {
+  if (!KEYS.gemini || !KEYS.claude) openSettings();
+});
+
+/* ── Social previews ── */
+function togglePreview(id) {
+  const strip = document.getElementById('preview-strip-' + id);
+  if (strip.classList.contains('active')) {
+    strip.classList.remove('active');
+  } else {
+    strip.classList.add('active');
+    renderPreview(id);
+  }
+}
+function renderPreview(id) {
+  const strip    = document.getElementById('preview-strip-' + id);
+  const card     = document.getElementById('card-' + id);
+  const platform = captionMode[id] || 'fb';
+  const imgSrc   = card.querySelector('.img-wrap img').src;
+  const capEl    = card.querySelector(platform === 'fb' ? '.caption-fb' : '.caption-ig');
+  const hashEl   = card.querySelector('.hashtags-box');
+  const capText  = capEl   ? capEl.innerText.trim()   : '';
+  const hashText = hashEl  ? hashEl.innerText.trim()  : '';
+  const profPic  = KEYS.profilePic;
+  const avatarImg = profPic ? `<img src="${profPic}" alt="">` : 'L';
+
+  if (platform === 'fb') {
+    const shortCap = capText.length > 125
+      ? capText.slice(0, 125) + '<span class="fb-see-more">… See more</span>'
+      : capText;
+    strip.innerHTML = `<div class="fb-preview">
+      <div class="fb-header">
+        <div class="fb-avatar">${avatarImg}</div>
+        <div><div class="fb-page-name">Lacalut Australia</div><div class="fb-post-meta">Sponsored · 🌐</div></div>
+        <span class="fb-more-btn">···</span>
+      </div>
+      <div class="fb-caption-preview">${shortCap.replace(/\n/g,'<br>')}</div>
+      <div class="fb-image-wrap"><img src="${imgSrc}" alt=""></div>
+      <div class="fb-engagements"><span>👍❤️😮 1.2K</span><span>48 comments · 12 shares</span></div>
+      <div class="fb-action-bar">
+        <div class="fb-action-btn">👍 Like</div>
+        <div class="fb-action-btn">💬 Comment</div>
+        <div class="fb-action-btn">↗️ Share</div>
+      </div>
+    </div>`;
+  } else {
+    const shortCap = capText.length > 100
+      ? capText.slice(0, 100) + '<span class="ig-caption-more">... more</span>'
+      : capText;
+    strip.innerHTML = `<div class="ig-preview">
+      <div class="ig-post-header">
+        <div class="ig-avatar-wrap"><div class="ig-avatar-inner">${avatarImg}</div></div>
+        <span class="ig-post-username">lacalut.australia</span>
+        <span class="ig-follow-btn">Follow</span>
+        <span class="ig-more-btn">···</span>
+      </div>
+      <div class="ig-image-wrap"><img src="${imgSrc}" alt=""></div>
+      <div class="ig-icon-row">
+        <span class="ig-icon-btn">🤍</span>
+        <span class="ig-icon-btn">💬</span>
+        <span class="ig-icon-btn">📤</span>
+        <span class="ig-icon-btn ig-bookmark-btn">🔖</span>
+      </div>
+      <div class="ig-like-count">❤️ 847 likes</div>
+      <div class="ig-caption-preview"><span class="ig-caption-handle">lacalut.australia</span>${shortCap.replace(/\n/g,' ')}</div>
+      <div class="ig-hashtag-preview">${hashText}</div>
+      <div class="ig-comments-link">View all 23 comments</div>
+    </div>`;
+  }
+}
+
 const statuses = {};
 let pendingApprovalId  = null;
 let pendingReviseId    = null;
@@ -809,6 +967,8 @@ function switchCaption(id, mode) {
   const ig = card.querySelector('.caption-ig');
   if (mode === 'fb') { fb.style.display = ''; ig.style.display = 'none'; }
   else               { fb.style.display = 'none'; ig.style.display = ''; }
+  const strip = document.getElementById('preview-strip-' + id);
+  if (strip && strip.classList.contains('active')) renderPreview(id);
 }
 
 /* ── Status management ── */
