@@ -342,14 +342,17 @@
   .logo-size-btn.active { background: #004a88; color: #fff; border-color: #004a88; }
   .btn-logo { background: #0d9488; color: #fff; flex: 0 0 auto; padding: 7px 10px; }
 
-  /* Reference image upload */
+  /* Reference image drag-drop zones */
   .ref-upload-section { margin-bottom: 12px; }
-  .ref-upload-rows { display: flex; flex-direction: column; gap: 8px; }
-  .ref-upload-row  { display: flex; align-items: center; gap: 8px; }
-  .ref-upload-row input[type="file"] { flex: 1; font-size: 0.72rem; color: #555; cursor: pointer; }
-  .ref-upload-row select { font-size: 0.70rem; padding: 4px 6px; border: 1px solid #ddd; border-radius: 5px; background: #f5f5f5; color: #555; cursor: pointer; flex-shrink: 0; }
-  .ref-thumbs { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-  .ref-thumb  { width: 56px; height: 56px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
+  .ref-drop-zone { border: 2px dashed #ddd; border-radius: 8px; padding: 9px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, background 0.15s; background: #fafafa; margin-bottom: 6px; }
+  .ref-drop-zone:hover  { border-color: #aaa; background: #f5f5f5; }
+  .ref-drop-zone.drag-over { border-color: #cf102d; background: #fff5f5; }
+  .ref-drop-zone.has-file  { border-color: #004a88; background: #f0f6ff; }
+  .ref-drop-zone input[type="file"] { display: none; }
+  .ref-drop-label { font-size: 0.72rem; color: #888; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ref-drop-label strong { color: #cf102d; }
+  .ref-drop-select { font-size: 0.70rem; padding: 4px 6px; border: 1px solid #ddd; border-radius: 5px; background: #f5f5f5; color: #555; cursor: pointer; flex-shrink: 0; }
+  .ref-drop-thumb { width: 36px; height: 36px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; flex-shrink: 0; display: none; }
 
   /* Revise image modal */
   .revise-image-modal textarea {
@@ -895,21 +898,24 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
     <textarea id="revise-direction" rows="3" placeholder="e.g. Show the moment of relief — someone smiling confidently after brushing. Warm morning light. Authentic, not posed."></textarea>
     <div class="section-label" style="margin-bottom:5px">Reference Images <span style="color:#888;font-weight:400;text-transform:none">(optional — sent to Gemini with your prompt)</span></div>
     <div class="ref-upload-section">
-      <div class="ref-upload-rows">
-        <div class="ref-upload-row">
-          <input type="file" accept="image/*" id="ref-img-0" onchange="handleRefImg(0,this)">
-          <select id="ref-label-0"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
-        </div>
-        <div class="ref-upload-row">
-          <input type="file" accept="image/*" id="ref-img-1" onchange="handleRefImg(1,this)">
-          <select id="ref-label-1"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
-        </div>
-        <div class="ref-upload-row">
-          <input type="file" accept="image/*" id="ref-img-2" onchange="handleRefImg(2,this)">
-          <select id="ref-label-2"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
-        </div>
+      <div class="ref-drop-zone" id="ref-zone-0" onclick="document.getElementById('ref-img-0').click()" ondragover="handleDragOver(event,0)" ondragleave="handleDragLeave(event,0)" ondrop="handleDrop(event,0)">
+        <input type="file" accept="image/*" id="ref-img-0" onchange="handleRefImg(0,this)">
+        <img class="ref-drop-thumb" id="ref-drop-thumb-0" alt="">
+        <span class="ref-drop-label" id="ref-drop-label-0">📎 <strong>Drop image</strong> or click to choose</span>
+        <select class="ref-drop-select" id="ref-label-0" onclick="event.stopPropagation()"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
       </div>
-      <div class="ref-thumbs" id="ref-thumbs-wrap"></div>
+      <div class="ref-drop-zone" id="ref-zone-1" onclick="document.getElementById('ref-img-1').click()" ondragover="handleDragOver(event,1)" ondragleave="handleDragLeave(event,1)" ondrop="handleDrop(event,1)">
+        <input type="file" accept="image/*" id="ref-img-1" onchange="handleRefImg(1,this)">
+        <img class="ref-drop-thumb" id="ref-drop-thumb-1" alt="">
+        <span class="ref-drop-label" id="ref-drop-label-1">📎 <strong>Drop image</strong> or click to choose</span>
+        <select class="ref-drop-select" id="ref-label-1" onclick="event.stopPropagation()"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
+      </div>
+      <div class="ref-drop-zone" id="ref-zone-2" onclick="document.getElementById('ref-img-2').click()" ondragover="handleDragOver(event,2)" ondragleave="handleDragLeave(event,2)" ondrop="handleDrop(event,2)">
+        <input type="file" accept="image/*" id="ref-img-2" onchange="handleRefImg(2,this)">
+        <img class="ref-drop-thumb" id="ref-drop-thumb-2" alt="">
+        <span class="ref-drop-label" id="ref-drop-label-2">📎 <strong>Drop image</strong> or click to choose</span>
+        <select class="ref-drop-select" id="ref-label-2" onclick="event.stopPropagation()"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
+      </div>
     </div>
     <div class="section-label" style="margin-bottom:8px">Image model</div>
     <div class="model-chips">
@@ -1227,16 +1233,36 @@ let refImages = [null, null, null];   // base64 data URLs for reference images
 
 function handleRefImg(idx, input) {
   const file = input.files[0];
-  if (!file) { refImages[idx] = null; renderRefThumbs(); return; }
+  if (!file) return;
+  loadRefFile(idx, file);
+}
+function loadRefFile(idx, file) {
   const reader = new FileReader();
-  reader.onload = e => { refImages[idx] = { dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' }; renderRefThumbs(); };
+  reader.onload = e => {
+    refImages[idx] = { dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' };
+    const zone  = document.getElementById('ref-zone-' + idx);
+    const thumb = document.getElementById('ref-drop-thumb-' + idx);
+    const label = document.getElementById('ref-drop-label-' + idx);
+    thumb.src = e.target.result;
+    thumb.style.display = 'block';
+    label.innerHTML = '✅ <strong>' + file.name.slice(0, 28) + '</strong>';
+    zone.classList.add('has-file');
+    zone.classList.remove('drag-over');
+  };
   reader.readAsDataURL(file);
 }
-function renderRefThumbs() {
-  const wrap = document.getElementById('ref-thumbs-wrap');
-  wrap.innerHTML = refImages.filter(Boolean).map(r =>
-    `<img class="ref-thumb" src="${r.dataUrl}" alt="">`
-  ).join('');
+function handleDragOver(e, idx) {
+  e.preventDefault();
+  document.getElementById('ref-zone-' + idx).classList.add('drag-over');
+}
+function handleDragLeave(e, idx) {
+  document.getElementById('ref-zone-' + idx).classList.remove('drag-over');
+}
+function handleDrop(e, idx) {
+  e.preventDefault();
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) loadRefFile(idx, file);
+  else document.getElementById('ref-zone-' + idx).classList.remove('drag-over');
 }
 function selectModel(el, model) {
   selectedModel = model;
@@ -1246,8 +1272,12 @@ function selectModel(el, model) {
 function openReviseImage(id) {
   pendingReviseId = id;
   refImages = [null, null, null];
-  [0,1,2].forEach(i => { const el = document.getElementById('ref-img-' + i); if (el) el.value = ''; });
-  document.getElementById('ref-thumbs-wrap').innerHTML = '';
+  [0,1,2].forEach(i => {
+    const inp   = document.getElementById('ref-img-'       + i); if (inp) inp.value = '';
+    const zone  = document.getElementById('ref-zone-'      + i); if (zone) { zone.classList.remove('has-file','drag-over'); }
+    const thumb = document.getElementById('ref-drop-thumb-'+ i); if (thumb) { thumb.src = ''; thumb.style.display = 'none'; }
+    const label = document.getElementById('ref-drop-label-'+ i); if (label) label.innerHTML = '📎 <strong>Drop image</strong> or click to choose';
+  });
   const card = document.getElementById('card-' + id);
   const img  = card.querySelector('.img-wrap img');
   document.getElementById('revise-thumb').src = img ? img.src : '';
