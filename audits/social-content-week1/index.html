@@ -321,6 +321,15 @@
   .btn-confirm { background: #16a34a; color: #fff; }
   .btn-cancel  { background: #f0f0f0; color: #555; }
 
+  /* Reference image upload */
+  .ref-upload-section { margin-bottom: 12px; }
+  .ref-upload-rows { display: flex; flex-direction: column; gap: 8px; }
+  .ref-upload-row  { display: flex; align-items: center; gap: 8px; }
+  .ref-upload-row input[type="file"] { flex: 1; font-size: 0.72rem; color: #555; cursor: pointer; }
+  .ref-upload-row select { font-size: 0.70rem; padding: 4px 6px; border: 1px solid #ddd; border-radius: 5px; background: #f5f5f5; color: #555; cursor: pointer; flex-shrink: 0; }
+  .ref-thumbs { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .ref-thumb  { width: 56px; height: 56px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
+
   /* Revise image modal */
   .revise-image-modal textarea {
     width: 100%; background: #f8f8f8; border: 1px solid #ddd; color: #1a1a1a;
@@ -788,6 +797,24 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
     <textarea id="revise-problem" rows="2" placeholder="e.g. Too stock photo, wrong emotion, setting doesn't feel Australian…"></textarea>
     <div class="section-label" style="margin-bottom:5px">Direction for the new image</div>
     <textarea id="revise-direction" rows="3" placeholder="e.g. Show the moment of relief — someone smiling confidently after brushing. Warm morning light. Authentic, not posed."></textarea>
+    <div class="section-label" style="margin-bottom:5px">Reference Images <span style="color:#888;font-weight:400;text-transform:none">(optional — sent to Gemini with your prompt)</span></div>
+    <div class="ref-upload-section">
+      <div class="ref-upload-rows">
+        <div class="ref-upload-row">
+          <input type="file" accept="image/*" id="ref-img-0" onchange="handleRefImg(0,this)">
+          <select id="ref-label-0"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
+        </div>
+        <div class="ref-upload-row">
+          <input type="file" accept="image/*" id="ref-img-1" onchange="handleRefImg(1,this)">
+          <select id="ref-label-1"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
+        </div>
+        <div class="ref-upload-row">
+          <input type="file" accept="image/*" id="ref-img-2" onchange="handleRefImg(2,this)">
+          <select id="ref-label-2"><option>Style reference</option><option>Composition reference</option><option>Mood reference</option></select>
+        </div>
+      </div>
+      <div class="ref-thumbs" id="ref-thumbs-wrap"></div>
+    </div>
     <div class="section-label" style="margin-bottom:8px">Image model</div>
     <div class="model-chips">
       <span class="model-chip active" onclick="selectModel(this,'gemini')">Gemini (default)</span>
@@ -795,7 +822,7 @@ LACALUT® Aktiv — clinical-grade gum care, now shipping free across Australia.
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeReviseImage()">Cancel</button>
-      <button class="btn btn-confirm" id="revise-save-btn" onclick="submitReviseImage()">🖼️ Request Regeneration</button>
+      <button class="btn btn-confirm" id="revise-save-btn" onclick="submitReviseImage()">🖼️ Generate Image</button>
     </div>
   </div>
 </div>
@@ -1080,6 +1107,21 @@ async function submitApproval() {
 }
 
 /* ── Revise Image modal ── */
+let refImages = [null, null, null];   // base64 data URLs for reference images
+
+function handleRefImg(idx, input) {
+  const file = input.files[0];
+  if (!file) { refImages[idx] = null; renderRefThumbs(); return; }
+  const reader = new FileReader();
+  reader.onload = e => { refImages[idx] = { dataUrl: e.target.result, mimeType: file.type || 'image/jpeg' }; renderRefThumbs(); };
+  reader.readAsDataURL(file);
+}
+function renderRefThumbs() {
+  const wrap = document.getElementById('ref-thumbs-wrap');
+  wrap.innerHTML = refImages.filter(Boolean).map(r =>
+    `<img class="ref-thumb" src="${r.dataUrl}" alt="">`
+  ).join('');
+}
 function selectModel(el, model) {
   selectedModel = model;
   document.querySelectorAll('.model-chip').forEach(c => c.classList.remove('active'));
@@ -1087,6 +1129,9 @@ function selectModel(el, model) {
 }
 function openReviseImage(id) {
   pendingReviseId = id;
+  refImages = [null, null, null];
+  [0,1,2].forEach(i => { const el = document.getElementById('ref-img-' + i); if (el) el.value = ''; });
+  document.getElementById('ref-thumbs-wrap').innerHTML = '';
   const card = document.getElementById('card-' + id);
   const img  = card.querySelector('.img-wrap img');
   document.getElementById('revise-thumb').src = img ? img.src : '';
@@ -1105,33 +1150,71 @@ async function submitReviseImage() {
   const direction = document.getElementById('revise-direction').value.trim();
   const saveBtn   = document.getElementById('revise-save-btn');
   if (!direction) { alert('Please describe the direction for the new image.'); return; }
-  saveBtn.textContent = '⏳ Logging request…';
-  saveBtn.disabled = true;
 
+  // Log to Supabase regardless of model
   const payload = [{
     sku: 'aktiv-social', creative_name: card.dataset.creativeName || ('Post ' + id),
     feedback_type: 'creative', original_copy: null, preferred_copy: null,
     visual_direction: '[MODEL: ' + selectedModel + '] ' + direction,
     notes: problem
   }];
+  fetch(SUPABASE_URL + '/rest/v1/ad_training', {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
+      'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(payload)
+  });
 
-  try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/ad_training', {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify(payload)
+  if (selectedModel === 'gemini') {
+    if (!KEYS.gemini) { openSettings(); return; }
+    saveBtn.textContent = '⏳ Generating…';
+    saveBtn.disabled = true;
+    const imgEl = card.querySelector('.img-wrap img');
+    imgEl.style.opacity = '0.35';
+
+    const brandContext = 'LACALUT® Aktiv clinical gum care brand. Australian market. Colours: deep red #cf102d, navy #004a88. Style: cinematic, clinical-confident, not stock-photo. 1080×1350px portrait.';
+    const parts = [{ text: brandContext + '\n\nImage direction: ' + direction + (problem ? '\n\nAvoid: ' + problem : '') }];
+    refImages.filter(Boolean).forEach((r, i) => {
+      const b64 = r.dataUrl.split(',')[1];
+      const label = document.getElementById('ref-label-' + i)?.value || 'Reference';
+      parts.push({ text: label + ':' });
+      parts.push({ inlineData: { mimeType: r.mimeType, data: b64 } });
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    closeReviseImage();
-    statuses[id] = 'reject-creative';
-    card.classList.add('rejected-creative');
-    document.getElementById('reject-note-' + id).textContent = '🖼️ New image requested · Tell Claude to regenerate';
-    updateCounts();
-  } catch (err) {
-    saveBtn.textContent = '🖼️ Request Regeneration';
-    saveBtn.disabled = false;
-    alert('❌ Failed: ' + err.message);
+
+    try {
+      const res = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + KEYS.gemini,
+        { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts }], generationConfig: { responseModalities: ['IMAGE','TEXT'] } }) }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'HTTP ' + res.status);
+      const imgPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+      if (!imgPart) throw new Error('No image returned — try a more specific prompt.');
+      imgEl.src = 'data:' + imgPart.inlineData.mimeType + ';base64,' + imgPart.inlineData.data;
+      imgEl.style.opacity = '1';
+      closeReviseImage();
+      card.classList.remove('rejected-creative');
+      statuses[id] = undefined;
+      updateCounts();
+    } catch (err) {
+      imgEl.style.opacity = '1';
+      saveBtn.textContent = '🖼️ Generate Image';
+      saveBtn.disabled = false;
+      alert('❌ Gemini error: ' + err.message);
+    }
+  } else {
+    // Higgsfield — queue via Supabase, Claude Code handles generation
+    saveBtn.textContent = '✅ Queued';
+    setTimeout(() => {
+      closeReviseImage();
+      statuses[id] = 'reject-creative';
+      card.classList.add('rejected-creative');
+      document.getElementById('reject-note-' + id).textContent = '🎬 Higgsfield video queued — say "generate video for Post ' + id + '" in Claude Code';
+      saveBtn.textContent = '🖼️ Generate Image';
+      saveBtn.disabled = false;
+      updateCounts();
+    }, 600);
   }
 }
 
