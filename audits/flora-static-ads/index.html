@@ -42,7 +42,8 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
 .sku-dot { width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; background: var(--sku-color, #fff); }
 
 /* ── Grid ── */
-#card-grid { max-width: 1320px; margin: 0 auto; padding: 0 22px 80px; }
+#card-grid { max-width: 1320px; margin: 0 auto; padding: 0 22px 20px; }
+#vid-pipeline { max-width: 1320px; margin: 0 auto; padding: 0 22px 80px; }
 .sec-hdr { display: flex; align-items: center; gap: 12px; padding: 22px 0 8px; }
 .sec-hdr h2 { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; white-space: nowrap; }
 .sec-line { flex: 1; height: 1px; background: #d1d5db; }
@@ -68,7 +69,7 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
 .card-body { display: flex; }
 
 /* Image panel */
-.img-panel { flex-shrink: 0; width: 200px; position: relative; overflow: hidden; }
+.img-panel { flex-shrink: 0; width: 240px; position: relative; overflow: hidden; }
 .img-panel.feed-mode { aspect-ratio: 4/5; }
 .img-panel.story-mode { aspect-ratio: 9/16; }
 .img-panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -192,11 +193,107 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
 .ctag { background: #f3f4f6; border: 1px solid #e0e0e0; color: #555; font-size: 0.66rem; padding: 3px 8px; border-radius: 999px; cursor: pointer; user-select: none; }
 .ctag.on { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
 
+/* ── Idea Generation Engine ── */
+#idea-engine { max-width: 1320px; margin: 0 auto; padding: 16px 22px 0; }
+.idea-engine-banner {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 12px; padding: 18px 22px; margin-bottom: 4px;
+}
+.idea-engine-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn-generate-ideas {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #fff; border: none; border-radius: 8px; padding: 13px 24px;
+  font-size: 0.82rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+  transition: filter 0.15s;
+}
+.btn-generate-ideas:hover { filter: brightness(1.12); }
+.btn-generate-ideas:disabled { background: #4b5563; cursor: not-allowed; filter: none; }
+.idea-or { color: rgba(255,255,255,0.35); font-size: 0.75rem; font-weight: 600; flex-shrink: 0; }
+.my-idea-row { display: flex; gap: 8px; flex: 1; min-width: 220px; }
+.my-idea-input {
+  flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px; padding: 10px 13px; font-size: 0.77rem; color: #fff; font-family: inherit;
+}
+.my-idea-input::placeholder { color: rgba(255,255,255,0.4); }
+.my-idea-input:focus { outline: none; border-color: rgba(99,102,241,0.8); }
+.btn-add-idea {
+  background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 8px; padding: 10px 18px; font-size: 0.77rem; font-weight: 700; cursor: pointer; white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-add-idea:hover { background: rgba(255,255,255,0.22); }
+.btn-add-idea:disabled { opacity: 0.5; cursor: not-allowed; }
+.idea-key-warn {
+  background: #fef3c7; border: 1px solid #fcd34d; border-radius: 7px;
+  padding: 9px 13px; font-size: 0.73rem; color: #92400e; margin-top: 10px; line-height: 1.5;
+}
+
+/* ── Pending Idea Cards ── */
+.idea-card {
+  background: #fff; border-radius: 12px; border: 2px dashed #c7d2fe;
+  padding: 16px; display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 0.15s;
+}
+.idea-card:hover { border-color: #6366f1; }
+.idea-card-hdr { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.idea-card-name { font-size: 0.86rem; font-weight: 700; flex: 1; }
+.idea-angle-tag { font-size: 0.6rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; text-transform: uppercase; }
+.idea-concept-box {
+  font-size: 0.73rem; color: #555; line-height: 1.55;
+  background: #f8f9fa; border-left: 3px solid #c7d2fe;
+  padding: 6px 10px; border-radius: 0 5px 5px 0;
+}
+.idea-pt-box {
+  font-size: 0.75rem; color: #1a1a1a; line-height: 1.65;
+  background: #fafafa; border: 1px solid #efefef;
+  border-left: 3px solid #6366f1; padding: 8px 10px;
+  border-radius: 0 5px 5px 0; word-break: break-word;
+}
+.idea-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-idea-approve {
+  background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;
+  border-radius: 6px; padding: 7px 16px; font-size: 0.71rem; font-weight: 700; cursor: pointer;
+}
+.btn-idea-approve:hover { background: #bbf7d0; }
+.btn-idea-bin {
+  background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+  border-radius: 6px; padding: 7px 14px; font-size: 0.71rem; font-weight: 700; cursor: pointer;
+}
+.btn-idea-bin:hover { background: #fecaca; }
+
+/* ── Video Pipeline ── */
+.vid-pipeline-card {
+  background: #fff; border-radius: 12px; border: 1px solid #fecdd3;
+  display: flex; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.vid-pipeline-thumb { width: 90px; flex-shrink: 0; background: #f0f0f0; }
+.vid-pipeline-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vid-pipeline-body { flex: 1; padding: 13px 16px; display: flex; flex-direction: column; gap: 9px; min-width: 0; }
+.vid-pipeline-hdr { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vid-pipeline-name { font-size: 0.84rem; font-weight: 700; flex: 1; }
+.vid-status { font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 999px; }
+.vid-status.prompt-ready { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.vid-status.sent         { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.vid-status.received     { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.vid-pipeline-ta {
+  width: 100%; border: 1px solid #e5e7eb; border-radius: 7px; padding: 8px 10px;
+  font-size: 0.73rem; line-height: 1.55; resize: vertical; font-family: inherit;
+  background: #fafafa; color: #1a1a1a; display: block;
+}
+.vid-pipeline-ta:focus { outline: none; border-color: #be123c; }
+.vid-pipeline-btns { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+.btn-vid-copy { background: #fff1f2; color: #881337; border: 1px solid #fecdd3; border-radius: 5px; padding: 6px 13px; font-size: 0.69rem; font-weight: 700; cursor: pointer; }
+.btn-vid-sent { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 5px; padding: 6px 13px; font-size: 0.69rem; font-weight: 700; cursor: pointer; }
+.vid-url-inp2 { flex: 1; min-width: 140px; padding: 6px 9px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 0.69rem; font-family: inherit; }
+.btn-vid-save { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; border-radius: 5px; padding: 6px 11px; font-size: 0.69rem; font-weight: 700; cursor: pointer; }
+
 @media(max-width:640px){
   .grid { grid-template-columns: 1fr; }
   .card-body { flex-direction: column; }
   .img-panel { width: 100%; aspect-ratio: 4/5 !important; }
   .sku-btn { padding: 11px 14px; font-size: 0.67rem; }
+  .idea-engine-row { flex-direction: column; align-items: stretch; }
+  .btn-generate-ideas { width: 100%; }
 }
 </style>
 </head>
@@ -247,11 +344,17 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
   <button class="lu-clear" onclick="clearLogo()">✕ Remove</button>
 </div>
 
-<!-- SKU TAB BAR — sticky black bar -->
+<!-- SKU TAB BAR -->
 <div id="sku-bar"></div>
+
+<!-- IDEA GENERATION ENGINE -->
+<div id="idea-engine"></div>
 
 <!-- CARD GRID -->
 <div id="card-grid"></div>
+
+<!-- VIDEO PIPELINE -->
+<div id="vid-pipeline"></div>
 
 <!-- APPROVAL MODAL -->
 <div class="modal-ov" id="app-modal">
@@ -321,7 +424,7 @@ var SKUS = {
   aktiv: {
     name: 'LACALUT® Aktiv', tab: 'AKTIV', color: '#cf102d',
     tagline: 'Clinical gum treatment · Bleeding gums & gingivitis · Adults 35+',
-    claudePrompt: 'Performance Facebook ads for LACALUT Aktiv - clinical gum toothpaste. AU adults 35+. Bleeding gums / early gingivitis. Clinical urgency without fear. Never salesy. Australian English. Return JSON only.',
+    claudePrompt: 'Performance Facebook ads for LACALUT Aktiv - clinical gum toothpaste. AU adults 35+. Bleeding gums / early gingivitis. Clinical urgency without fear. Never salesy. Australian English. Primary text must be 3-5 sentences: hook → problem agitation → solution → proof/CTA. Return JSON only.',
     geminiStyle: 'Clinical, dramatic lighting, dark background, close-up dental or product shot, high contrast, serious mood',
     campaignId:'[AKTIV_CAMPAIGN_ID]', adsetId:'[AKTIV_ADSET_ID]', adsetName:'Aktiv / Gingivitis', tplAdId:'[AKTIV_TPL_ID]',
     cards:[]
@@ -329,7 +432,7 @@ var SKUS = {
   aktiv_herbal: {
     name: 'LACALUT® Aktiv Herbal', tab: 'AKTIV HERBAL', color: '#5a8a3c',
     tagline: 'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
-    claudePrompt: 'Performance Facebook ads for LACALUT Aktiv Herbal - clinical gum toothpaste with 9 medicinal herbs. AU adults 35+ who want clinical results AND premium natural experience. Spa-like oral care that actually works. Warm, ingredient-led tone. Australian English. Return JSON only.',
+    claudePrompt: 'Performance Facebook ads for LACALUT Aktiv Herbal - clinical gum toothpaste with 9 medicinal herbs. AU adults 35+ who want clinical results AND premium natural experience. Spa-like oral care that actually works. Warm, ingredient-led tone. Australian English. Primary text must be 3-5 sentences: hook → problem agitation → solution → proof/CTA. Return JSON only.',
     geminiStyle: 'Warm botanical aesthetic, medicinal herbs, lush greenery, apothecary feel, premium natural, soft earthy tones',
     campaignId:'[HERBAL_CAMPAIGN_ID]', adsetId:'[HERBAL_ADSET_ID]', adsetName:'Aktiv Herbal / Gingivitis', tplAdId:'[HERBAL_TPL_ID]',
     cards:[]
@@ -337,86 +440,46 @@ var SKUS = {
   flora: {
     name: 'LACALUT® Flora', tab: 'FLORA', color: '#2d8f4e',
     tagline: 'Probiotic bad breath formula · Eliminates odour bacteria · Women 25–45',
-    claudePrompt: 'Performance Facebook ads for LACALUT Flora - probiotic toothpaste for bad breath / halitosis. AU women 25-45, health-conscious. Embarrassed by persistent bad breath despite brushing. Lead with probiotics restoring oral microbiome balance. Empowering, clean, credible tone. Australian English. Return JSON only.',
+    claudePrompt: 'Performance Facebook ads for LACALUT Flora - probiotic toothpaste for bad breath / halitosis. AU women 25-45, health-conscious. Embarrassed by persistent bad breath despite brushing. Lead with probiotics restoring oral microbiome balance. Empowering, clean, credible tone. Australian English. Primary text must be 3-5 sentences: hook → problem agitation → solution → proof/CTA. Never just one line. Return JSON only.',
     geminiStyle: 'Fresh, bright, clean wellness aesthetic, soft natural light, white or sage green tones, modern and premium',
     campaignId:'120241478653830229', adsetId:'120244410306410229', adsetName:'Flora / Bad Breath', tplAdId:'120244706626530229',
     cards:[
       {id:1,type:'concept',name:'The Social Distance',lbl:'Concept 01',emoji:'👥',angle:'Social Shame',canva:true,
        img:'../flora-gemini-concepts/images/concept-1-social-distance.jpg',
-       pt:'"THEY CAN SMELL WHAT YOU CAN\'T SEE."',
+       pt:'They can smell what you can\'t see. Bad breath isn\'t about brushing harder — it\'s caused by odour-producing bacteria that ordinary toothpaste misses entirely. LACALUT® Flora targets and eliminates these bacteria at the source, restoring your mouth\'s natural balance. 100 years of German clinical science. One tube. Real results.',
        h1:'',h2:'',h3:'',desc:'',
        concept:'Cinematic dinner party — toxic green breath cloud visible, everyone subtly leaning away. Relatable gut-punch.',
        canvaTxt:'Text overlays to be added in Canva after approval.'},
       {id:2,type:'concept',name:'The Bacteria Factory',lbl:'Concept 02 🔥',emoji:'🏭',angle:'Absurd Metaphor',canva:true,
        img:'../flora-gemini-concepts/images/concept-2-bacteria-factory.jpg',
-       pt:'"YOUR MOUTH IS RUNNING A SULFUR FACTORY."',
+       pt:'Your mouth is running a sulfur factory — and regular toothpaste is just painting over it. The real cause of persistent bad breath is bacteria that produce hydrogen sulphide gas deep in your oral microbiome. LACALUT® Flora is clinically formulated to disrupt and eliminate these odour-producing bacteria, not just mask what they leave behind. German precision. Probiotic science. Actual fresh breath.',
        h1:'',h2:'',h3:'',desc:'',
        concept:'Inside-mouth view — bacteria workers in hard hats, chimneys belching neon green sulfur. Nothing like this in oral care.',
        canvaTxt:'Text overlays to be added in Canva after approval.'},
       {id:3,type:'concept',name:'The Mint Lie',lbl:'Concept 03',emoji:'🌿',angle:'Competitor Takedown',canva:true,
        img:'../flora-gemini-concepts/images/concept-3-mint-lie.jpg',
-       pt:'"A MINT IS JUST PERFUME ON A CHEMICAL LEAK."',
+       pt:'A mint is just perfume on a chemical leak — and your mouth knows the difference. When bad breath keeps coming back despite brushing, flossing, and mouthwash, the problem isn\'t your routine. It\'s the bacteria surviving it. LACALUT® Flora uses a clinically validated formula to eliminate odour-causing bacteria that others can\'t reach. Switch your toothpaste. Solve the real problem.',
        h1:'',h2:'',h3:'',desc:'',
        concept:'Macro mint leaf with neon green skull melting through centre. Dark background, high contrast. Directly attacks masking.',
        canvaTxt:'Text overlays to be added in Canva after approval.'},
       {id:4,type:'concept',name:'The Biohazard Zone',lbl:'Concept 04',emoji:'☣️',angle:'Dark Humour',canva:true,
        img:'../flora-gemini-concepts/images/concept-4-biohazard-zone.jpg',
-       pt:'"ORAL BIOHAZARD. AREA UNDER QUARANTINE."',
+       pt:'Oral biohazard. Area under quarantine. If your bad breath survives brushing, mints, and mouthwash — you\'re not fighting the right enemy. Persistent halitosis is caused by specific bacteria that colonise your gums and tongue, producing sulfur compounds with every breath. LACALUT® Flora is the clinical-grade formula designed to target and eliminate them at the source. Germany\'s answer to the problem that won\'t go away.',
        h1:'',h2:'',h3:'',desc:'',
        concept:'Aerial bird\'s-eye — lone suited man surrounded by hazmat tape, neon green mist spreading outward.',
        canvaTxt:'Text overlays to be added in Canva after approval.'},
       {id:5,type:'concept',name:'The Sulfur Forecast',lbl:'Concept 05',emoji:'🌩️',angle:'Clever Metaphor',canva:true,
        img:'../flora-gemini-concepts/images/concept-5-sulfur-forecast.jpg',
-       pt:'"TODAY\'S FORECAST: 100% CHANCE OF SULFUR."',
+       pt:'Today\'s forecast: 100% chance of sulfur — unless you fight back at the source. Most people with chronic bad breath brush twice a day and still can\'t shake it. That\'s because the problem isn\'t their routine — it\'s the bacteria that survive it. LACALUT® Flora clinically disrupts the hydrogen sulphide-producing bacteria that cause mouth odour, restoring balance from the very first brush. Probiotic oral science from Germany. Available in Australia now.',
        h1:'',h2:'',h3:'',desc:'',
        concept:'Weather radar with neon green toxic storm spreading from centre. Bad breath as a weather event.',
-       canvaTxt:'Text overlays to be added in Canva after approval.'},
-      {id:6,type:'frame',name:'Office Hero',lbl:'Ad 1 · 0.5s',emoji:'🏢',angle:'Confidence · Workplace',canva:false,
-       img:'../flora-static-image-review/images/ad1_3pm_crash_t0_5s.jpg',
-       pt:'Struggling with bad breath at work? It\'s not just bad luck — it\'s bacteria. LACALUT® Flora targets the bacterial source of mouth odour so you can speak up in every meeting without second-guessing yourself. 100 years of German clinical science. One tube. All-day confidence.',
-       h1:'Stop Bacteria. Start Talking.',h2:'Bad Breath at Work? This Fixes It.',h3:'Clinically Proven Fresh Breath. All Day.',
-       desc:'Targets the bacterial root cause of mouth odour — not just the symptoms. Fresh breath that lasts all day.',concept:'',canvaTxt:''},
-      {id:7,type:'frame',name:'Bacteria Science',lbl:'Ad 1 · 7.5s',emoji:'🔬',angle:'Clinical Proof',canva:false,
-       img:'../flora-static-image-review/images/ad1_3pm_crash_t7_5s.jpg',
-       pt:'Bad breath isn\'t a hygiene problem — it\'s a bacteria problem. Most toothpastes just mask the smell. LACALUT® Flora is clinically formulated to eliminate the odour-causing bacteria at the source. 100 years of German oral science. One tube. Real results.',
-       h1:'It\'s Not Your Breath. It\'s Bacteria.',h2:'Kill the Source. Not Just the Smell.',h3:'Clinical-Grade Anti-Halitosis Formula',
-       desc:'Works where other toothpastes can\'t — at the bacterial source of bad breath. Results from the very first brush.',concept:'',canvaTxt:''},
-      {id:8,type:'frame',name:'Product Hero',lbl:'Ad 1 · 14.0s',emoji:'🏗️',angle:'Brand · Shop Now',canva:false,
-       img:'../flora-static-image-review/images/ad1_3pm_crash_t14_0s.jpg',
-       pt:'LACALUT® Flora. The German toothpaste that actually fixes bad breath — not just masks it. Clinically formulated to fight odour-causing bacteria at the source. Now available in Australia with free shipping.',
-       h1:'LACALUT® Flora — Fresh Breath Formula',h2:'German Clinical Science for Bad Breath',h3:'Fights Bacteria. Not Just Odour.',
-       desc:'Clinically formulated to eliminate bad breath at the bacterial source. Free shipping Australia-wide.',concept:'',canvaTxt:''},
-      {id:9,type:'frame',name:'Dentist Reaction',lbl:'Ad 2 · 3.0s',emoji:'🦷',angle:'Authority · Pattern Interrupt',canva:false,
-       img:'../flora-static-image-review/images/ad2_dentist_t3_0s.jpg',
-       pt:'Your dentist noticed something you didn\'t want them to. Bad breath isn\'t always about brushing harder — sometimes it\'s about targeting the right bacteria. LACALUT® Flora is clinically developed to eliminate odour-causing bacteria that regular toothpaste misses.',
-       h1:'Your Dentist Is Noticing Something.',h2:'What Your Dentist Won\'t Say Out Loud',h3:'The Toothpaste Dentists Actually Recommend',
-       desc:'Clinically developed anti-halitosis toothpaste. Fight bad breath at the bacterial source — not just the surface.',concept:'',canvaTxt:''},
-      {id:10,type:'frame',name:'Bacterial Shield',lbl:'Ad 2 · 5.0s',emoji:'🛡️',angle:'Clinical Proof · Transformation',canva:false,
-       img:'../flora-static-image-review/images/ad2_dentist_t5_0s.jpg',
-       pt:'This is what\'s happening inside your mouth right now. Odour-causing bacteria cling to your teeth and gums — and ordinary toothpaste doesn\'t reach them all. LACALUT® Flora\'s clinical formula creates a bacteria-fighting shield that works from the very first brush.',
-       h1:'See What\'s Causing Your Bad Breath',h2:'Bacteria Hiding Where Toothpaste Can\'t Reach',h3:'Clinical Shield Against Odour-Causing Bacteria',
-       desc:'Targets odour-causing bacteria below the surface — where ordinary toothpaste falls short.',concept:'',canvaTxt:''},
-      {id:11,type:'frame',name:'Bathroom Lifestyle',lbl:'Ad 2 · 14.0s',emoji:'🛁',angle:'Lifestyle · Daily Ritual',canva:false,
-       img:'../flora-static-image-review/images/ad2_dentist_t14_0s.jpg',
-       pt:'What if fixing bad breath was as simple as switching your toothpaste? LACALUT® Flora replaces your ordinary toothpaste with a clinical anti-halitosis formula — same routine, dramatically better results. No sprays. No mouthwash. Just brush.',
-       h1:'Replace Your Toothpaste. Fix Your Breath.',h2:'Same Brush. Clinical-Grade Fresh Breath.',h3:'No Extras. Just Switch Your Toothpaste.',
-       desc:'Fits straight into your existing routine. Clinical anti-halitosis protection with every single brush.',concept:'',canvaTxt:''},
-      {id:12,type:'frame',name:'The Moment',lbl:'Ad 3 · 3.0s',emoji:'💑',angle:'Emotional · Relationships',canva:false,
-       img:'../flora-static-image-review/images/ad3_conversation_t3_0s.jpg',
-       pt:'Bad breath doesn\'t just happen at work — it happens in the moments that matter most. LACALUT® Flora is clinically formulated to eliminate the bacteria that cause mouth odour so you can be close to the people you love without a second thought.',
-       h1:'Don\'t Let Bacteria Ruin the Moment',h2:'Be Close. Be Confident. Be Fresh.',h3:'The Moments That Matter — Breath Included',
-       desc:'Eliminates the bacterial root cause of bad breath. Because the people closest to you deserve your best self.',concept:'',canvaTxt:''},
-      {id:13,type:'frame',name:'Brushing Transform',lbl:'Ad 3 · 12.0s',emoji:'✨',angle:'Product Action · Sensory',canva:false,
-       img:'../flora-static-image-review/images/ad3_conversation_t12_0s.jpg',
-       pt:'This is LACALUT® Flora working. While you brush, its clinical formula actively fights odour-causing bacteria — not just covering the smell, but eliminating the source. A 100-year German formulation. Now available in Australia.',
-       h1:'This Is What Fighting Bacteria Looks Like',h2:'One Brush. Bacteria Gone.',h3:'Clinical Anti-Halitosis — Every Single Brush',
-       desc:'Delivers clinical-grade anti-halitosis action with every brush. Feel the fresh breath difference from day one.',concept:'',canvaTxt:''}
+       canvaTxt:'Text overlays to be added in Canva after approval.'}
     ]
   },
   sensitive: {
     name: 'LACALUT® Sensitive', tab: 'SENSITIVE', color: '#004a88',
     tagline: 'Fast-acting sensitivity relief · Potassium nitrate formula · Coming soon',
-    claudePrompt: 'Performance Facebook ads for LACALUT Sensitive - toothpaste for sensitive teeth. AU adults avoiding hot/cold foods due to sharp tooth pain. Lead with restored freedom and relief. Warm, empathetic, solution-led tone. Australian English. Return JSON only.',
+    claudePrompt: 'Performance Facebook ads for LACALUT Sensitive - toothpaste for sensitive teeth. AU adults avoiding hot/cold foods due to sharp tooth pain. Lead with restored freedom and relief. Warm, empathetic, solution-led tone. Australian English. Primary text must be 3-5 sentences: hook → problem agitation → solution → proof/CTA. Return JSON only.',
     geminiStyle: 'Warm soft lighting, lifestyle moment enjoying coffee or cold drinks comfortably, gentle colour palette, relatable, relief and joy',
     campaignId:'[SENSITIVE_CAMPAIGN_ID]', adsetId:'[SENSITIVE_ADSET_ID]', adsetName:'Sensitive / Tooth Pain', tplAdId:'[SENSITIVE_TPL_ID]',
     cards:[]
@@ -424,7 +487,7 @@ var SKUS = {
   white_repair: {
     name: 'LACALUT® White & Repair', tab: 'WHITE & REPAIR', color: '#c9a84c',
     tagline: 'Hydroxyapatite enamel repair + whitening · Science-led · Coming soon',
-    claudePrompt: 'Performance Facebook ads for LACALUT White & Repair - remineralising whitening toothpaste. AU adults 25-45 who want whiter teeth but distrust harsh bleaching. Science-led: hydroxyapatite repairs enamel while phosphates remove discolouration. Lead with repair-from-within. Smart, results-driven, premium tone. Australian English. Return JSON only.',
+    claudePrompt: 'Performance Facebook ads for LACALUT White & Repair - remineralising whitening toothpaste. AU adults 25-45 who want whiter teeth but distrust harsh bleaching. Science-led: hydroxyapatite repairs enamel while phosphates remove discolouration. Lead with repair-from-within. Smart, results-driven, premium tone. Australian English. Primary text must be 3-5 sentences: hook → problem agitation → solution → proof/CTA. Return JSON only.',
     geminiStyle: 'Crisp white tones, premium minimalist aesthetic, bright healthy smiles, clean product photography, aspirational but attainable',
     campaignId:'[WHITE_CAMPAIGN_ID]', adsetId:'[WHITE_ADSET_ID]', adsetName:'White & Repair / Whitening', tplAdId:'[WHITE_TPL_ID]',
     cards:[]
@@ -439,6 +502,9 @@ var refImgs = {};
 var pendApprove = null, pendTeach = null;
 var activeTab = 'c', teachReject = false, teachRType = 'c';
 var logoData = null;
+var pendingIdeas = {};
+var vidQueue = {};
+var nextIdeaId = 1000;
 
 /* ── INIT ── */
 buildTabBar();
@@ -483,25 +549,23 @@ function renderCards(sku){
   var cards = s.cards;
   if(!cards||cards.length===0){
     document.getElementById('total-lbl').textContent='0 total';
-    grid.innerHTML='<div class="cs-wrap"><div style="font-size:2.5rem">🚧</div><h2>'+h(s.name)+'</h2><p>Ad concepts for this SKU are being developed.</p><p style="margin-top:6px">Switch to <strong>Flora</strong> to see 13 live creatives.</p><button class="cs-btn" style="background:'+s.color+'" onclick="switchSku(\'flora\')">← Open Flora</button></div>';
+    grid.innerHTML='<div class="cs-wrap"><div style="font-size:2.5rem">🚧</div><h2>'+h(s.name)+'</h2><p>Ad concepts for this SKU are being developed.</p><p style="margin-top:6px">Switch to <strong>Flora</strong> to see live creatives, or use the idea generator above to create concepts for this SKU.</p><button class="cs-btn" style="background:'+s.color+'" onclick="switchSku(\'flora\')">← Open Flora</button></div>';
+    renderIdeaEngine(sku);
+    refreshVidPipeline(sku);
     return;
   }
   var concepts=cards.filter(function(c){return c.type==='concept';});
-  var frames=cards.filter(function(c){return c.type==='frame';});
-  document.getElementById('total-lbl').textContent=cards.length+' total · '+concepts.length+' concepts + '+frames.length+' frames';
+  document.getElementById('total-lbl').textContent=cards.length+' total · '+concepts.length+' concepts';
   var out='';
   if(concepts.length){
     out+='<div class="sec-hdr"><h2>🎨 AI Concept Visuals</h2><div class="sec-line"></div><span class="sec-badge">'+concepts.length+' concepts · Text overlays via Canva</span></div><div class="grid">';
     for(var i=0;i<concepts.length;i++) out+=buildCard(concepts[i],s);
     out+='</div>';
   }
-  if(frames.length){
-    out+='<div class="sec-hdr"><h2>🎥 Video Frame Captures</h2><div class="sec-line"></div><span class="sec-badge">'+frames.length+' frames · Full copy ready</span></div><div class="grid">';
-    for(var i=0;i<frames.length;i++) out+=buildCard(frames[i],s);
-    out+='</div>';
-  }
   grid.innerHTML=out;
   applyLogo();
+  renderIdeaEngine(sku);
+  refreshVidPipeline(sku);
 }
 
 /* ── HTML ESCAPE ── */
@@ -510,7 +574,6 @@ function h(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 /* ── BUILD CARD ── */
 function buildCard(c,s){
   var id=c.id, color=s.color;
-  var hlColor=color;
   /* Primary text */
   var ptHtml='<div class="field-lbl" style="color:'+color+'">PRIMARY TEXT</div>'
     +'<div class="field-box editable" id="pt-'+id+'" style="border-left-color:'+color+'">'
@@ -534,28 +597,22 @@ function buildCard(c,s){
     if(c.canvaTxt) extraHtml+='<div class="canva-note">🖌️ '+h(c.canvaTxt)+'</div>';
   }
   /* Concept label badge */
-  var typeLbl = c.type==='concept'
-    ? '<span class="card-lbl" style="background:'+color+'">'+h(c.lbl)+'</span>'
-    : '<span class="card-lbl" style="background:#555">'+h(c.lbl)+'</span>';
+  var typeLbl='<span class="card-lbl" style="background:'+color+'">'+h(c.lbl)+'</span>';
   /* Build full card */
   var out = '<div class="card" id="card-'+id+'" data-id="'+id+'" data-name="'+h(c.name)+'" data-type="'+c.type+'" data-sku="'+activeSku+'">'
-    /* Header */
     +'<div class="card-hdr">'+typeLbl+'<span class="card-name">'+c.emoji+' '+h(c.name)+'</span>'
     +'<span class="angle-tag">'+h(c.angle)+'</span>'+(c.canva?'<span class="canva-tag">✏️ Canva</span>':'')+'</div>'
-    /* Body */
     +'<div class="card-body">'
-    /* Image */
     +'<div class="img-panel feed-mode" id="imgp-'+id+'">'
-    +'<img src="'+h(c.img)+'" id="img-'+id+'" alt="'+h(c.name)+'" loading="lazy">'
+    +(c.img?'<img src="'+h(c.img)+'" id="img-'+id+'" alt="'+h(c.name)+'" loading="lazy">'
+           :'<div id="img-'+id+'-placeholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f3f4f6;font-size:0.7rem;color:#999;text-align:center;padding:10px">No image yet<br>Use 🖼️ to generate</div><img src="" id="img-'+id+'" alt="'+h(c.name)+'" style="display:none">')
     +'<div class="logo-ov-wrap" id="lov-'+id+'"></div>'
     +'<div class="fmt-bar">'
     +'<button class="fmt-btn on" onclick="setFmt('+id+',\'feed\',this)">📱 Feed</button>'
     +'<button class="fmt-btn" onclick="setFmt('+id+',\'story\',this)">📲 Story</button>'
     +'</div></div>'
-    /* Copy */
     +'<div class="copy-panel">'+ptHtml+hlHtml+descHtml+extraHtml+'</div>'
     +'</div>'
-    /* Toolbar */
     +'<div class="toolbar">'
     +'<button class="btn btn-approve" onclick="setStatus('+id+',\'approved\')">&#10003; Approve</button>'
     +'<button class="btn btn-revise" id="rvbtn-'+id+'" onclick="setStatus('+id+',\'revise\')">&#9998; Revise</button>'
@@ -570,14 +627,14 @@ function buildCard(c,s){
     /* Claude panel */
     +'<div class="ai-panel" id="claude-panel-'+id+'">'
     +'<div class="panel-lbl" style="color:#3730a3">&#9997;&#65039; Revise Copy — Claude Sonnet</div>'
-    +'<div class="panel-hint">SKU: '+h(s.name)+' · outputs 1 primary text + 3 headlines + 1 description</div>'
+    +'<div class="panel-hint">SKU: '+h(s.name)+' · primary text (3-5 sentences) + 3 headlines + description</div>'
     +'<textarea class="panel-ta" id="cin-'+id+'" rows="2" placeholder="What to change? e.g. More urgent · Shorter · Target women · Different angle"></textarea>'
     +'<div class="panel-btns"><button class="btn-go" onclick="runClaude('+id+')">&#9997;&#65039; Revise</button><button class="btn-close-p" onclick="togglePanel(\'claude\','+id+')">&#10005; Close</button></div>'
     +'<div class="result-box" id="cres-'+id+'"><div class="result-lbl">Claude suggests:</div><div class="result-pre" id="cpre-'+id+'"></div><div class="result-btns"><button class="btn-accept" onclick="acceptClaude('+id+')">&#10003; Accept</button><button class="btn-discard" onclick="discardClaude('+id+')">&#128465; Discard</button></div></div>'
     +'</div>'
     /* Image panel */
     +'<div class="ai-panel" id="image-panel-'+id+'">'
-    +'<div class="panel-lbl" style="color:#6b21a8">&#128444;&#65039; Generate Image — Gemini</div>'
+    +'<div class="panel-lbl" style="color:#6b21a8">&#128444;&#65039; Generate Image — Gemini · 1080×1350 portrait</div>'
     +'<div class="panel-hint">Style: '+h(s.geminiStyle)+'</div>'
     +'<div class="ref-slots">'
     +'<label class="ref-slot-lbl"><input type="file" accept="image/*" onchange="addRef(event,'+id+',0)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-0">+ Style ref</div></label>'
@@ -591,11 +648,9 @@ function buildCard(c,s){
     /* Video panel */
     +'<div class="ai-panel" id="video-panel-'+id+'">'
     +'<div class="panel-lbl" style="color:#881337">&#127909; Make Video — Higgsfield Seedance 2.0</div>'
-    +'<div class="panel-hint">Generates a 15-second motion brief. Copy and paste into Claude Code.</div>'
+    +'<div class="panel-hint">Generates a 15-second motion brief → adds to Video Pipeline below. Copy prompt → paste in Claude Code → run <code style="background:#fee2e2;color:#9f1239;padding:1px 4px;border-radius:3px">/higgsfield-generate</code></div>'
     +'<textarea class="panel-ta" id="vpr-'+id+'" rows="4" placeholder="Click Generate Prompt to auto-write a Higgsfield motion brief…"></textarea>'
     +'<div class="panel-btns"><button class="btn-go rose" onclick="genVidPrompt('+id+')">&#9889; Generate Prompt</button><button class="btn-go" onclick="copyVidPrompt('+id+')" style="background:#6b7280">&#128203; Copy</button><button class="btn-close-p" onclick="togglePanel(\'video\','+id+')">&#10005; Close</button></div>'
-    +'<div class="video-inst">&#128161; Copy prompt above → paste in Claude Code → run: <code>/higgsfield-generate</code></div>'
-    +'<div class="vid-url-row"><input type="text" class="vid-url-inp" id="vurl-'+id+'" placeholder="Paste Higgsfield video URL once rendered"><button class="btn-save-url" onclick="saveVidUrl('+id+')">&#128190; Save URL</button></div>'
     +'</div>'
     +'</div>';
   return out;
@@ -713,17 +768,18 @@ async function runClaude(id){
   genBtn.textContent='⏳ Revising…';genBtn.disabled=true;
   resBox.classList.remove('show');
   var pt=document.getElementById('pt-'+id)?document.getElementById('pt-'+id).innerText:'';
-  var h1=document.getElementById('h1-'+id)?document.getElementById('h1-'+id).innerText:'';
-  var h2=document.getElementById('h2-'+id)?document.getElementById('h2-'+id).innerText:'';
-  var h3=document.getElementById('h3-'+id)?document.getElementById('h3-'+id).innerText:'';
+  var h1v=document.getElementById('h1-'+id)?document.getElementById('h1-'+id).innerText:'';
+  var h2v=document.getElementById('h2-'+id)?document.getElementById('h2-'+id).innerText:'';
+  var h3v=document.getElementById('h3-'+id)?document.getElementById('h3-'+id).innerText:'';
   var desc=document.getElementById('desc-'+id)?document.getElementById('desc-'+id).innerText:'';
-  var msg='Creative: "'+card.dataset.name+'"\n\nCurrent copy:\nPrimary Text: '+pt+'\nH1: '+h1+'\nH2: '+h2+'\nH3: '+h3+'\nDescription: '+desc
+  var msg='Creative: "'+card.dataset.name+'"\n\nCurrent copy:\nPrimary Text: '+pt+'\nH1: '+h1v+'\nH2: '+h2v+'\nH3: '+h3v+'\nDescription: '+desc
     +'\n\nInstruction: '+input
+    +'\n\nIMPORTANT: Primary text must be 3-5 full sentences following this structure: visceral hook → problem agitation → solution bridge → proof/authority → CTA. Never just one line.'
     +'\n\nReturn ONLY valid JSON:\n{"primary_text":"...","h1":"...","h2":"...","h3":"...","description":"..."}';
   try{
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.claudePrompt,messages:[{role:'user',content:msg}]})});
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:s.claudePrompt,messages:[{role:'user',content:msg}]})});
     var data=await res.json();
     var raw=(data.content&&data.content[0]&&data.content[0].text)||'';
     raw=raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
@@ -774,7 +830,7 @@ async function runImgGen(id){
     var mime=(sp[0].match(/:([^;]+);/)||[])[1]||'image/jpeg';
     parts.push({inlineData:{mimeType:mime,data:sp[1]}});
   }
-  parts.push({text:'Generate a high-quality Facebook ad image for '+s.name+'. Style: '+prompt+'. Scroll-stopping, clinically credible, 1080x1080 square. No text overlays on the image.'});
+  parts.push({text:'Generate a high-quality Facebook ad image for '+s.name+'. Style: '+prompt+'. 1080x1350 portrait format, 4:5 aspect ratio, tall format optimised for Instagram Feed. Scroll-stopping, clinically credible. No text overlays on the image.'});
   try{
     var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key='+GEM_KEY,{
       method:'POST',headers:{'Content-Type':'application/json'},
@@ -792,7 +848,12 @@ async function runImgGen(id){
 }
 function acceptImg(id){
   var prev=document.getElementById('iprev-'+id),main=document.getElementById('img-'+id);
-  if(prev&&main)main.src=prev.src;
+  if(prev&&main){
+    main.src=prev.src;
+    main.style.display='';
+    var ph=document.getElementById('img-'+id+'-placeholder');
+    if(ph)ph.style.display='none';
+  }
   discardImg(id);applyLogo();
 }
 function discardImg(id){var r=document.getElementById('ires-'+id);if(r)r.style.display='none';}
@@ -805,15 +866,17 @@ async function genVidPrompt(id){
   var btn=document.querySelector('#video-panel-'+id+' .btn-go.rose');
   if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
     ta.value='Add your Claude API key to generate prompts automatically.\n\nManual template:\nOpening 0-5s: [describe motion for '+card.dataset.name+']\nPeak 7-10s: [emotional or scientific revelation]\nClose 12-15s: [product reveal + CTA]\n\nModel: Seedance 2.0 | Duration: 15s';
+    addToVidQueue(id);
     return;
   }
   btn.textContent='⏳ Writing…';btn.disabled=true;ta.value='⏳ Generating motion prompt…';
   try{
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:280,messages:[{role:'user',content:'Write a 15-second Higgsfield Seedance 2.0 motion brief for a Facebook video ad.\n\nSKU: '+s.name+'\nCreative: '+card.dataset.name+'\nVisual style: '+s.geminiStyle+'\n\nWrite 3 beats:\n1. Opening 0-5s: camera/particle motion\n2. Peak 7-10s: emotional or scientific moment\n3. Close 12-15s: product + CTA\n\nOutput only the prompt text.'}]})});
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:320,messages:[{role:'user',content:'Write a 15-second Higgsfield Seedance 2.0 motion brief for a Facebook video ad.\n\nSKU: '+s.name+'\nCreative: '+card.dataset.name+'\nVisual style: '+s.geminiStyle+'\n\nWrite 3 beats:\n1. Opening 0-5s: camera/particle motion\n2. Peak 7-10s: emotional or scientific moment\n3. Close 12-15s: product + CTA\n\nOutput only the prompt text.'}]})});
     var data=await res.json();
     ta.value=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
+    addToVidQueue(id);
   }catch(err){ta.value='Error: '+err.message;}
   finally{btn.textContent='⚡ Generate Prompt';btn.disabled=false;}
 }
@@ -823,17 +886,6 @@ function copyVidPrompt(id){
     var btns=document.querySelectorAll('#video-panel-'+id+' .btn-go');
     if(btns[1]){btns[1].textContent='✅ Copied!';setTimeout(function(){btns[1].textContent='📋 Copy';},1800);}
   });}
-}
-async function saveVidUrl(id){
-  var url=document.getElementById('vurl-'+id).value.trim();
-  if(!url)return;
-  var card=document.getElementById('card-'+id);
-  try{
-    await fetch(SUPA_URL+'/rest/v1/ad_approvals?sku=eq.'+activeSku+'&creative_name=eq.'+encodeURIComponent(card.dataset.name),{
-      method:'PATCH',headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify({video_url:url})});
-    alert('✅ Video URL saved.');
-  }catch(err){alert('❌ '+err.message);}
 }
 
 /* ── LOGO ── */
@@ -936,6 +988,255 @@ function updateCounts(){
   document.getElementById('ct-revise').textContent=v.filter(function(x){return x==='revise';}).length;
   document.getElementById('ct-rc').textContent=v.filter(function(x){return x==='reject-creative';}).length;
   document.getElementById('ct-rp').textContent=v.filter(function(x){return x==='reject-copy';}).length;
+}
+
+/* ═══════════════════════════════════════════════════
+   IDEA GENERATION ENGINE
+═══════════════════════════════════════════════════ */
+
+function renderIdeaEngine(sku){
+  var el=document.getElementById('idea-engine');
+  if(!el)return;
+  var s=SKUS[sku];
+  var ideas=pendingIdeas[sku]||[];
+  var keyMissing=CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]';
+
+  var html='<div class="idea-engine-banner">';
+  html+='<div class="idea-engine-row">';
+  html+='<button class="btn-generate-ideas" id="gen-ideas-btn" onclick="generateIdeas(\''+sku+'\')">'
+      +'✨ Generate 10 Scroll-Stopping Ideas for '+h(s.tab)+'</button>';
+  html+='<span class="idea-or">or</span>';
+  html+='<div class="my-idea-row">'
+      +'<input type="text" class="my-idea-input" id="my-idea-input-'+sku+'" placeholder="Describe your own idea… e.g. Person on a date, green breath cloud only visible to the audience" onkeydown="if(event.key===\'Enter\')addMyIdea(\''+sku+'\')">'
+      +'<button class="btn-add-idea" id="add-idea-btn" onclick="addMyIdea(\''+sku+'\')">+ Add My Idea</button>'
+      +'</div>';
+  html+='</div>';
+  if(keyMissing){
+    html+='<div class="idea-key-warn">⚠️ Claude API key not set — add your key to <strong>CLAUDE_KEY</strong> in the script to enable AI idea generation. Get yours at <strong>console.anthropic.com → API Keys</strong>.</div>';
+  }
+  html+='</div>';
+
+  if(ideas.length>0){
+    html+='<div class="sec-hdr"><h2>💡 Pending Ideas</h2><div class="sec-line"></div><span class="sec-badge">'+ideas.length+' waiting for review</span></div>';
+    html+='<div class="grid">';
+    for(var i=0;i<ideas.length;i++) html+=buildIdeaCard(sku,i,ideas[i],s);
+    html+='</div>';
+  }
+
+  el.innerHTML=html;
+}
+
+function buildIdeaCard(sku,idx,idea,s){
+  return '<div class="idea-card">'
+    +'<div class="idea-card-hdr">'
+    +'<span class="idea-card-name">✨ '+h(idea.name||'Untitled Concept')+'</span>'
+    +'<span class="idea-angle-tag" style="background:'+s.color+'22;color:'+s.color+';border:1px solid '+s.color+'44">'+h(idea.angle||'')+'</span>'
+    +'</div>'
+    +'<div class="idea-concept-box">'+h(idea.concept||'')+'</div>'
+    +'<div class="field-lbl" style="color:'+s.color+'">PRIMARY TEXT PREVIEW</div>'
+    +'<div class="idea-pt-box" style="border-left-color:'+s.color+'">'+h(idea.primary_text||'')+'</div>'
+    +'<div class="idea-btns">'
+    +'<button class="btn-idea-approve" onclick="approveIdea(\''+sku+'\','+idx+')">✅ Approve — Add to Grid</button>'
+    +'<button class="btn-idea-bin" onclick="binIdea(\''+sku+'\','+idx+')">🗑️ Bin</button>'
+    +'</div>'
+    +'</div>';
+}
+
+async function generateIdeas(sku){
+  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
+    alert('Add your Anthropic API key to CLAUDE_KEY in the script to enable AI idea generation.\n\nGet it at: console.anthropic.com → API Keys');
+    return;
+  }
+  var s=SKUS[sku];
+  var btn=document.getElementById('gen-ideas-btn');
+  if(btn){btn.textContent='⏳ Generating 10 ideas…';btn.disabled=true;}
+
+  var systemPrompt='You are a world-class DTC performance creative director who has studied and reverse-engineered the top 8-figure ecommerce brands: Dollar Shave Club, MeUndies, Graza, Caraway, Liquid IV, Athletic Greens, True Classic, Beardbrand, Bombas, and Hexclad.\n\n'
+    +'Your job is to generate scroll-stopping static image ad concepts for a clinical oral care brand.\n\n'
+    +'RULES — every single concept must follow these:\n'
+    +'• Open with a visceral problem hook or cinematic emotional moment — never a generic product shot\n'
+    +'• Use diverse angles across the 10: Social Shame, Fear/Stakes, Absurd Metaphor, Competitor Takedown, Authority/Science, Transformation, Curiosity Gap, Dark Humour, Relatable Moment, Aspirational Contrast\n'
+    +'• Primary text = 3-5 sentences exactly: hook → problem agitation → solution bridge → proof/authority → CTA\n'
+    +'• Australian English spelling throughout (colour, behaviour, practise, etc.)\n'
+    +'• Headlines: punchy, under 30 characters each\n'
+    +'• imagePrompt: describe the visual in detail for an AI image generator — lighting, composition, mood, subject\n\n'
+    +'Return ONLY a valid JSON array — no markdown, no explanation, no preamble. Array of exactly 10 objects.';
+
+  var userPrompt='Generate 10 unique, scroll-stopping static image ad concepts for:\n\nProduct: '+s.name+'\nTarget: '+s.tagline+'\nContext: '+s.claudePrompt+'\n\nJSON keys required: name, angle, concept, primary_text, h1, h2, h3, description, imagePrompt';
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:4000,system:systemPrompt,messages:[{role:'user',content:userPrompt}]})});
+    var data=await res.json();
+    var raw=(data.content&&data.content[0]&&data.content[0].text)||'';
+    raw=raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var ideas=JSON.parse(raw);
+    if(!Array.isArray(ideas))throw new Error('Response was not an array');
+    if(!pendingIdeas[sku])pendingIdeas[sku]=[];
+    pendingIdeas[sku]=pendingIdeas[sku].concat(ideas);
+    renderIdeaEngine(sku);
+  }catch(err){
+    alert('❌ Idea generation failed: '+err.message);
+    if(btn){btn.textContent='✨ Generate 10 Scroll-Stopping Ideas for '+s.tab;btn.disabled=false;}
+  }
+}
+
+async function addMyIdea(sku){
+  var input=document.getElementById('my-idea-input-'+sku);
+  var txt=input?input.value.trim():'';
+  if(!txt){alert('Describe your idea first.');return;}
+  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
+    alert('Add your Anthropic API key to CLAUDE_KEY to expand ideas with Claude.');
+    return;
+  }
+  var s=SKUS[sku];
+  var btn=document.getElementById('add-idea-btn');
+  if(btn){btn.textContent='⏳ Expanding…';btn.disabled=true;}
+
+  var msg='Expand this rough creative concept into a full Facebook ad brief for '+s.name+'.\n\n'
+    +'Rough idea: "'+txt+'"\n\n'
+    +'SKU context: '+s.tagline+'\n\n'
+    +'Primary text must be 3-5 sentences: hook → problem agitation → solution bridge → proof/authority → CTA.\n'
+    +'Australian English spelling. Headlines under 30 characters each.\n\n'
+    +'Return ONLY a valid JSON object with keys: name, angle, concept, primary_text, h1, h2, h3, description, imagePrompt';
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.claudePrompt,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=(data.content&&data.content[0]&&data.content[0].text)||'';
+    raw=raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var idea=JSON.parse(raw);
+    if(!pendingIdeas[sku])pendingIdeas[sku]=[];
+    pendingIdeas[sku].push(idea);
+    if(input)input.value='';
+    renderIdeaEngine(sku);
+  }catch(err){
+    alert('❌ Failed to expand idea: '+err.message);
+    if(btn){btn.textContent='+ Add My Idea';btn.disabled=false;}
+  }
+}
+
+function approveIdea(sku,idx){
+  var ideas=pendingIdeas[sku]||[];
+  var idea=ideas[idx];
+  if(!idea)return;
+  var newId=nextIdeaId++;
+  var card={
+    id:newId,type:'concept',
+    name:idea.name||'AI Concept',
+    lbl:'AI ✨',emoji:'✨',
+    angle:idea.angle||'',canva:true,
+    img:'',
+    pt:idea.primary_text||'',
+    h1:idea.h1||'',h2:idea.h2||'',h3:idea.h3||'',
+    desc:idea.description||'',
+    concept:idea.concept||'',
+    canvaTxt:'Text overlays to be added in Canva after approval. Use 🖼️ Generate Image to create the visual.'
+  };
+  SKUS[sku].cards.push(card);
+  ideas.splice(idx,1);
+  pendingIdeas[sku]=ideas;
+  renderCards(sku);
+  setTimeout(function(){
+    var newCard=document.getElementById('card-'+newId);
+    if(newCard)newCard.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },100);
+}
+
+function binIdea(sku,idx){
+  var ideas=pendingIdeas[sku]||[];
+  ideas.splice(idx,1);
+  pendingIdeas[sku]=ideas;
+  renderIdeaEngine(sku);
+}
+
+/* ═══════════════════════════════════════════════════
+   VIDEO PIPELINE
+═══════════════════════════════════════════════════ */
+
+function addToVidQueue(id){
+  var sku=activeSku;
+  var card=document.getElementById('card-'+id);
+  var img=document.getElementById('img-'+id);
+  var promptTa=document.getElementById('vpr-'+id);
+  if(!vidQueue[sku])vidQueue[sku]={};
+  var existing=vidQueue[sku][id]||{};
+  vidQueue[sku][id]={
+    cardId:id,
+    name:card?card.dataset.name:('Card '+id),
+    imgSrc:img?img.src:'',
+    prompt:promptTa?promptTa.value:(existing.prompt||''),
+    status:existing.status||'ready',
+    videoUrl:existing.videoUrl||''
+  };
+  refreshVidPipeline(sku);
+}
+
+function refreshVidPipeline(sku){
+  var el=document.getElementById('vid-pipeline');
+  if(!el)return;
+  var queue=vidQueue[sku]||{};
+  var entries=Object.values(queue).filter(function(e){return e&&e.prompt;});
+  if(entries.length===0){el.innerHTML='';return;}
+
+  var html='<div class="sec-hdr"><h2>🎬 Video Pipeline</h2><div class="sec-line"></div><span class="sec-badge">'+entries.length+' prompt'+(entries.length>1?'s':'')+' · Push to Higgsfield via Claude Code</span></div>';
+  html+='<div class="grid">';
+  for(var i=0;i<entries.length;i++){
+    var e=entries[i];
+    var sc=e.status==='received'?'received':(e.status==='sent'?'sent':'prompt-ready');
+    var sl=e.status==='received'?'✅ Video Received':(e.status==='sent'?'📤 Sent to Higgsfield':'⚡ Prompt Ready');
+    html+='<div class="vid-pipeline-card" id="vidpc-'+e.cardId+'">'
+      +'<div class="vid-pipeline-thumb"><img src="'+h(e.imgSrc)+'" alt="'+h(e.name)+'" onerror="this.style.display=\'none\'"></div>'
+      +'<div class="vid-pipeline-body">'
+      +'<div class="vid-pipeline-hdr"><span class="vid-pipeline-name">🎬 '+h(e.name)+'</span><span class="vid-status '+sc+'">'+sl+'</span></div>'
+      +'<textarea class="vid-pipeline-ta" id="vpta-'+e.cardId+'" rows="5">'+h(e.prompt)+'</textarea>'
+      +'<div class="vid-pipeline-btns">'
+      +'<button class="btn-vid-copy" onclick="copyVidPipelinePrompt('+e.cardId+')">📋 Copy Prompt</button>'
+      +(e.status!=='received'?'<button class="btn-vid-sent" onclick="markVidSent(\''+sku+'\','+e.cardId+')">📤 Mark as Sent</button>':'')
+      +'<input type="text" class="vid-url-inp2" id="vurl2-'+e.cardId+'" placeholder="Paste Higgsfield video URL once rendered…" value="'+h(e.videoUrl||'')+'">'
+      +'<button class="btn-vid-save" onclick="saveVidPipelineUrl(\''+sku+'\','+e.cardId+')">💾 Save URL</button>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+function copyVidPipelinePrompt(id){
+  var ta=document.getElementById('vpta-'+id);
+  if(!ta)return;
+  navigator.clipboard.writeText(ta.value).then(function(){
+    var btn=document.querySelector('#vidpc-'+id+' .btn-vid-copy');
+    if(btn){btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent='📋 Copy Prompt';},1800);}
+  });
+}
+
+function markVidSent(sku,id){
+  if(vidQueue[sku]&&vidQueue[sku][id]){
+    vidQueue[sku][id].status='sent';
+    refreshVidPipeline(sku);
+  }
+}
+
+function saveVidPipelineUrl(sku,id){
+  var inp=document.getElementById('vurl2-'+id);
+  var url=inp?inp.value.trim():'';
+  if(!url)return;
+  if(vidQueue[sku]&&vidQueue[sku][id]){
+    vidQueue[sku][id].videoUrl=url;
+    vidQueue[sku][id].status='received';
+  }
+  var name=vidQueue[sku]&&vidQueue[sku][id]?vidQueue[sku][id].name:'';
+  fetch(SUPA_URL+'/rest/v1/ad_approvals?sku=eq.'+sku+'&creative_name=eq.'+encodeURIComponent(name),{
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({video_url:url})
+  }).catch(function(){});
+  refreshVidPipeline(sku);
 }
 </script>
 </body>
