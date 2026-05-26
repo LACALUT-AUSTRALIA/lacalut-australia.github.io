@@ -1123,13 +1123,13 @@ async function rejectConcept(idx) {
 ═══════════════════════════════════════════ */
 async function callGeminiImageGen(prompt) {
   const res = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + KEYS.gemini,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=' + KEYS.gemini,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt + ' Portrait orientation, 3:4 aspect ratio.' }] }],
-        generationConfig: { responseModalities: ['IMAGE'] }
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
       })
     }
   );
