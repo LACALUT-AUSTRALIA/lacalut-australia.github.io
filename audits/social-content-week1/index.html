@@ -1129,8 +1129,7 @@ async function callGeminiImageGen(prompt) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt + ' Portrait orientation, 3:4 aspect ratio.' }] }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
+        contents: [{ role: 'user', parts: [{ text: prompt + ' Portrait orientation, 3:4 aspect ratio.' }] }]
       })
     }
   );
