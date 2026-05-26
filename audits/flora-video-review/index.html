@@ -3,442 +3,1056 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LACALUT® FLORA — Video Ads Review</title>
+<meta name="robots" content="noindex, nofollow">
+<title>LACALUT® — Video Ads Director</title>
 <style>
-  :root { --red:#cf102d; --navy:#004a88; --bg:#0d0d0d; --card:#161616; --border:#2a2a2a; --text:#f0f0f0; --muted:#888; }
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; padding:32px 24px 80px; }
-  header { text-align:center; margin-bottom:48px; padding-bottom:24px; border-bottom:1px solid var(--border); }
-  .logo-bar { display:flex; align-items:center; justify-content:center; gap:12px; margin-bottom:12px; }
-  .logo-dot { width:10px; height:10px; border-radius:50%; background:var(--red); }
-  header h1 { font-size:13px; font-weight:700; letter-spacing:4px; text-transform:uppercase; color:var(--red); }
-  header h2 { font-size:28px; font-weight:700; color:var(--text); margin-top:6px; }
-  header p  { color:var(--muted); font-size:13px; margin-top:8px; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0d0d0d;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
 
-  .intro { max-width:900px; margin:-24px auto 40px; text-align:center; font-size:13px; color:var(--muted); line-height:1.7; }
-  .intro strong { color:#fff; }
+/* ── Header ── */
+header{padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;transition:background 0.3s;}
+header h1{font-size:1.1rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#fff;}
+header p{font-size:0.76rem;color:rgba(255,255,255,0.8);margin-top:2px;}
+.badge{background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:999px;padding:3px 11px;font-size:0.68rem;font-weight:600;color:#fff;}
 
-  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:1400px; margin:0 auto; }
-  @media(max-width:1100px){.grid{grid-template-columns:1fr 1fr;}}
-  @media(max-width:700px){.grid{grid-template-columns:1fr;}}
+/* ── Logo panel ── */
+#logo-panel{background:#161616;border-bottom:1px solid #2a2a2a;padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:0.74rem;color:#888;}
+#logo-panel label.lu-btn{background:#222;border:1px solid #333;border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:600;color:#ccc;}
+#logo-panel select{border:1px solid #333;border-radius:6px;padding:4px 8px;font-size:0.72rem;background:#1a1a1a;color:#ccc;}
+#logo-panel .lu-clear{background:#3a0010;border:1px solid #7a0020;border-radius:6px;padding:4px 10px;font-size:0.7rem;font-weight:600;color:#ff8099;cursor:pointer;}
+#logo-thumb{height:26px;border-radius:3px;display:none;}
 
-  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; transition:border-color 0.2s; }
-  .card-header { padding:16px 20px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
-  .ad-number { background:var(--red); color:#fff; font-size:11px; font-weight:800; letter-spacing:1px; padding:4px 9px; border-radius:4px; text-transform:uppercase; flex-shrink:0; }
-  .card-header h3 { font-size:15px; font-weight:700; color:var(--text); line-height:1.2; }
-  .angle-tag { font-size:11px; color:var(--muted); margin-top:2px; }
-  .video-wrap { background:#000; display:flex; justify-content:center; align-items:center; padding:16px; min-height:360px; }
-  .video-wrap video { height:340px; width:auto; border-radius:8px; max-width:100%; display:block; }
-  .meta-row { padding:12px 20px 16px; display:flex; gap:8px; align-items:center; }
-  .duration-badge { background:rgba(0,74,136,0.3); border:1px solid var(--navy); color:#7db8f0; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; }
-  .format-badge   { background:rgba(207,16,45,0.15); border:1px solid rgba(207,16,45,0.4); color:#f08090; font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; }
-  .copy-section { padding:20px; }
-  .section-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--red); margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-  .primary-text { font-size:13px; line-height:1.7; color:#ccc; white-space:pre-line; margin-bottom:24px; }
-  table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:24px; }
-  th { text-align:left; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); padding:6px 8px; background:rgba(255,255,255,0.03); border-bottom:1px solid var(--border); }
-  td { padding:9px 8px; border-bottom:1px solid var(--border); color:#ddd; vertical-align:top; line-height:1.5; }
-  td:first-child { color:var(--muted); font-size:11px; width:28px; font-weight:600; white-space:nowrap; }
-  tr:last-child td { border-bottom:none; }
+/* ── SKU Tabs ── */
+#sku-bar{position:sticky;top:0;z-index:50;background:#111;padding:0 20px;display:flex;gap:0;overflow-x:auto;border-bottom:3px solid rgba(255,255,255,0.07);}
+#sku-bar::-webkit-scrollbar{height:3px;}
+.sku-btn{display:inline-flex;align-items:center;padding:13px 22px;font-size:0.73rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:none;border-bottom:3px solid transparent;margin-bottom:-3px;background:transparent;color:rgba(255,255,255,0.45);white-space:nowrap;transition:color 0.18s,border-color 0.18s;flex-shrink:0;}
+.sku-btn:hover{color:rgba(255,255,255,0.8);}
+.sku-btn.active{color:#fff;border-bottom-color:var(--sku-color,#fff);}
+.sku-dot{width:8px;height:8px;border-radius:50%;margin-right:8px;background:var(--sku-color,#fff);}
 
-  /* Action buttons */
-  .approve-row {
-    display:flex;
-    gap:6px;
-    padding:16px 20px;
-    border-top:1px solid var(--border);
-    flex-wrap:wrap;
-  }
-  .btn {
-    flex:1;
-    min-width:80px;
-    padding:9px 6px;
-    border-radius:8px;
-    border:none;
-    font-size:0.7rem;
-    font-weight:700;
-    cursor:pointer;
-    transition:opacity 0.15s;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-  }
-  .btn:hover { opacity:0.85; }
-  .btn-approve         { background:#1a6b38; color:#6affa0; }
-  .btn-revise          { background:#4a2800; color:#ffb366; }
-  .btn-reject-creative { background:#4a0010; color:#ff6b8a; }
-  .btn-reject-copy     { background:#1a0030; color:#cc88ff; }
+/* ── Grid ── */
+#card-grid{max-width:1320px;margin:0 auto;padding:24px 22px 100px;}
+.sec-hdr{display:flex;align-items:center;gap:12px;padding:22px 0 8px;}
+.sec-hdr h2{font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#555;white-space:nowrap;}
+.sec-line{flex:1;height:1px;background:#2a2a2a;}
+.sec-badge{font-size:0.63rem;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:999px;padding:2px 9px;color:#666;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(500px,1fr));gap:22px;margin-top:8px;}
 
-  .reject-note {
-    font-size:11px;
-    color:var(--muted);
-    padding:6px 20px 0;
-    font-style:italic;
-    display:none;
-  }
-  .card.rejected-creative .reject-note { display:block; color:#ff6b8a; }
-  .card.rejected-copy     .reject-note { display:block; color:#cc88ff; }
+/* ── Card ── */
+.card{background:#161616;border:1px solid #2a2a2a;border-radius:12px;overflow:hidden;transition:border-color 0.2s;}
+.card.approved{border-color:#004a88!important;box-shadow:0 0 0 2px rgba(0,74,136,0.2);}
+.card.rejected-creative{border-color:#6b0010!important;}
+.card.rejected-copy{border-color:#3a0060!important;}
 
-  /* Status bar */
-  .status-bar {
-    position:fixed;
-    bottom:0; left:0; right:0;
-    background:#111;
-    border-top:1px solid var(--border);
-    padding:12px 32px;
-    display:flex;
-    align-items:center;
-    gap:16px;
-    font-size:13px;
-    color:var(--muted);
-    z-index:10;
-    flex-wrap:wrap;
-  }
-  .status-bar strong { color:#fff; }
-  #approval-count        { color:#6affa0; font-weight:700; }
-  #revise-count          { color:#ffb366; font-weight:700; }
-  #reject-creative-count { color:#ff6b8a; font-weight:700; }
-  #reject-copy-count     { color:#cc88ff; font-weight:700; }
+/* Card header */
+.card-hdr{padding:10px 14px 9px;background:#1e1e1e;border-bottom:1px solid #2a2a2a;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.card-lbl{font-size:0.6rem;font-weight:700;color:#fff;padding:2px 8px;border-radius:999px;}
+.card-name{font-size:0.88rem;font-weight:700;flex:1;}
+.angle-tag{background:rgba(255,255,255,0.08);color:#aaa;font-size:0.6rem;padding:2px 7px;border-radius:999px;font-weight:600;text-transform:uppercase;}
+.state-tag{font-size:0.6rem;padding:2px 7px;border-radius:999px;font-weight:700;}
+.state-tag.seed{background:#1a3a1a;color:#6aff9a;}
+.state-tag.draft-ready{background:#1a2a3a;color:#6ab0ff;}
+.state-tag.production{background:#3a1a00;color:#ffb366;}
+.state-tag.final-ready{background:#004a22;color:#6affaa;}
 
-  footer { text-align:center; margin-top:48px; padding-top:24px; border-top:1px solid var(--border); color:var(--muted); font-size:12px; }
-  footer strong { color:var(--red); }
+/* ── Facebook Ad Preview Shell ── */
+.fb-shell{background:#fff;margin:0;position:relative;}
+.fb-hdr{display:flex;align-items:center;gap:9px;padding:10px 12px 6px;}
+.fb-avatar{width:36px;height:36px;border-radius:50%;background:#cf102d;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:900;flex-shrink:0;}
+.fb-info{flex:1;}
+.fb-page{font-size:13px;font-weight:700;color:#1c1e21;line-height:1.2;}
+.fb-sponsored{font-size:11px;color:#65676b;}
+.fb-dots{font-size:18px;color:#65676b;cursor:default;line-height:1;}
+.fb-primary{padding:2px 12px 8px;font-size:13px;color:#1c1e21;line-height:1.55;max-height:52px;overflow:hidden;}
+.fb-video-wrap{background:#000;position:relative;overflow:hidden;}
+.fb-video-wrap.feed-mode{aspect-ratio:1/1;}
+.fb-video-wrap.story-mode{aspect-ratio:9/16;max-height:480px;}
+.fb-video-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
+.fb-video-wrap .logo-ov-wrap{position:absolute;inset:0;pointer-events:none;}
+.fb-video-wrap .logo-ov-img{position:absolute;}
+.fb-video-wrap .logo-ov-img.tl{top:6px;left:6px;}
+.fb-video-wrap .logo-ov-img.tr{top:6px;right:6px;}
+.fb-video-wrap .logo-ov-img.bl{bottom:6px;left:6px;}
+.fb-video-wrap .logo-ov-img.br{bottom:6px;right:6px;}
+.fb-cta-bar{background:#f0f2f5;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.fb-cta-text{flex:1;}
+.fb-headline{font-size:13px;font-weight:700;color:#1c1e21;line-height:1.3;}
+.fb-domain{font-size:11px;color:#65676b;margin-top:1px;}
+.fb-cta-btn{background:#e4e6eb;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;color:#1c1e21;white-space:nowrap;cursor:default;}
+.fmt-bar{padding:6px 10px;display:flex;gap:6px;background:#1a1a1a;border-top:1px solid #2a2a2a;}
+.fmt-btn{background:#222;color:#888;border:1px solid #333;border-radius:5px;padding:4px 10px;font-size:0.65rem;font-weight:700;cursor:pointer;}
+.fmt-btn.on{background:#2a2a2a;color:#fff;border-color:#444;}
 
-  /* Approval modal */
-  .modal-overlay {
-    display:none; position:fixed; inset:0;
-    background:rgba(0,0,0,0.85); z-index:100;
-    align-items:center; justify-content:center;
-  }
-  .modal-overlay.active { display:flex; }
-  .modal {
-    background:#1a1a1a; border:1px solid #2a2a2a;
-    border-radius:16px; padding:28px 32px;
-    max-width:480px; width:calc(100% - 48px);
-  }
-  .modal h3 { font-size:1rem; font-weight:700; margin-bottom:20px; color:#fff; }
-  .modal-row {
-    display:flex; justify-content:space-between; align-items:baseline;
-    padding:8px 0; border-bottom:1px solid #222;
-    font-size:0.8rem; gap:12px;
-  }
-  .modal-row:last-of-type { border-bottom:none; }
-  .modal-label { color:#888; white-space:nowrap; flex-shrink:0; }
-  .modal-val   { color:#fff; text-align:right; font-weight:600; }
-  .modal-val.green  { color:#6affa0; }
-  .modal-val.blue   { color:#a8d4ff; }
-  .modal-val.orange { color:#ffb366; }
-  .modal-warning {
-    background:#2a1500; border:1px solid #994400; border-radius:8px;
-    padding:10px 14px; font-size:0.75rem; color:#ffb366;
-    margin-top:16px; line-height:1.5;
-  }
-  .modal-actions { display:flex; gap:10px; margin-top:20px; }
-  .modal-actions .btn { flex:1; padding:10px; font-size:0.75rem; }
-  .btn-confirm { background:#1a6b38; color:#6affa0; }
-  .btn-cancel  { background:#2a2a2a; color:#aaa; }
+/* ── Draft area ── */
+.draft-area{padding:12px 14px;border-top:1px solid #2a2a2a;}
+.draft-lbl{font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
+.draft-spinner-row{display:none;align-items:center;gap:10px;padding:14px 0;}
+.draft-timer{font-size:0.72rem;color:#888;}
+.spinner{width:18px;height:18px;border:2px solid #333;border-top-color:#888;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.draft-video-row{display:none;}
+.draft-actions{display:none;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.draft-error{font-size:0.72rem;color:#ff6b6b;padding:6px 0;display:none;}
+.higgsfield-panel{display:none;border-top:1px solid #2a2a2a;padding:12px 14px;}
+.final-video-row{display:none;}
+.download-row{display:none;gap:8px;margin-top:8px;}
+
+/* State-driven show/hide */
+.card[data-vstate="draft-pending"] .draft-spinner-row{display:flex;}
+.card[data-vstate="draft-pending"] .btn-gen-draft{opacity:0.4;pointer-events:none;}
+.card[data-vstate="draft-ready"] .draft-video-row{display:block;}
+.card[data-vstate="draft-ready"] .draft-actions{display:flex;}
+.card[data-vstate="draft-ready"] .btn-gen-draft{display:none;}
+.card[data-vstate="production"] .draft-video-row{display:block;}
+.card[data-vstate="production"] .higgsfield-panel{display:block;}
+.card[data-vstate="production"] .btn-gen-draft{display:none;}
+.card[data-vstate="production"] .draft-actions{display:none;}
+.card[data-vstate="final-ready"] .final-video-row{display:block;}
+.card[data-vstate="final-ready"] .higgsfield-panel{display:block;}
+.card[data-vstate="final-ready"] .download-row{display:flex;}
+.card[data-vstate="final-ready"] .btn-gen-draft{display:none;}
+.card[data-vstate="seed"] .final-video-row{display:block;}
+.card[data-vstate="seed"] .btn-gen-draft{display:inline-flex;}
+
+/* ── Copy section ── */
+.copy-section{padding:14px;}
+.field-lbl{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:3px;}
+.field-box{font-size:0.74rem;line-height:1.6;color:#ccc;background:#1a1a1a;border:1px solid #2a2a2a;border-left:3px solid #333;padding:7px 9px;border-radius:0 5px 5px 0;word-break:break-word;outline:none;}
+.field-box[contenteditable="true"]{background:#1f1a00;border-color:#664400;caret-color:#ffb366;color:#fff;}
+.script-beats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px;}
+.beat-box{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:6px;padding:7px 9px;}
+.beat-lbl{font-size:0.58rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;}
+.beat-txt{font-size:0.73rem;color:#ccc;line-height:1.5;outline:none;min-height:36px;display:block;}
+.beat-txt[contenteditable="true"]{background:#1f1a00;border-radius:3px;padding:2px 4px;color:#fff;}
+.hl-table{display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.hl-row{display:flex;align-items:baseline;gap:7px;font-size:0.74rem;line-height:1.4;}
+.hl-num{font-size:0.62rem;font-weight:700;min-width:22px;flex-shrink:0;}
+.hl-txt{flex:1;color:#ccc;outline:none;}
+.hl-txt[contenteditable="true"]{display:block;background:#1f1a00;border:1px solid #664400;padding:2px 5px;border-radius:3px;color:#fff;}
+
+/* ── Panels ── */
+.ai-panel{border-top:1px solid #2a2a2a;padding:12px 14px;background:#111;display:none;}
+.ai-panel.open{display:block;}
+.panel-lbl{font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:7px;}
+.panel-hint{font-size:0.67rem;color:#555;background:#1a1a1a;padding:5px 9px;border-radius:5px;margin-bottom:8px;line-height:1.4;}
+.panel-ta{width:100%;border:1px solid #2a2a2a;border-radius:6px;padding:7px 9px;font-size:0.74rem;line-height:1.5;resize:vertical;font-family:inherit;margin-bottom:7px;background:#1a1a1a;color:#ccc;display:block;}
+.panel-ta:focus{outline:none;border-color:#444;}
+.panel-btns{display:flex;gap:7px;margin-bottom:7px;}
+.btn-go{background:#4f46e5;color:#fff;border:none;border-radius:6px;padding:7px 14px;font-size:0.71rem;font-weight:700;cursor:pointer;}
+.btn-go:hover{background:#4338ca;}
+.btn-go:disabled{background:#333;color:#666;cursor:not-allowed;}
+.btn-go.grn{background:#16a34a;}
+.btn-go.grn:hover{background:#15803d;}
+.btn-go.rose{background:#be123c;}
+.btn-go.rose:hover{background:#9f1239;}
+.btn-go.orange{background:#c05500;}
+.btn-go.orange:hover{background:#a04400;}
+.btn-close-p{background:#1a1a1a;color:#888;border:1px solid #2a2a2a;border-radius:6px;padding:7px 11px;font-size:0.71rem;font-weight:700;cursor:pointer;}
+.result-box{background:#1a1a1a;border:1px solid #4f46e5;border-radius:7px;padding:10px;display:none;margin-top:5px;}
+.result-box.show{display:block;}
+.result-lbl{font-size:0.62rem;font-weight:700;color:#818cf8;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;}
+.result-pre{font-size:0.74rem;color:#ccc;line-height:1.6;white-space:pre-wrap;}
+.result-btns{display:flex;gap:7px;margin-top:8px;}
+.btn-accept{background:#1a3a1a;color:#6aff9a;border:1px solid #2a6a2a;border-radius:5px;padding:5px 12px;font-size:0.71rem;font-weight:700;cursor:pointer;}
+.btn-discard{background:#1a1a1a;color:#888;border:1px solid #2a2a2a;border-radius:5px;padding:5px 12px;font-size:0.71rem;font-weight:700;cursor:pointer;}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;gap:4px;padding:10px 12px;flex-wrap:wrap;border-top:1px solid #2a2a2a;background:#111;}
+.btn{flex:1;min-width:52px;padding:7px 4px;border-radius:6px;border:none;font-size:0.61rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:0.03em;transition:filter 0.14s;}
+.btn:hover{filter:brightness(1.15);}
+.btn-approve{background:#1a3a1a;color:#6aff9a;border:1px solid #2a5a2a;}
+.btn-revise{background:#2a1a00;color:#ffb366;border:1px solid #4a3000;}
+.btn-save{background:#1a2a3a;color:#7ab8ff;border:1px solid #2a4a6a;}
+.btn-reject-creative{background:#3a0010;color:#ff8099;border:1px solid #6a0020;}
+.btn-reject-copy{background:#1a0030;color:#cc88ff;border:1px solid #3a0060;}
+.btn-teach{background:#0a2a1a;color:#5affa0;border:1px solid #1a5a2a;flex:0 0 auto;}
+.btn-claude{background:#1a1a3a;color:#8888ff;border:1px solid #2a2a6a;flex:0 0 auto;}
+.btn-script{background:#2a1a3a;color:#cc88ff;border:1px solid #4a2a6a;flex:0 0 auto;}
+.btn-gen-draft{background:#3a0a00;color:#ff9966;border:1px solid #6a2a00;display:inline-flex;align-items:center;gap:4px;}
+.card-foot{padding:0 14px 10px;}
+.reject-note{font-size:0.61rem;color:#888;display:none;font-style:italic;margin-top:3px;}
+.trained-badge{font-size:0.61rem;color:#5affa0;font-style:italic;display:none;margin-top:3px;}
+.card.rejected-creative .reject-note{display:block;color:#ff8099;}
+.card.rejected-copy .reject-note{display:block;color:#cc88ff;}
+.card.trained .trained-badge{display:block;}
+
+/* Coming soon */
+.cs-wrap{padding:60px 22px;text-align:center;}
+.cs-wrap h2{font-size:1.3rem;font-weight:700;margin:10px 0 6px;color:#fff;}
+.cs-wrap p{font-size:0.85rem;color:#666;line-height:1.7;}
+.cs-btn{display:inline-block;margin-top:16px;padding:9px 22px;border-radius:7px;font-size:0.8rem;font-weight:700;color:#fff;cursor:pointer;border:none;}
+
+/* ── Modals ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(2px);}
+.modal-ov.on{display:flex;}
+.modal{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:24px 28px;max-width:480px;width:calc(100% - 40px);max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:0.95rem;font-weight:700;margin-bottom:14px;color:#fff;}
+.mrow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #222;font-size:0.78rem;gap:10px;}
+.mrow:last-of-type{border:none;}
+.mlbl{color:#666;}
+.mval{font-weight:600;text-align:right;color:#fff;}
+.mval.g{color:#6aff9a;} .mval.b{color:#7ab8ff;} .mval.o{color:#ffb366;}
+.mwarn{background:#2a1500;border:1px solid #664400;border-radius:7px;padding:9px 12px;font-size:0.73rem;color:#ffb366;margin-top:12px;line-height:1.5;}
+.mwarn code{background:#331a00;padding:1px 4px;border-radius:3px;font-size:0.8em;}
+.mact{display:flex;gap:9px;margin-top:14px;}
+.mact .btn{flex:1;padding:9px;font-size:0.73rem;}
+.btn-confirm{background:#1a4a1a;color:#6aff9a;border:none;}
+.btn-cancel{background:#222;color:#888;border:1px solid #333;}
+
+/* Teach modal */
+.teach-tabs{display:flex;gap:7px;margin-bottom:12px;}
+.teach-tab{flex:1;padding:7px;border-radius:7px;border:1px solid #2a2a2a;background:#1a1a1a;color:#666;font-size:0.7rem;font-weight:700;cursor:pointer;text-align:center;}
+.teach-tab.on{background:#004a88;color:#fff;border-color:#004a88;}
+.teach-modal textarea{width:100%;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:5px;padding:8px;font-size:0.74rem;resize:vertical;font-family:inherit;margin-bottom:9px;display:block;color:#ccc;}
+.teach-modal textarea:focus{outline:none;border-color:#004a88;}
+.teach-ref{font-size:0.7rem;color:#888;background:#111;border:1px solid #222;border-radius:5px;padding:6px 10px;max-height:65px;overflow-y:auto;line-height:1.5;margin-bottom:10px;}
+.ctags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
+.ctag{background:#1a1a1a;border:1px solid #2a2a2a;color:#666;font-size:0.66rem;padding:3px 8px;border-radius:999px;cursor:pointer;user-select:none;}
+.ctag.on{background:#3a0010;border-color:#7a0020;color:#ff8099;}
+
+/* ── Status bar ── */
+.status-bar{position:sticky;bottom:0;background:#111;border-top:2px solid #2d8f4e;padding:9px 26px;display:flex;align-items:center;gap:12px;font-size:0.75rem;color:#555;z-index:20;flex-wrap:wrap;}
+.status-bar strong{color:#ccc;}
+#ct-approved{color:#6aff9a;font-weight:700;}
+#ct-revise{color:#ffb366;font-weight:700;}
+#ct-rc{color:#ff8099;font-weight:700;}
+#ct-rp{color:#cc88ff;font-weight:700;}
+
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr;}
+  .sku-btn{padding:11px 14px;font-size:0.67rem;}
+  .script-beats{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo-bar"><div class="logo-dot"></div><h1>LACALUT® FLORA — Video Ads Review</h1><div class="logo-dot"></div></div>
-  <h2>3 Creative Concepts · Flora Range</h2>
-  <p>Clean footage · Add text overlays in Meta Ads Manager or CapCut · Generated 21/05/2026</p>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="display:flex;position:fixed;inset:0;background:#0d0d0d;z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:14px;padding:36px 44px;text-align:center;max-width:340px;width:90%;">
+    <div style="font-size:1.8rem;margin-bottom:7px">🎬</div>
+    <div style="font-size:1rem;font-weight:700;margin-bottom:3px;color:#fff">Lacalut Australia</div>
+    <div style="font-size:0.79rem;color:#666;margin-bottom:20px">Video Ads Director — authorised access only</div>
+    <input id="gate-pw" type="password" placeholder="Enter password" autocomplete="off"
+      style="width:100%;padding:9px 12px;border:2px solid #2a2a2a;border-radius:7px;font-size:1rem;outline:none;margin-bottom:10px;background:#111;color:#fff"
+      onkeydown="if(event.key==='Enter')doGate()">
+    <button onclick="doGate()" style="width:100%;padding:10px;background:#cf102d;color:#fff;border:none;border-radius:7px;font-size:0.9rem;font-weight:600;cursor:pointer">Unlock</button>
+    <div id="gate-err" style="color:#ff6b8a;font-size:0.79rem;margin-top:8px;display:none">Incorrect password</div>
+  </div>
+</div>
+<script>
+(function(){
+  var H='ec4c88ca7f69534f10c0611c1ecd13e7c2cdf73e1b915e9fd0cf27ac10da43fa';
+  async function sha(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  if(localStorage.getItem('lac_auth')===H)document.getElementById('gate').style.display='none';
+  window.doGate=async function(){
+    var v=document.getElementById('gate-pw').value,h=await sha(v);
+    if(h===H){localStorage.setItem('lac_auth',H);document.getElementById('gate').style.display='none';}
+    else{document.getElementById('gate-err').style.display='block';document.getElementById('gate-pw').value='';}
+  };
+})();
+</script>
+
+<!-- HEADER -->
+<header id="main-hdr" style="background:#2d8f4e">
+  <div style="flex:1"><h1 id="sku-name">LACALUT® Flora</h1><p id="sku-tag">Probiotic bad breath formula · Women 25–45</p></div>
+  <span class="badge">🎬 Video Ads Director</span>
 </header>
 
-<div class="intro">
-  <strong>✅ Approve</strong> — ready to upload as-is &nbsp;·&nbsp;
-  <strong>✏️ Revise Copy</strong> — flag for copy changes &nbsp;·&nbsp;
-  <strong>❌ Reject Creative</strong> — the video/visual concept is wrong &nbsp;·&nbsp;
-  <strong>🚫 Reject Copy</strong> — the copywriting angle is wrong
+<!-- LOGO PANEL -->
+<div id="logo-panel">
+  <span id="logo-status" style="font-style:italic">No logo uploaded</span>
+  <label class="lu-btn">📎 Upload Logo<input type="file" accept="image/*" onchange="uploadLogo(event)" style="display:none"></label>
+  <img id="logo-thumb" src="" alt="">
+  <select id="logo-pos" onchange="applyLogo()"><option value="tl">↖ Top Left</option><option value="tr">↗ Top Right</option><option value="bl">↙ Bot Left</option><option value="br" selected>↘ Bot Right</option></select>
+  <select id="logo-sz" onchange="applyLogo()"><option value="15">S</option><option value="22" selected>M</option><option value="30">L</option></select>
+  <button class="lu-clear" onclick="clearLogo()">✕ Remove</button>
 </div>
 
-<div class="grid">
+<!-- SKU TAB BAR -->
+<div id="sku-bar"></div>
 
-  <!-- AD 1 -->
-  <div class="card" id="card-1" data-creative-name="The 3pm Crash" data-video="videos/flora_ad1_3pm_crash.mp4">
-    <div class="card-header"><span class="ad-number">Ad 1</span><div><h3>⏰ The 3pm Crash</h3><div class="angle-tag">Angle: Time-of-day biology — your toothpaste clocked off at 9am</div></div></div>
-    <div class="video-wrap"><video controls playsinline><source src="videos/flora_ad1_3pm_crash.mp4" type="video/mp4"></video></div>
-    <div class="meta-row"><span class="duration-badge">⏱ 15s</span><span class="format-badge">9:16 Reels / Stories</span></div>
-    <div class="copy-section">
-      <div class="section-label">Primary Text</div>
-      <div class="primary-text">🕒 By 3pm, most people's breath has already given up.
+<!-- CARD GRID -->
+<div id="card-grid"></div>
 
-It's not about brushing harder. It's biology.
-
-Bacteria in your mouth metabolise food particles throughout the day — producing Volatile Sulfur Compounds (VSCs) that cause that stale, sour afternoon smell. 🦠
-
-Most toothpastes are built for the first 30 minutes. After that, you're on your own. 🍬
-
-🇩🇪 LACALUT® FLORA was engineered differently. Its Zinc-Complex formula creates a 12-hour antibacterial shield — so your confidence doesn't expire at lunchtime.
-
-✅ 12-Hour Clinical Freshness
-✅ Zinc-Complex neutralizes VSCs at the source
-✅ Serious German Engineering — not a mint
-
-🛒 Stop relying on the 3pm mint run. Shop the Flora range. 👇</div>
-      <div class="section-label">Headlines</div>
-      <table><tr><th>#</th><th>Headline</th></tr>
-        <tr><td>1</td><td>⏰ Why Your Breath Fails By 3pm</td></tr>
-        <tr><td>2</td><td>🦠 It's Not Bad Hygiene. It's Bad Bacteria.</td></tr>
-        <tr><td>3</td><td>🇩🇪 12-Hour Freshness. Not 12 Minutes.</td></tr>
-        <tr><td>4</td><td>🕒 Your Toothpaste Clocked Off At 9am</td></tr>
-        <tr><td>5</td><td>🧪 The Science Behind All-Day Fresh Breath</td></tr>
-      </table>
-      <div class="section-label">Descriptions</div>
-      <table><tr><th>#</th><th>Description</th></tr>
-        <tr><td>1</td><td>🧪 Specialized Zinc-Complex. 12-Hour Protection. Made in Germany.</td></tr>
-        <tr><td>2</td><td>🏆 Over 2 Billion Sold. Trusted by Dentists in 60+ Countries.</td></tr>
-      </table>
-    </div>
-    <div class="reject-note" id="reject-note-1"></div>
-    <div class="approve-row">
-      <button class="btn btn-approve"         onclick="setStatus(1,'approved')">✅ Approve</button>
-      <button class="btn btn-revise"           onclick="setStatus(1,'revise')">✏️ Revise Copy</button>
-      <button class="btn btn-reject-creative"  onclick="setStatus(1,'reject-creative')">❌ Reject Creative</button>
-      <button class="btn btn-reject-copy"      onclick="setStatus(1,'reject-copy')">🚫 Reject Copy</button>
-    </div>
-  </div>
-
-  <!-- AD 2 -->
-  <div class="card" id="card-2" data-creative-name="The Dentist Was Surprised" data-video="videos/flora_ad2_dentist_surprised.mp4">
-    <div class="card-header"><span class="ad-number">Ad 2</span><div><h3>🦷 The Dentist Was Surprised</h3><div class="angle-tag">Angle: Third-party Australian dentist validation</div></div></div>
-    <div class="video-wrap"><video controls playsinline><source src="videos/flora_ad2_dentist_surprised.mp4" type="video/mp4"></video></div>
-    <div class="meta-row"><span class="duration-badge">⏱ 15s</span><span class="format-badge">9:16 Reels / Stories</span></div>
-    <div class="copy-section">
-      <div class="section-label">Primary Text</div>
-      <div class="primary-text">🦷 My dentist said my gum health had "completely turned around."
-
-I didn't tell her what I'd changed. But I knew. 🇩🇪
-
-For years, my breath was an issue I managed — not solved. Mints, gum, the works. Then I found LACALUT® FLORA.
-
-🧬 It's not a fresh-breath product. It's a medical-grade formula developed in German laboratories that targets the bacteria living deep in your oral flora — the ones that cause chronic halitosis at the source.
-
-🦠 Volatile Sulfur Compounds (VSCs) don't care about mint. They respond to chemistry.
-
-LACALUT® FLORA uses a specialized Zinc-Complex to bind and neutralize them before they leave your mouth. The result? Breath your dentist notices. ✨
-
-✅ Clinical-grade halitosis treatment
-✅ 12-Hour Zinc-Complex protection
-✅ 100+ Years of German oral science
-
-🛒 Experience the difference your dentist will notice. Shop the Flora range. 👇</div>
-      <div class="section-label">Headlines</div>
-      <table><tr><th>#</th><th>Headline</th></tr>
-        <tr><td>1</td><td>🦷 "Whatever You Changed — Keep Doing It."</td></tr>
-        <tr><td>2</td><td>😁 The Formula Your Dentist Will Notice</td></tr>
-        <tr><td>3</td><td>🇩🇪 German Engineering. Dentist-Approved Results.</td></tr>
-        <tr><td>4</td><td>🏆 When Your Dentist Is Impressed, You've Won</td></tr>
-        <tr><td>5</td><td>🧪 Clinical Breath Care. Not Just a Toothpaste.</td></tr>
-      </table>
-      <div class="section-label">Descriptions</div>
-      <table><tr><th>#</th><th>Description</th></tr>
-        <tr><td>1</td><td>🇩🇪 Serious German Engineering For Serious Bad Breath.</td></tr>
-        <tr><td>2</td><td>🧪 Zinc-Complex Formula — Trusted in 60+ Countries Since 1925.</td></tr>
-      </table>
-    </div>
-    <div class="reject-note" id="reject-note-2"></div>
-    <div class="approve-row">
-      <button class="btn btn-approve"         onclick="setStatus(2,'approved')">✅ Approve</button>
-      <button class="btn btn-revise"           onclick="setStatus(2,'revise')">✏️ Revise Copy</button>
-      <button class="btn btn-reject-creative"  onclick="setStatus(2,'reject-creative')">❌ Reject Creative</button>
-      <button class="btn btn-reject-copy"      onclick="setStatus(2,'reject-copy')">🚫 Reject Copy</button>
-    </div>
-  </div>
-
-  <!-- AD 3 -->
-  <div class="card" id="card-3" data-creative-name="The Conversation You Can't Have" data-video="videos/flora_ad3_conversation.mp4">
-    <div class="card-header"><span class="ad-number">Ad 3</span><div><h3>💔 The Conversation You Can't Have</h3><div class="angle-tag">Angle: Intimacy and relationship closeness</div></div></div>
-    <div class="video-wrap"><video controls playsinline><source src="videos/flora_ad3_conversation.mp4" type="video/mp4"></video></div>
-    <div class="meta-row"><span class="duration-badge">⏱ 15s</span><span class="format-badge">9:16 Reels / Stories</span></div>
-    <div class="copy-section">
-      <div class="section-label">Primary Text</div>
-      <div class="primary-text">🤐 Bad breath doesn't just end conversations. It ends closeness.
-
-The small moments — leaning in to whisper, a goodnight kiss, someone resting their head on your shoulder — they quietly disappear. Not because anyone says anything. Because nobody does. 💔
-
-If you've noticed the distance growing, it might not be what you think. It might be what they're not saying.
-
-🇩🇪 LACALUT® FLORA was engineered for exactly this. A medical-grade Zinc-Complex that neutralizes the sulfur-producing bacteria responsible for persistent bad breath — not for 5 minutes, but for 12 full hours.
-
-🦠 No masking. No mints. Just clinical elimination at the source.
-
-✅ 12-Hour Clinical Freshness
-✅ Zinc-Complex Neutralization
-✅ Developed in German Laboratories
-
-🛒 Reclaim the closeness. Shop the Flora range. 👇</div>
-      <div class="section-label">Headlines</div>
-      <table><tr><th>#</th><th>Headline</th></tr>
-        <tr><td>1</td><td>💔 Bad Breath Doesn't End Conversations. It Ends Closeness.</td></tr>
-        <tr><td>2</td><td>🤐 The Distance Nobody Talks About</td></tr>
-        <tr><td>3</td><td>😘 Reclaim Your Closeness.</td></tr>
-        <tr><td>4</td><td>🇩🇪 The Clinical Fix For a Very Personal Problem</td></tr>
-        <tr><td>5</td><td>🦠 12 Hours of Freshness. All Day Confidence.</td></tr>
-      </table>
-      <div class="section-label">Descriptions</div>
-      <table><tr><th>#</th><th>Description</th></tr>
-        <tr><td>1</td><td>🧪 Zinc-Complex Targets Sulfur Bacteria at the Source — Not a Mask.</td></tr>
-        <tr><td>2</td><td>🇩🇪 Serious German Engineering. 100+ Years. Available in Australia.</td></tr>
-      </table>
-    </div>
-    <div class="reject-note" id="reject-note-3"></div>
-    <div class="approve-row">
-      <button class="btn btn-approve"         onclick="setStatus(3,'approved')">✅ Approve</button>
-      <button class="btn btn-revise"           onclick="setStatus(3,'revise')">✏️ Revise Copy</button>
-      <button class="btn btn-reject-creative"  onclick="setStatus(3,'reject-creative')">❌ Reject Creative</button>
-      <button class="btn btn-reject-copy"      onclick="setStatus(3,'reject-copy')">🚫 Reject Copy</button>
-    </div>
-  </div>
-
-</div>
-
-<footer>
-  <p>LACALUT® FLORA · Video Ads Review · 21/05/2026</p>
-  <p style="margin-top:6px;">Add text overlays in <strong>Meta Ads Manager</strong> or <strong>CapCut</strong></p>
-</footer>
-
-<!-- Approval confirmation modal -->
-<div class="modal-overlay" id="approval-modal">
+<!-- APPROVAL MODAL -->
+<div class="modal-ov" id="app-modal">
   <div class="modal">
-    <h3>📋 Confirm Meta Ads Draft</h3>
-    <div class="modal-row"><span class="modal-label">Creative</span><span class="modal-val" id="modal-creative-name">—</span></div>
-    <div class="modal-row"><span class="modal-label">Ad Set</span><span class="modal-val green">Flora / Bad Breath</span></div>
-    <div class="modal-row"><span class="modal-label">Campaign</span><span class="modal-val blue">TOF — Top of Funnel</span></div>
-    <div class="modal-row"><span class="modal-label">Template Ad</span><span class="modal-val">SI - Stop Broadcasting Sulfur</span></div>
-    <div class="modal-row"><span class="modal-label">Status</span><span class="modal-val orange">PAUSED ⏸</span></div>
-    <div class="modal-warning">⚠️ This will queue a <strong>PAUSED draft ad</strong> in Meta Ads. It will <strong>not go live</strong> until manually enabled by you in Ads Manager.</div>
-    <div class="modal-actions">
-      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-confirm" onclick="submitApproval()">✅ Confirm &amp; Queue</button>
-    </div>
+    <h3>🚀 Queue for Meta Ads</h3>
+    <div class="mrow"><span class="mlbl">Creative</span><span class="mval" id="m-name">—</span></div>
+    <div class="mrow"><span class="mlbl">SKU</span><span class="mval b" id="m-sku">—</span></div>
+    <div class="mrow"><span class="mlbl">Ad Set</span><span class="mval g" id="m-adset">—</span></div>
+    <div class="mrow"><span class="mlbl">Type</span><span class="mval">Video (MP4)</span></div>
+    <div class="mrow"><span class="mlbl">Status</span><span class="mval o">PAUSED — not live until enabled</span></div>
+    <div class="mwarn">⚠️ Saves to Supabase as <strong>ready_to_push</strong>. Run <code>push_to_meta.py</code> in Claude Code to push to Ads Manager.</div>
+    <div class="mact"><button class="btn btn-cancel" onclick="closeApp()">Cancel</button><button class="btn btn-confirm" onclick="doApprove()">🚀 Confirm &amp; Queue</button></div>
   </div>
 </div>
 
-<div class="status-bar">
-  <strong>Review Progress:</strong>
-  <span id="approval-count">0</span> approved &nbsp;·&nbsp;
-  <span id="revise-count">0</span> needs revision &nbsp;·&nbsp;
-  <span id="reject-creative-count">0</span> rejected creative &nbsp;·&nbsp;
-  <span id="reject-copy-count">0</span> rejected copy &nbsp;&nbsp;&nbsp;
-  <span style="color:#555;">3 total ads</span>
+<!-- TEACH MODAL -->
+<div class="modal-ov" id="teach-modal">
+  <div class="modal teach-modal" style="max-width:520px">
+    <h3>📚 Teach Claude</h3>
+    <div class="teach-tabs">
+      <button class="teach-tab" id="ttab-c" onclick="switchTab('c')">🎨 Creative</button>
+      <button class="teach-tab" id="ttab-p" onclick="switchTab('p')">📝 Copy</button>
+    </div>
+    <div id="tsec-c">
+      <p style="font-size:0.74rem;color:#666;margin-bottom:10px;line-height:1.5">What's wrong with the video concept and what direction to try instead?</p>
+      <div style="font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:4px">Quick tags</div>
+      <div class="ctags">
+        <span class="ctag" onclick="toggleTag(this)">Wrong pacing</span><span class="ctag" onclick="toggleTag(this)">Wrong emotion</span><span class="ctag" onclick="toggleTag(this)">Not visceral</span><span class="ctag" onclick="toggleTag(this)">Wrong setting</span><span class="ctag" onclick="toggleTag(this)">Wrong lighting</span><span class="ctag" onclick="toggleTag(this)">Too generic</span><span class="ctag" onclick="toggleTag(this)">Not scroll-stopping</span><span class="ctag" onclick="toggleTag(this)">Concept doesn't land</span>
+      </div>
+      <div style="font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin:8px 0 4px">What's wrong?</div>
+      <textarea id="tc-prob" rows="2" placeholder="e.g. Pacing too slow, wrong vibe..."></textarea>
+      <div style="font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:4px">Direction instead</div>
+      <textarea id="tc-dir" rows="3" placeholder="e.g. Fast cuts, dark dramatic lighting, close-up dental shots..."></textarea>
+    </div>
+    <div id="tsec-p" style="display:none">
+      <p style="font-size:0.74rem;color:#666;margin-bottom:10px;line-height:1.5">Paste your preferred version so Claude learns from it.</p>
+      <div style="font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:4px">Current Copy</div>
+      <div class="teach-ref" id="teach-orig"></div>
+      <div style="font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:4px">Your Preferred Version</div>
+      <textarea id="tc-pref" rows="4" placeholder="Paste your version here..."></textarea>
+      <div style="font-size:0.59rem;text-transform:uppercase;letter-spacing:0.1em;color:#cf102d;font-weight:700;margin-bottom:4px">Notes for Claude</div>
+      <textarea id="tc-notes" rows="2" placeholder="e.g. Shorter, more emotional hook..."></textarea>
+    </div>
+    <div class="mact"><button class="btn btn-cancel" onclick="closeTeach()">Cancel</button><button class="btn btn-confirm" id="teach-save" onclick="doTeach()">💾 Save Training</button></div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar" id="sbar">
+  <strong>Review:</strong>
+  <span id="ct-approved">0</span> queued &nbsp;·&nbsp;
+  <span id="ct-revise">0</span> revising &nbsp;·&nbsp;
+  <span id="ct-rc">0</span> ❌ creative &nbsp;·&nbsp;
+  <span id="ct-rp">0</span> 🚫 copy &nbsp;&nbsp;
+  <span style="color:#444" id="total-lbl">0 total</span>
 </div>
 
 <script>
-const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+/* ── KEYS ── */
+var SUPA_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
+var SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+var GEM_KEY   = 'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
+var CLAUDE_KEY = '[YOUR_ANTHROPIC_API_KEY]';
 
-const statuses = {};
-let pendingApprovalId = null;
+/* ── SKU DATA ── */
+var SKUS = {
+  aktiv: {
+    name:'LACALUT® Aktiv', tab:'AKTIV', color:'#cf102d',
+    tagline:'Clinical gum treatment · Bleeding gums & gingivitis · Adults 35+',
+    claudePrompt:'You are a performance Facebook video ads copywriter for LACALUT Aktiv — a clinical gum treatment toothpaste. Australian audience, adults 35+. The customer has bleeding gums and does not realise it is early gingivitis. Write video ad scripts and captions that create urgency without fear. Tone: clinical, direct, credible. Never salesy. Australian English. Return JSON only.',
+    motionStyle:'Cinematic slow push in, dark dramatic lighting, sharp clinical cuts, high contrast, serious urgent mood, close-up dental detail shots',
+    campaignId:'[AKTIV_CAMPAIGN_ID]', adsetId:'[AKTIV_ADSET_ID]', adsetName:'Aktiv / Gingivitis', tplAdId:'[AKTIV_TPL_ID]',
+    cards:[]
+  },
+  aktiv_herbal: {
+    name:'LACALUT® Aktiv Herbal', tab:'AKTIV HERBAL', color:'#5a8a3c',
+    tagline:'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
+    claudePrompt:'You are a performance Facebook video ads copywriter for LACALUT Aktiv Herbal — a clinical gum toothpaste with 9 medicinal herbs. Australian adults 35+ who want to treat bleeding gums but also love premium natural experiences. This is a spa-like oral care ritual that works clinically. Write video scripts that lead with the sensory experience AND clinical proof. Tone: elevated, warm, ingredient-led. Australian English. Return JSON only.',
+    motionStyle:'Slow graceful camera movement, medicinal herbs floating and blooming, warm botanical tones, premium apothecary feel, lush and immersive',
+    campaignId:'[HERBAL_CAMPAIGN_ID]', adsetId:'[HERBAL_ADSET_ID]', adsetName:'Aktiv Herbal / Gingivitis', tplAdId:'[HERBAL_TPL_ID]',
+    cards:[]
+  },
+  flora: {
+    name:'LACALUT® Flora', tab:'FLORA', color:'#2d8f4e',
+    tagline:'Probiotic bad breath formula · Women 25–45 · Fresh green campaign',
+    claudePrompt:'You are a performance Facebook video ads copywriter for LACALUT Flora — a probiotic toothpaste for bad breath / halitosis. Australian women 25-45, health-conscious. The customer is embarrassed by persistent bad breath despite brushing. Write video scripts leading with the science of probiotics restoring oral microbiome balance. Tone: empowering, clean, credible. Australian English. Return JSON only.',
+    motionStyle:'Light flowing movement, fresh bright tones, soft natural light transitions, airy and confident energy, clean wellness aesthetic, sage and white palette',
+    campaignId:'120241478653830229', adsetId:'120244410306410229', adsetName:'Flora / Bad Breath', tplAdId:'120244706626530229',
+    cards:[
+      {id:1, name:'The 3pm Crash', emoji:'⏰', angle:'Time-of-day biology',
+       video:'videos/flora_ad1_3pm_crash.mp4',
+       hook:'', middle:'', cta:'',
+       pt:'🕒 By 3pm, most people\'s breath has already given up.\n\nIt\'s not about brushing harder. It\'s biology.\n\nBacteria in your mouth metabolise food particles throughout the day — producing Volatile Sulfur Compounds (VSCs) that cause that stale, sour afternoon smell. 🦠\n\nMost toothpastes are built for the first 30 minutes. After that, you\'re on your own. 🍬\n\n🇩🇪 LACALUT® FLORA was engineered differently. Its Zinc-Complex formula creates a 12-hour antibacterial shield — so your confidence doesn\'t expire at lunchtime.\n\n✅ 12-Hour Clinical Freshness\n✅ Zinc-Complex neutralizes VSCs at the source\n✅ Serious German Engineering — not a mint\n\n🛒 Stop relying on the 3pm mint run. Shop the Flora range. 👇',
+       h1:'⏰ Why Your Breath Fails By 3pm', h2:'🦠 It\'s Not Bad Hygiene. It\'s Bad Bacteria.', h3:'🇩🇪 12-Hour Freshness. Not 12 Minutes.',
+       desc:'🧪 Specialized Zinc-Complex. 12-Hour Protection. Made in Germany.'},
+      {id:2, name:'The Dentist Was Surprised', emoji:'🦷', angle:'Third-party validation',
+       video:'videos/flora_ad2_dentist_surprised.mp4',
+       hook:'', middle:'', cta:'',
+       pt:'🦷 My dentist said my gum health had "completely turned around."\n\nI didn\'t tell her what I\'d changed. But I knew. 🇩🇪\n\nFor years, my breath was an issue I managed — not solved. Mints, gum, the works. Then I found LACALUT® FLORA.\n\n🧬 It\'s not a fresh-breath product. It\'s a medical-grade formula developed in German laboratories that targets the bacteria living deep in your oral flora — the ones that cause chronic halitosis at the source.\n\n🦠 Volatile Sulfur Compounds (VSCs) don\'t care about mint. They respond to chemistry.\n\nLACALUT® FLORA uses a specialized Zinc-Complex to bind and neutralize them before they leave your mouth. The result? Breath your dentist notices. ✨\n\n✅ Clinical-grade halitosis treatment\n✅ 12-Hour Zinc-Complex protection\n✅ 100+ Years of German oral science\n\n🛒 Experience the difference your dentist will notice. Shop the Flora range. 👇',
+       h1:'🦷 "Whatever You Changed — Keep Doing It."', h2:'😁 The Formula Your Dentist Will Notice', h3:'🇩🇪 German Engineering. Dentist-Approved Results.',
+       desc:'🇩🇪 Serious German Engineering For Serious Bad Breath.'},
+      {id:3, name:'The Conversation You Can\'t Have', emoji:'💔', angle:'Intimacy & relationships',
+       video:'videos/flora_ad3_conversation.mp4',
+       hook:'', middle:'', cta:'',
+       pt:'🤐 Bad breath doesn\'t just end conversations. It ends closeness.\n\nThe small moments — leaning in to whisper, a goodnight kiss, someone resting their head on your shoulder — they quietly disappear. Not because anyone says anything. Because nobody does. 💔\n\nIf you\'ve noticed the distance growing, it might not be what you think. It might be what they\'re not saying.\n\n🇩🇪 LACALUT® FLORA was engineered for exactly this. A medical-grade Zinc-Complex that neutralizes the sulfur-producing bacteria responsible for persistent bad breath — not for 5 minutes, but for 12 full hours.\n\n🦠 No masking. No mints. Just clinical elimination at the source.\n\n✅ 12-Hour Clinical Freshness\n✅ Zinc-Complex Neutralization\n✅ Developed in German Laboratories\n\n🛒 Reclaim the closeness. Shop the Flora range. 👇',
+       h1:'💔 Bad Breath Doesn\'t End Conversations. It Ends Closeness.', h2:'🤐 The Distance Nobody Talks About', h3:'😘 Reclaim Your Closeness.',
+       desc:'🧪 Zinc-Complex Targets Sulfur Bacteria at the Source — Not a Mask.'}
+    ]
+  },
+  sensitive: {
+    name:'LACALUT® Sensitive', tab:'SENSITIVE', color:'#004a88',
+    tagline:'Fast-acting sensitivity relief · Potassium nitrate formula · Adults avoiding hot/cold',
+    claudePrompt:'You are a performance Facebook video ads copywriter for LACALUT Sensitive — a toothpaste for sensitive teeth. Australian adults avoiding hot coffee, cold drinks or sweet foods due to sharp tooth pain. Write video scripts leading with restored freedom and relief. Tone: warm, empathetic, solution-led. Australian English. Return JSON only.',
+    motionStyle:'Slow warm camera movement, lifestyle moments of relief and joy, someone enjoying coffee or cold food comfortably, gentle light bloom transitions, soft and human',
+    campaignId:'[SENSITIVE_CAMPAIGN_ID]', adsetId:'[SENSITIVE_ADSET_ID]', adsetName:'Sensitive / Tooth Pain', tplAdId:'[SENSITIVE_TPL_ID]',
+    cards:[]
+  },
+  white_repair: {
+    name:'LACALUT® White & Repair', tab:'WHITE & REPAIR', color:'#c9a84c',
+    tagline:'Hydroxyapatite enamel repair + whitening · Science-led · Adults 25–45',
+    claudePrompt:'You are a performance Facebook video ads copywriter for LACALUT White & Repair — a remineralising whitening toothpaste. Australian adults 25-45 who want whiter teeth but distrust harsh bleaching. This is science-led whitening: hydroxyapatite repairs enamel while phosphates remove discolouration. Write video scripts leading with repair-from-within. Tone: smart, results-driven, premium. Australian English. Return JSON only.',
+    motionStyle:'Sleek smooth camera reveals, crisp white tones, premium minimalist aesthetic, confident aspirational energy, polished product shots with slow drift',
+    campaignId:'[WHITE_CAMPAIGN_ID]', adsetId:'[WHITE_ADSET_ID]', adsetName:'White & Repair / Whitening', tplAdId:'[WHITE_TPL_ID]',
+    cards:[]
+  }
+};
 
-function setStatus(id, status) {
-  if (status === 'approved') {
-    showApprovalModal(id);
+/* ── STATE ── */
+var activeSku   = 'flora';
+var statuses    = {};
+var claudeRes   = {};
+var scriptRes   = {};
+var veoTimers   = {};
+var pendApprove = null, pendTeach = null;
+var activeTab   = 'c', teachReject = false, teachRType = 'c';
+var logoData    = null;
+
+/* ── INIT ── */
+buildTabBar();
+renderCards('flora');
+// Seed Flora cards as final-ready (videos already exist)
+setTimeout(function(){
+  var s=SKUS['flora'];
+  s.cards.forEach(function(c){setVState(c.id,'seed');});
+  applyLogo();
+},50);
+var sl=localStorage.getItem('lac_logo');
+if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
+
+/* ── HELPERS ── */
+function h(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── TAB BAR ── */
+function buildTabBar(){
+  var bar=document.getElementById('sku-bar'), html='';
+  Object.keys(SKUS).forEach(function(k){
+    var s=SKUS[k], active=k===activeSku?' active':'';
+    html+='<button class="sku-btn'+active+'" style="--sku-color:'+s.color+'" id="stab-'+k+'" onclick="switchSku(\''+k+'\')">'
+         +'<span class="sku-dot" style="background:'+s.color+'"></span>'+s.tab+'</button>';
+  });
+  bar.innerHTML=html;
+}
+
+/* ── SWITCH SKU ── */
+function switchSku(sku){
+  activeSku=sku;
+  var s=SKUS[sku];
+  document.querySelectorAll('.sku-btn').forEach(function(b){b.classList.remove('active');});
+  var tab=document.getElementById('stab-'+sku);if(tab)tab.classList.add('active');
+  document.getElementById('main-hdr').style.background=s.color;
+  document.getElementById('sku-name').textContent=s.name;
+  document.getElementById('sku-tag').textContent=s.tagline;
+  document.getElementById('sbar').style.borderTopColor=s.color;
+  statuses={};claudeRes={};scriptRes={};
+  // Clear any running veo timers
+  Object.keys(veoTimers).forEach(function(id){clearInterval(veoTimers[id]);});
+  veoTimers={};
+  updateCounts();
+  renderCards(sku);
+  setTimeout(function(){
+    if(sku==='flora'){SKUS.flora.cards.forEach(function(c){setVState(c.id,'seed');});}
+    applyLogo();
+  },50);
+}
+
+/* ── RENDER CARDS ── */
+function renderCards(sku){
+  var s=SKUS[sku], grid=document.getElementById('card-grid'), cards=s.cards;
+  if(!cards||cards.length===0){
+    document.getElementById('total-lbl').textContent='0 total';
+    grid.innerHTML='<div class="cs-wrap"><div style="font-size:2.5rem">🎬</div><h2>'+h(s.name)+'</h2><p>Video ad concepts for this SKU are being developed.</p><p style="margin-top:6px;color:#555">Switch to <strong style="color:#fff">Flora</strong> to see the 3 live video ads.</p><button class="cs-btn" style="background:'+s.color+'" onclick="switchSku(\'flora\')">← Open Flora</button></div>';
     return;
   }
-  statuses[id] = status;
-  const card = document.getElementById('card-' + id);
-  card.classList.remove('rejected-creative', 'rejected-copy');
+  document.getElementById('total-lbl').textContent=cards.length+' video ads';
+  var out='<div class="sec-hdr"><h2>🎬 Video Ad Concepts</h2><div class="sec-line"></div><span class="sec-badge">'+cards.length+' ads · Two-stage production flow</span></div><div class="grid">';
+  cards.forEach(function(c){out+=buildCard(c,s);});
+  out+='</div>';
+  grid.innerHTML=out;
+}
 
-  const borderColors = {
-    'revise':           '#995500',
-    'reject-creative':  '#6b0010',
-    'reject-copy':      '#3a0060',
-  };
-  card.style.borderColor = borderColors[status] || '#2a2a2a';
+/* ── BUILD CARD ── */
+function buildCard(c,s){
+  var id=c.id, color=s.color;
+  // Script beats
+  var scriptHtml='<div style="margin-bottom:10px">'
+    +'<div class="field-lbl" style="color:'+color+'">VIDEO SCRIPT (3 BEATS)</div>'
+    +'<div class="script-beats">'
+    +'<div class="beat-box"><div class="beat-lbl" style="color:'+color+'">⚡ Hook 0–3s</div><span class="beat-txt editable" id="hook-'+id+'" contenteditable="false">'+(c.hook||'<span style="color:#444;font-style:italic">generate below</span>')+'</span></div>'
+    +'<div class="beat-box"><div class="beat-lbl" style="color:#888">🎬 Middle 3–12s</div><span class="beat-txt editable" id="mid-'+id+'" contenteditable="false">'+(c.middle||'<span style="color:#444;font-style:italic">generate below</span>')+'</span></div>'
+    +'<div class="beat-box"><div class="beat-lbl" style="color:#888">🛒 CTA 12–15s</div><span class="beat-txt editable" id="cta-'+id+'" contenteditable="false">'+(c.cta||'<span style="color:#444;font-style:italic">generate below</span>')+'</span></div>'
+    +'</div></div>';
+  // Copy
+  var copyHtml='<div class="field-lbl" style="color:'+color+'">PRIMARY TEXT</div>'
+    +'<div class="field-box editable" id="pt-'+id+'" style="border-left-color:'+color+'" contenteditable="false">'+h(c.pt||'')+'</div>'
+    +'<div style="margin-top:8px"><div class="field-lbl" style="color:'+color+'">HEADLINES</div>'
+    +'<div class="hl-table">'
+    +'<div class="hl-row"><span class="hl-num" style="color:'+color+'">H1</span><span class="hl-txt editable" id="h1-'+id+'" contenteditable="false">'+h(c.h1||'')+'</span></div>'
+    +'<div class="hl-row"><span class="hl-num" style="color:'+color+'">H2</span><span class="hl-txt editable" id="h2-'+id+'" contenteditable="false">'+h(c.h2||'')+'</span></div>'
+    +'<div class="hl-row"><span class="hl-num" style="color:'+color+'">H3</span><span class="hl-txt editable" id="h3-'+id+'" contenteditable="false">'+h(c.h3||'')+'</span></div>'
+    +'</div></div>'
+    +'<div style="margin-top:8px"><div class="field-lbl" style="color:'+color+'">DESCRIPTION</div>'
+    +'<div class="field-box editable" id="desc-'+id+'" style="border-left-color:'+color+';font-size:0.72rem;color:#888" contenteditable="false">'+h(c.desc||'')+'</div></div>';
 
-  const note = document.getElementById('reject-note-' + id);
-  if (status === 'reject-creative') {
-    card.classList.add('rejected-creative');
-    note.textContent = '❌ Creative rejected — video/visual concept flagged for Claude';
-  } else if (status === 'reject-copy') {
-    card.classList.add('rejected-copy');
-    note.textContent = '🚫 Copy rejected — copywriting angle flagged for Claude';
-  } else {
-    note.textContent = '';
+  // Two-stage video section
+  var videoHtml=''
+    // Seed / Final video (existing or Higgsfield)
+    +'<div class="final-video-row" id="fvid-'+id+'">'
+    +'<div class="fb-shell">'
+    +'<div class="fb-hdr">'
+    +'<div class="fb-avatar">L</div>'
+    +'<div class="fb-info"><div class="fb-page">Lacalut Australia</div><div class="fb-sponsored">Sponsored · 🌍</div></div>'
+    +'<div class="fb-dots">···</div>'
+    +'</div>'
+    +'<div class="fb-primary editable" id="fb-pt-'+id+'" contenteditable="false" style="font-size:13px;color:#1c1e21;padding:4px 12px 8px;line-height:1.5;">'+(c.pt?c.pt.split('\n')[0]:'Primary text appears here')+'</div>'
+    +'<div class="fb-video-wrap feed-mode" id="vwrap-'+id+'">'
+    +'<video id="vid-'+id+'" controls playsinline preload="metadata"><source src="'+h(c.video||'')+'" type="video/mp4"></video>'
+    +'<div class="logo-ov-wrap" id="lov-'+id+'"></div>'
+    +'</div>'
+    +'<div class="fb-cta-bar">'
+    +'<div class="fb-cta-text"><div class="fb-headline editable" id="fb-hl-'+id+'" contenteditable="false">'+h(c.h1||'Headline')+'</div><div class="fb-domain">lacalut.com.au</div></div>'
+    +'<button class="fb-cta-btn" id="fb-cta-'+id+'">Shop Now</button>'
+    +'</div>'
+    +'</div>'
+    +'<div class="fmt-bar">'
+    +'<button class="fmt-btn on" onclick="setFmt('+id+',\'feed\',this)">📱 Feed 1:1</button>'
+    +'<button class="fmt-btn" onclick="setFmt('+id+',\'story\',this)">📲 Story 9:16</button>'
+    +'</div>'
+    +'<div class="download-row" id="dl-'+id+'" style="padding:8px 14px;">'
+    +'<a id="dl-seed-'+id+'" href="'+(c.video||'#')+'" download style="background:#1a2a3a;color:#7ab8ff;border:1px solid #2a4a6a;border-radius:6px;padding:6px 12px;font-size:0.68rem;font-weight:700;text-decoration:none;flex:1;text-align:center;">📥 Download Video</a>'
+    +'<a id="dl-hf-'+id+'" href="#" download style="background:#2a1a3a;color:#bb88ff;border:1px solid #4a2a6a;border-radius:6px;padding:6px 12px;font-size:0.68rem;font-weight:700;text-decoration:none;flex:1;text-align:center;display:none;">📥 Download Higgsfield Final</a>'
+    +'</div>'
+    +'</div>'
+
+    // Gemini draft video (appears after Veo generation)
+    +'<div class="draft-video-row" id="dvid-'+id+'" style="padding:0 0 4px;">'
+    +'<div style="padding:6px 14px 4px;font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#7ab8ff;">🤖 Gemini Draft — Concept Validation</div>'
+    +'<video id="draft-vid-'+id+'" controls playsinline style="width:100%;max-height:300px;background:#000;display:block;"></video>'
+    +'<div class="draft-actions" id="dacts-'+id+'">'
+    +'<button class="btn btn-approve" style="font-size:0.65rem" onclick="approveDraft('+id+')">✅ Approve Concept</button>'
+    +'<button class="btn btn-revise" style="font-size:0.65rem" onclick="reviseDraft('+id+')">✏️ Revise Prompt</button>'
+    +'<button class="btn btn-reject-creative" style="font-size:0.65rem" onclick="rejectDraft('+id+')">❌ Reject</button>'
+    +'</div>'
+    +'</div>'
+
+    // Spinner
+    +'<div class="draft-spinner-row" id="dspinner-'+id+'" style="padding:12px 14px;">'
+    +'<div class="spinner"></div>'
+    +'<div class="draft-timer" id="dtimer-'+id+'">Generating Gemini draft… 0s</div>'
+    +'</div>'
+    +'<div class="draft-error" id="derr-'+id+'"></div>'
+
+    // Higgsfield panel (shown after draft approved)
+    +'<div class="higgsfield-panel" id="hf-panel-'+id+'">'
+    +'<div class="panel-lbl" style="color:#ff6644;">🎬 Stage 2 — Higgsfield Seedance 2.0</div>'
+    +'<div class="panel-hint">Premium quality final. Generate prompt → copy → Claude Code → <code style="background:#1a1a1a;padding:1px 4px;border-radius:3px;font-size:0.8em">/higgsfield-generate</code></div>'
+    +'<textarea class="panel-ta" id="hfpr-'+id+'" rows="4" placeholder="Click Generate Prompt to auto-write the Higgsfield motion brief…"></textarea>'
+    +'<div class="panel-btns">'
+    +'<button class="btn-go rose" onclick="genHFPrompt('+id+')">⚡ Generate Prompt</button>'
+    +'<button class="btn-go" onclick="copyHFPrompt('+id+')" style="background:#2a2a2a">📋 Copy</button>'
+    +'<button class="btn-go orange" onclick="openHFUrl('+id+')" title="Paste Higgsfield URL">🔗 Save Final URL</button>'
+    +'</div>'
+    +'<div id="hfurl-row-'+id+'" style="display:none;gap:5px;margin-top:6px;" class="panel-btns">'
+    +'<input type="text" id="hfurl-'+id+'" placeholder="Paste Higgsfield video URL…" style="flex:1;padding:6px 9px;border:1px solid #2a2a2a;border-radius:5px;font-size:0.72rem;background:#1a1a1a;color:#ccc;">'
+    +'<button class="btn-go grn" onclick="saveHFUrl('+id+')">💾 Save</button>'
+    +'</div>'
+    +'</div>';
+
+  // Claude copy panel
+  var claudePanel='<div class="ai-panel" id="claude-panel-'+id+'">'
+    +'<div class="panel-lbl" style="color:#818cf8">✍️ Revise Copy — Claude Sonnet</div>'
+    +'<div class="panel-hint">SKU: '+h(s.name)+' · outputs primary text + 3 headlines + description</div>'
+    +'<textarea class="panel-ta" id="cin-'+id+'" rows="2" placeholder="What to change? e.g. More urgent · Shorter · Different angle"></textarea>'
+    +'<div class="panel-btns"><button class="btn-go" onclick="runClaude('+id+')">✍️ Revise</button><button class="btn-close-p" onclick="togglePanel(\'claude\','+id+')">✕ Close</button></div>'
+    +'<div class="result-box" id="cres-'+id+'"><div class="result-lbl">Claude suggests:</div><div class="result-pre" id="cpre-'+id+'"></div>'
+    +'<div class="result-btns"><button class="btn-accept" onclick="acceptClaude('+id+')">✓ Accept</button><button class="btn-discard" onclick="discardClaude('+id+')">🗑 Discard</button></div></div>'
+    +'</div>';
+
+  // Script panel
+  var scriptPanel='<div class="ai-panel" id="script-panel-'+id+'">'
+    +'<div class="panel-lbl" style="color:#cc88ff">📋 Write Script — Claude Sonnet</div>'
+    +'<div class="panel-hint">Generates hook / middle / CTA + full ad copy for this video concept</div>'
+    +'<textarea class="panel-ta" id="sin-'+id+'" rows="2" placeholder="Direction? e.g. Lead with biology · Mention zinc · Target working women"></textarea>'
+    +'<div class="panel-btns"><button class="btn-go" style="background:#6b21a8" onclick="runScript('+id+')">📋 Write Script</button><button class="btn-close-p" onclick="togglePanel(\'script\','+id+')">✕ Close</button></div>'
+    +'<div class="result-box" id="sres-'+id+'"><div class="result-lbl">Script draft:</div><div class="result-pre" id="spre-'+id+'"></div>'
+    +'<div class="result-btns"><button class="btn-accept" onclick="acceptScript('+id+')">✓ Use This</button><button class="btn-discard" onclick="discardScript('+id+')">🗑 Discard</button></div></div>'
+    +'</div>';
+
+  // Veo prompt panel
+  var veoPanel='<div class="ai-panel" id="veo-panel-'+id+'">'
+    +'<div class="panel-lbl" style="color:#ff9966">🤖 Generate Gemini Draft</div>'
+    +'<div class="panel-hint">Veo 2.0 — concept validation only. Approve draft to unlock Higgsfield production.</div>'
+    +'<textarea class="panel-ta" id="vpin-'+id+'" rows="3">'+h(s.motionStyle)+'</textarea>'
+    +'<div class="panel-btns"><button class="btn-go orange" onclick="startVeo('+id+')">🎬 Generate Draft</button><button class="btn-close-p" onclick="togglePanel(\'veo\','+id+')">✕ Close</button></div>'
+    +'</div>';
+
+  // Toolbar
+  var toolbar='<div class="toolbar">'
+    +'<button class="btn btn-approve" onclick="setStatus('+id+',\'approved\')">✓ Approve Card</button>'
+    +'<button class="btn btn-revise" id="rvbtn-'+id+'" onclick="setStatus('+id+',\'revise\')">✏️ Revise</button>'
+    +'<button class="btn btn-reject-creative" onclick="setStatus('+id+',\'reject-creative\')">❌ Creative</button>'
+    +'<button class="btn btn-reject-copy" onclick="setStatus('+id+',\'reject-copy\')">🚫 Copy</button>'
+    +'<button class="btn btn-teach" onclick="openTeach('+id+',\'c\')">📚</button>'
+    +'<button class="btn btn-claude" onclick="togglePanel(\'claude\','+id+')" title="Revise Copy">✍️</button>'
+    +'<button class="btn btn-script" onclick="togglePanel(\'script\','+id+')" title="Write Script">📋</button>'
+    +'<button class="btn btn-gen-draft" onclick="togglePanel(\'veo\','+id+')" title="Generate Gemini Draft">🤖</button>'
+    +'</div>';
+
+  return '<div class="card" id="card-'+id+'" data-id="'+id+'" data-name="'+h(c.name)+'" data-vstate="no-draft">'
+    +'<div class="card-hdr">'
+    +'<span class="card-lbl" style="background:'+color+'">Video</span>'
+    +'<span class="card-name">'+c.emoji+' '+h(c.name)+'</span>'
+    +'<span class="angle-tag">'+h(c.angle)+'</span>'
+    +'<span class="state-tag" id="stag-'+id+'">No draft</span>'
+    +'</div>'
+    +'<div class="draft-area">'
+    +videoHtml
+    +'</div>'
+    +'<div class="copy-section">'
+    +scriptHtml
+    +copyHtml
+    +'</div>'
+    +toolbar
+    +'<div class="card-foot"><div class="reject-note" id="rn-'+id+'"></div><div class="trained-badge">📚 Training saved</div></div>'
+    +claudePanel
+    +scriptPanel
+    +veoPanel
+    +'</div>';
+}
+
+/* ── FORMAT ── */
+function setFmt(id,fmt,btn){
+  var w=document.getElementById('vwrap-'+id);
+  if(w){w.className='fb-video-wrap '+(fmt==='story'?'story-mode':'feed-mode');}
+  document.querySelectorAll('#card-'+id+' .fmt-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+}
+
+/* ── PANEL TOGGLE ── */
+function togglePanel(type,id){
+  var panel=document.getElementById(type+'-panel-'+id);
+  var wasOpen=panel.classList.contains('open');
+  ['claude','script','veo'].forEach(function(t){
+    var p=document.getElementById(t+'-panel-'+id);if(p)p.classList.remove('open');
+  });
+  if(!wasOpen)panel.classList.add('open');
+}
+
+/* ── VIDEO STATE ── */
+var STATE_LABELS={
+  'no-draft':'No draft',
+  'seed':'✅ Ready',
+  'draft-pending':'⏳ Generating…',
+  'draft-ready':'🤖 Draft ready',
+  'production':'⚡ In production',
+  'final-ready':'🎬 Final ready'
+};
+function setVState(id,state){
+  var card=document.getElementById('card-'+id);
+  if(!card)return;
+  card.dataset.vstate=state;
+  var tag=document.getElementById('stag-'+id);
+  if(tag){tag.textContent=STATE_LABELS[state]||state;tag.className='state-tag '+state.replace('-','_');}
+}
+
+/* ── VEO GENERATION ── */
+async function startVeo(id){
+  var s=SKUS[activeSku];
+  var card=document.getElementById('card-'+id);
+  var prompt=document.getElementById('vpin-'+id).value||s.motionStyle;
+  // Append hook if script exists
+  var hook=getField('hook-'+id);
+  if(hook&&hook.length>10) prompt=prompt+'. Opening scene: '+hook;
+
+  togglePanel('veo',id); // close the panel
+  setVState(id,'draft-pending');
+  var start=Date.now();
+  var timerEl=document.getElementById('dtimer-'+id);
+  var errEl=document.getElementById('derr-'+id);
+  errEl.style.display='none';
+
+  // Elapsed timer display
+  var elapsed=setInterval(function(){
+    if(timerEl)timerEl.textContent='Generating Gemini draft… '+Math.floor((Date.now()-start)/1000)+'s';
+  },1000);
+
+  try{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning?key='+GEM_KEY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{parts:[{text:prompt}]}],
+        generationConfig:{aspectRatio:'9:16',durationSeconds:8}
+      })
+    });
+    if(!res.ok){var e=await res.json();throw new Error((e.error&&e.error.message)||'HTTP '+res.status);}
+    var op=await res.json();
+    if(!op.name)throw new Error('No operation name returned');
+    pollVeo(id,op.name,elapsed,start);
+  }catch(err){
+    clearInterval(elapsed);
+    setVState(id,'no-draft');
+    errEl.textContent='❌ Veo error: '+err.message+'. Check API key or try revising the prompt.';
+    errEl.style.display='block';
   }
+}
 
+function pollVeo(id,opName,elapsed,start){
+  var errEl=document.getElementById('derr-'+id);
+  var timer=setInterval(async function(){
+    try{
+      var res=await fetch('https://generativelanguage.googleapis.com/v1beta/'+opName+'?key='+GEM_KEY);
+      if(!res.ok)throw new Error('Poll HTTP '+res.status);
+      var op=await res.json();
+      if(op.done){
+        clearInterval(timer);clearInterval(elapsed);
+        delete veoTimers[id];
+        var samples=op.response&&op.response.generateVideoResponse&&op.response.generateVideoResponse.generatedSamples;
+        if(!samples||!samples[0])throw new Error('No video in response');
+        var vid=samples[0].video;
+        var src=vid.uri||(vid.encodedVideo?('data:video/mp4;base64,'+vid.encodedVideo):null);
+        if(!src)throw new Error('No video URI or encoded data');
+        var dv=document.getElementById('draft-vid-'+id);
+        if(dv){dv.src=src;}
+        setVState(id,'draft-ready');
+      }
+    }catch(err){
+      clearInterval(timer);clearInterval(elapsed);
+      delete veoTimers[id];
+      setVState(id,'no-draft');
+      errEl.textContent='❌ Veo poll error: '+err.message;
+      errEl.style.display='block';
+    }
+  },6000);
+  veoTimers[id]=timer;
+}
+
+function approveDraft(id){setVState(id,'production');}
+function reviseDraft(id){
+  setVState(id,'no-draft');
+  togglePanel('veo',id);
+}
+function rejectDraft(id){
+  setVState(id,'no-draft');
+  openTeach(id,'c',true);
+}
+
+/* ── HIGGSFIELD PROMPT ── */
+async function genHFPrompt(id){
+  var s=SKUS[activeSku];
+  var card=document.getElementById('card-'+id);
+  var ta=document.getElementById('hfpr-'+id);
+  var btn=document.querySelector('#hf-panel-'+id+' .btn-go.rose');
+  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
+    ta.value='Add your Anthropic API key to generate prompts automatically.\n\nManual template:\nOpening 0-5s: [describe motion]\nPeak 7-10s: [emotional or scientific revelation]\nClose 12-15s: [product reveal + CTA]\n\nModel: Seedance 2.0 | Duration: 15s';
+    return;
+  }
+  btn.textContent='⏳ Writing…';btn.disabled=true;ta.value='⏳ Generating motion brief…';
+  var hook=getField('hook-'+id), mid=getField('mid-'+id), cta=getField('cta-'+id);
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,
+        messages:[{role:'user',content:'Write a 15-second Higgsfield Seedance 2.0 motion brief for a Facebook video ad.\n\nSKU: '+s.name+'\nCreative: '+card.dataset.name+'\nMotion style: '+s.motionStyle
+          +(hook?'\nScript hook: '+hook:'')+(mid?'\nScript middle: '+mid:'')+(cta?'\nScript CTA: '+cta:'')
+          +'\n\nWrite exactly 3 beats:\n1. Opening 0-5s: specific camera movement and scene\n2. Peak 7-10s: emotional or scientific moment\n3. Close 12-15s: product reveal + CTA\n\nOutput the prompt text only, no labels.'}]})});
+    var data=await res.json();
+    ta.value=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
+  }catch(err){ta.value='Error: '+err.message;}
+  finally{btn.textContent='⚡ Generate Prompt';btn.disabled=false;}
+}
+
+function copyHFPrompt(id){
+  var ta=document.getElementById('hfpr-'+id);
+  if(ta){navigator.clipboard.writeText(ta.value).then(function(){
+    var b=document.querySelectorAll('#hf-panel-'+id+' .btn-go')[1];
+    if(b){b.textContent='✅ Copied!';setTimeout(function(){b.textContent='📋 Copy';},1800);}
+  });}
+}
+
+function openHFUrl(id){
+  var row=document.getElementById('hfurl-row-'+id);
+  if(row)row.style.display=row.style.display==='none'?'flex':'none';
+}
+
+async function saveHFUrl(id){
+  var url=document.getElementById('hfurl-'+id).value.trim();
+  if(!url){alert('Paste a Higgsfield URL first.');return;}
+  var card=document.getElementById('card-'+id);
+  // Update the main video element
+  var mainVid=document.getElementById('vid-'+id);
+  if(mainVid){mainVid.src=url;}
+  // Update download link
+  var dlHf=document.getElementById('dl-hf-'+id);
+  if(dlHf){dlHf.href=url;dlHf.style.display='';}
+  setVState(id,'final-ready');
+  // Save to Supabase
+  try{
+    await fetch(SUPA_URL+'/rest/v1/ad_approvals?sku=eq.'+activeSku+'&creative_name=eq.'+encodeURIComponent(card.dataset.name),{
+      method:'PATCH',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({video_url:url})
+    });
+    document.getElementById('hfurl-row-'+id).style.display='none';
+    alert('✅ Final video URL saved.');
+  }catch(err){alert('❌ Supabase error: '+err.message);}
+}
+
+/* ── HELPER: get field text ── */
+function getField(elId){
+  var el=document.getElementById(elId);
+  if(!el)return '';
+  var t=el.innerText||el.textContent||'';
+  return t.indexOf('generate below')>-1||t.indexOf('empty')>-1?'':t.trim();
+}
+
+/* ── SCRIPT GENERATION ── */
+async function runScript(id){
+  var s=SKUS[activeSku];
+  var card=document.getElementById('card-'+id);
+  var input=document.getElementById('sin-'+id).value.trim();
+  var resBox=document.getElementById('sres-'+id);
+  var preEl=document.getElementById('spre-'+id);
+  var genBtn=document.querySelector('#script-panel-'+id+' .btn-go');
+  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){alert('Add your Anthropic API key to CLAUDE_KEY in the script.');return;}
+  genBtn.textContent='⏳ Writing…';genBtn.disabled=true;resBox.classList.remove('show');
+  var msg='Write a 15-second Facebook video ad script for "'+card.dataset.name+'".'
+    +(input?'\n\nDirection: '+input:'')+'\n\nReturn ONLY valid JSON:\n{"hook":"0-3s action or spoken line","middle":"3-12s key message","cta":"12-15s call to action","primary_text":"full ad copy (3-5 paragraphs, include emoji)","h1":"short headline","h2":"alternative headline","h3":"third headline","description":"one sentence"}';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:900,system:s.claudePrompt,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    scriptRes[id]=JSON.parse(raw);
+    preEl.textContent='HOOK: '+scriptRes[id].hook+'\nMIDDLE: '+scriptRes[id].middle+'\nCTA: '+scriptRes[id].cta+'\n\nPRIMARY TEXT:\n'+scriptRes[id].primary_text+'\n\nH1: '+scriptRes[id].h1+'\nH2: '+scriptRes[id].h2+'\nH3: '+scriptRes[id].h3+'\n\nDESCRIPTION: '+scriptRes[id].description;
+    resBox.classList.add('show');
+  }catch(err){alert('❌ Script error: '+err.message);}
+  finally{genBtn.textContent='📋 Write Script';genBtn.disabled=false;}
+}
+
+function acceptScript(id){
+  var r=scriptRes[id];if(!r)return;
+  var fields=[['hook-'+id,r.hook],['mid-'+id,r.middle],['cta-'+id,r.cta],['pt-'+id,r.primary_text],['h1-'+id,r.h1],['h2-'+id,r.h2],['h3-'+id,r.h3],['desc-'+id,r.description],['fb-pt-'+id,r.primary_text?r.primary_text.split('\n')[0]:''],['fb-hl-'+id,r.h1]];
+  fields.forEach(function(f){var el=document.getElementById(f[0]);if(el&&f[1])el.innerText=f[1];});
+  discardScript(id);
+}
+function discardScript(id){var r=document.getElementById('sres-'+id);if(r)r.classList.remove('show');delete scriptRes[id];}
+
+/* ── CLAUDE COPY REVISION ── */
+async function runClaude(id){
+  var s=SKUS[activeSku];
+  var card=document.getElementById('card-'+id);
+  var input=document.getElementById('cin-'+id).value.trim();
+  var resBox=document.getElementById('cres-'+id);
+  var preEl=document.getElementById('cpre-'+id);
+  var genBtn=document.querySelector('#claude-panel-'+id+' .btn-go');
+  if(!input){alert('Describe what to change first.');return;}
+  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){alert('Add your Anthropic API key to CLAUDE_KEY in the script.');return;}
+  genBtn.textContent='⏳ Revising…';genBtn.disabled=true;resBox.classList.remove('show');
+  var pt=getField('pt-'+id),h1=getField('h1-'+id),h2=getField('h2-'+id),h3=getField('h3-'+id),desc=getField('desc-'+id);
+  var msg='Creative: "'+card.dataset.name+'"\nCurrent copy:\nPrimary Text: '+pt+'\nH1: '+h1+'\nH2: '+h2+'\nH3: '+h3+'\nDescription: '+desc+'\n\nInstruction: '+input+'\n\nReturn ONLY valid JSON:\n{"primary_text":"...","h1":"...","h2":"...","h3":"...","description":"..."}';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.claudePrompt,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    claudeRes[id]=JSON.parse(raw);
+    preEl.textContent='Primary Text:\n'+(claudeRes[id].primary_text||'')+'\n\nH1: '+(claudeRes[id].h1||'')+'\nH2: '+(claudeRes[id].h2||'')+'\nH3: '+(claudeRes[id].h3||'')+'\n\nDescription:\n'+(claudeRes[id].description||'');
+    resBox.classList.add('show');
+  }catch(err){alert('❌ Claude error: '+err.message);}
+  finally{genBtn.textContent='✍️ Revise';genBtn.disabled=false;}
+}
+
+function acceptClaude(id){
+  var r=claudeRes[id];if(!r)return;
+  if(r.primary_text){var el=document.getElementById('pt-'+id);if(el)el.innerText=r.primary_text;var fbpt=document.getElementById('fb-pt-'+id);if(fbpt)fbpt.innerText=r.primary_text.split('\n')[0];}
+  if(r.h1){var el=document.getElementById('h1-'+id);if(el)el.innerText=r.h1;var fbhl=document.getElementById('fb-hl-'+id);if(fbhl)fbhl.innerText=r.h1;}
+  if(r.h2){var el=document.getElementById('h2-'+id);if(el)el.innerText=r.h2;}
+  if(r.h3){var el=document.getElementById('h3-'+id);if(el)el.innerText=r.h3;}
+  if(r.description){var el=document.getElementById('desc-'+id);if(el)el.innerText=r.description;}
+  discardClaude(id);
+}
+function discardClaude(id){var r=document.getElementById('cres-'+id);if(r)r.classList.remove('show');delete claudeRes[id];}
+
+/* ── STATUS ── */
+function setStatus(id,s){
+  if(s==='revise'){enterEdit(id);return;}
+  if(s==='approved'){exitEdit(id);showApp(id);return;}
+  if(s==='reject-creative'){exitEdit(id);openTeach(id,'c',true);return;}
+  if(s==='reject-copy'){exitEdit(id);openTeach(id,'p',true);return;}
+  exitEdit(id);updateCounts();
+}
+function enterEdit(id){
+  var card=document.getElementById('card-'+id);
+  card.classList.add('revising');statuses[id]='revise';
+  card.querySelectorAll('.editable').forEach(function(el){el.contentEditable='true';});
+  var btn=document.getElementById('rvbtn-'+id);
+  if(btn){btn.textContent='💾 Save';btn.className='btn btn-save';btn.onclick=function(){exitEdit(id);};}
+  updateCounts();
+}
+function exitEdit(id){
+  var card=document.getElementById('card-'+id);
+  card.classList.remove('revising');
+  card.querySelectorAll('.editable').forEach(function(el){el.contentEditable='false';});
+  var btn=document.getElementById('rvbtn-'+id);
+  if(btn){btn.textContent='✏️ Revise';btn.className='btn btn-revise';btn.onclick=function(){setStatus(id,'revise');};}
+  if(statuses[id]==='revise')delete statuses[id];
+}
+function applyRC(id,trained){
+  statuses[id]='reject-creative';
+  var card=document.getElementById('card-'+id);
+  card.classList.remove('approved','rejected-creative','rejected-copy','revising');
+  card.classList.add('rejected-creative');
+  var n=document.getElementById('rn-'+id);if(n)n.textContent='❌ Creative rejected'+(trained?' · 📚 Training saved':'');
+  updateCounts();
+}
+function applyRP(id,trained){
+  statuses[id]='reject-copy';
+  var card=document.getElementById('card-'+id);
+  card.classList.remove('approved','rejected-creative','rejected-copy','revising');
+  card.classList.add('rejected-copy');
+  var n=document.getElementById('rn-'+id);if(n)n.textContent='🚫 Copy rejected'+(trained?' · 📚 Training saved':'');
   updateCounts();
 }
 
-function showApprovalModal(id) {
-  pendingApprovalId = id;
-  const card = document.getElementById('card-' + id);
-  document.getElementById('modal-creative-name').textContent = card.dataset.creativeName || ('Ad ' + id);
-  document.getElementById('approval-modal').classList.add('active');
+/* ── APPROVAL ── */
+function showApp(id){
+  pendApprove=id;
+  var card=document.getElementById('card-'+id);
+  var s=SKUS[activeSku];
+  document.getElementById('m-name').textContent=card.dataset.name||('Card '+id);
+  document.getElementById('m-sku').textContent=s.name;
+  document.getElementById('m-adset').textContent=s.adsetName;
+  document.getElementById('app-modal').classList.add('on');
 }
-
-function closeModal() {
-  document.getElementById('approval-modal').classList.remove('active');
-  pendingApprovalId = null;
-}
-
-async function submitApproval() {
-  const id   = pendingApprovalId;
-  const card = document.getElementById('card-' + id);
-
-  const primaryText = card.querySelector('.primary-text')?.innerText || '';
-  const headline    = card.querySelector('table td:nth-child(2)')?.innerText || '';
-  const description = card.querySelectorAll('table')[1]?.querySelector('td:nth-child(2)')?.innerText || '';
-  const videoUrl    = 'https://lacalut-australia.github.io/audits/flora-video-review/' + (card.dataset.video || '');
-
-  const payload = [{
-    sku:              'flora',
-    creative_name:    card.dataset.creativeName || ('Ad ' + id),
-    creative_type:    'video',
-    adset_id:         '120244410306410229',
-    adset_name:       'Flora / Bad Breath',
-    campaign_id:      '120241478653830229',
-    template_ad_id:   '120244706626530229',
-    primary_text:     primaryText,
-    headline:         headline,
-    description:      description,
-    image_url:        videoUrl,
-    status:           'pending'
-  }];
-
-  const confirmBtn = document.querySelector('#approval-modal .btn-confirm');
-  confirmBtn.textContent = '⏳ Submitting…';
-  confirmBtn.disabled = true;
-
-  try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/ad_approvals', {
-      method: 'POST',
-      headers: {
-        'apikey':        SUPABASE_ANON,
-        'Authorization': 'Bearer ' + SUPABASE_ANON,
-        'Content-Type':  'application/json',
-        'Prefer':        'return=minimal'
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    closeModal();
-    statuses[id] = 'approved';
-    card.style.borderColor = '#004a88';
-
-    const approveBtn = card.querySelector('.btn-approve');
-    approveBtn.textContent = '📋 Queued for Meta';
-    approveBtn.style.background = '#004a88';
-    approveBtn.style.color = '#a8d4ff';
-    approveBtn.disabled = true;
-
+function closeApp(){document.getElementById('app-modal').classList.remove('on');pendApprove=null;}
+async function doApprove(){
+  var id=pendApprove, s=SKUS[activeSku];
+  var card=document.getElementById('card-'+id);
+  var btn=document.querySelector('#app-modal .btn-confirm');
+  btn.textContent='⏳ Queuing…';btn.disabled=true;
+  var pt=getField('pt-'+id),h1=getField('h1-'+id),desc=getField('desc-'+id);
+  var vidEl=document.getElementById('vid-'+id);
+  var videoUrl=vidEl?vidEl.src:'';
+  var payload=[{sku:activeSku,creative_name:card.dataset.name||('Card '+id),
+    creative_type:'video',adset_id:s.adsetId,adset_name:s.adsetName,
+    campaign_id:s.campaignId,template_ad_id:s.tplAdId,
+    primary_text:pt,headline:h1,description:desc,
+    image_url:videoUrl,status:'ready_to_push'}];
+  try{
+    var res=await fetch(SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(payload)});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    closeApp();statuses[id]='approved';
+    card.classList.add('approved');
+    var ab=card.querySelector('.btn-approve');
+    if(ab){ab.textContent='🚀 Queued';ab.style.background='#1a2a4a';ab.style.color='#7ab8ff';ab.disabled=true;}
     updateCounts();
-  } catch (err) {
-    confirmBtn.textContent = '✅ Confirm & Queue';
-    confirmBtn.disabled = false;
-    alert('❌ Submission failed: ' + err.message);
-    console.error(err);
+  }catch(err){btn.textContent='🚀 Confirm & Queue';btn.disabled=false;alert('❌ '+err.message);}
+}
+
+/* ── LOGO ── */
+function uploadLogo(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    logoData=e.target.result;localStorage.setItem('lac_logo',logoData);
+    document.getElementById('logo-status').textContent='Logo: '+f.name;
+    var t=document.getElementById('logo-thumb');t.src=logoData;t.style.display='';
+    applyLogo();
+  };r.readAsDataURL(f);
+}
+function clearLogo(){
+  logoData=null;localStorage.removeItem('lac_logo');
+  document.getElementById('logo-status').textContent='No logo uploaded';
+  document.getElementById('logo-thumb').style.display='none';
+  document.querySelectorAll('.logo-ov-wrap').forEach(function(w){w.innerHTML='';});
+}
+function applyLogo(){
+  var src=logoData||localStorage.getItem('lac_logo');if(!src)return;
+  if(!logoData){logoData=src;document.getElementById('logo-thumb').src=src;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
+  var pos=document.getElementById('logo-pos').value||'br';
+  var sz=document.getElementById('logo-sz').value||'22';
+  document.querySelectorAll('.logo-ov-wrap').forEach(function(w){
+    w.innerHTML='<img src="'+src+'" class="logo-ov-img '+pos+'" style="width:'+sz+'%">';
+  });
+}
+
+/* ── TEACH ── */
+function switchTab(t){
+  activeTab=t;
+  document.getElementById('tsec-c').style.display=t==='c'?'':'none';
+  document.getElementById('tsec-p').style.display=t==='p'?'':'none';
+  document.getElementById('ttab-c').classList.toggle('on',t==='c');
+  document.getElementById('ttab-p').classList.toggle('on',t==='p');
+  var btn=document.getElementById('teach-save');
+  btn.textContent=teachReject?(t==='c'?'💾 Save & Reject Creative':'💾 Save & Reject Copy'):'💾 Save Training';
+}
+function toggleTag(el){el.classList.toggle('on');}
+function openTeach(id,tab,reject){
+  pendTeach=id;teachReject=!!reject;teachRType=tab||'c';
+  document.getElementById('teach-orig').textContent=getField('pt-'+id);
+  document.getElementById('tc-pref').value='';document.getElementById('tc-notes').value='';
+  document.getElementById('tc-prob').value='';document.getElementById('tc-dir').value='';
+  document.querySelectorAll('.ctag.on').forEach(function(t){t.classList.remove('on');});
+  switchTab(teachRType);
+  document.getElementById('teach-modal').classList.add('on');
+}
+function closeTeach(){
+  document.getElementById('teach-modal').classList.remove('on');
+  var id=pendTeach,rej=teachReject,rt=teachRType;
+  pendTeach=null;teachReject=false;
+  if(id&&rej){if(rt==='c')applyRC(id,false);else applyRP(id,false);}
+}
+async function doTeach(){
+  var id=pendTeach;
+  var card=document.getElementById('card-'+id);
+  var saveBtn=document.getElementById('teach-save');
+  saveBtn.textContent='⏳ Saving…';saveBtn.disabled=true;
+  var payload=null;
+  if(activeTab==='c'){
+    var prob=document.getElementById('tc-prob').value.trim();
+    var dir=document.getElementById('tc-dir').value.trim();
+    var tags=Array.from(document.querySelectorAll('.ctag.on')).map(function(t){return t.textContent;}).join(', ');
+    var notes=[tags,prob].filter(Boolean).join(' · ');
+    if(notes||dir)payload=[{sku:activeSku,creative_name:card.dataset.name||('Card '+id),feedback_type:'creative',original_copy:null,preferred_copy:null,visual_direction:dir,notes:notes}];
+  }else{
+    var pref=document.getElementById('tc-pref').value.trim();
+    var notes=document.getElementById('tc-notes').value.trim();
+    var orig=getField('pt-'+id);
+    if(pref||notes)payload=[{sku:activeSku,creative_name:card.dataset.name||('Card '+id),feedback_type:'copy',original_copy:orig,preferred_copy:pref,visual_direction:null,notes:notes}];
+  }
+  try{
+    if(payload){
+      var res=await fetch(SUPA_URL+'/rest/v1/ad_training',{method:'POST',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(payload)});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+    }
+    document.getElementById('teach-modal').classList.remove('on');
+    var trained=payload!==null,rej=teachReject,rt=teachRType;
+    pendTeach=null;teachReject=false;
+    if(rej){if(rt==='c')applyRC(id,trained);else applyRP(id,trained);}
+    else if(trained){var c=document.getElementById('card-'+id);if(c)c.classList.add('trained');}
+  }catch(err){
+    saveBtn.textContent=teachReject?'💾 Save & Reject':'💾 Save Training';saveBtn.disabled=false;
+    alert('❌ '+err.message);
   }
 }
 
-function updateCounts() {
-  const vals = Object.values(statuses);
-  document.getElementById('approval-count').textContent        = vals.filter(v => v === 'approved').length;
-  document.getElementById('revise-count').textContent          = vals.filter(v => v === 'revise').length;
-  document.getElementById('reject-creative-count').textContent = vals.filter(v => v === 'reject-creative').length;
-  document.getElementById('reject-copy-count').textContent     = vals.filter(v => v === 'reject-copy').length;
+/* ── COUNTS ── */
+function updateCounts(){
+  var v=Object.values(statuses);
+  document.getElementById('ct-approved').textContent=v.filter(function(x){return x==='approved';}).length;
+  document.getElementById('ct-revise').textContent=v.filter(function(x){return x==='revise';}).length;
+  document.getElementById('ct-rc').textContent=v.filter(function(x){return x==='reject-creative';}).length;
+  document.getElementById('ct-rp').textContent=v.filter(function(x){return x==='reject-copy';}).length;
 }
 </script>
 </body>
