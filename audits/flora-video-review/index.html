@@ -243,6 +243,19 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 .btn-save-brief{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:14px;font-weight:700;cursor:pointer;}
 .btn-close-brief{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:8px 16px;font-size:14px;cursor:pointer;}
 
+/* HIGGSFIELD PANEL */
+.btn-higgsfield{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#e2b96f;border:1.5px solid #e2b96f;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-higgsfield:hover{background:#e2b96f;color:#1a1a2e;}
+.btn-higgsfield:disabled{opacity:.5;cursor:not-allowed;}
+.hf-panel{display:none;background:#1a1a2e;border:1.5px solid #e2b96f;border-radius:7px;padding:14px;margin-top:10px;}
+.hf-panel.open{display:block;}
+.hf-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#e2b96f;margin-bottom:8px;}
+.hf-prompt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:#f0e6d3;background:#0d0d1a;border-radius:6px;padding:12px;margin-bottom:10px;min-height:60px;}
+.hf-acts{display:flex;gap:8px;align-items:center;}
+.btn-copy-hf{background:#e2b96f;color:#1a1a2e;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-copy-hf:hover{background:#c9a84c;}
+.hf-note{font-size:12px;color:#888;margin-top:8px;line-height:1.5;}
+
 /* BRAIN PANEL */
 #btn-brain{background:#fff;color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:9px 14px;font-size:14px;cursor:pointer;white-space:nowrap;margin-left:auto;transition:.15s;}
 #btn-brain:hover{background:var(--bg);}
@@ -678,9 +691,19 @@ function buildCopyHTML(id,c,col){
     +'<div class="ai-result" id="scr-'+id+'"><div class="ai-result-lbl">Script draft:</div><div class="ai-result-pre" id="scp-'+id+'"></div>'
     +'<div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptScript(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="discardAI(\'scr\',\''+id+'\')">🗑 Discard</button></div></div>'
     +'</div>'
+    +'<div class="hf-panel" id="hf-'+id+'">'
+    +'<div class="hf-lbl">⚡ Higgsfield Seedance 2.0 — Motion Brief</div>'
+    +'<div class="hf-prompt" id="hfp-'+id+'">Generating world-class prompt…</div>'
+    +'<div class="hf-acts">'
+    +'<button class="btn-copy-hf" onclick="copyHiggsfield(\''+id+'\')">📋 Copy Prompt</button>'
+    +'<button class="btn-close-p" onclick="document.getElementById(\'hf-'+id+'\').classList.remove(\'open\')">✕ Close</button>'
+    +'</div>'
+    +'<div class="hf-note">Copy this prompt → paste into Claude Code → run /higgsfield-generate</div>'
+    +'</div>'
     +'<div class="copy-acts">'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
     +'<button class="btn-write-script" onclick="togglePanel(\'sc\',\''+id+'\',true)">📋 Write Script</button>'
+    +'<button class="btn-higgsfield" id="hfb-'+id+'" onclick="genHiggsfield(\''+id+'\')">⚡ Higgsfield Prompt</button>'
     +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
     +'</div>'
     +'<div class="err-msg" id="err-'+id+'"></div>'
@@ -740,8 +763,18 @@ function buildVideoHTML(id,c,col){
     +'<div class="ai-result" id="rwr-'+id+'"><div class="ai-result-lbl">Claude suggests:</div><div class="ai-result-pre" id="rwp-'+id+'"></div>'
     +'<div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptRewrite(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="discardAI(\'rwr\',\''+id+'\')">🗑</button></div></div>'
     +'</div>'
+    +'<div class="hf-panel" id="hf-'+id+'">'
+    +'<div class="hf-lbl">⚡ Higgsfield Seedance 2.0 — Motion Brief</div>'
+    +'<div class="hf-prompt" id="hfp-'+id+'">Generating world-class prompt…</div>'
+    +'<div class="hf-acts">'
+    +'<button class="btn-copy-hf" onclick="copyHiggsfield(\''+id+'\')">📋 Copy Prompt</button>'
+    +'<button class="btn-close-p" onclick="document.getElementById(\'hf-'+id+'\').classList.remove(\'open\')">✕ Close</button>'
+    +'</div>'
+    +'<div class="hf-note">Copy this prompt → paste into Claude Code → run /higgsfield-generate</div>'
+    +'</div>'
     +'<div class="copy-acts">'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
+    +'<button class="btn-higgsfield" id="hfb-'+id+'" onclick="genHiggsfield(\''+id+'\')">⚡ Higgsfield Prompt</button>'
     +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
     +'<a class="btn-dl" id="dl-'+id+'" href="'+(c.video||'#')+'" download>📥 Download</a>'
     +'</div></div>'
@@ -821,17 +854,32 @@ async function generateIdeas(){
 }
 
 /* ── ADD MANUAL IDEA ── */
-function addManualIdea(){
-  var input=document.getElementById('manual-idea-input');
-  var text=input.value.trim();if(!text){alert('Describe your idea first.');return;}
-  var id='idea-'+(++cardIdx);
-  cards[id]={phase:'concept',title:'💡 '+text.substring(0,50)+(text.length>50?'…':''),
-    angle:'Custom idea',hook:text,story:'Your custom concept. Edit to refine, then Approve to build copy.',
-    status:'none',sku:activeSku};
-  var es=document.getElementById('empty-state');if(es)es.remove();
-  renderCard(id,false);
-  input.value='';
-  updateCounts();
+async function addManualIdea(){
+  var inputEl=document.getElementById('manual-idea-input');
+  var text=inputEl.value.trim();if(!text){alert('Describe your idea first.');return;}
+  if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');return;}
+  var btn=document.getElementById('btn-add-idea');
+  btn.textContent='⏳ Expanding…';btn.disabled=true;
+  try{
+    var s=SKUS[activeSku];
+    var msg='Expand this rough video ad idea into a full concept for '+s.name+'.\nRough idea: "'+text+'"\nReturn ONLY valid JSON: {"title":"engaging title with emoji","angle":"3-5 word creative angle","hook":"one vivid sentence describing the opening 3 seconds","story":"2-3 sentences describing the emotional arc and what the ad does"}';
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,system:buildSys(activeSku),messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var r=JSON.parse(raw);
+    var id='idea-'+(++cardIdx);
+    cards[id]={phase:'concept',title:r.title||('💡 '+text.substring(0,50)),angle:r.angle||'Custom idea',hook:r.hook||text,story:r.story||'',status:'none',sku:activeSku};
+    var es=document.getElementById('empty-state');if(es)es.remove();
+    renderCard(id,false);inputEl.value='';updateCounts();
+  }catch(err){
+    var id='idea-'+(++cardIdx);
+    cards[id]={phase:'concept',title:'💡 '+text.substring(0,50)+(text.length>50?'…':''),angle:'Custom idea',hook:text,story:'Your custom concept. Edit to refine, then Approve to build copy.',status:'none',sku:activeSku};
+    var es=document.getElementById('empty-state');if(es)es.remove();
+    renderCard(id,false);inputEl.value='';updateCounts();
+  }
+  finally{btn.textContent='+ Add My Idea';btn.disabled=false;}
 }
 
 /* ── CONCEPT EDIT ── */
@@ -1224,6 +1272,58 @@ function resetBrain(){
   var sku=activeSku,s=SKUS[sku];
   localStorage.removeItem('lac_brain_'+sku);
   document.getElementById('brain-ta').value=buildIdeaPrompt(sku)||s.ideaP;
+}
+
+/* ── HIGGSFIELD PROMPT GENERATOR ── */
+var HF_SYS='You are a world-class Higgsfield AI video director specialising in Seedance 2.0 cinematic performance ads. You write motion briefs that consistently produce scroll-stopping, emotionally resonant Facebook video ads that feel like they were shot by a real film crew — never AI-looking.\n\nYour output must be ONE flowing paragraph, 150-200 words, no headers or bullet points. Include:\n- Visual style: lighting quality, colour palette, mood reference\n- Camera: movement type, lens feel, angle (e.g. slow push-in, 85mm shallow focus)\n- Scene: location, time of day, atmosphere, props\n- Talent: who they are, micro-expression, body language, exact action second-by-second\n- Product: when and how it appears, how it\'s held or revealed\n- Beat mapping: 0-3s hook action / 3-12s emotional build / 12-15s CTA moment\n- Colour grade: cinematic reference (e.g. warm lifted shadows, slight vignette)\n- Sound feel: music energy, tempo, any VO tone\n\nOptimise every word for Seedance 2.0. Cinematic, grounded, human.';
+
+async function genHiggsfield(id){
+  var c=cards[id];var s=SKUS[c.sku||activeSku];
+  if(!CLAUDE_KEY){alert('Enter your Claude API key first.');return;}
+  var panel=document.getElementById('hf-'+id);
+  var promptEl=document.getElementById('hfp-'+id);
+  var btn=document.getElementById('hfb-'+id);
+  if(!panel)return;
+  panel.classList.add('open');
+  promptEl.textContent='⏳ Writing world-class Higgsfield prompt…';
+  if(btn){btn.disabled=true;btn.textContent='⏳ Writing…';}
+  var hb=gv('hb-'+id)||c.hbeat||c.hook||'';
+  var mb=gv('mb-'+id)||c.mbeat||c.story||'';
+  var cb=gv('cb-'+id)||c.cbeat||'';
+  var pt=(gv('pt-'+id)||c.pt||'').split('\n')[0];
+  var msg='Write a Higgsfield Seedance 2.0 motion prompt for this Facebook video ad.\n\n'
+    +'PRODUCT: '+s.name+'\n'
+    +'CONCEPT TITLE: '+c.title+'\n'
+    +'CREATIVE ANGLE: '+c.angle+'\n'
+    +'HOOK (0-3s): '+(hb||c.hook)+'\n'
+    +'MIDDLE (3-12s): '+(mb||c.story)+'\n'
+    +'CTA (12-15s): '+(cb||'Product reveal + call to action')+'\n'
+    +'AD COPY THEME: '+pt+'\n'
+    +'MOTION STYLE REFERENCE: '+s.motionStyle+'\n\n'
+    +'Write the Higgsfield prompt now — one paragraph, 150-200 words, optimised for Seedance 2.0:';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:HF_SYS,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var text=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
+    if(!text)throw new Error('Empty response');
+    promptEl.textContent=text;
+  }catch(err){promptEl.textContent='❌ Error: '+err.message;}
+  finally{if(btn){btn.disabled=false;btn.textContent='⚡ Higgsfield Prompt';}}
+}
+
+function copyHiggsfield(id){
+  var el=document.getElementById('hfp-'+id);if(!el)return;
+  var text=el.textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.querySelector('#hf-'+id+' .btn-copy-hf');
+    if(btn){var orig=btn.textContent;btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent=orig;},2000);}
+  }).catch(function(){
+    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+    var btn=document.querySelector('#hf-'+id+' .btn-copy-hf');
+    if(btn){var orig=btn.textContent;btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent=orig;},2000);}
+  });
 }
 
 /* ── TAGLINE INLINE EDIT ── */
