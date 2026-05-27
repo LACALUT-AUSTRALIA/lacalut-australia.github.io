@@ -332,6 +332,7 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
     <p id="sku-tag">Probiotic bad breath formula · Women 25–45 · Fresh green campaign</p>
   </div>
   <span class="badge">Static Ads Director</span>
+  <button onclick="openSettings()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:7px;padding:6px 15px;color:#fff;font-size:0.75rem;font-weight:600;cursor:pointer;white-space:nowrap">⚙️ Settings</button>
 </header>
 
 <!-- LOGO PANEL -->
@@ -402,6 +403,28 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
   </div>
 </div>
 
+<!-- SETTINGS MODAL -->
+<div class="modal-ov" id="settings-modal">
+  <div class="modal" style="max-width:440px">
+    <h3>⚙️ Settings</h3>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:16px">
+      <div>
+        <div style="font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:5px">Claude API Key</div>
+        <input type="password" id="set-claude" placeholder="sk-ant-api03-…" style="width:100%;padding:8px 11px;border:1px solid #d1d5db;border-radius:6px;font-size:0.78rem;font-family:inherit;outline:none">
+      </div>
+      <div>
+        <div style="font-size:0.63rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:5px">Gemini API Key</div>
+        <input type="password" id="set-gemini" placeholder="AIzaSy…" style="width:100%;padding:8px 11px;border:1px solid #d1d5db;border-radius:6px;font-size:0.78rem;font-family:inherit;outline:none">
+      </div>
+      <div id="set-status" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px 11px;font-size:0.72rem;color:#166534">✅ Supabase: Connected</div>
+    </div>
+    <div class="mact">
+      <button class="btn btn-cancel" onclick="closeSettings()">Close</button>
+      <button class="btn btn-confirm" onclick="saveSettings()">💾 Save Settings</button>
+    </div>
+  </div>
+</div>
+
 <!-- STATUS BAR -->
 <div class="status-bar" id="sbar">
   <strong>Review:</strong>
@@ -416,8 +439,8 @@ header p  { font-size: 0.76rem; color: rgba(255,255,255,0.82); margin-top: 2px; 
 /* ── KEYS ── */
 var SUPA_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
 var SUPA_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
-var GEM_KEY   = 'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
-var CLAUDE_KEY = '[YOUR_ANTHROPIC_API_KEY]';
+var GEM_KEY   = localStorage.getItem('lac_gem_key') || '';
+var CLAUDE_KEY = localStorage.getItem('lac_claude_key') || '';
 
 /* ── SKU DATA ── */
 var SKUS = {
@@ -764,7 +787,7 @@ async function runClaude(id){
   var preEl=document.getElementById('cpre-'+id);
   var genBtn=document.querySelector('#claude-panel-'+id+' .btn-go');
   if(!input){alert('Describe what to change first.');return;}
-  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){alert('Add your Anthropic API key to CLAUDE_KEY in the script.');return;}
+  if(!CLAUDE_KEY){alert('Add your Claude API key in ⚙️ Settings first.');return;}
   genBtn.textContent='⏳ Revising…';genBtn.disabled=true;
   resBox.classList.remove('show');
   var pt=document.getElementById('pt-'+id)?document.getElementById('pt-'+id).innerText:'';
@@ -864,8 +887,8 @@ async function genVidPrompt(id){
   var card=document.getElementById('card-'+id);
   var ta=document.getElementById('vpr-'+id);
   var btn=document.querySelector('#video-panel-'+id+' .btn-go.rose');
-  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
-    ta.value='Add your Claude API key to generate prompts automatically.\n\nManual template:\nOpening 0-5s: [describe motion for '+card.dataset.name+']\nPeak 7-10s: [emotional or scientific revelation]\nClose 12-15s: [product reveal + CTA]\n\nModel: Seedance 2.0 | Duration: 15s';
+  if(!CLAUDE_KEY){
+    ta.value='Opening 0-5s: [describe motion for '+card.dataset.name+']\nPeak 7-10s: [emotional or scientific revelation]\nClose 12-15s: [product reveal + CTA]\n\nModel: Seedance 2.0 | Duration: 15s\n\n⚠️ Add your Claude API key in ⚙️ Settings for AI-generated prompts.';
     addToVidQueue(id);
     return;
   }
@@ -999,7 +1022,7 @@ function renderIdeaEngine(sku){
   if(!el)return;
   var s=SKUS[sku];
   var ideas=pendingIdeas[sku]||[];
-  var keyMissing=CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]';
+  var keyMissing=!CLAUDE_KEY;
 
   var html='<div class="idea-engine-banner">';
   html+='<div class="idea-engine-row">';
@@ -1012,7 +1035,7 @@ function renderIdeaEngine(sku){
       +'</div>';
   html+='</div>';
   if(keyMissing){
-    html+='<div class="idea-key-warn">⚠️ Claude API key not set — add your key to <strong>CLAUDE_KEY</strong> in the script to enable AI idea generation. Get yours at <strong>console.anthropic.com → API Keys</strong>.</div>';
+    html+='<div class="idea-key-warn">⚠️ Claude API key not set — click <strong>⚙️ Settings</strong> (top right) to add your key and enable AI idea generation.</div>';
   }
   html+='</div>';
 
@@ -1043,8 +1066,8 @@ function buildIdeaCard(sku,idx,idea,s){
 }
 
 async function generateIdeas(sku){
-  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
-    alert('Add your Anthropic API key to CLAUDE_KEY in the script to enable AI idea generation.\n\nGet it at: console.anthropic.com → API Keys');
+  if(!CLAUDE_KEY){
+    alert('Add your Claude API key in ⚙️ Settings first.');
     return;
   }
   var s=SKUS[sku];
@@ -1086,8 +1109,8 @@ async function addMyIdea(sku){
   var input=document.getElementById('my-idea-input-'+sku);
   var txt=input?input.value.trim():'';
   if(!txt){alert('Describe your idea first.');return;}
-  if(CLAUDE_KEY==='[YOUR_ANTHROPIC_API_KEY]'){
-    alert('Add your Anthropic API key to CLAUDE_KEY to expand ideas with Claude.');
+  if(!CLAUDE_KEY){
+    alert('Add your Claude API key in ⚙️ Settings first.');
     return;
   }
   var s=SKUS[sku];
@@ -1220,6 +1243,22 @@ function markVidSent(sku,id){
     vidQueue[sku][id].status='sent';
     refreshVidPipeline(sku);
   }
+}
+
+/* ── SETTINGS ── */
+function openSettings(){
+  document.getElementById('set-claude').value=CLAUDE_KEY||'';
+  document.getElementById('set-gemini').value=GEM_KEY||'';
+  document.getElementById('settings-modal').classList.add('on');
+}
+function closeSettings(){document.getElementById('settings-modal').classList.remove('on');}
+function saveSettings(){
+  var ck=document.getElementById('set-claude').value.trim();
+  var gk=document.getElementById('set-gemini').value.trim();
+  if(ck){localStorage.setItem('lac_claude_key',ck);CLAUDE_KEY=ck;}
+  if(gk){localStorage.setItem('lac_gem_key',gk);GEM_KEY=gk;}
+  closeSettings();
+  renderIdeaEngine(activeSku);
 }
 
 function saveVidPipelineUrl(sku,id){
