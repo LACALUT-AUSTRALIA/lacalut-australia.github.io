@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lacalut — Cold Email System</title>
+  <style>
+    :root {
+      --red: #cf102d;
+      --navy: #004a88;
+      --light: #f4f6fa;
+      --border: #dde2ec;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --success: #16a34a;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--light); color: var(--text); }
+
+    /* HEADER */
+    header {
+      background: var(--navy);
+      color: white;
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .logo-mark {
+      background: var(--red);
+      color: white;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 1px;
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
+    header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.3px; }
+    header .subtitle { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+
+    /* NAV TABS */
+    .tab-nav {
+      background: white;
+      border-bottom: 2px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      gap: 4px;
+    }
+    .tab-btn {
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { color: var(--navy); }
+    .tab-btn.active { color: var(--navy); border-bottom-color: var(--red); font-weight: 700; }
+
+    /* CONTENT */
+    .tab-content { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; }
+    .tab-content.active { display: block; }
+
+    /* SECTION HEADING */
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .section-desc { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+
+    /* CHECKLIST */
+    .phase-block { margin-bottom: 28px; }
+    .phase-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    .check-item {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: border-color 0.15s;
+    }
+    .check-item:hover { border-color: var(--navy); }
+    .check-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 1px; accent-color: var(--navy); cursor: pointer; flex-shrink: 0; }
+    .check-body { flex: 1; }
+    .check-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
+    .check-detail { font-size: 13px; color: var(--muted); }
+    .check-item.done .check-title { text-decoration: line-through; color: var(--muted); }
+    .check-tool {
+      font-size: 11px;
+      background: var(--light);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      color: var(--muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .progress-bar-wrap { background: var(--border); border-radius: 99px; height: 8px; margin-bottom: 24px; overflow: hidden; }
+    .progress-bar-fill { background: linear-gradient(90deg, var(--navy), var(--red)); height: 100%; border-radius: 99px; transition: width 0.4s ease; }
+    .progress-label { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+
+    /* EMAIL SEQUENCES */
+    .audience-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+    .aud-btn {
+      padding: 8px 16px;
+      border-radius: 99px;
+      border: 2px solid var(--border);
+      background: white;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+    .aud-btn:hover { border-color: var(--navy); color: var(--navy); }
+    .aud-btn.active { background: var(--navy); border-color: var(--navy); color: white; }
+    .audience-panel { display: none; }
+    .audience-panel.active { display: block; }
+
+    .email-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    .email-header {
+      padding: 14px 18px;
+      background: var(--light);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .email-num {
+      width: 26px; height: 26px;
+      background: var(--navy);
+      color: white;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .email-meta { flex: 1; }
+    .email-day { font-size: 11px; color: var(--muted); font-weight: 600; }
+    .email-subject { font-size: 14px; font-weight: 700; color: var(--text); }
+    .copy-btn {
+      padding: 6px 14px;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { background: #a80d23; }
+    .copy-btn.copied { background: var(--success); }
+    .email-body { padding: 18px; font-size: 14px; line-height: 1.7; white-space: pre-wrap; color: var(--text); }
+    .placeholder { background: #fef9c3; padding: 2px 5px; border-radius: 3px; font-weight: 600; font-size: 13px; }
+    .audience-note {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #1e40af;
+      margin-bottom: 20px;
+    }
+
+    /* METRICS */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .metric-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .metric-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .metric-value { font-size: 28px; font-weight: 800; color: var(--navy); }
+    .metric-bench { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .metric-status { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .metric-status.good { background: var(--success); }
+    .metric-status.warn { background: var(--warning); }
+    .metric-status.bad { background: var(--red); }
+
+    .tracker-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
+    .tracker-table th { background: var(--navy); color: white; padding: 12px 16px; text-align: left; font-size: 13px; }
+    .tracker-table td { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 14px; }
+    .tracker-table tr:last-child td { border-bottom: none; }
+    .tracker-table input { width: 80px; border: 1px solid var(--border); border-radius: 4px; padding: 4px 8px; font-size: 13px; text-align: center; }
+    .tracker-table input:focus { outline: none; border-color: var(--navy); }
+
+    /* DOMAIN HUB */
+    .domain-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .domain-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .domain-name { font-size: 18px; font-weight: 800; color: var(--navy); font-family: monospace; margin-bottom: 6px; }
+    .domain-purpose { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .dns-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--light); font-size: 13px; }
+    .dns-row:last-child { border-bottom: none; }
+    .dns-key { font-weight: 600; }
+    .badge {
+      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 99px;
+    }
+    .badge-todo { background: #fef3c7; color: #92400e; }
+    .badge-done { background: #dcfce7; color: #166534; }
+    .badge-na { background: var(--light); color: var(--muted); }
+    .dns-status-select { font-size: 12px; border: 1px solid var(--border); border-radius: 4px; padding: 3px 6px; cursor: pointer; }
+
+    /* UTILITY */
+    hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; margin-right: 6px; }
+    .tag-pharmacy { background: #eff6ff; color: #1d4ed8; }
+    .tag-dentist { background: #f0fdf4; color: #166534; }
+    .tag-pr { background: #fdf4ff; color: #7e22ce; }
+    .tag-authority { background: #fff7ed; color: #c2410c; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">LACALUT</div>
+  <div>
+    <h1>Cold Email System</h1>
+    <div class="subtitle">MailForge + NuReply · 4 audiences · ~11,000 contacts</div>
+  </div>
+</header>
+
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('checklist')">📋 Setup Checklist</button>
+  <button class="tab-btn" onclick="showTab('emails')">✉️ Email Sequences</button>
+  <button class="tab-btn" onclick="showTab('metrics')">📊 Campaign Metrics</button>
+  <button class="tab-btn" onclick="showTab('domains')">🌐 Domain Hub</button>
+</div>
+
+<!-- ============================= CHECKLIST ============================= -->
+<div id="tab-checklist" class="tab-content active">
+  <div class="section-title">Setup Checklist</div>
+  <div class="section-desc">Complete all steps in order. Warmup is non-negotiable — skipping it = spam jail.</div>
+
+  <div class="progress-label" id="progress-label">0 of 10 steps complete</div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+
+  <div class="phase-block">
+    <div class="phase-label">Phase 1 — Infrastructure Setup</div>
+
+    <div class="check-item" id="step-1">
+      <input type="checkbox" onchange="toggleStep('step-1', this, 1)">
+      <div class="check-body">
+        <div class="check-title">Buy 2 cold email domains</div>
+        <div class="check-detail">Suggested: <strong>lacalutau.com</strong> (pharmacy) + <strong>lacalutdental.com</strong> (dentist). Point both to lacalut.com.au via 301 redirect.</div>
+      </div>
+      <span class="check-tool">MailForge.ai</span>
+    </div>
+
+    <div class="check-item" id="step-2">
+      <input type="checkbox" onchange="toggleStep('step-2', this, 2)">
+      <div class="check-body">
+        <div class="check-title">MailForge auto-configures DNS (SPF, DKIM, DMARC, MX)</div>
+        <div class="check-detail">This happens automatically on domain purchase via MailForge. Verify all 4 records are live before warmup.</div>
+      </div>
+      <span class="check-tool">MailForge.ai</span>
+    </div>
+
+    <div class="check-item" id="step-3">
+      <input type="checkbox" onchange="toggleStep('step-3', this, 3)">
+      <div class="check-body">
+        <div class="check-title">Set up mailboxes — 2 per cold domain + press@lacalut.au</div>
+        <div class="check-detail">e.g. quan@lacalutau.com + hello@lacalutau.com. Same for dental domain. press@lacalut.au for PR/media outreach.</div>
+      </div>
+      <span class="check-tool">MailForge / Google</span>
+    </div>
+
+    <div class="check-item" id="step-4">
+      <input type="checkbox" onchange="toggleStep('step-4', this, 4)">
+      <div class="check-body">
+        <div class="check-title">Connect all 5 mailboxes to NuReply via SMTP</div>
+        <div class="check-detail">NuReply → Accounts → Add Mail Account. Repeat for each mailbox. Follow NuReply's SMTP config video (on onboarding screen).</div>
+      </div>
+      <span class="check-tool">NuReply</span>
+    </div>
+
+    <div class="check-item" id="step-5">
+      <input type="checkbox" onchange="toggleStep('step-5', this, 5)">
+      <div class="check-body">
+        <div class="check-title">Set custom tracking subdomain in NuReply</div>
+        <div class="check-detail">NuReply → Onboarding → Set Tracking. Masks click/open tracking links — critical for inbox placement.</div>
+      </div>
+      <span class="check-tool">NuReply</span>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-label">Phase 2 — Warmup (4 Weeks Minimum — Do Not Skip)</div>
+
+    <div class="check-item" id="step-6">
+      <input type="checkbox" onchange="toggleStep('step-6', this, 6)">
+      <div class="check-body">
+        <div class="check-title">Enable warmup on all mailboxes in NuReply</div>
+        <div class="check-detail">Warmup runs automatically in the background. Start: 5–15 emails/day. After 4 weeks you can begin cold sends at 20/day per mailbox.</div>
+      </div>
+      <span class="check-tool">NuReply</span>
+    </div>
+
+    <div class="check-item" id="step-7">
+      <input type="checkbox" onchange="toggleStep('step-7', this, 7)">
+      <div class="check-body">
+        <div class="check-title">Wait 4 weeks — then verify warmup scores</div>
+        <div class="check-detail">Check NuReply warmup health scores before sending. All mailboxes should show green/healthy status.</div>
+      </div>
+      <span class="check-tool">NuReply</span>
+    </div>
+  </div>
+
+  <div class="phase-block">
+    <div class="phase-label">Phase 3 — Pre-Launch</div>
+
+    <div class="check-item" id="step-8">
+      <input type="checkbox" onchange="toggleStep('step-8', this, 8)">
+      <div class="check-body">
+        <div class="check-title">Clean all lists through NeverBounce or ZeroBounce</div>
+        <div class="check-detail">Raw lists of 10k likely have 10–15% bad addresses. Bounce rate above 3% damages sender reputation. Cost: ~$40 USD for 10k.</div>
+      </div>
+      <span class="check-tool">NeverBounce.com</span>
+    </div>
+
+    <div class="check-item" id="step-9">
+      <input type="checkbox" onchange="toggleStep('step-9', this, 9)">
+      <div class="check-body">
+        <div class="check-title">Upload 4 lead lists to NuReply</div>
+        <div class="check-detail">NuReply → Lead Lists. Separate lists: (1) Pharmacies, (2) Dentists, (3) PR/Media, (4) Authority Sites. Include first name + business name columns for personalisation.</div>
+      </div>
+      <span class="check-tool">NuReply</span>
+    </div>
+
+    <div class="check-item" id="step-10">
+      <input type="checkbox" onchange="toggleStep('step-10', this, 10)">
+      <div class="check-body">
+        <div class="check-title">Build 4 campaigns in NuReply + start sending</div>
+        <div class="check-detail">One campaign per audience. Use sequences from the Email Sequences tab. Start at 20 emails/day per mailbox — ramp by 10/day each week up to 60–80/day max.</div>
+      </div>
+      <span class="check-tool">NuReply</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= EMAIL SEQUENCES ============================= -->
+<div id="tab-emails" class="tab-content">
+  <div class="section-title">Email Sequences</div>
+  <div class="section-desc">4 sequences for 4 audiences. Copy each email into NuReply. Replace all <span class="placeholder">[PLACEHOLDER]</span> fields before sending.</div>
+
+  <div class="audience-tabs">
+    <button class="aud-btn active" onclick="showAudience('pharmacy')">💊 Pharmacy (5-touch)</button>
+    <button class="aud-btn" onclick="showAudience('dentist')">🦷 Dentist (5-touch)</button>
+    <button class="aud-btn" onclick="showAudience('pr')">📰 PR / Media (4-touch)</button>
+    <button class="aud-btn" onclick="showAudience('authority')">🌐 Authority Sites (4-touch)</button>
+  </div>
+
+  <!-- PHARMACY -->
+  <div id="aud-pharmacy" class="audience-panel active">
+    <div class="audience-note">
+      <strong>Sending domain:</strong> Cold domain 1 (lacalutau.com) &nbsp;|&nbsp;
+      <strong>Goal:</strong> Wholesale stockist relationship &nbsp;|&nbsp;
+      <strong>Tone:</strong> Friendly, peer-to-peer, low friction
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">1</div>
+        <div class="email-meta">
+          <div class="email-day">Day 0 — First touch</div>
+          <div class="email-subject">Subject: Your customers are already searching for this</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'ph-1')">Copy</button>
+      </div>
+      <div class="email-body" id="ph-1">Hi [First Name],
+
+Quick question — do you currently stock anything specifically for patients with gingivitis or bleeding gums?
+
+Most pharmacies carry the big brands, but nothing that directly targets the root cause of gum disease.
+
+I'm Quan from LACALUT Australia. We make a German clinical toothpaste that's been used across Europe for over 100 years — specifically formulated for gingivitis and bleeding gums, not just general sensitivity or whitening.
+
+We're building our pharmacy presence in Australia and I'd love to get LACALUT Aktiv on your shelves.
+
+Happy to send you a sample pack + wholesale pricing sheet — no commitment required, just take a look.
+
+Worth it?
+
+Quan Nguyen
+Lacalut Australia
+hello@lacalut.com.au | 0402 163 664
+lacalut.com.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">2</div>
+        <div class="email-meta">
+          <div class="email-day">Day 3 — Follow-up</div>
+          <div class="email-subject">Subject: Re: Your customers are already searching for this</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'ph-2')">Copy</button>
+      </div>
+      <div class="email-body" id="ph-2">Hi [First Name],
+
+Just following up on my last note.
+
+One thing worth mentioning — gum disease customers tend to be highly loyal once they find something that actually works. The repeat purchase rate for LACALUT Aktiv online has been strong.
+
+Stocking a dedicated gum health product also differentiates your pharmacy from chains that only carry the standard brands.
+
+Happy to share wholesale pricing and terms whenever you're ready.
+
+Quan
+Lacalut Australia</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">3</div>
+        <div class="email-meta">
+          <div class="email-day">Day 7 — Product angle</div>
+          <div class="email-subject">Subject: What makes LACALUT different from Colgate and Sensodyne</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'ph-3')">Copy</button>
+      </div>
+      <div class="email-body" id="ph-3">Hi [First Name],
+
+Most toothpastes mask symptoms. LACALUT Aktiv treats the cause.
+
+The active ingredients — Zinc Acetate + Allantoin — reduce bacterial biofilm in the gum sulcus, tighten gum tissue, and stop bleeding at the source. It's the same formula trusted by dentists across Europe for over a century.
+
+Sensodyne is for sensitivity. Colgate is for whitening. LACALUT Aktiv is for gum disease — a distinct clinical category that most pharmacies don't have covered.
+
+Interested in the full product brief or a sample?
+
+Quan
+Lacalut Australia
+lacalut.com.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">4</div>
+        <div class="email-meta">
+          <div class="email-day">Day 14 — Easy CTA</div>
+          <div class="email-subject">Subject: Sample pack for [Pharmacy Name]?</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'ph-4')">Copy</button>
+      </div>
+      <div class="email-body" id="ph-4">Hi [First Name],
+
+I'll keep this short — if you're open to trialling a clinical gum health toothpaste that's already selling well online in Australia, just reply YES and I'll send a sample pack + wholesale pricing sheet directly to you.
+
+No forms. No calls required. Just a reply.
+
+Quan
+Lacalut Australia</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">5</div>
+        <div class="email-meta">
+          <div class="email-day">Day 21 — Breakup</div>
+          <div class="email-subject">Subject: Closing the loop</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'ph-5')">Copy</button>
+      </div>
+      <div class="email-body" id="ph-5">Hi [First Name],
+
+I'll stop following up after this one.
+
+If gum health ever becomes a priority category and you want to stock LACALUT Aktiv, I'm at hello@lacalut.com.au or 0402 163 664.
+
+Best of luck,
+Quan Nguyen
+Lacalut Australia
+lacalut.com.au</div>
+    </div>
+  </div>
+
+  <!-- DENTIST -->
+  <div id="aud-dentist" class="audience-panel">
+    <div class="audience-note">
+      <strong>Sending domain:</strong> Cold domain 2 (lacalutdental.com) &nbsp;|&nbsp;
+      <strong>Goal:</strong> Dentist recommends to patients with gingivitis &nbsp;|&nbsp;
+      <strong>Tone:</strong> Peer-to-peer, clinical, credibility-first
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">1</div>
+        <div class="email-meta">
+          <div class="email-day">Day 0 — First touch</div>
+          <div class="email-subject">Subject: For your patients with bleeding gums</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'dt-1')">Copy</button>
+      </div>
+      <div class="email-body" id="dt-1">Hi Dr [Last Name],
+
+Do you have a clinical toothpaste you currently recommend for patients with early-stage gingivitis or bleeding gums?
+
+I'm Quan from LACALUT Australia. LACALUT Aktiv is a German clinical toothpaste with over 100 years of heritage in Europe — specifically formulated for gingivitis with Zinc Acetate + Allantoin. It's been recommended by dentists across Germany and Europe for decades and we've now launched it here in Australia.
+
+I'd love for you to try it. Happy to send a complimentary pack to your practice — no obligation.
+
+Quan Nguyen
+Lacalut Australia
+hello@lacalut.com.au | 0402 163 664
+lacalut.com.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">2</div>
+        <div class="email-meta">
+          <div class="email-day">Day 3 — Clinical evidence</div>
+          <div class="email-subject">Subject: The mechanism behind LACALUT Aktiv</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'dt-2')">Copy</button>
+      </div>
+      <div class="email-body" id="dt-2">Hi Dr [Last Name],
+
+Following up on my last email.
+
+The mechanism: Zinc Acetate (0.5%) reduces bacterial biofilm in the gingival sulcus and has an astringent effect on gum tissue, helping reduce pocket depth over time. Allantoin (0.5%) promotes epithelial regeneration and reduces inflammation.
+
+The combination addresses bleeding at the source rather than masking it — which I think you'd appreciate over general "sensitive" formulas that don't target the gum/bacteria interface at all.
+
+For patients who struggle to comply with rinse-based treatments, a toothpaste format often improves long-term adherence.
+
+Happy to share the clinical data if useful.
+
+Quan
+Lacalut Australia</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">3</div>
+        <div class="email-meta">
+          <div class="email-day">Day 8 — Differentiation</div>
+          <div class="email-subject">Subject: 100 years of European clinical use — now in Australia</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'dt-3')">Copy</button>
+      </div>
+      <div class="email-body" id="dt-3">Hi Dr [Last Name],
+
+Most OTC toothpastes available in Australian pharmacies were developed for general oral health — sensitivity, whitening, freshness. None were designed specifically for the gingivitis patient.
+
+LACALUT Aktiv fills that gap. It's been the go-to recommendation from German dentists for over a century, and we've brought it to Australia because the clinical need here is just as real.
+
+If you have patients who need something more targeted than Sensodyne, LACALUT Aktiv is worth knowing about.
+
+Would a free sample to try personally be useful?
+
+Quan
+Lacalut Australia
+lacalut.com.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">4</div>
+        <div class="email-meta">
+          <div class="email-day">Day 15 — Free sample offer</div>
+          <div class="email-subject">Subject: Free sample for your practice</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'dt-4')">Copy</button>
+      </div>
+      <div class="email-body" id="dt-4">Hi Dr [Last Name],
+
+Last follow-up from me on this.
+
+If you'd like to try LACALUT Aktiv before recommending it to patients, just reply with your practice address and I'll post a pack directly to you.
+
+No forms, no obligation — I'd just like you to have tried the product.
+
+Quan
+Lacalut Australia</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">5</div>
+        <div class="email-meta">
+          <div class="email-day">Day 22 — Breakup</div>
+          <div class="email-subject">Subject: Signing off</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'dt-5')">Copy</button>
+      </div>
+      <div class="email-body" id="dt-5">Hi Dr [Last Name],
+
+I'll stop following up after this.
+
+If you ever want to explore LACALUT for your gingivitis patients, I'm at hello@lacalut.com.au.
+
+Best,
+Quan Nguyen
+Lacalut Australia
+lacalut.com.au</div>
+    </div>
+  </div>
+
+  <!-- PR / MEDIA -->
+  <div id="aud-pr" class="audience-panel">
+    <div class="audience-note">
+      <strong>Sending domain:</strong> press@lacalut.au (branded — they will Google you) &nbsp;|&nbsp;
+      <strong>Goal:</strong> Press coverage, product reviews, brand features &nbsp;|&nbsp;
+      <strong>Tone:</strong> Short, personal, journalist-friendly — quality over volume
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">1</div>
+        <div class="email-meta">
+          <div class="email-day">Day 0 — First touch</div>
+          <div class="email-subject">Subject: Australian DTC launch — 100-year German oral care brand</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'pr-1')">Copy</button>
+      </div>
+      <div class="email-body" id="pr-1">Hi [First Name],
+
+I'm reaching out because [Publication] covers [health / beauty / wellness] and I think there's a story here your readers would find genuinely interesting.
+
+LACALUT is a German oral care brand with over a century of clinical heritage, now launching direct-to-consumer in Australia. We're specifically targeting the large but underserved market of Australians with gum disease — a condition that affects [PLACEHOLDER — verify stat before sending] of Australian adults but gets almost no shelf space in pharmacies.
+
+Happy to send product samples, clinical data, or arrange a brief conversation if you're interested.
+
+Quan Nguyen
+Founder, Lacalut Australia
+press@lacalut.au | 0402 163 664
+lacalut.com.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">2</div>
+        <div class="email-meta">
+          <div class="email-day">Day 5 — Different angle</div>
+          <div class="email-subject">Subject: The gum health gap nobody's covering</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'pr-2')">Copy</button>
+      </div>
+      <div class="email-body" id="pr-2">Hi [First Name],
+
+Following up with a different angle.
+
+The pharmacy oral care shelf hasn't changed in 20 years — sensitivity, whitening, and fresh breath dominate the category. But gum disease is the leading cause of tooth loss in adults, and there's almost nothing on Australian shelves designed specifically for it.
+
+LACALUT Aktiv does. It's been sold across Europe for over a century and we've just launched it in Australia as a DTC brand while pharmacy distribution catches up.
+
+If that angle suits something you're working on, I'd love to be a resource.
+
+Quan
+Lacalut Australia
+press@lacalut.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">3</div>
+        <div class="email-meta">
+          <div class="email-day">Day 12 — Sample offer</div>
+          <div class="email-subject">Subject: Sample pack for [First Name]?</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'pr-3')">Copy</button>
+      </div>
+      <div class="email-body" id="pr-3">Hi [First Name],
+
+Happy to send you a product pack to try personally — no strings attached.
+
+If it ends up being relevant to something you're working on, great. If not, I hope you enjoy genuinely good toothpaste.
+
+Just send through your postal address and I'll get it out this week.
+
+Quan
+Lacalut Australia
+press@lacalut.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">4</div>
+        <div class="email-meta">
+          <div class="email-day">Day 20 — Breakup</div>
+          <div class="email-subject">Subject: Last one from me</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'pr-4')">Copy</button>
+      </div>
+      <div class="email-body" id="pr-4">Hi [First Name],
+
+I'll leave it here.
+
+If a gum health story crosses your desk and you want comment, data, or product to try, I'm at press@lacalut.au.
+
+Quan Nguyen
+Lacalut Australia</div>
+    </div>
+  </div>
+
+  <!-- AUTHORITY SITES -->
+  <div id="aud-authority" class="audience-panel">
+    <div class="audience-note">
+      <strong>Sending domain:</strong> press@lacalut.au &nbsp;|&nbsp;
+      <strong>Goal:</strong> Brand features, guest posts, backlinks, product reviews &nbsp;|&nbsp;
+      <strong>⚠️ Critical:</strong> Personalise Email 1 — reference a specific article they wrote
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">1</div>
+        <div class="email-meta">
+          <div class="email-day">Day 0 — First touch (must personalise)</div>
+          <div class="email-subject">Subject: Your article on [specific topic] — quick thought</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'au-1')">Copy</button>
+      </div>
+      <div class="email-body" id="au-1">Hi [First Name],
+
+I came across your article on [SPECIFIC ARTICLE TITLE] — really well put together, especially the section on [SPECIFIC POINT FROM THEIR ARTICLE].
+
+I'm reaching out because we've just launched LACALUT in Australia — a 100-year German clinical toothpaste specifically for gum disease. It seemed like something your audience might find genuinely useful given what you cover.
+
+Would you be open to including it in a future piece, or a standalone product review?
+
+Happy to provide samples, imagery, and any background you need.
+
+Quan Nguyen
+Lacalut Australia
+press@lacalut.au | lacalut.com.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">2</div>
+        <div class="email-meta">
+          <div class="email-day">Day 5 — Value offer</div>
+          <div class="email-subject">Subject: Data + sample for your audience</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'au-2')">Copy</button>
+      </div>
+      <div class="email-body" id="au-2">Hi [First Name],
+
+Following up — happy to provide whatever makes this easiest for you:
+
+- Product samples for your team to test
+- Clinical data and full ingredient breakdown
+- High-resolution product images and brand assets
+- A founder quote from me for any piece
+
+No cost, no obligation — I just want the product in front of people who'll find it useful.
+
+Quan
+Lacalut Australia
+press@lacalut.au</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">3</div>
+        <div class="email-meta">
+          <div class="email-day">Day 12 — Collaboration pitch</div>
+          <div class="email-subject">Subject: Guest post idea for [Site Name]</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'au-3')">Copy</button>
+      </div>
+      <div class="email-body" id="au-3">Hi [First Name],
+
+One more thought — I'd be happy to write a guest post for [Site Name] on gum disease / clinical oral care that naturally features LACALUT, if that fits your content model.
+
+I can match your house style and write something genuinely useful for your readers — not a thinly veiled ad.
+
+Potential angles:
+- "The gum health products your dentist won't tell you about"
+- "Why most toothpastes don't help with bleeding gums"
+- "Clinical oral care: what's actually changed in 100 years"
+
+Worth considering?
+
+Quan
+Lacalut Australia</div>
+    </div>
+
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-num">4</div>
+        <div class="email-meta">
+          <div class="email-day">Day 20 — Breakup</div>
+          <div class="email-subject">Subject: Closing the loop</div>
+        </div>
+        <button class="copy-btn" onclick="copyEmail(this, 'au-4')">Copy</button>
+      </div>
+      <div class="email-body" id="au-4">Hi [First Name],
+
+Last email from me.
+
+If a collaboration opportunity comes up down the track, I'm at press@lacalut.au.
+
+Quan Nguyen
+Lacalut Australia
+lacalut.com.au</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= METRICS ============================= -->
+<div id="tab-metrics" class="tab-content">
+  <div class="section-title">Campaign Metrics Tracker</div>
+  <div class="section-desc">Update manually each week. Healthy benchmarks shown — act if any metric goes outside range.</div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Open Rate — Target</div>
+      <div class="metric-value">30–50%</div>
+      <div class="metric-bench"><span class="metric-status good"></span>Below 30% → fix subject lines</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Reply Rate — Target</div>
+      <div class="metric-value">5–15%</div>
+      <div class="metric-bench"><span class="metric-status good"></span>Below 5% → rewrite Email 1 body</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Bounce Rate — Max</div>
+      <div class="metric-value">&lt;3%</div>
+      <div class="metric-bench"><span class="metric-status warn"></span>Above 3% → pause + clean list</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Spam Complaint Rate — Max</div>
+      <div class="metric-value">&lt;0.1%</div>
+      <div class="metric-bench"><span class="metric-status bad"></span>Above → pause immediately</div>
+    </div>
+  </div>
+
+  <hr>
+  <div class="section-title" style="font-size:16px; margin-bottom:16px;">Weekly Tracking Table</div>
+
+  <table class="tracker-table">
+    <thead>
+      <tr>
+        <th>Campaign</th>
+        <th>Sent</th>
+        <th>Open %</th>
+        <th>Reply %</th>
+        <th>Bounce %</th>
+        <th>Positive Replies</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="tag tag-pharmacy">💊 Pharmacy</span></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="Notes..." style="width:140px;"></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-dentist">🦷 Dentist</span></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="Notes..." style="width:140px;"></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-pr">📰 PR / Media</span></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="Notes..." style="width:140px;"></td>
+      </tr>
+      <tr>
+        <td><span class="tag tag-authority">🌐 Authority Sites</span></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="text" placeholder="0%"></td>
+        <td><input type="number" placeholder="0"></td>
+        <td><input type="text" placeholder="Notes..." style="width:140px;"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================= DOMAIN HUB ============================= -->
+<div id="tab-domains" class="tab-content">
+  <div class="section-title">Domain Hub</div>
+  <div class="section-desc">3 sending domains. Never use lacalut.com.au for cold email. MailForge handles DNS automatically on purchase.</div>
+
+  <div class="domain-cards">
+    <div class="domain-card">
+      <div class="domain-name">press@lacalut.au</div>
+      <div class="domain-purpose">📰 PR, media, journalists, authority sites</div>
+      <div class="dns-row"><span class="dns-key">SPF</span><select class="dns-status-select" onchange="saveDns('d1-spf', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">DKIM</span><select class="dns-status-select" onchange="saveDns('d1-dkim', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">DMARC</span><select class="dns-status-select" onchange="saveDns('d1-dmarc', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">MX</span><select class="dns-status-select" onchange="saveDns('d1-mx', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">Tracking CNAME</span><select class="dns-status-select" onchange="saveDns('d1-cname', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">NuReply connected</span><select class="dns-status-select" onchange="saveDns('d1-nr', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">Warmup enabled</span><select class="dns-status-select" onchange="saveDns('d1-wu', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+    </div>
+
+    <div class="domain-card">
+      <div class="domain-name">lacalutau.com</div>
+      <div class="domain-purpose">💊 Pharmacy outreach — buy via MailForge</div>
+      <div class="dns-row"><span class="dns-key">Domain purchased</span><select class="dns-status-select" onchange="saveDns('d2-buy', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">SPF</span><select class="dns-status-select" onchange="saveDns('d2-spf', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">DKIM</span><select class="dns-status-select" onchange="saveDns('d2-dkim', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">DMARC</span><select class="dns-status-select" onchange="saveDns('d2-dmarc', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">MX</span><select class="dns-status-select" onchange="saveDns('d2-mx', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">NuReply connected</span><select class="dns-status-select" onchange="saveDns('d2-nr', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">Warmup enabled</span><select class="dns-status-select" onchange="saveDns('d2-wu', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+    </div>
+
+    <div class="domain-card">
+      <div class="domain-name">lacalutdental.com</div>
+      <div class="domain-purpose">🦷 Dentist outreach — buy via MailForge</div>
+      <div class="dns-row"><span class="dns-key">Domain purchased</span><select class="dns-status-select" onchange="saveDns('d3-buy', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">SPF</span><select class="dns-status-select" onchange="saveDns('d3-spf', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">DKIM</span><select class="dns-status-select" onchange="saveDns('d3-dkim', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">DMARC</span><select class="dns-status-select" onchange="saveDns('d3-dmarc', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">MX</span><select class="dns-status-select" onchange="saveDns('d3-mx', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">NuReply connected</span><select class="dns-status-select" onchange="saveDns('d3-nr', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+      <div class="dns-row"><span class="dns-key">Warmup enabled</span><select class="dns-status-select" onchange="saveDns('d3-wu', this.value)"><option value="todo">To Do</option><option value="done">Done ✅</option></select></div>
+    </div>
+  </div>
+
+  <hr>
+  <div class="section-title" style="font-size:16px; margin-bottom:12px;">⚠️ Protected Domains — Never Use for Cold Email</div>
+  <div style="display:flex; gap:12px; flex-wrap:wrap;">
+    <div style="background:white; border:2px solid var(--red); border-radius:8px; padding:14px 18px;">
+      <div style="font-family:monospace; font-weight:800; color:var(--red);">lacalut.com.au</div>
+      <div style="font-size:12px; color:var(--muted); margin-top:4px;">Main transactional domain — email + Shopify</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============ TAB NAVIGATION ============
+  function showTab(id) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ============ AUDIENCE TABS ============
+  function showAudience(id) {
+    document.querySelectorAll('.audience-panel').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.aud-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('aud-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // ============ CHECKLIST ============
+  const TOTAL_STEPS = 10;
+  function toggleStep(id, checkbox, num) {
+    const item = document.getElementById(id);
+    if (checkbox.checked) {
+      item.classList.add('done');
+    } else {
+      item.classList.remove('done');
+    }
+    localStorage.setItem('check-' + id, checkbox.checked ? '1' : '0');
+    updateProgress();
+  }
+
+  function updateProgress() {
+    let done = 0;
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const val = localStorage.getItem('check-step-' + i);
+      if (val === '1') done++;
+    }
+    const pct = Math.round((done / TOTAL_STEPS) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = done + ' of ' + TOTAL_STEPS + ' steps complete';
+  }
+
+  function loadChecklist() {
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+      const id = 'step-' + i;
+      const val = localStorage.getItem('check-' + id);
+      if (val === '1') {
+        const cb = document.querySelector('#' + id + ' input[type="checkbox"]');
+        if (cb) { cb.checked = true; document.getElementById(id).classList.add('done'); }
+      }
+    }
+    updateProgress();
+  }
+
+  // ============ DNS STATUS ============
+  function saveDns(key, val) {
+    localStorage.setItem('dns-' + key, val);
+  }
+  function loadDns() {
+    document.querySelectorAll('.dns-status-select').forEach(sel => {
+      const key = sel.getAttribute('onchange').match(/'([^']+)'/)[1];
+      const saved = localStorage.getItem('dns-' + key);
+      if (saved) sel.value = saved;
+    });
+  }
+
+  // ============ COPY EMAIL ============
+  function copyEmail(btn, id) {
+    const body = document.getElementById(id).innerText;
+    const header = btn.closest('.email-card').querySelector('.email-subject').innerText;
+    const subject = header.replace('Subject: ', '');
+    const fullText = subject + '\n\n' + body;
+    navigator.clipboard.writeText(fullText).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ============ INIT ============
+  loadChecklist();
+  loadDns();
+</script>
+</body>
+</html>
