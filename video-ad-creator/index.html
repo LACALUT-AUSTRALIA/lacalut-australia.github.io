@@ -398,8 +398,8 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
     <div class="mrow"><span class="mlbl">SKU</span><span class="mval b" id="m-sku">—</span></div>
     <div class="mrow"><span class="mlbl">Ad Set</span><span class="mval g" id="m-adset">—</span></div>
     <div class="mrow"><span class="mlbl">Format</span><span class="mval">Video (MP4)</span></div>
-    <div class="mrow"><span class="mlbl">Status</span><span class="mval o">PAUSED — not live until enabled</span></div>
-    <div class="mwarn">⚠️ Saves to Supabase as <strong>ready_to_push</strong>. Run <code>push_to_meta.py</code> in Claude Code to push to Ads Manager.</div>
+    <div class="mrow"><span class="mlbl">Status</span><span class="mval o">PAUSED — not live until you enable it</span></div>
+    <div class="mwarn">⚡ Creates a real draft ad in Meta Ads Manager right now. It will be <strong>PAUSED</strong> — safe to review before enabling.</div>
     <div class="mact">
       <button class="btn-cancel" onclick="closeApp()">Cancel</button>
       <button class="btn-confirm" onclick="doApprove()">🚀 Confirm &amp; Queue</button>
@@ -465,19 +465,22 @@ var SKUS={
     sys:'You are a performance Facebook video ads copywriter for LACALUT Aktiv — a clinical gum treatment toothpaste. Australian audience, adults 35+. The customer has bleeding gums and does not realise it is early gingivitis. Tone: clinical, direct, credible. Never salesy. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Aktiv (clinical gum treatment, Australian adults 35+, bleeding gums / gingivitis). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence describing opening 3 seconds), story (string, 2-3 sentences describing what the ad does).',
     motionStyle:'Cinematic slow push in, dark dramatic lighting, sharp clinical cuts, high contrast, serious urgent mood, close-up dental detail shots',
-    campaignId:'[AKTIV_CAMPAIGN_ID]',adsetId:'[AKTIV_ADSET_ID]',adsetName:'Aktiv / Gingivitis',tplAdId:'[AKTIV_TPL_ID]'},
+    campaignId:'120241478653830229',adsetId:'120245973238020229',adsetName:'Aktiv - Original',
+    productUrl:'https://lacalut.com.au/products/lacalut-aktiv-original-toothpaste'},
   aktiv_herbal:{name:'LACALUT® Aktiv Herbal',tab:'AKTIV HERBAL',color:'#5a8a3c',
     tagline:'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
     sys:'You are a performance Facebook video ads copywriter for LACALUT Aktiv Herbal — a clinical gum toothpaste with 9 medicinal herbs. Australian adults 35+. Lead with sensory experience AND clinical proof. Tone: elevated, warm, ingredient-led. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Aktiv Herbal (clinical gum treatment with 9 medicinal herbs, Australian adults 35+). Each concept blends herbal aesthetics with clinical proof. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
     motionStyle:'Slow graceful camera movement, medicinal herbs floating and blooming, warm botanical tones, premium apothecary feel, lush and immersive',
-    campaignId:'[HERBAL_CAMPAIGN_ID]',adsetId:'[HERBAL_ADSET_ID]',adsetName:'Aktiv Herbal / Gingivitis',tplAdId:'[HERBAL_TPL_ID]'},
+    campaignId:'120241478653830229',adsetId:'120246084126920229',adsetName:'Herbal',
+    productUrl:'https://lacalut.com.au/products/lacalut-aktiv-herbal-toothpaste'},
   flora:{name:'LACALUT® Flora',tab:'FLORA',color:'#2d8f4e',
     tagline:'Probiotic bad breath formula · Women 25–45',
     sys:'You are a performance Facebook video ads copywriter for LACALUT Flora — a probiotic toothpaste for bad breath. Australian women 25-45. PAS structure: Problem (bacteria, not hygiene) → Agitate (mints just mask) → Solution (eliminates bacteria). Tone: empowering, clean, credible. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Flora (probiotic bad breath toothpaste, Australian women 25-45). Use PAS: Problem (bad breath = bacteria problem) → Agitate (mints/sprays just mask, embarrassment returns) → Solution (Flora eliminates root-cause bacteria). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
     motionStyle:'Light flowing movement, fresh bright tones, soft natural light transitions, airy and confident energy, clean wellness aesthetic, sage and white palette',
-    campaignId:'120241478653830229',adsetId:'120244410306410229',adsetName:'Flora / Bad Breath',tplAdId:'120244706626530229',
+    campaignId:'120241478653830229',adsetId:'120244410306410229',adsetName:'Flora / Bad Breath',
+    productUrl:'https://www.lacalut.com.au/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',
     seeds:[
       {id:'flora-1',title:'⏰ The 3pm Crash',angle:'Time-of-day biology',video:'videos/flora_ad1_3pm_crash.mp4',
        hook:'A woman glances at her watch — 3:04pm — and instinctively reaches for a mint.',
@@ -512,13 +515,15 @@ var SKUS={
     sys:'You are a performance Facebook video ads copywriter for LACALUT Sensitive — toothpaste for sensitive teeth. Australian adults avoiding hot/cold/sweet due to sharp pain. Lead with restored freedom and relief. Tone: warm, empathetic, solution-led. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Sensitive (sensitive teeth toothpaste, Australian adults). Focus on: sharp pain → clinical solution → restored freedom. Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
     motionStyle:'Slow warm camera movement, lifestyle moments of relief, someone enjoying coffee or cold food comfortably, gentle light bloom transitions, soft and human',
-    campaignId:'[SENSITIVE_CAMPAIGN_ID]',adsetId:'[SENSITIVE_ADSET_ID]',adsetName:'Sensitive / Tooth Pain',tplAdId:'[SENSITIVE_TPL_ID]'},
+    campaignId:'',adsetId:'',adsetName:'Sensitive / Tooth Pain — adset not yet created',
+    productUrl:'https://lacalut.com.au'},
   white_repair:{name:'LACALUT® White & Repair',tab:'WHITE & REPAIR',color:'#c9a84c',
     tagline:'Hydroxyapatite enamel repair + whitening · Science-led',
     sys:'You are a performance Facebook video ads copywriter for LACALUT White & Repair — a remineralising whitening toothpaste. Australian adults 25-45 who want whiter teeth but distrust harsh bleaching. Lead with repair-from-within. Tone: smart, results-driven, premium. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT White & Repair (enamel repair + whitening toothpaste, Australian adults 25-45). Focus on: want whiter teeth but worried about enamel damage. Hydroxyapatite repairs from within while whitening. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
     motionStyle:'Sleek smooth camera reveals, crisp white tones, premium minimalist aesthetic, confident aspirational energy, polished product shots with slow drift',
-    campaignId:'[WHITE_CAMPAIGN_ID]',adsetId:'[WHITE_ADSET_ID]',adsetName:'White & Repair / Whitening',tplAdId:'[WHITE_TPL_ID]'}
+    campaignId:'',adsetId:'',adsetName:'White & Repair / Whitening — adset not yet created',
+    productUrl:'https://lacalut.com.au'}
 };
 
 /* ── STATE ── */
@@ -1090,20 +1095,43 @@ function closeApp(){document.getElementById('app-modal').classList.remove('on');
 async function doApprove(){
   var id=pendApprove;var c=cards[id];var s=SKUS[c.sku||activeSku];
   var btn=document.querySelector('#app-modal .btn-confirm');
-  btn.textContent='⏳ Queuing…';btn.disabled=true;
+
+  if(!s.adsetId){
+    alert('⚠️ No adset configured for '+s.name+' yet.\nCreate the adset in Meta Ads Manager first, then update the adset ID in the page code.');
+    return;
+  }
+
+  btn.textContent='⏳ Pushing to Meta…';btn.disabled=true;
+
   var pt=gv('pt-'+id),h1=gv('h1-'+id),desc=gv('desc-'+id);
   var vidEl=document.getElementById('vid-'+id);
-  var videoUrl=vidEl?vidEl.src:c.video||'';
-  var payload=[{sku:c.sku||activeSku,creative_name:c.title||id,creative_type:'video',
-    adset_id:s.adsetId,adset_name:s.adsetName,campaign_id:s.campaignId,template_ad_id:s.tplAdId,
-    primary_text:pt,headline:h1,description:desc,image_url:videoUrl,status:'ready_to_push'}];
+  var videoUrl=c.video||(vidEl?(vidEl.currentSrc||vidEl.src):'');
+
   try{
-    var res=await fetch(SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body:JSON.stringify(payload)});
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    closeApp();cards[id].status='queued';renderCard(id);updateCounts();
-  }catch(err){btn.textContent='🚀 Confirm & Queue';btn.disabled=false;alert('❌ '+err.message);}
+    var res=await fetch(SUPA_URL+'/functions/v1/push-to-meta',{
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        creative_name:c.title||id,
+        primary_text:pt,
+        headline:h1,
+        description:desc,
+        video_url:videoUrl,
+        adset_id:s.adsetId,
+        product_url:s.productUrl||'https://lacalut.com.au'
+      })
+    });
+    var data=await res.json();
+    if(!res.ok||data.error)throw new Error(data.error||'HTTP '+res.status);
+    closeApp();
+    cards[id].status='queued';
+    cards[id].metaAdId=data.ad_id;
+    renderCard(id);updateCounts();
+    alert('✅ Draft ad live in Meta Ads Manager!\n\nAdset: '+s.adsetName+'\nAd ID: '+data.ad_id+'\n\nIt\'s PAUSED — enable it when ready.');
+  }catch(err){
+    btn.textContent='🚀 Confirm & Queue';btn.disabled=false;
+    alert('❌ '+err.message);
+  }
 }
 
 /* ── LOGO ── */
