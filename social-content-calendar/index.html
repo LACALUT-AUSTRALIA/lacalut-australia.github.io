@@ -4,6 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>LACALUT® — Social Content Studio</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 <style>
@@ -822,7 +823,7 @@ function fbPreviewHTML(idx, post, caption, hashtags, imgSrc) {
           ? `<img src="${imgSrc}" alt="Post">`
           : `<div class="fb-image-placeholder">📷 Image will appear here</div>`}
       </div>
-      ${hashtags ? `<div class="fb-hashtags" style="padding:6px 16px 0;font-size:13px;color:#0866ff">${escHtml(hashtags)}</div>` : ''}
+      <div class="fb-hashtags" style="padding:6px 16px 0;font-size:13px;color:#0866ff${hashtags ? '' : ';display:none'}">${escHtml(hashtags)}</div>
       <div class="fb-reactions">
         <div>👍 ❤️ 😂 <span style="margin-left:2px">1.2K</span></div>
         <div>47 comments · 23 shares</div>
@@ -869,7 +870,7 @@ function igPreviewHTML(idx, post, caption, hashtags, imgSrc) {
     <div class="ig-caption-wrap">
       <span class="ig-caption-user">lacalut.australia</span> ${escHtml(truncated)}${caption.length > 125 ? ' <button class="ig-more-link">more</button>' : ''}
     </div>
-    ${hashtags ? `<div class="ig-hashtags">${escHtml(hashtags)}</div>` : ''}
+    <div class="ig-hashtags"${hashtags ? '' : ' style="display:none"'}>${escHtml(hashtags)}</div>
     <div class="ig-view-comments">View all 47 comments</div>
     <div class="ig-timestamp">2 hours ago</div>
   </div>`;
@@ -946,9 +947,9 @@ function updateLivePreview(idx) {
   }
   // Update hashtags in both previews
   const fbHashEl = card.querySelector('.fb-hashtags');
-  if (fbHashEl) fbHashEl.textContent = post.fb.hashtags || '';
+  if (fbHashEl) { fbHashEl.textContent = post.fb.hashtags || ''; fbHashEl.style.display = post.fb.hashtags ? '' : 'none'; }
   const igHashEl = card.querySelector('.ig-hashtags');
-  if (igHashEl) igHashEl.textContent = post.ig.hashtags || '';
+  if (igHashEl) { const t = post.ig.hashtags || post.fb.hashtags || ''; igHashEl.textContent = t; igHashEl.style.display = t ? '' : 'none'; }
 }
 
 /* ═══════════════════════════════════════════
@@ -1159,7 +1160,7 @@ async function rejectConcept(idx) {
 ═══════════════════════════════════════════ */
 async function callGeminiImageGen(prompt) {
   const res = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' + KEYS.gemini,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + KEYS.gemini,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1497,17 +1498,17 @@ function markPosted(idx) {
 async function logToSupabase(idx, event) {
   const post = STATE.posts[idx];
   try {
-    await fetch(SUPABASE_URL + '/rest/v1/ad_training', {
+    await fetch(SUPABASE_URL + '/rest/v1/social_posts_log', {
       method: 'POST',
       headers: SUPA_HEADERS,
       body: JSON.stringify({
-        feedback_type: event,
-        content_type: 'social_post',
-        sku: post.postType,
-        prompt: post.concept?.image_prompt || '',
-        response: post.fb.caption,
-        model: 'week1-dashboard',
-        created_at: new Date().toISOString()
+        week_of: STATE.weekOf,
+        day: post.day,
+        post_type: post.postType,
+        event: event,
+        image_prompt: post.concept?.image_prompt || '',
+        fb_caption: post.fb.caption,
+        ig_caption: post.ig.caption
       })
     });
   } catch(e) { /* non-critical */ }
