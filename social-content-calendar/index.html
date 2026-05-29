@@ -1105,8 +1105,14 @@ async function approveConcept(idx) {
   try {
     await generateImage(idx);
   } catch(e) {
-    if (spinner) spinner.style.display = 'none';
-    alert('Image generation failed: ' + e.message);
+    // Reset to concept state so user can retry
+    STATE.posts[idx].status = 'concept';
+    STATE.posts[idx].fb.imageDataUrl = '';
+    STATE.posts[idx].ig.imageDataUrl = '';
+    saveState();
+    renderPost(idx);
+    updateCalendarStrip();
+    alert('❌ Image generation failed: ' + e.message);
   }
 }
 
@@ -1142,14 +1148,16 @@ async function callGeminiImageGen(prompt) {
 }
 
 async function generateImage(idx) {
-  if (!KEYS.gemini) { alert('Add your Gemini API key in ⚙️ Settings first.'); openSettings(); return; }
+  if (!KEYS.gemini) {
+    openSettings();
+    throw new Error('No Gemini API key — add it in ⚙️ Settings first');
+  }
 
   const post = STATE.posts[idx];
   const imagePrompt = post.concept?.image_prompt || POST_TYPE_BRIEFS[post.postType].imageStyle + '. LACALUT® product packaging prominently visible.';
 
   let dataUrl = await callGeminiImageGen(imagePrompt);
 
-  // Apply logo if available
   if (logoDataUrl) {
     try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e) { console.warn('Logo composite failed:', e); }
   }
@@ -1159,29 +1167,9 @@ async function generateImage(idx) {
   STATE.posts[idx].status = 'image_generated';
   saveState();
 
-  const spinner = document.getElementById('img-spinner-' + idx);
-  if (spinner) spinner.style.display = 'none';
-
-  const imgEl = document.getElementById('img-' + idx);
-  if (imgEl) { imgEl.src = dataUrl; imgEl.style.display = 'block'; }
-
-  // Update both previews
-  const card = document.getElementById('post-' + idx);
-  if (card) {
-    card.querySelectorAll('.fb-image-wrap, .ig-image-wrap').forEach(wrap => {
-      const img = wrap.querySelector('img');
-      const placeholder = wrap.querySelector('.fb-image-placeholder, .ig-image-placeholder');
-      if (placeholder) placeholder.style.display = 'none';
-      if (img) { img.src = dataUrl; img.style.display = 'block'; }
-      else {
-        const newImg = document.createElement('img');
-        newImg.src = dataUrl;
-        newImg.alt = 'Post';
-        wrap.appendChild(newImg);
-      }
-    });
-  }
-
+  // Full re-render so thumbnail (img element) and previews all update correctly
+  renderPost(idx);
+  initCharCounters(idx);
   updateCalendarStrip();
   logToSupabase(idx, 'image_generated');
 }
