@@ -154,6 +154,17 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 .btn-imggen:disabled{opacity:.5;cursor:not-allowed;}
 .btn-teach{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;}
 .btn-teach:hover{background:#333;color:#fff;}
+.btn-higgsfield{background:linear-gradient(135deg,#1a1a2e,#16213e);color:#e2b96f;border:1.5px solid #e2b96f;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-higgsfield:hover{background:#e2b96f;color:#1a1a2e;}
+.btn-higgsfield:disabled{opacity:.5;cursor:not-allowed;}
+.hf-panel{display:none;background:#1a1a2e;border:1.5px solid #e2b96f;border-radius:7px;padding:14px;margin-top:10px;}
+.hf-panel.open{display:block;}
+.hf-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#e2b96f;margin-bottom:6px;}
+.hf-prompt{font-size:13px;line-height:1.75;white-space:pre-wrap;color:#f0e6d3;background:#0d0d1a;border-radius:6px;padding:12px;margin-bottom:10px;min-height:60px;}
+.hf-acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.btn-copy-hf{background:#e2b96f;color:#1a1a2e;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-copy-hf:hover{background:#c9a84c;}
+.hf-note{font-size:11px;color:#888;margin-top:6px;line-height:1.5;}
 .err-msg{color:#c62828;font-size:13px;padding:6px 0;display:none;}
 
 /* FACEBOOK PREVIEW */
@@ -465,6 +476,7 @@ var SKUS={
     sys:'You are a performance Facebook static image ads copywriter for LACALUT Aktiv — a clinical gum treatment toothpaste. Australian audience, adults 35+. The customer has bleeding gums and does not realise it is early gingivitis. Tone: clinical, direct, credible. Never salesy. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Aktiv (clinical gum treatment, Australian adults 35+, bleeding gums / gingivitis). Use diverse angles: Social Shame, Fear/Stakes, Absurd Metaphor, Competitor Takedown, Authority/Science, Transformation, Curiosity Gap, Dark Humour, Relatable Moment, Aspirational Contrast. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence opening image hook), story (string, 2-3 sentences describing the concept), imagePrompt (string, detailed visual description for AI image gen).',
     geminiStyle:'Clinical, dramatic lighting, dark background, close-up dental or product shot, high contrast, serious urgent mood',
+    motionStyle:'Cinematic slow push in, dark dramatic lighting, sharp clinical cuts, high contrast, serious urgent mood, close-up dental detail shots',
     campaignId:'120241478653830229',adsetId:'120245973238020229',adsetName:'Aktiv - Original',
     productUrl:'https://lacalut.com.au/products/lacalut-aktiv-original-toothpaste'},
   aktiv_herbal:{name:'LACALUT® Aktiv Herbal',tab:'AKTIV HERBAL',color:'#5a8a3c',
@@ -472,6 +484,7 @@ var SKUS={
     sys:'You are a performance Facebook static image ads copywriter for LACALUT Aktiv Herbal — a clinical gum toothpaste with 9 medicinal herbs. Australian adults 35+. Lead with sensory experience AND clinical proof. Tone: elevated, warm, ingredient-led. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Aktiv Herbal (clinical gum treatment with 9 medicinal herbs, Australian adults 35+). Each concept blends herbal aesthetics with clinical proof. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual description for AI image gen).',
     geminiStyle:'Warm botanical aesthetic, medicinal herbs, lush greenery, apothecary feel, premium natural, soft earthy tones',
+    motionStyle:'Slow graceful camera movement, medicinal herbs floating and blooming, warm botanical tones, premium apothecary feel, lush and immersive',
     campaignId:'120241478653830229',adsetId:'120246084126920229',adsetName:'Aktiv Herbal / Gingivitis',
     productUrl:'https://lacalut.com.au/products/lacalut-aktiv-herbal-toothpaste'},
   flora:{name:'LACALUT® Flora',tab:'FLORA',color:'#2d8f4e',
@@ -479,6 +492,7 @@ var SKUS={
     sys:'You are a performance Facebook static image ads copywriter for LACALUT Flora — a probiotic toothpaste for bad breath. Australian women 25-45. PAS structure: Problem (bacteria, not hygiene) → Agitate (mints just mask) → Solution (eliminates bacteria). Tone: empowering, clean, credible. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Flora (probiotic bad breath toothpaste, Australian women 25-45). PAS: Problem (bad breath = bacteria) → Agitate (mints/sprays just mask) → Solution (Flora eliminates root-cause bacteria). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual description for AI image gen).',
     geminiStyle:'Fresh, bright, clean wellness aesthetic, soft natural light, white or sage green tones, modern and premium, 1080x1350 portrait',
+    motionStyle:'Light flowing movement, fresh bright tones, soft natural light transitions, airy and confident energy, clean wellness aesthetic, sage and white palette',
     campaignId:'120241478653830229',adsetId:'120244410306410229',adsetName:'Flora / Bad Breath',
     productUrl:'https://www.lacalut.com.au/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',
     seeds:[
@@ -523,6 +537,7 @@ var SKUS={
     sys:'You are a performance Facebook static image ads copywriter for LACALUT Sensitive — toothpaste for sensitive teeth. Australian adults avoiding hot/cold/sweet due to sharp pain. Lead with restored freedom and relief. Tone: warm, empathetic, solution-led. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Sensitive (sensitive teeth toothpaste, Australian adults). Focus on: sharp pain → clinical solution → restored freedom. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual for AI image gen).',
     geminiStyle:'Warm soft lifestyle moment, relief and joy, enjoying coffee or cold drink comfortably, gentle light, relatable',
+    motionStyle:'Slow warm camera movement, lifestyle moments of relief, someone enjoying coffee or cold food comfortably, gentle light bloom transitions, soft and human',
     campaignId:'',adsetId:'',adsetName:'Sensitive / Tooth Pain — adset not yet created',
     productUrl:'https://lacalut.com.au'},
   white_repair:{name:'LACALUT® White & Repair',tab:'WHITE & REPAIR',color:'#c9a84c',
@@ -530,6 +545,7 @@ var SKUS={
     sys:'You are a performance Facebook static image ads copywriter for LACALUT White & Repair — a remineralising whitening toothpaste. Australian adults 25-45 who want whiter teeth but distrust harsh bleaching. Lead with repair-from-within. Tone: smart, results-driven, premium. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT White & Repair (enamel repair + whitening, Australian adults 25-45). Focus on: want whiter teeth but worried about enamel damage. Hydroxyapatite repairs from within while whitening. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual for AI image gen).',
     geminiStyle:'Crisp white tones, premium minimalist, bright healthy smiles, clean product photography, aspirational',
+    motionStyle:'Sleek smooth camera reveals, crisp white tones, premium minimalist aesthetic, confident aspirational energy, polished product shots with slow drift',
     campaignId:'',adsetId:'',adsetName:'White & Repair / Whitening — adset not yet created',
     productUrl:'https://lacalut.com.au'}
 };
@@ -700,9 +716,20 @@ function buildImageHTML(id,c,col,s){
     +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
     +'<div id="ires-'+id+'" style="display:none"><img id="iprev-'+id+'" class="gen-img-preview" src="" alt="Generated"><div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptImg(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="runImgGen(\''+id+'\')">🔄 Retry</button><button class="btn-discard-ai" onclick="discardImg(\''+id+'\')">🗑 Discard</button></div></div>'
     +'</div>'
+    // Higgsfield video panel
+    +'<div class="hf-panel" id="hf-'+id+'">'
+    +'<div class="hf-lbl">🎬 Make Video — Higgsfield Seedance 2.0</div>'
+    +'<div class="hf-note" style="color:#aaa;margin-bottom:10px">Generates a 15-second motion brief → copy prompt → paste in Claude Code → run <code style="background:#0d0d1a;color:#e2b96f;padding:1px 4px;border-radius:3px">/higgsfield-generate</code></div>'
+    +'<div class="hf-prompt" id="hfp-'+id+'">Click Generate Prompt to auto-write a Higgsfield motion brief…</div>'
+    +'<div class="hf-acts">'
+    +'<button class="btn-run" style="background:var(--red)" id="hfb-'+id+'" onclick="genHiggsfield(\''+id+'\')">⚡ Generate Prompt</button>'
+    +'<button class="btn-copy-hf" onclick="copyHiggsfield(\''+id+'\')">📋 Copy</button>'
+    +'<button class="btn-close-p" onclick="document.getElementById(\'hf-'+id+'\').classList.remove(\'open\')">✕ Close</button>'
+    +'</div></div>'
     +'<div class="copy-acts">'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
     +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🖼️ Generate Image</button>'
+    +'<button class="btn-higgsfield" id="hfbtn-'+id+'" onclick="openHiggsfield(\''+id+'\')">🎬 Make Video</button>'
     +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
     +'</div>'
     +'<div class="err-msg" id="err-'+id+'"></div>'
@@ -1165,6 +1192,65 @@ function resetBrain(){
   var sku=activeSku,s=SKUS[sku];
   localStorage.removeItem('lac_img_brain_'+sku);
   document.getElementById('brain-ta').value=s.ideaP;
+}
+
+/* ── HIGGSFIELD VIDEO PROMPT ── */
+var HF_SYS='You are a world-class Higgsfield AI video director specialising in Seedance 2.0 cinematic performance ads. You write motion briefs that consistently produce scroll-stopping, emotionally resonant Facebook video ads that feel like they were shot by a real film crew — never AI-looking.\n\nYour output must be ONE flowing paragraph, 150-200 words, no headers or bullet points. Include:\n- Visual style: lighting quality, colour palette, mood reference\n- Camera: movement type, lens feel, angle\n- Scene: location, time of day, atmosphere\n- Talent: who they are, micro-expression, body language, exact action\n- Product: when and how LACALUT appears\n- Beat mapping: 0-3s hook / 3-12s emotional build / 12-15s CTA\n- Colour grade: cinematic reference\n\nOptimise every word for Seedance 2.0. Cinematic, grounded, human.';
+
+function openHiggsfield(id){
+  var panel=document.getElementById('hf-'+id);
+  if(!panel)return;
+  var wasOpen=panel.classList.contains('open');
+  panel.classList.toggle('open',!wasOpen);
+  // Auto-generate prompt if panel is opening and field is still placeholder
+  var promptEl=document.getElementById('hfp-'+id);
+  if(!wasOpen&&promptEl&&promptEl.textContent.indexOf('Click Generate')===0){
+    genHiggsfield(id);
+  }
+}
+
+async function genHiggsfield(id){
+  var c=cards[id];var s=SKUS[c.sku||activeSku];
+  if(!CLAUDE_KEY){alert('Enter your Claude API key first.');return;}
+  var panel=document.getElementById('hf-'+id);
+  var promptEl=document.getElementById('hfp-'+id);
+  var btn=document.getElementById('hfb-'+id);
+  if(panel)panel.classList.add('open');
+  promptEl.textContent='⏳ Writing Higgsfield motion brief…';
+  if(btn){btn.disabled=true;btn.textContent='⏳ Writing…';}
+  var pt=(gv('pt-'+id)||c.pt||'').split('\n')[0];
+  var imgSrc=c.img||'';
+  var msg='Write a Higgsfield Seedance 2.0 motion prompt for this Facebook video ad.\n\n'
+    +'PRODUCT: '+s.name+'\n'
+    +'CONCEPT: '+c.title+'\n'
+    +'ANGLE: '+c.angle+'\n'
+    +'HOOK: '+c.hook+'\n'
+    +'STORY: '+c.story+'\n'
+    +'AD COPY THEME: '+pt+'\n'
+    +'MOTION STYLE: '+(s.motionStyle||s.geminiStyle)+'\n'
+    +(imgSrc?'NOTE: The static image for this ad already exists — animate it with Seedance 2.0 image-to-video.\n\n':'')
+    +'Write the Higgsfield prompt now — one paragraph, 150-200 words, optimised for Seedance 2.0:';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:HF_SYS,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var text=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
+    if(!text)throw new Error('Empty response');
+    promptEl.textContent=text;
+  }catch(err){promptEl.textContent='❌ Error: '+err.message;}
+  finally{if(btn){btn.disabled=false;btn.textContent='⚡ Generate Prompt';}}
+}
+
+function copyHiggsfield(id){
+  var el=document.getElementById('hfp-'+id);if(!el)return;
+  var text=el.textContent;
+  navigator.clipboard.writeText(text).then(function(){
+    var btn=document.querySelector('#hf-'+id+' .btn-copy-hf');
+    if(btn){var orig=btn.textContent;btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent=orig;},2000);}
+  }).catch(function(){
+    var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  });
 }
 
 /* ── TAGLINE INLINE EDIT ── */
