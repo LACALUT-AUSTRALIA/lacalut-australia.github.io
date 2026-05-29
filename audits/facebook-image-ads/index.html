@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>LACALUT® — Facebook Image Ads</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖼️</text></svg>">
 <style>
 :root{
   --red:#cf102d;--navy:#004a88;
@@ -554,6 +553,7 @@ var SKUS={
 /* ── STATE ── */
 var activeSku='flora';
 var cards={};
+var cardsBySku={};
 var aiResults={};
 var pendApprove=null,pendTeach=null;
 var teachTab='c',teachReject=false,teachRType='c';
@@ -587,14 +587,21 @@ function buildTabBar(){
 }
 
 function switchSku(sku){
+  // Save current SKU state before switching
+  cardsBySku[activeSku]={cards:Object.assign({},cards),aiResults:Object.assign({},aiResults),refImgs:Object.assign({},refImgs)};
   activeSku=sku;
   document.querySelectorAll('.sku-btn').forEach(function(b){b.classList.remove('active');});
   var t=document.getElementById('stab-'+sku);if(t)t.classList.add('active');
   document.getElementById('gen-sku-lbl').textContent=SKUS[sku].tab;
   refreshHeaderTagline();
   loadBriefPanel(sku);
-  cards={};aiResults={};refImgs={};
-  loadSku(sku);
+  // Close brain panel on SKU switch
+  document.getElementById('brain-panel').classList.remove('open');
+  document.getElementById('btn-brain').classList.remove('on');
+  // Restore saved state for this SKU, or load fresh
+  var saved=cardsBySku[sku];
+  if(saved){cards=Object.assign({},saved.cards);aiResults=Object.assign({},saved.aiResults);refImgs=Object.assign({},saved.refImgs);renderAll();}
+  else{cards={};aiResults={};refImgs={};loadSku(sku);}
 }
 
 function loadSku(sku){
@@ -1010,7 +1017,9 @@ function discardImg(id){var r=document.getElementById('ires-'+id);if(r)r.style.d
 function dlImg(id){
   var img=document.getElementById('img-'+id);
   if(!img||!img.src)return;
-  var a=document.createElement('a');a.href=img.src;a.download='lacalut-'+id+'.jpg';a.click();
+  var ext='jpg';
+  if(img.src.startsWith('data:image/png')||img.src.toLowerCase().endsWith('.png'))ext='png';
+  var a=document.createElement('a');a.href=img.src;a.download='lacalut-'+id+'.'+ext;a.click();
 }
 
 /* ── IMAGE URL RESOLVER ── */
