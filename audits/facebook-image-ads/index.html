@@ -1012,6 +1012,34 @@ function dlImg(id){
   var a=document.createElement('a');a.href=img.src;a.download='lacalut-'+id+'.jpg';a.click();
 }
 
+/* ── IMAGE URL RESOLVER ── */
+async function resolveImageUrl(id,rawUrl){
+  if(!rawUrl)return '';
+  // Relative path → absolute URL
+  if(!rawUrl.startsWith('http')&&!rawUrl.startsWith('data:')){
+    return new URL(rawUrl,window.location.href).href;
+  }
+  // Base64 data URL → upload to Supabase Storage
+  if(rawUrl.startsWith('data:')){
+    var parts=rawUrl.split(',');
+    var mime=(parts[0].match(/:([^;]+);/)||[])[1]||'image/png';
+    var ext=mime==='image/jpeg'?'jpg':'png';
+    var byteStr=atob(parts[1]);
+    var arr=new Uint8Array(byteStr.length);
+    for(var i=0;i<byteStr.length;i++)arr[i]=byteStr.charCodeAt(i);
+    var blob=new Blob([arr],{type:mime});
+    var filename='lacalut-'+id+'-'+Date.now()+'.'+ext;
+    var uploadRes=await fetch(SUPA_URL+'/storage/v1/object/ad-images/'+filename,{
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':mime,'x-upsert':'true'},
+      body:blob
+    });
+    if(!uploadRes.ok){var ed=await uploadRes.json().catch(function(){return{};});throw new Error('Image upload failed: '+(ed.message||'HTTP '+uploadRes.status));}
+    return SUPA_URL+'/storage/v1/object/public/ad-images/'+filename;
+  }
+  return rawUrl;
+}
+
 /* ── APPROVAL ── */
 function showApp(id){
   pendApprove=id;var c=cards[id];var s=SKUS[c.sku||activeSku];
@@ -1024,11 +1052,15 @@ function closeApp(){document.getElementById('app-modal').classList.remove('on');
 async function doApprove(){
   var id=pendApprove;var c=cards[id];var s=SKUS[c.sku||activeSku];
   var btn=document.querySelector('#app-modal .btn-confirm');
-  btn.textContent='⏳ Saving…';btn.disabled=true;
+  btn.disabled=true;
   var pt=gv('pt-'+id),h1=gv('h1-'+id),desc=gv('desc-'+id);
   var imgEl=document.getElementById('img-'+id);
-  var imageUrl=c.img||(imgEl?imgEl.src:'');
+  var rawImageUrl=c.img||(imgEl?imgEl.src:'');
   try{
+    if(rawImageUrl&&rawImageUrl.startsWith('data:'))btn.textContent='⏳ Uploading image…';
+    else btn.textContent='⏳ Saving…';
+    var imageUrl=await resolveImageUrl(id,rawImageUrl);
+    btn.textContent='⏳ Saving…';
     var payload=[{sku:c.sku||activeSku,creative_name:c.title||id,creative_type:'image',
       adset_id:s.adsetId,adset_name:s.adsetName,campaign_id:s.campaignId,template_ad_id:'',
       primary_text:pt,headline:h1,description:desc,image_url:imageUrl,status:'ready_to_push'}];
