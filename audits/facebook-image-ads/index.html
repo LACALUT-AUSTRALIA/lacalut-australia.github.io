@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<!-- v1 2026-05-29 — Facebook Image Ads Creator (matches Video Ads Creator UI) -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>LACALUT® — Facebook Image Ads</title>
+<style>
+:root{
+  --red:#cf102d;--navy:#004a88;
+  --bg:#f0f2f5;--card:#fff;--border:#dde1e7;
+  --text:#1c1e21;--muted:#65676b;
+  --shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.06);
+  --radius:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:16px;line-height:1.5;min-height:100vh;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:10px 24px;}
+.hdr-logo{font-size:18px;font-weight:800;color:var(--red);letter-spacing:-.5px;}
+.hdr-badge{background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;}
+.hdr-title{font-size:14px;font-weight:600;color:var(--muted);}
+.hdr-spacer{flex:1;}
+
+/* SKU TABS */
+#sku-bar{background:#f0f2f5;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:10px 20px;gap:6px;flex-wrap:wrap;}
+#sku-bar::-webkit-scrollbar{height:0}
+.sku-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 18px;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border:1.5px solid var(--border);border-radius:999px;background:#fff;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
+.sku-btn:hover:not(.active){background:#e4e6ea;color:var(--text);}
+.sku-btn.active{background:var(--sku-color,var(--navy));border-color:var(--sku-color,var(--navy));color:#fff;}
+.sku-dot{width:8px;height:8px;border-radius:50%;background:var(--sku-color,var(--navy));flex-shrink:0;}
+.sku-btn.active .sku-dot{background:rgba(255,255,255,0.7);}
+.sku-count{background:rgba(0,0,0,0.12);font-size:11px;font-weight:700;padding:1px 7px;border-radius:999px;min-width:18px;text-align:center;}
+.sku-btn.active .sku-count{background:rgba(255,255,255,0.25);}
+
+/* LOGO BAR */
+#logo-bar{background:#fff;border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);}
+#logo-bar label.lu-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:600;color:var(--text);}
+#logo-bar select{border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;background:#fff;color:var(--text);}
+.lu-clear{background:#fce8e8;border:1.5px solid #ef9a9a;border-radius:6px;padding:4px 10px;font-size:13px;font-weight:600;color:#c62828;cursor:pointer;}
+#logo-thumb{height:28px;border-radius:3px;display:none;}
+
+/* GENERATE BAR */
+#gen-bar{background:#fff;border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+#btn-gen-ideas{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,74,136,.3);white-space:nowrap;transition:.15s;}
+#btn-gen-ideas:hover{background:#003870;transform:translateY(-1px);}
+#btn-gen-ideas:disabled{background:#9eb3c8;cursor:not-allowed;transform:none;}
+.gen-or{font-size:14px;color:var(--muted);white-space:nowrap;}
+#manual-idea-input{flex:1;min-width:200px;max-width:500px;border:1.5px solid var(--border);border-radius:8px;padding:11px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border-color .15s;}
+#manual-idea-input:focus{border-color:var(--navy);}
+#btn-add-idea{background:#fff;color:var(--navy);border:2px solid var(--navy);border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;}
+#btn-add-idea:hover{background:var(--navy);color:#fff;}
+.gen-hint{width:100%;font-size:13px;color:var(--muted);margin-top:-4px;}
+
+/* CARDS CONTAINER */
+#cards-container{max-width:1400px;margin:0 auto;padding:20px 24px 80px;display:flex;flex-direction:column;gap:20px;}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .es-icon{font-size:48px;margin-bottom:12px;}
+.empty-state h3{font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.empty-state p{font-size:15px;line-height:1.6;}
+
+/* CARD BASE */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .2s;}
+.card.st-queued{border-left:4px solid var(--navy);}
+.card.st-rejected{opacity:.55;}
+
+/* Card header */
+.card-hdr{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);}
+.phase-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;}
+.pb-concept{background:#fff3e0;color:#e65100;}
+.pb-copy{background:#e3f0ff;color:#0052cc;}
+.pb-generating{background:#f0ebff;color:#5a2ca0;}
+.pb-image{background:#e8f8e8;color:#1e7e34;}
+.pb-queued{background:#e3f0ff;color:#0052cc;}
+.card-title{font-size:20px;font-weight:700;flex:1;}
+.card-angle{font-size:12px;color:var(--muted);background:var(--bg);padding:3px 8px;border-radius:999px;white-space:nowrap;}
+
+/* CONCEPT PHASE */
+.concept-body{padding:20px 22px;}
+.concept-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:5px;}
+.concept-hook-text{font-size:18px;font-weight:600;font-style:italic;color:var(--text);margin-bottom:16px;line-height:1.4;}
+.concept-story-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;}
+.concept-story{font-size:16px;line-height:1.65;color:var(--text);}
+.concept-edit{display:none;margin-top:16px;}
+.concept-edit.open{display:block;}
+.edit-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;margin-top:12px;}
+.edit-input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s;}
+.edit-input:focus{border-color:var(--navy);}
+.concept-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.btn-approve{background:#e8f8e8;color:#1e7e34;border:1.5px solid #b2dfb2;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-approve:hover{background:#1e7e34;color:#fff;}
+.btn-edit-c{background:#fff3e0;color:#e65100;border:1.5px solid #ffcc80;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-edit-c:hover{background:#e65100;color:#fff;}
+.btn-regen{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:7px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-regen:hover{background:#333;color:#fff;}
+.btn-reject-c{background:#fce8e8;color:#c62828;border:1.5px solid #ef9a9a;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-reject-c:hover{background:#c62828;color:#fff;}
+.btn-save-edit{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-cancel-edit{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:8px 14px;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* SPLIT LAYOUT (image phase) */
+.split-body{display:flex;min-height:400px;}
+.split-left{flex:1;padding:20px 22px;border-right:1px solid var(--border);min-width:0;overflow:hidden;}
+.split-right{width:360px;flex-shrink:0;padding:20px;background:#f8f9fa;}
+
+/* Fields */
+.field-sec{margin-bottom:18px;}
+.field-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+.char-note{font-size:11px;font-weight:400;color:#aaa;}
+.field-ta{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:10px 12px;font-size:14px;line-height:1.55;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s;color:var(--text);min-height:90px;}
+.field-ta:focus{border-color:var(--navy);}
+.field-in{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;transition:border-color .15s;color:var(--text);}
+.field-in:focus{border-color:var(--navy);}
+.hls-group{display:flex;flex-direction:column;gap:8px;}
+
+/* AI panels */
+.ai-panel{display:none;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:14px;margin-top:10px;}
+.ai-panel.open{display:block;}
+.ai-panel-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:8px;}
+.ai-in{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:8px;display:block;transition:border-color .15s;}
+.ai-in:focus{border-color:var(--navy);}
+.ai-btns{display:flex;gap:8px;}
+.btn-run{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-run:hover{background:#003870;}
+.btn-run:disabled{background:#9eb3c8;cursor:not-allowed;}
+.btn-close-p{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+.ai-result{display:none;background:#fff;border:1.5px solid var(--navy);border-radius:7px;padding:12px;margin-top:10px;}
+.ai-result.open{display:block;}
+.ai-result-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:6px;}
+.ai-result-pre{font-size:13px;line-height:1.6;white-space:pre-wrap;color:var(--text);}
+.ai-result-acts{display:flex;gap:8px;margin-top:10px;}
+.btn-accept-ai{background:#e8f8e8;color:#1e7e34;border:1.5px solid #b2dfb2;border-radius:6px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-accept-ai:hover{background:#1e7e34;color:#fff;}
+.btn-discard-ai{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:6px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* Image gen panel */
+.img-panel-inner{display:none;background:#f3e8ff;border:1.5px solid #ce93d8;border-radius:7px;padding:14px;margin-top:10px;}
+.img-panel-inner.open{display:block;}
+.img-panel-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b21a8;margin-bottom:8px;}
+.ref-slots{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.ref-slot{cursor:pointer;display:block;}
+.ref-slot-inner{width:80px;height:60px;background:#ede9fe;border:2px dashed #c4b5fd;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#7c3aed;text-align:center;overflow:hidden;}
+.ref-slot-inner:hover{border-color:#7c3aed;}
+.gen-img-preview{width:100%;border-radius:6px;margin:8px 0;max-height:260px;object-fit:contain;background:#f0f0f0;}
+
+/* Copy action row */
+.copy-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.btn-rewrite{background:#fff3e0;color:#e65100;border:1.5px solid #ffcc80;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-rewrite:hover{background:#e65100;color:#fff;}
+.btn-imggen{background:#f3e8ff;color:#6b21a8;border:1.5px solid #ce93d8;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-imggen:hover{background:#6b21a8;color:#fff;}
+.btn-imggen:disabled{opacity:.5;cursor:not-allowed;}
+.btn-teach{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-teach:hover{background:#333;color:#fff;}
+.err-msg{color:#c62828;font-size:13px;padding:6px 0;display:none;}
+
+/* FACEBOOK PREVIEW */
+.preview-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px;}
+.fmt-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.fmt-btn{padding:5px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:.15s;}
+.fmt-btn.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.fb-shell{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.2);overflow:hidden;}
+.fb-hdr{display:flex;align-items:center;gap:9px;padding:10px 12px;}
+.fb-av{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;font-weight:900;flex-shrink:0;}
+.fb-page{font-size:13px;font-weight:700;color:#1c1e21;line-height:1.2;}
+.fb-spon{font-size:11px;color:#65676b;}
+.fb-dots{font-size:18px;color:#65676b;margin-left:auto;}
+.fb-pt{padding:0 12px 8px;font-size:13px;color:#1c1e21;line-height:1.55;max-height:56px;overflow:hidden;}
+.fb-imgbox{position:relative;overflow:hidden;background:#e4e6ea;aspect-ratio:4/5;}
+.fb-imgbox.story{aspect-ratio:9/16;}
+.fb-imgbox img{width:100%;height:100%;object-fit:cover;display:block;}
+.fb-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#e4e6ea;color:#888;font-size:14px;gap:8px;min-height:160px;}
+.fb-placeholder .ph-icon{font-size:32px;}
+.fb-cta-bar{background:#f0f2f5;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.fb-hl{font-size:13px;font-weight:700;color:#1c1e21;}
+.fb-dom{font-size:11px;color:#65676b;margin-top:1px;}
+.fb-cta-btn{background:#e4e6eb;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:default;}
+.fb-eng{padding:6px 12px 8px;font-size:12px;color:#65676b;}
+.logo-ov{position:absolute;pointer-events:none;}
+
+/* Spinner */
+.spinner{width:20px;height:20px;border:2.5px solid var(--border);border-top-color:var(--navy);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+.spinner-row{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);padding:16px 0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* CARD BOTTOM ACTIONS */
+.card-acts{display:flex;gap:10px;padding:14px 18px;border-top:1px solid var(--border);background:#fafbfc;flex-wrap:wrap;align-items:center;}
+.btn-gen-img{background:#6b21a8;color:#fff;border:none;border-radius:7px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-gen-img:hover{background:#5a1a8a;}
+.btn-gen-img:disabled{background:#ddd;color:#999;cursor:not-allowed;}
+.btn-queue{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-queue:hover{background:#003870;}
+.btn-reject-card{background:#fce8e8;color:#c62828;border:1.5px solid #ef9a9a;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-reject-card:hover{background:#c62828;color:#fff;}
+.btn-dl{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;cursor:pointer;}
+.btn-dl:hover{background:#ddd;}
+
+/* STATUS BAR */
+#status-bar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--navy);padding:10px 26px;display:flex;align-items:center;gap:16px;font-size:14px;color:var(--muted);z-index:20;flex-wrap:wrap;}
+.sb-n{font-weight:700;}
+.sb-q{color:var(--navy);}
+.sb-a{color:#1e7e34;}
+.sb-r{color:#c62828;}
+
+/* BRIEF BAR */
+#brief-bar{background:#fff;border-bottom:1px solid var(--border);}
+#brief-summary{display:flex;align-items:center;gap:12px;padding:9px 24px;}
+#brief-summary-text{flex:1;font-size:14px;color:var(--muted);}
+#brief-summary strong{color:var(--text);}
+.btn-edit-brief{background:var(--bg);color:var(--navy);border:1.5px solid var(--border);border-radius:7px;padding:5px 14px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;}
+.btn-edit-brief:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+#brief-panel{display:none;padding:16px 24px 20px;border-top:1px solid var(--border);background:#f8f9fb;}
+#brief-panel.open{display:block;}
+.brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.brief-field label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:5px;}
+.brief-field input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;outline:none;color:var(--text);background:#fff;transition:border-color .15s;}
+.brief-field input:focus{border-color:var(--navy);}
+.brief-actions{margin-top:12px;display:flex;gap:8px;}
+.btn-save-brief{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:14px;font-weight:700;cursor:pointer;}
+.btn-close-brief{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:8px 16px;font-size:14px;cursor:pointer;}
+
+/* BRAIN PANEL */
+#btn-brain{background:#fff;color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:9px 14px;font-size:14px;cursor:pointer;white-space:nowrap;margin-left:auto;transition:.15s;}
+#btn-brain:hover{background:var(--bg);}
+#btn-brain.on{background:#f0ebff;color:#5a2ca0;border-color:#ce93d8;}
+#brain-panel{display:none;background:#f8f9fb;border-bottom:1px solid var(--border);padding:16px 24px 20px;}
+#brain-panel.open{display:block;}
+.brain-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#5a2ca0;margin-bottom:5px;}
+.brain-note{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+#brain-ta{width:100%;border:1.5px solid #ce93d8;border-radius:7px;padding:10px 12px;font-size:13px;font-family:inherit;resize:vertical;outline:none;color:var(--text);min-height:90px;background:#fff;}
+#brain-ta:focus{border-color:#5a2ca0;}
+.brain-acts{display:flex;gap:8px;margin-top:10px;}
+.btn-save-brain{background:#5a2ca0;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-reset-brain{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;}
+
+/* MODALS */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-ov.on{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:28px 32px;max-width:500px;width:calc(100% - 40px);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:16px;}
+.mrow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;gap:10px;}
+.mrow:last-of-type{border:none;}
+.mlbl{color:var(--muted);}
+.mval{font-weight:600;text-align:right;}
+.mval.g{color:#1e7e34;} .mval.b{color:var(--navy);} .mval.o{color:#e65100;}
+.mwarn{background:#fff8e1;border:1.5px solid #ffe082;border-radius:7px;padding:10px 14px;font-size:13px;color:#e65100;margin-top:14px;line-height:1.5;}
+.mact{display:flex;gap:10px;margin-top:16px;}
+.btn-confirm{background:#e8f8e8;color:#1e7e34;border:1.5px solid #b2dfb2;border-radius:7px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;flex:1;}
+.btn-confirm:hover{background:#1e7e34;color:#fff;}
+.btn-cancel{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:7px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;flex:1;}
+.teach-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.teach-tab{flex:1;padding:8px;border-radius:7px;border:1.5px solid var(--border);background:var(--bg);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
+.teach-tab.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+.teach-modal textarea{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;resize:vertical;font-family:inherit;margin-bottom:10px;display:block;color:var(--text);}
+.teach-modal textarea:focus{outline:none;border-color:var(--navy);}
+.teach-ref{font-size:13px;color:var(--text);background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:8px 12px;max-height:80px;overflow-y:auto;line-height:1.5;margin-bottom:10px;}
+.ctags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.ctag{background:var(--bg);border:1.5px solid var(--border);color:var(--muted);font-size:12px;padding:4px 10px;border-radius:999px;cursor:pointer;user-select:none;transition:.15s;}
+.ctag.on{background:#fce8e8;border-color:#ef9a9a;color:#c62828;}
+
+/* HEADER TAGLINE EDIT */
+#sku-title-wrap{display:inline-flex;align-items:center;gap:5px;}
+.hdr-edit-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:5px;opacity:0;transition:.15s;}
+#sku-title-wrap:hover .hdr-edit-btn{opacity:1;}
+
+@media(max-width:900px){
+  .split-body{flex-direction:column;}
+  .split-right{width:100%;border-top:1px solid var(--border);}
+}
+@media(max-width:640px){
+  .sku-btn{padding:12px 14px;font-size:12px;}
+  #gen-bar{flex-direction:column;align-items:stretch;}
+  #manual-idea-input{max-width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="gate" style="display:flex;position:fixed;inset:0;background:#f0f2f5;z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="background:#fff;border:1px solid #dde1e7;border-radius:14px;padding:40px 48px;text-align:center;max-width:360px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,.12);">
+    <div style="font-size:2rem;margin-bottom:8px">🖼️</div>
+    <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px;color:#cf102d">LACALUT® Australia</div>
+    <div style="font-size:14px;color:#65676b;margin-bottom:22px">Facebook Image Ads — authorised access only</div>
+    <input id="gate-pw" type="password" placeholder="Enter password" autocomplete="off"
+      style="width:100%;padding:10px 14px;border:2px solid #dde1e7;border-radius:8px;font-size:16px;outline:none;margin-bottom:10px;font-family:inherit;"
+      onkeydown="if(event.key==='Enter')doGate()">
+    <input id="gate-claude" type="password" placeholder="Claude API key (sk-ant-…)" autocomplete="off"
+      style="width:100%;padding:10px 14px;border:2px solid #dde1e7;border-radius:8px;font-size:14px;outline:none;margin-bottom:6px;font-family:inherit;"
+      onkeydown="if(event.key==='Enter')doGate()">
+    <input id="gate-gemini" type="password" placeholder="Gemini API key (AIzaSy…)" autocomplete="off"
+      style="width:100%;padding:10px 14px;border:2px solid #dde1e7;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;font-family:inherit;"
+      onkeydown="if(event.key==='Enter')doGate()">
+    <button onclick="doGate()" style="width:100%;padding:11px;background:#cf102d;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">Unlock</button>
+    <div id="gate-err" style="color:#c62828;font-size:13px;margin-top:10px;display:none">Incorrect password</div>
+  </div>
+</div>
+<script>
+(function(){
+  var H='ec4c88ca7f69534f10c0611c1ecd13e7c2cdf73e1b915e9fd0cf27ac10da43fa';
+  async function sha(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
+  var ck=localStorage.getItem('lc_claude_key'),gk=localStorage.getItem('lc_gem_key');
+  if(ck)document.getElementById('gate-claude').value=ck;
+  if(gk)document.getElementById('gate-gemini').value=gk;
+  if(localStorage.getItem('lac_auth')===H)document.getElementById('gate').style.display='none';
+  window.doGate=async function(){
+    var v=document.getElementById('gate-pw').value,h=await sha(v);
+    var ck2=document.getElementById('gate-claude').value.trim();
+    var gk2=document.getElementById('gate-gemini').value.trim();
+    if(h===H){
+      localStorage.setItem('lac_auth',H);
+      if(ck2)localStorage.setItem('lc_claude_key',ck2);
+      if(gk2)localStorage.setItem('lc_gem_key',gk2);
+      document.getElementById('gate').style.display='none';
+    }else{document.getElementById('gate-err').style.display='block';document.getElementById('gate-pw').value='';}
+  };
+})();
+</script>
+
+<!-- HEADER -->
+<header>
+  <span class="hdr-logo">LACALUT®</span>
+  <span class="hdr-badge">🖼️ Facebook Image Ads</span>
+  <span id="sku-title-wrap" class="hdr-title"><span id="sku-title">Flora — Probiotic bad breath formula · Women 25–45</span><button class="hdr-edit-btn" onclick="editTagline()" title="Edit description">✏️</button></span>
+  <span class="hdr-spacer"></span>
+</header>
+
+<!-- SKU TABS -->
+<div id="sku-bar"></div>
+
+<!-- BRIEF BAR -->
+<div id="brief-bar">
+  <div id="brief-summary">
+    <span id="brief-summary-text"><strong id="brief-sku-name">LACALUT® Flora</strong> · <span id="brief-aud-preview">Women 25–45</span></span>
+    <button class="btn-edit-brief" onclick="toggleBrief()">✏️ Edit Brief</button>
+  </div>
+  <div id="brief-panel">
+    <div class="brief-grid">
+      <div class="brief-field"><label>SKU Description</label><input type="text" id="brief-desc" placeholder="e.g. Probiotic toothpaste for bad breath"></div>
+      <div class="brief-field"><label>Target Audience</label><input type="text" id="brief-aud" placeholder="e.g. Women 25–45 with recurring bad breath"></div>
+      <div class="brief-field"><label>Key Claim / USP</label><input type="text" id="brief-claim" placeholder="e.g. Eliminates bacteria at the source"></div>
+      <div class="brief-field"><label>Tone Direction</label><input type="text" id="brief-tone" placeholder="e.g. Empowering, clinical, direct"></div>
+    </div>
+    <div class="brief-actions">
+      <button class="btn-save-brief" onclick="saveBrief()">💾 Save Brief</button>
+      <button class="btn-close-brief" onclick="toggleBrief()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGO BAR -->
+<div id="logo-bar">
+  <span id="logo-status" style="font-style:italic">No logo uploaded</span>
+  <label class="lu-btn">📎 Upload Logo<input type="file" accept="image/*" onchange="uploadLogo(event)" style="display:none"></label>
+  <img id="logo-thumb" src="" alt="">
+  <select id="logo-pos" onchange="applyLogoAll()"><option value="tl">↖ Top Left</option><option value="tr">↗ Top Right</option><option value="bl">↙ Bot Left</option><option value="br" selected>↘ Bot Right</option></select>
+  <select id="logo-sz" onchange="applyLogoAll()"><option value="15">S</option><option value="22" selected>M</option><option value="30">L</option></select>
+  <button class="lu-clear" onclick="clearLogo()">✕ Remove</button>
+</div>
+
+<!-- GENERATE BAR -->
+<div id="gen-bar">
+  <button id="btn-gen-ideas" onclick="generateIdeas()">✨ Generate 10 Ideas for <span id="gen-sku-lbl">FLORA</span></button>
+  <span class="gen-or">or</span>
+  <input type="text" id="manual-idea-input" placeholder="Describe your own idea… e.g. Person on a date, green breath cloud only visible to the audience">
+  <button id="btn-add-idea" onclick="addManualIdea()">+ Add My Idea</button>
+  <button id="btn-brain" onclick="toggleBrain()">⚙️ Edit Brain</button>
+  <div class="gen-hint">💡 Ideas are text-only first — approve a concept to build copy &amp; generate image</div>
+</div>
+
+<!-- BRAIN PANEL -->
+<div id="brain-panel">
+  <div class="brain-lbl">⚙️ Idea Generator Brain — <span id="brain-sku-lbl">FLORA</span></div>
+  <div class="brain-note">This is the full prompt sent to Claude when you click Generate Ideas. Edit to steer concept angles, add constraints, or change creative direction. Saved per SKU.</div>
+  <textarea id="brain-ta" rows="4" placeholder="Loading…"></textarea>
+  <div class="brain-acts">
+    <button class="btn-save-brain" onclick="saveBrain()">💾 Save Brain</button>
+    <button class="btn-reset-brain" onclick="resetBrain()">↩️ Reset to Default</button>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div id="cards-container">
+  <div class="empty-state" id="empty-state">
+    <div class="es-icon">🖼️</div>
+    <h3>Ready to create image ads</h3>
+    <p>Click <strong>Generate 10 Ideas</strong> above, or type your own concept.<br>Each idea starts as text — you approve before any image is generated.</p>
+  </div>
+</div>
+
+<!-- APPROVAL MODAL -->
+<div class="modal-ov" id="app-modal">
+  <div class="modal">
+    <h3>🚀 Queue for Meta Ads</h3>
+    <div class="mrow"><span class="mlbl">Creative</span><span class="mval" id="m-name">—</span></div>
+    <div class="mrow"><span class="mlbl">SKU</span><span class="mval b" id="m-sku">—</span></div>
+    <div class="mrow"><span class="mlbl">Ad Set</span><span class="mval g" id="m-adset">—</span></div>
+    <div class="mrow"><span class="mlbl">Format</span><span class="mval">Static Image (JPG/PNG)</span></div>
+    <div class="mrow"><span class="mlbl">Status</span><span class="mval o">PAUSED — not live until you enable it</span></div>
+    <div class="mwarn">⚠️ Saves to Supabase as <strong>ready_to_push</strong>. Run <code style="background:#fef9c3;padding:1px 4px;border-radius:3px;font-size:0.8em">push_to_meta.py</code> in Claude Code to push draft to Ads Manager.</div>
+    <div class="mact">
+      <button class="btn-cancel" onclick="closeApp()">Cancel</button>
+      <button class="btn-confirm" onclick="doApprove()">🚀 Confirm &amp; Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- TEACH MODAL -->
+<div class="modal-ov" id="teach-modal">
+  <div class="modal teach-modal" style="max-width:540px">
+    <h3>📚 Teach Claude</h3>
+    <div class="teach-tabs">
+      <button class="teach-tab" id="ttab-c" onclick="switchTab('c')">🎨 Creative Direction</button>
+      <button class="teach-tab" id="ttab-p" onclick="switchTab('p')">📝 Copy Style</button>
+    </div>
+    <div id="tsec-c">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.5">What's wrong with the concept and what should Claude try instead?</p>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin-bottom:6px">Quick tags</div>
+      <div class="ctags">
+        <span class="ctag" onclick="toggleTag(this)">Too stock</span><span class="ctag" onclick="toggleTag(this)">Wrong emotion</span><span class="ctag" onclick="toggleTag(this)">Not visceral</span><span class="ctag" onclick="toggleTag(this)">Wrong setting</span><span class="ctag" onclick="toggleTag(this)">Wrong lighting</span><span class="ctag" onclick="toggleTag(this)">Too generic</span><span class="ctag" onclick="toggleTag(this)">Not scroll-stopping</span><span class="ctag" onclick="toggleTag(this)">Too safe</span><span class="ctag" onclick="toggleTag(this)">Concept doesn't land</span>
+      </div>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin:10px 0 5px">What's wrong?</div>
+      <textarea id="tc-prob" rows="2" placeholder="e.g. Too happy, scene too busy..."></textarea>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin-bottom:5px">Direction instead</div>
+      <textarea id="tc-dir" rows="3" placeholder="e.g. Close-up face, dark moody lighting, visceral reaction..."></textarea>
+    </div>
+    <div id="tsec-p" style="display:none">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:12px;line-height:1.5">Paste your preferred version so Claude learns from it.</p>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin-bottom:5px">Current Copy</div>
+      <div class="teach-ref" id="teach-orig"></div>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin-bottom:5px">Your Preferred Version</div>
+      <textarea id="tc-pref" rows="4" placeholder="Paste your version here..."></textarea>
+      <div style="font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin-bottom:5px">Notes for Claude</div>
+      <textarea id="tc-notes" rows="2" placeholder="e.g. Shorter, more emotional hook..."></textarea>
+    </div>
+    <div class="mact">
+      <button class="btn-cancel" onclick="closeTeach()">Cancel</button>
+      <button class="btn-confirm" id="teach-save" onclick="doTeach()">💾 Save Training</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div id="status-bar">
+  <strong>Session:</strong>
+  <span class="sb-n sb-q" id="ct-queued">0</span> queued &nbsp;·&nbsp;
+  <span class="sb-n sb-a" id="ct-image">0</span> image ready &nbsp;·&nbsp;
+  <span class="sb-n sb-r" id="ct-rejected">0</span> rejected &nbsp;&nbsp;
+  <span id="total-lbl" style="color:var(--muted)">0 ideas</span>
+</div>
+
+<script>
+/* ── KEYS ── */
+var SUPA_URL='https://bfzvxxcsfxvgeblnkqne.supabase.co';
+var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+var CLAUDE_KEY=localStorage.getItem('lc_claude_key')||'';
+var GEM_KEY=localStorage.getItem('lc_gem_key')||'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
+
+/* ── SKU DATA ── */
+var SKUS={
+  aktiv:{name:'LACALUT® Aktiv',tab:'AKTIV',color:'#cf102d',
+    tagline:'Clinical gum treatment · Bleeding gums & gingivitis · Adults 35+',
+    sys:'You are a performance Facebook static image ads copywriter for LACALUT Aktiv — a clinical gum treatment toothpaste. Australian audience, adults 35+. The customer has bleeding gums and does not realise it is early gingivitis. Tone: clinical, direct, credible. Never salesy. Australian English. Return JSON only.',
+    ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Aktiv (clinical gum treatment, Australian adults 35+, bleeding gums / gingivitis). Use diverse angles: Social Shame, Fear/Stakes, Absurd Metaphor, Competitor Takedown, Authority/Science, Transformation, Curiosity Gap, Dark Humour, Relatable Moment, Aspirational Contrast. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence opening image hook), story (string, 2-3 sentences describing the concept), imagePrompt (string, detailed visual description for AI image gen).',
+    geminiStyle:'Clinical, dramatic lighting, dark background, close-up dental or product shot, high contrast, serious urgent mood',
+    campaignId:'120241478653830229',adsetId:'120245973238020229',adsetName:'Aktiv - Original',
+    productUrl:'https://lacalut.com.au/products/lacalut-aktiv-original-toothpaste'},
+  aktiv_herbal:{name:'LACALUT® Aktiv Herbal',tab:'AKTIV HERBAL',color:'#5a8a3c',
+    tagline:'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
+    sys:'You are a performance Facebook static image ads copywriter for LACALUT Aktiv Herbal — a clinical gum toothpaste with 9 medicinal herbs. Australian adults 35+. Lead with sensory experience AND clinical proof. Tone: elevated, warm, ingredient-led. Australian English. Return JSON only.',
+    ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Aktiv Herbal (clinical gum treatment with 9 medicinal herbs, Australian adults 35+). Each concept blends herbal aesthetics with clinical proof. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual description for AI image gen).',
+    geminiStyle:'Warm botanical aesthetic, medicinal herbs, lush greenery, apothecary feel, premium natural, soft earthy tones',
+    campaignId:'120241478653830229',adsetId:'120246084126920229',adsetName:'Aktiv Herbal / Gingivitis',
+    productUrl:'https://lacalut.com.au/products/lacalut-aktiv-herbal-toothpaste'},
+  flora:{name:'LACALUT® Flora',tab:'FLORA',color:'#2d8f4e',
+    tagline:'Probiotic bad breath formula · Women 25–45',
+    sys:'You are a performance Facebook static image ads copywriter for LACALUT Flora — a probiotic toothpaste for bad breath. Australian women 25-45. PAS structure: Problem (bacteria, not hygiene) → Agitate (mints just mask) → Solution (eliminates bacteria). Tone: empowering, clean, credible. Australian English. Return JSON only.',
+    ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Flora (probiotic bad breath toothpaste, Australian women 25-45). PAS: Problem (bad breath = bacteria) → Agitate (mints/sprays just mask) → Solution (Flora eliminates root-cause bacteria). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual description for AI image gen).',
+    geminiStyle:'Fresh, bright, clean wellness aesthetic, soft natural light, white or sage green tones, modern and premium, 1080x1350 portrait',
+    campaignId:'120241478653830229',adsetId:'120244410306410229',adsetName:'Flora / Bad Breath',
+    productUrl:'https://www.lacalut.com.au/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',
+    seeds:[
+      {id:'flora-1',title:'👥 The Social Distance',angle:'Social Shame',
+       hook:'They can smell what you can\'t see.',
+       story:'Bad breath isn\'t about brushing harder — it\'s caused by odour-producing bacteria that ordinary toothpaste misses entirely. LACALUT® Flora targets and eliminates these bacteria at the source.',
+       pt:'They can smell what you can\'t see.\n\nBad breath isn\'t about brushing harder — it\'s caused by odour-producing bacteria that ordinary toothpaste misses entirely.\n\nLACALUT® Flora targets and eliminates these bacteria at the source, restoring your mouth\'s natural balance.\n\n✅ 100 years of German clinical science\n✅ Probiotic formula — not a masking agent\n✅ Real results from the very first brush',
+       h1:'They Can Smell What You Can\'t',h2:'It\'s Not Hygiene. It\'s Bacteria.',h3:'German Science. Fresh Breath.',
+       desc:'Eliminates odour-producing bacteria at the source.',
+       img:'../flora-gemini-concepts/images/concept-1-social-distance.jpg'},
+      {id:'flora-2',title:'🏭 The Bacteria Factory',angle:'Absurd Metaphor',
+       hook:'Your mouth is running a sulfur factory — and regular toothpaste is just painting over it.',
+       story:'Persistent bad breath is caused by bacteria that produce hydrogen sulphide gas deep in your oral microbiome. LACALUT® Flora is clinically formulated to disrupt and eliminate these bacteria.',
+       pt:'Your mouth is running a sulfur factory — and regular toothpaste is just painting over it.\n\nThe real cause of persistent bad breath is bacteria that produce hydrogen sulphide gas deep in your oral microbiome.\n\nLACALUT® Flora is clinically formulated to disrupt and eliminate these odour-producing bacteria, not just mask what they leave behind.\n\n✅ German precision\n✅ Probiotic science\n✅ Actual fresh breath',
+       h1:'Your Mouth. Their Factory.',h2:'Mints Just Paint Over It.',h3:'Eliminate. Don\'t Mask.',
+       desc:'Clinically disrupts sulfur-producing bacteria.',
+       img:'../flora-gemini-concepts/images/concept-2-bacteria-factory.jpg'},
+      {id:'flora-3',title:'🌿 The Mint Lie',angle:'Competitor Takedown',
+       hook:'A mint is just perfume on a chemical leak.',
+       story:'When bad breath keeps coming back despite brushing, flossing, and mouthwash, the problem isn\'t your routine — it\'s the bacteria surviving it. LACALUT® Flora uses a clinically validated formula to eliminate odour-causing bacteria that others can\'t reach.',
+       pt:'A mint is just perfume on a chemical leak — and your mouth knows the difference.\n\nWhen bad breath keeps coming back despite brushing, flossing, and mouthwash, the problem isn\'t your routine. It\'s the bacteria surviving it.\n\nLACALUT® Flora uses a clinically validated formula to eliminate odour-causing bacteria that others can\'t reach.\n\n✅ Switch your toothpaste\n✅ Solve the real problem\n✅ Made in Germany',
+       h1:'Mints Lie. Flora Fixes.',h2:'The Bacteria Surviving Your Routine.',h3:'Switch. Solve. Done.',
+       desc:'Clinically validated formula targets bacteria others miss.',
+       img:'../flora-gemini-concepts/images/concept-3-mint-lie.jpg'},
+      {id:'flora-4',title:'☣️ The Biohazard Zone',angle:'Dark Humour',
+       hook:'Oral biohazard. Area under quarantine.',
+       story:'Persistent halitosis is caused by specific bacteria that colonise your gums and tongue, producing sulfur compounds with every breath. LACALUT® Flora is the clinical-grade formula designed to target and eliminate them at the source.',
+       pt:'Oral biohazard. Area under quarantine.\n\nIf your bad breath survives brushing, mints, and mouthwash — you\'re not fighting the right enemy.\n\nPersistent halitosis is caused by specific bacteria that colonise your gums and tongue, producing sulfur compounds with every breath.\n\nLACALUT® Flora is the clinical-grade formula designed to target and eliminate them at the source.\n\n✅ Germany\'s answer to the problem that won\'t go away',
+       h1:'Wrong Enemy. Wrong Weapon.',h2:'Clinical-Grade. Bacteria-Grade.',h3:'Finally. A Real Solution.',
+       desc:'Clinical-grade halitosis treatment. Made in Germany.',
+       img:'../flora-gemini-concepts/images/concept-4-biohazard-zone.jpg'},
+      {id:'flora-5',title:'🌩️ The Sulfur Forecast',angle:'Clever Metaphor',
+       hook:'Today\'s forecast: 100% chance of sulfur — unless you fight back at the source.',
+       story:'Most people with chronic bad breath brush twice a day and still can\'t shake it. That\'s because the problem isn\'t their routine — it\'s the bacteria that survive it. LACALUT® Flora clinically disrupts the hydrogen sulphide-producing bacteria that cause mouth odour.',
+       pt:'Today\'s forecast: 100% chance of sulfur — unless you fight back at the source.\n\nMost people with chronic bad breath brush twice a day and still can\'t shake it. That\'s because the problem isn\'t their routine — it\'s the bacteria that survive it.\n\nLACALUT® Flora clinically disrupts the hydrogen sulphide-producing bacteria that cause mouth odour, restoring balance from the very first brush.\n\n✅ Probiotic oral science from Germany\n✅ Available in Australia now',
+       h1:'100% Chance of Sulfur.',h2:'Your Routine Isn\'t Broken. Your Toothpaste Is.',h3:'Restore Balance. From First Brush.',
+       desc:'Probiotic oral science. 12-hour freshness. Made in Germany.',
+       img:'../flora-gemini-concepts/images/concept-5-sulfur-forecast.jpg'}
+    ]},
+  sensitive:{name:'LACALUT® Sensitive',tab:'SENSITIVE',color:'#004a88',
+    tagline:'Fast-acting sensitivity relief · Potassium nitrate formula',
+    sys:'You are a performance Facebook static image ads copywriter for LACALUT Sensitive — toothpaste for sensitive teeth. Australian adults avoiding hot/cold/sweet due to sharp pain. Lead with restored freedom and relief. Tone: warm, empathetic, solution-led. Australian English. Return JSON only.',
+    ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Sensitive (sensitive teeth toothpaste, Australian adults). Focus on: sharp pain → clinical solution → restored freedom. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual for AI image gen).',
+    geminiStyle:'Warm soft lifestyle moment, relief and joy, enjoying coffee or cold drink comfortably, gentle light, relatable',
+    campaignId:'',adsetId:'',adsetName:'Sensitive / Tooth Pain — adset not yet created',
+    productUrl:'https://lacalut.com.au'},
+  white_repair:{name:'LACALUT® White & Repair',tab:'WHITE & REPAIR',color:'#c9a84c',
+    tagline:'Hydroxyapatite enamel repair + whitening · Science-led',
+    sys:'You are a performance Facebook static image ads copywriter for LACALUT White & Repair — a remineralising whitening toothpaste. Australian adults 25-45 who want whiter teeth but distrust harsh bleaching. Lead with repair-from-within. Tone: smart, results-driven, premium. Australian English. Return JSON only.',
+    ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT White & Repair (enamel repair + whitening, Australian adults 25-45). Focus on: want whiter teeth but worried about enamel damage. Hydroxyapatite repairs from within while whitening. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual for AI image gen).',
+    geminiStyle:'Crisp white tones, premium minimalist, bright healthy smiles, clean product photography, aspirational',
+    campaignId:'',adsetId:'',adsetName:'White & Repair / Whitening — adset not yet created',
+    productUrl:'https://lacalut.com.au'}
+};
+
+/* ── STATE ── */
+var activeSku='flora';
+var cards={};
+var aiResults={};
+var pendApprove=null,pendTeach=null;
+var teachTab='c',teachReject=false,teachRType='c';
+var logoData=null;
+var cardIdx=0;
+var refImgs={};
+
+/* ── INIT ── */
+buildTabBar();
+loadSku('flora');
+loadBriefPanel('flora');
+refreshHeaderTagline();
+var sl=localStorage.getItem('lac_logo');
+if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
+
+/* ── HELPERS ── */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function gv(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
+
+/* ── TAB BAR ── */
+function buildTabBar(){
+  var bar=document.getElementById('sku-bar'),html='';
+  Object.keys(SKUS).forEach(function(k){
+    var s=SKUS[k],a=k===activeSku?' active':'';
+    var cnt=Object.values(cards).filter(function(c){return c.sku===k&&c.status!=='rejected';}).length;
+    var badge=cnt>0?'<span class="sku-count">'+cnt+'</span>':'';
+    html+='<button class="sku-btn'+a+'" style="--sku-color:'+s.color+'" id="stab-'+k+'" onclick="switchSku(\''+k+'\')">'
+      +'<span class="sku-dot"></span>'+s.tab+badge+'</button>';
+  });
+  bar.innerHTML=html;
+}
+
+function switchSku(sku){
+  activeSku=sku;
+  document.querySelectorAll('.sku-btn').forEach(function(b){b.classList.remove('active');});
+  var t=document.getElementById('stab-'+sku);if(t)t.classList.add('active');
+  document.getElementById('gen-sku-lbl').textContent=SKUS[sku].tab;
+  refreshHeaderTagline();
+  loadBriefPanel(sku);
+  cards={};aiResults={};refImgs={};
+  loadSku(sku);
+}
+
+function loadSku(sku){
+  var s=SKUS[sku];
+  if(sku==='flora'&&s.seeds){
+    s.seeds.forEach(function(c){
+      cards[c.id]={phase:'image',title:c.title,angle:c.angle,hook:c.hook,story:c.story,
+        pt:c.pt,h1:c.h1,h2:c.h2,h3:c.h3||'',desc:c.desc,
+        img:c.img||'',status:'none',sku:sku};
+    });
+  }
+  renderAll();
+}
+
+/* ── RENDER ── */
+function renderAll(){
+  var con=document.getElementById('cards-container');
+  var ids=Object.keys(cards);
+  if(!ids.length){
+    con.innerHTML='<div class="empty-state"><div class="es-icon">🖼️</div><h3>Ready to create image ads</h3><p>Click <strong>Generate 10 Ideas</strong> above, or type your own concept.<br>Each idea starts as text — you approve before any image is generated.</p></div>';
+    updateCounts();return;
+  }
+  con.innerHTML='';
+  ids.forEach(function(id){renderCard(id,true);});
+  updateCounts();
+  setTimeout(applyLogoAll,50);
+}
+
+function renderCard(id,append){
+  var c=cards[id];if(!c)return;
+  var s=SKUS[c.sku||activeSku];
+  var col=s?s.color:'#004a88';
+  var el=document.createElement('div');
+  el.id='card-'+id;
+  el.className='card'+(c.status==='queued'?' st-queued':c.status==='rejected'?' st-rejected':'');
+  if(c.phase==='concept')el.innerHTML=buildConceptHTML(id,c,col);
+  else el.innerHTML=buildImageHTML(id,c,col,s);
+  var con=document.getElementById('cards-container');
+  var existing=document.getElementById('card-'+id);
+  if(existing)con.replaceChild(el,existing);
+  else if(append===true)con.appendChild(el);
+  else con.insertBefore(el,con.firstChild);
+  setTimeout(function(){syncPreview(id);},20);
+}
+
+/* ── CONCEPT CARD ── */
+function buildConceptHTML(id,c,col){
+  return '<div class="card-hdr">'
+    +'<span class="phase-badge pb-concept">💡 Concept</span>'
+    +'<span class="card-title">'+esc(c.title)+'</span>'
+    +'<span class="card-angle">'+esc(c.angle)+'</span>'
+    +'</div>'
+    +'<div class="concept-body">'
+    +'<div class="concept-lbl">Opening Hook</div>'
+    +'<div class="concept-hook-text">'+esc(c.hook)+'</div>'
+    +'<div class="concept-story-lbl">What the ad does</div>'
+    +'<div class="concept-story">'+esc(c.story)+'</div>'
+    +'<div class="concept-edit" id="cedit-'+id+'">'
+    +'<div class="edit-lbl">Title</div><input type="text" class="edit-input" id="et-'+id+'" value="'+esc(c.title)+'">'
+    +'<div class="edit-lbl">Opening Hook</div><input type="text" class="edit-input" id="eh-'+id+'" value="'+esc(c.hook)+'">'
+    +'<div class="edit-lbl">What the Ad Does</div><textarea class="edit-input" id="es-'+id+'" rows="3">'+esc(c.story)+'</textarea>'
+    +'<div style="display:flex;gap:8px;margin-top:12px;">'
+    +'<button class="btn-save-edit" onclick="saveEdit(\''+id+'\')">💾 Save</button>'
+    +'<button class="btn-cancel-edit" onclick="cancelEdit(\''+id+'\')">✕ Cancel</button>'
+    +'</div></div>'
+    +'<div class="concept-actions">'
+    +'<button class="btn-approve" onclick="approveConcept(\''+id+'\')">✅ Approve — Build Copy</button>'
+    +'<button class="btn-edit-c" onclick="openEdit(\''+id+'\')">✏️ Edit</button>'
+    +'<button class="btn-regen" onclick="regenConcept(\''+id+'\')">🔄 Regenerate</button>'
+    +'<button class="btn-reject-c" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
+    +'</div></div>';
+}
+
+/* ── IMAGE CARD (split layout) ── */
+function buildImageHTML(id,c,col,s){
+  var gen=c.phase==='generating';
+  var q=c.status==='queued';
+  var pt=c.pt||'',h1=c.h1||'',h2=c.h2||'',h3=c.h3||'',desc=c.desc||'';
+  var imgSrc=c.img||'';
+  var imgContent=imgSrc
+    ?'<img src="'+esc(imgSrc)+'" id="img-'+id+'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="'+esc(c.title)+'">'
+    :'<div class="fb-placeholder" id="img-ph-'+id+'"><div class="ph-icon">🖼️</div><div>Image will appear here</div><div style="font-size:12px;margin-top:2px;color:#888">4:5 · 1080×1350px</div></div><img src="" id="img-'+id+'" style="display:none;width:100%;height:100%;object-fit:cover;" alt="">';
+
+  return '<div class="card-hdr">'
+    +'<span class="phase-badge '+(gen?'pb-generating':q?'pb-queued':'pb-image')+'">'+(gen?'⏳ Building Copy':q?'🚀 Queued':'🖼️ Image Ready')+'</span>'
+    +'<span class="card-title">'+esc(c.title)+'</span>'
+    +'<span class="card-angle">'+esc(c.angle)+'</span>'
+    +'</div>'
+    +'<div class="split-body">'
+    // LEFT — copy
+    +'<div class="split-left">'
+    +'<div class="field-sec">'
+    +'<div class="field-lbl">Primary Text <span class="char-note" id="ptc-'+id+'"></span></div>'
+    +'<textarea class="field-ta" id="pt-'+id+'" rows="7" oninput="syncPreview(\''+id+'\')" placeholder="'+(gen?'Generating copy…':'Primary text…')+'">'+esc(pt)+'</textarea>'
+    +'</div>'
+    +'<div class="field-sec"><div class="field-lbl">Headlines</div><div class="hls-group">'
+    +'<input type="text" class="field-in" id="h1-'+id+'" placeholder="Headline 1" value="'+esc(h1)+'" oninput="syncHl(\''+id+'\')">'
+    +'<input type="text" class="field-in" id="h2-'+id+'" placeholder="Headline 2" value="'+esc(h2)+'">'
+    +'<input type="text" class="field-in" id="h3-'+id+'" placeholder="Headline 3" value="'+esc(h3)+'">'
+    +'</div></div>'
+    +'<div class="field-sec"><div class="field-lbl">Description</div>'
+    +'<input type="text" class="field-in" id="desc-'+id+'" placeholder="One-line description" value="'+esc(desc)+'"></div>'
+    // Rewrite panel
+    +'<div class="ai-panel" id="rw-'+id+'">'
+    +'<div class="ai-panel-lbl">✍️ Rewrite Copy — Claude Sonnet</div>'
+    +'<textarea class="ai-in" id="rwi-'+id+'" rows="2" placeholder="What to change? e.g. More urgent · Shorter · Target working women"></textarea>'
+    +'<div class="ai-btns"><button class="btn-run" id="rwb-'+id+'" onclick="runRewrite(\''+id+'\')">✍️ Rewrite</button><button class="btn-close-p" onclick="togglePanel(\'rw\',\''+id+'\',false)">✕ Close</button></div>'
+    +'<div class="ai-result" id="rwr-'+id+'"><div class="ai-result-lbl">Claude suggests:</div><div class="ai-result-pre" id="rwp-'+id+'"></div>'
+    +'<div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptRewrite(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="discardAI(\'rwr\',\''+id+'\')">🗑 Discard</button></div></div>'
+    +'</div>'
+    // Image gen panel
+    +'<div class="img-panel-inner" id="imgpanel-'+id+'">'
+    +'<div class="img-panel-lbl">🖼️ Generate Image — Gemini · 1080×1350 portrait</div>'
+    +'<div style="font-size:12px;color:#6b21a8;margin-bottom:8px">Style: '+esc(s?s.geminiStyle:'')+'</div>'
+    +'<div class="ref-slots">'
+    +'<label class="ref-slot"><input type="file" accept="image/*" onchange="addRef(event,\''+id+'\',0)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-0">+ Style ref</div></label>'
+    +'<label class="ref-slot"><input type="file" accept="image/*" onchange="addRef(event,\''+id+'\',1)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-1">+ Comp ref</div></label>'
+    +'</div>'
+    +'<textarea class="ai-in" id="ipr-'+id+'" rows="2" placeholder="Additional direction (optional)…">'+esc(s?s.geminiStyle:'')+'</textarea>'
+    +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
+    +'<div id="ires-'+id+'" style="display:none"><img id="iprev-'+id+'" class="gen-img-preview" src="" alt="Generated"><div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptImg(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="runImgGen(\''+id+'\')">🔄 Retry</button><button class="btn-discard-ai" onclick="discardImg(\''+id+'\')">🗑 Discard</button></div></div>'
+    +'</div>'
+    +'<div class="copy-acts">'
+    +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
+    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🖼️ Generate Image</button>'
+    +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
+    +'</div>'
+    +'<div class="err-msg" id="err-'+id+'"></div>'
+    +'</div>'
+    // RIGHT — FB preview
+    +'<div class="split-right">'
+    +'<div class="preview-lbl">📱 Ad Preview</div>'
+    +'<div class="fmt-toggle">'
+    +'<button class="fmt-btn on" id="fmtf-'+id+'" onclick="setFmt(\''+id+'\',\'feed\',this)">📱 Feed 4:5</button>'
+    +'<button class="fmt-btn" id="fmts-'+id+'" onclick="setFmt(\''+id+'\',\'story\',this)">📲 Story 9:16</button>'
+    +'</div>'
+    +'<div class="fb-shell">'
+    +'<div class="fb-hdr"><div class="fb-av">L</div><div><div class="fb-page">LACALUT® Australia</div><div class="fb-spon">Sponsored · 🌍</div></div><div class="fb-dots">···</div></div>'
+    +'<div class="fb-pt" id="fbpt-'+id+'">'+esc(pt?pt.split('\n')[0]:'Primary text will appear here')+'</div>'
+    +'<div class="fb-imgbox" id="vbox-'+id+'">'
+    +imgContent
+    +'<div class="logo-ov-wrap" id="lov-'+id+'"></div>'
+    +'</div>'
+    +'<div class="fb-cta-bar"><div><div class="fb-hl" id="fbhl-'+id+'">'+esc(h1||'Headline')+'</div><div class="fb-dom">lacalut.com.au</div></div><button class="fb-cta-btn">Shop Now</button></div>'
+    +'<div class="fb-eng">👍 ❤️ 😮 &nbsp;1.2K &nbsp;·&nbsp; 47 comments &nbsp;·&nbsp; 23 shares</div>'
+    +'</div></div></div>'
+    // BOTTOM
+    +'<div class="card-acts">'
+    +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>'
+        :'<button class="btn-gen-img" onclick="toggleImgPanel(\''+id+'\',true)">🖼️ Generate Image</button>')
+    +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>🚀 Queued</button>'
+       :'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">🚀 Approve &amp; Queue</button>')
+    +'<button class="btn-reject-card" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
+    +(imgSrc?'<button class="btn-dl" onclick="dlImg(\''+id+'\')">📥 Download</button>':'')
+    +'</div>';
+}
+
+/* ── FORMAT TOGGLE ── */
+function setFmt(id,fmt,btn){
+  var box=document.getElementById('vbox-'+id);
+  if(box)box.className='fb-imgbox'+(fmt==='story'?' story':'');
+  document.querySelectorAll('#card-'+id+' .fmt-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn)btn.classList.add('on');
+}
+
+/* ── PREVIEW SYNC ── */
+function syncPreview(id){
+  var ta=document.getElementById('pt-'+id);if(!ta)return;
+  var fbpt=document.getElementById('fbpt-'+id);if(fbpt)fbpt.textContent=ta.value.split('\n')[0]||'';
+  var ctr=document.getElementById('ptc-'+id);if(ctr)ctr.textContent='('+ta.value.length+' chars)';
+}
+function syncHl(id){
+  var hl=document.getElementById('h1-'+id),fbhl=document.getElementById('fbhl-'+id);
+  if(hl&&fbhl)fbhl.textContent=hl.value;
+}
+
+/* ── GENERATE IDEAS ── */
+async function generateIdeas(){
+  var s=SKUS[activeSku];
+  var btn=document.getElementById('btn-gen-ideas');
+  btn.disabled=true;btn.innerHTML='⏳ Generating…';
+  if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';btn.disabled=false;return;}
+  try{
+    var prompt=localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP;
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var ideas=JSON.parse(raw);
+    if(!Array.isArray(ideas))throw new Error('Expected array');
+    Object.keys(cards).forEach(function(id){if(cards[id].phase==='concept')delete cards[id];});
+    ideas.slice(0,10).forEach(function(idea){
+      var id='idea-'+(++cardIdx);
+      cards[id]={phase:'concept',title:idea.title||('💡 Concept '+(cardIdx)),angle:idea.angle||'',hook:idea.hook||'',story:idea.story||'',status:'none',sku:activeSku,imagePrompt:idea.imagePrompt||''};
+    });
+    renderAll();
+  }catch(err){alert('❌ Error: '+err.message);}
+  finally{btn.disabled=false;btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';}
+}
+
+/* ── ADD MANUAL IDEA ── */
+async function addManualIdea(){
+  var inputEl=document.getElementById('manual-idea-input');
+  var text=inputEl.value.trim();if(!text){alert('Describe your idea first.');return;}
+  if(!CLAUDE_KEY){alert('Enter your Claude API key first.');return;}
+  var btn=document.getElementById('btn-add-idea');
+  btn.textContent='⏳ Expanding…';btn.disabled=true;
+  try{
+    var s=SKUS[activeSku];
+    var msg='Expand this rough static image ad idea into a full concept for '+s.name+'.\nRough idea: "'+text+'"\nReturn ONLY valid JSON: {"title":"engaging title with emoji","angle":"3-5 word creative angle","hook":"one visceral sentence describing the image hook","story":"2-3 sentences describing the concept and what it communicates","imagePrompt":"detailed visual description for AI image generation"}';
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,system:s.sys,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var r=JSON.parse(raw);
+    var id='idea-'+(++cardIdx);
+    cards[id]={phase:'concept',title:r.title||('💡 '+text.substring(0,50)),angle:r.angle||'Custom',hook:r.hook||text,story:r.story||'',status:'none',sku:activeSku,imagePrompt:r.imagePrompt||''};
+    var es=document.getElementById('empty-state');if(es)es.remove();
+    renderCard(id,false);inputEl.value='';updateCounts();
+  }catch(err){
+    var id='idea-'+(++cardIdx);
+    cards[id]={phase:'concept',title:'💡 '+text.substring(0,50),angle:'Custom',hook:text,story:'Custom concept. Edit to refine, then Approve.',status:'none',sku:activeSku,imagePrompt:''};
+    var es=document.getElementById('empty-state');if(es)es.remove();
+    renderCard(id,false);inputEl.value='';updateCounts();
+  }
+  finally{btn.textContent='+ Add My Idea';btn.disabled=false;}
+}
+
+/* ── CONCEPT EDIT ── */
+function openEdit(id){var el=document.getElementById('cedit-'+id);if(el)el.classList.add('open');}
+function cancelEdit(id){var el=document.getElementById('cedit-'+id);if(el)el.classList.remove('open');}
+function saveEdit(id){
+  var t=document.getElementById('et-'+id),h=document.getElementById('eh-'+id),s=document.getElementById('es-'+id);
+  if(t)cards[id].title=t.value.trim();
+  if(h)cards[id].hook=h.value.trim();
+  if(s)cards[id].story=s.value.trim();
+  renderCard(id);
+}
+
+/* ── APPROVE CONCEPT → COPY ── */
+function approveConcept(id){
+  cards[id].phase='generating';
+  renderCard(id);updateCounts();
+  autoGenCopy(id);
+}
+
+async function autoGenCopy(id){
+  var c=cards[id];var s=SKUS[c.sku||activeSku];
+  try{
+    if(!CLAUDE_KEY)throw new Error('No Claude API key');
+    var msg='Write a Facebook static image ad for the concept: "'+c.title+'"\nAngle: '+c.angle+'\nHook: '+c.hook+'\nConcept: '+c.story
+      +'\n\nReturn ONLY valid JSON:\n{"primary_text":"3-5 sentences: hook → problem agitation → solution → proof → CTA. Include emoji. Australian English.","h1":"punchy headline under 30 chars","h2":"alternative headline","h3":"third headline","description":"one sentence"}';
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.sys,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var r=JSON.parse(raw);
+    Object.assign(cards[id],{pt:r.primary_text||'',h1:r.h1||'',h2:r.h2||'',h3:r.h3||'',desc:r.description||'',phase:'image'});
+    renderCard(id);updateCounts();
+    setTimeout(function(){syncPreview(id);},50);
+  }catch(err){
+    cards[id].phase='image';renderCard(id);
+    var e2=document.getElementById('err-'+id);
+    if(e2){e2.style.display='block';e2.textContent='⚠️ Auto-copy failed: '+err.message+'. Edit fields manually.';}
+  }
+}
+
+/* ── REGENERATE CONCEPT ── */
+async function regenConcept(id){
+  var c=cards[id];var s=SKUS[c.sku||activeSku];
+  var el=document.getElementById('card-'+id);if(el)el.style.opacity='.5';
+  if(!CLAUDE_KEY){if(el)el.style.opacity='1';alert('Enter your Claude API key first.');return;}
+  try{
+    var msg='Generate ONE new Facebook static image ad concept for '+s.name+'. Different angle from: "'+c.title+'". Return ONLY valid JSON: {"title":"string with emoji","angle":"3-5 words","hook":"one sentence","story":"2-3 sentences","imagePrompt":"visual description for AI image gen"}';
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var r=JSON.parse(raw);
+    Object.assign(cards[id],{title:r.title,angle:r.angle,hook:r.hook,story:r.story,imagePrompt:r.imagePrompt||''});
+    renderCard(id);
+  }catch(err){if(el)el.style.opacity='1';alert('❌ '+err.message);}
+}
+
+/* ── REJECT ── */
+function rejectCard(id){
+  var el=document.getElementById('card-'+id);
+  if(el){el.style.transition='opacity .3s';el.style.opacity='0';
+    setTimeout(function(){cards[id].status='rejected';renderCard(id);updateCounts();},300);}
+  else{cards[id].status='rejected';updateCounts();}
+}
+
+/* ── PANELS ── */
+function togglePanel(type,id,open){
+  var p=document.getElementById(type+'-'+id);if(!p)return;
+  p.className='ai-panel'+(open?' open':'');
+  if(!open){var r=document.getElementById(type+'r-'+id);if(r)r.classList.remove('open');}
+}
+function toggleImgPanel(id,open){
+  var p=document.getElementById('imgpanel-'+id);if(!p)return;
+  p.className='img-panel-inner'+(open?' open':'');
+}
+
+/* ── REWRITE COPY ── */
+async function runRewrite(id){
+  var s=SKUS[cards[id]&&cards[id].sku||activeSku];
+  var input=gv('rwi-'+id);if(!input){alert('Describe what to change first.');return;}
+  if(!CLAUDE_KEY){alert('Enter your Claude API key first.');return;}
+  var btn=document.getElementById('rwb-'+id),resBox=document.getElementById('rwr-'+id);
+  btn.textContent='⏳…';btn.disabled=true;resBox.classList.remove('open');
+  var pt=gv('pt-'+id),h1=gv('h1-'+id),h2=gv('h2-'+id),h3=gv('h3-'+id),desc=gv('desc-'+id);
+  var msg='Creative: "'+esc(cards[id].title)+'"\nCurrent PT: '+pt+'\nH1: '+h1+'\nH2: '+h2+'\nH3: '+h3+'\nDesc: '+desc+'\nInstruction: '+input+'\nReturn ONLY valid JSON: {"primary_text":"...","h1":"...","h2":"...","h3":"...","description":"..."}';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.sys,messages:[{role:'user',content:msg}]})});
+    var data=await res.json();
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    aiResults[id+'_rw']=JSON.parse(raw);
+    var r=aiResults[id+'_rw'];
+    document.getElementById('rwp-'+id).textContent='PT:\n'+(r.primary_text||'')+'\n\nH1: '+(r.h1||'')+'\nH2: '+(r.h2||'')+'\nH3: '+(r.h3||'')+'\nDesc: '+(r.description||'');
+    resBox.classList.add('open');
+  }catch(err){alert('❌ '+err.message);}
+  finally{btn.textContent='✍️ Rewrite';btn.disabled=false;}
+}
+function acceptRewrite(id){
+  var r=aiResults[id+'_rw'];if(!r)return;
+  [['pt-'+id,r.primary_text],['h1-'+id,r.h1],['h2-'+id,r.h2],['h3-'+id,r.h3],['desc-'+id,r.description]].forEach(function(f){
+    var el=document.getElementById(f[0]);if(el&&f[1])el.value=f[1];
+  });
+  syncPreview(id);syncHl(id);
+  discardAI('rwr',id);
+}
+function discardAI(prefix,id){var r=document.getElementById(prefix+'-'+id);if(r)r.classList.remove('open');}
+
+/* ── IMAGE GENERATION ── */
+function addRef(ev,id,slot){
+  var f=ev.target.files[0];if(!f)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    if(!refImgs[id])refImgs[id]=[null,null];
+    refImgs[id][slot]=e.target.result;
+    var el=document.getElementById('rs-'+id+'-'+slot);
+    if(el)el.innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:4px">';
+  };
+  reader.readAsDataURL(f);
+}
+
+async function runImgGen(id){
+  var s=SKUS[cards[id]&&cards[id].sku||activeSku];
+  var prompt=gv('ipr-'+id)||(s?s.geminiStyle:'');
+  var conceptPrompt=(cards[id]&&cards[id].imagePrompt)||'';
+  var btn=document.getElementById('igb-'+id),resEl=document.getElementById('ires-'+id);
+  if(!GEM_KEY){alert('Enter your Gemini API key in the password gate.');return;}
+  btn.textContent='⏳ Generating…';btn.disabled=true;
+  if(resEl)resEl.style.display='none';
+  var refs=refImgs[id]||[];
+  var parts=[];
+  for(var i=0;i<refs.length;i++){
+    if(!refs[i])continue;
+    var sp=refs[i].split(',');
+    var mime=(sp[0].match(/:([^;]+);/)||[])[1]||'image/jpeg';
+    parts.push({inlineData:{mimeType:mime,data:sp[1]}});
+  }
+  var fullPrompt='Generate a high-quality Facebook ad image for '+esc(s?s.name:'')+'. '
+    +(conceptPrompt?'Visual concept: '+conceptPrompt+'. ':'')
+    +'Style: '+prompt+'. '
+    +'1080x1350 portrait format, 4:5 aspect ratio. Scroll-stopping, clinically credible. No text overlays on the image.';
+  parts.push({text:fullPrompt});
+  try{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key='+GEM_KEY,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:parts}],generationConfig:{responseModalities:['IMAGE','TEXT']}})});
+    if(!res.ok){var e=await res.json();throw new Error((e.error&&e.error.message)||'HTTP '+res.status);}
+    var data=await res.json();
+    var imgPart=null;
+    var cparts=(data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[];
+    for(var j=0;j<cparts.length;j++){if(cparts[j].inlineData){imgPart=cparts[j];break;}}
+    if(!imgPart)throw new Error('No image returned from Gemini');
+    document.getElementById('iprev-'+id).src='data:'+imgPart.inlineData.mimeType+';base64,'+imgPart.inlineData.data;
+    if(resEl)resEl.style.display='block';
+  }catch(err){alert('❌ Image gen failed: '+err.message);}
+  finally{btn.textContent='🖼️ Generate';btn.disabled=false;}
+}
+
+function acceptImg(id){
+  var prev=document.getElementById('iprev-'+id);
+  if(!prev||!prev.src)return;
+  cards[id].img=prev.src;
+  var mainImg=document.getElementById('img-'+id);
+  var ph=document.getElementById('img-ph-'+id);
+  if(mainImg){mainImg.src=prev.src;mainImg.style.display='block';}
+  if(ph)ph.style.display='none';
+  discardImg(id);
+  applyLogoAll();
+}
+function discardImg(id){var r=document.getElementById('ires-'+id);if(r)r.style.display='none';}
+function dlImg(id){
+  var img=document.getElementById('img-'+id);
+  if(!img||!img.src)return;
+  var a=document.createElement('a');a.href=img.src;a.download='lacalut-'+id+'.jpg';a.click();
+}
+
+/* ── APPROVAL ── */
+function showApp(id){
+  pendApprove=id;var c=cards[id];var s=SKUS[c.sku||activeSku];
+  document.getElementById('m-name').textContent=c.title||id;
+  document.getElementById('m-sku').textContent=s.name;
+  document.getElementById('m-adset').textContent=s.adsetName;
+  document.getElementById('app-modal').classList.add('on');
+}
+function closeApp(){document.getElementById('app-modal').classList.remove('on');pendApprove=null;}
+async function doApprove(){
+  var id=pendApprove;var c=cards[id];var s=SKUS[c.sku||activeSku];
+  var btn=document.querySelector('#app-modal .btn-confirm');
+  btn.textContent='⏳ Saving…';btn.disabled=true;
+  var pt=gv('pt-'+id),h1=gv('h1-'+id),desc=gv('desc-'+id);
+  var imgEl=document.getElementById('img-'+id);
+  var imageUrl=c.img||(imgEl?imgEl.src:'');
+  try{
+    var payload=[{sku:c.sku||activeSku,creative_name:c.title||id,creative_type:'image',
+      adset_id:s.adsetId,adset_name:s.adsetName,campaign_id:s.campaignId,template_ad_id:'',
+      primary_text:pt,headline:h1,description:desc,image_url:imageUrl,status:'ready_to_push'}];
+    var res=await fetch(SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify(payload)});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    closeApp();cards[id].status='queued';renderCard(id);updateCounts();
+  }catch(err){btn.textContent='🚀 Confirm & Queue';btn.disabled=false;alert('❌ '+err.message);}
+}
+
+/* ── LOGO ── */
+function uploadLogo(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    logoData=e.target.result;localStorage.setItem('lac_logo',logoData);
+    document.getElementById('logo-status').textContent='Logo: '+f.name;
+    var t=document.getElementById('logo-thumb');t.src=logoData;t.style.display='';
+    applyLogoAll();
+  };r.readAsDataURL(f);
+}
+function clearLogo(){
+  logoData=null;localStorage.removeItem('lac_logo');
+  document.getElementById('logo-status').textContent='No logo uploaded';
+  document.getElementById('logo-thumb').style.display='none';
+  document.querySelectorAll('.logo-ov-wrap').forEach(function(w){w.innerHTML='';});
+}
+function applyLogoAll(){
+  var src=logoData||localStorage.getItem('lac_logo');if(!src)return;
+  if(!logoData){logoData=src;var t=document.getElementById('logo-thumb');t.src=src;t.style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
+  var pos=document.getElementById('logo-pos').value||'br';
+  var sz=document.getElementById('logo-sz').value||'22';
+  var posStyle=pos==='tl'?'top:6px;left:6px':pos==='tr'?'top:6px;right:6px':pos==='bl'?'bottom:6px;left:6px':'bottom:6px;right:6px';
+  document.querySelectorAll('.logo-ov-wrap').forEach(function(w){
+    w.innerHTML='<img src="'+src+'" class="logo-ov" style="position:absolute;'+posStyle+';width:'+sz+'%;pointer-events:none;">';
+  });
+}
+
+/* ── TEACH ── */
+function switchTab(t){
+  teachTab=t;
+  document.getElementById('tsec-c').style.display=t==='c'?'':'none';
+  document.getElementById('tsec-p').style.display=t==='p'?'':'none';
+  document.getElementById('ttab-c').className='teach-tab'+(t==='c'?' on':'');
+  document.getElementById('ttab-p').className='teach-tab'+(t==='p'?' on':'');
+  var btn=document.getElementById('teach-save');
+  if(btn)btn.textContent=teachReject?(t==='c'?'💾 Save & Reject Creative':'💾 Save & Reject Copy'):'💾 Save Training';
+}
+function toggleTag(el){el.classList.toggle('on');}
+function openTeach(id,tab,reject){
+  pendTeach=id;teachReject=!!reject;teachRType=tab||'c';
+  document.getElementById('teach-orig').textContent=gv('pt-'+id);
+  document.getElementById('tc-pref').value='';document.getElementById('tc-notes').value='';
+  document.getElementById('tc-prob').value='';document.getElementById('tc-dir').value='';
+  document.querySelectorAll('.ctag.on').forEach(function(t){t.classList.remove('on');});
+  switchTab(teachRType);
+  document.getElementById('teach-modal').classList.add('on');
+}
+function closeTeach(){
+  document.getElementById('teach-modal').classList.remove('on');
+  var id=pendTeach,rej=teachReject,rt=teachRType;
+  pendTeach=null;teachReject=false;
+  if(id&&rej){cards[id].status='rejected';renderCard(id);updateCounts();}
+}
+async function doTeach(){
+  var id=pendTeach;var c=cards[id];
+  var saveBtn=document.getElementById('teach-save');
+  saveBtn.textContent='⏳…';saveBtn.disabled=true;
+  var payload=null;
+  if(teachTab==='c'){
+    var prob=document.getElementById('tc-prob').value.trim();
+    var dir=document.getElementById('tc-dir').value.trim();
+    var tags=Array.from(document.querySelectorAll('.ctag.on')).map(function(t){return t.textContent;}).join(', ');
+    var notes=[tags,prob].filter(Boolean).join(' · ');
+    if(notes||dir)payload=[{sku:c.sku||activeSku,creative_name:c.title||id,feedback_type:'creative',original_copy:null,preferred_copy:null,visual_direction:dir,notes:notes}];
+  }else{
+    var pref=document.getElementById('tc-pref').value.trim();
+    var n2=document.getElementById('tc-notes').value.trim();
+    var orig=gv('pt-'+id);
+    if(pref||n2)payload=[{sku:c.sku||activeSku,creative_name:c.title||id,feedback_type:'copy',original_copy:orig,preferred_copy:pref,visual_direction:null,notes:n2}];
+  }
+  try{
+    if(payload){
+      var res=await fetch(SUPA_URL+'/rest/v1/ad_training',{method:'POST',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(payload)});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+    }
+    document.getElementById('teach-modal').classList.remove('on');
+    var rej=teachReject,rt=teachRType;
+    pendTeach=null;teachReject=false;
+    if(rej){cards[id].status='rejected';renderCard(id);updateCounts();}
+  }catch(err){
+    saveBtn.textContent=teachReject?'💾 Save & Reject':'💾 Save Training';saveBtn.disabled=false;
+    alert('❌ '+err.message);
+  }
+}
+
+/* ── COUNTS ── */
+function updateCounts(){
+  var cs=Object.values(cards);
+  document.getElementById('ct-queued').textContent=cs.filter(function(c){return c.status==='queued';}).length;
+  document.getElementById('ct-image').textContent=cs.filter(function(c){return c.phase==='image';}).length;
+  document.getElementById('ct-rejected').textContent=cs.filter(function(c){return c.status==='rejected';}).length;
+  document.getElementById('total-lbl').textContent=cs.length+' idea'+(cs.length===1?'':'s');
+  buildTabBar();
+}
+
+/* ── BRIEF ── */
+function getBrief(sku){
+  return{desc:localStorage.getItem('lac_img_brief_desc_'+sku)||'',aud:localStorage.getItem('lac_img_brief_aud_'+sku)||'',claim:localStorage.getItem('lac_img_brief_claim_'+sku)||'',tone:localStorage.getItem('lac_img_brief_tone_'+sku)||''};
+}
+function loadBriefPanel(sku){
+  var s=SKUS[sku],b=getBrief(sku);
+  var d=document.getElementById('brief-desc');if(d)d.value=b.desc||(s.tagline||'');
+  var a=document.getElementById('brief-aud');if(a)a.value=b.aud||'';
+  var cl=document.getElementById('brief-claim');if(cl)cl.value=b.claim||'';
+  var t=document.getElementById('brief-tone');if(t)t.value=b.tone||'';
+  var nm=document.getElementById('brief-sku-name');if(nm)nm.textContent=s.name;
+  var ap=document.getElementById('brief-aud-preview');if(ap)ap.textContent=b.aud||(s.tagline||'');
+  var bl=document.getElementById('brain-sku-lbl');if(bl)bl.textContent=s.tab;
+}
+function toggleBrief(){document.getElementById('brief-panel').classList.toggle('open');}
+function saveBrief(){
+  var sku=activeSku;
+  ['desc','aud','claim','tone'].forEach(function(k){
+    var v=document.getElementById('brief-'+k).value.trim();
+    if(v)localStorage.setItem('lac_img_brief_'+k+'_'+sku,v);else localStorage.removeItem('lac_img_brief_'+k+'_'+sku);
+  });
+  refreshHeaderTagline();
+  var ap=document.getElementById('brief-aud-preview');
+  if(ap)ap.textContent=localStorage.getItem('lac_img_brief_aud_'+sku)||(SKUS[sku].tagline||'');
+  document.getElementById('brief-panel').classList.remove('open');
+}
+function refreshHeaderTagline(){
+  var sku=activeSku,s=SKUS[sku];
+  var desc=localStorage.getItem('lac_img_brief_desc_'+sku)||s.tagline||'';
+  var el=document.getElementById('sku-title');
+  if(el)el.textContent=s.name+' — '+desc;
+}
+
+/* ── BRAIN ── */
+function toggleBrain(){
+  var p=document.getElementById('brain-panel'),btn=document.getElementById('btn-brain');
+  var open=p.classList.toggle('open');btn.classList.toggle('on',open);
+  if(open){
+    var sku=activeSku,s=SKUS[sku];
+    var saved=localStorage.getItem('lac_img_brain_'+sku);
+    document.getElementById('brain-ta').value=saved||s.ideaP;
+    document.getElementById('brain-sku-lbl').textContent=s.tab;
+  }
+}
+function saveBrain(){
+  var sku=activeSku,val=document.getElementById('brain-ta').value.trim();
+  if(val)localStorage.setItem('lac_img_brain_'+sku,val);else localStorage.removeItem('lac_img_brain_'+sku);
+  document.getElementById('brain-panel').classList.remove('open');
+  document.getElementById('btn-brain').classList.remove('on');
+}
+function resetBrain(){
+  var sku=activeSku,s=SKUS[sku];
+  localStorage.removeItem('lac_img_brain_'+sku);
+  document.getElementById('brain-ta').value=s.ideaP;
+}
+
+/* ── TAGLINE INLINE EDIT ── */
+function editTagline(){
+  var wrap=document.getElementById('sku-title-wrap');
+  var cur=localStorage.getItem('lac_img_brief_desc_'+activeSku)||SKUS[activeSku].tagline||'';
+  var inp=document.createElement('input');
+  inp.value=cur;
+  inp.style.cssText='border:1.5px solid var(--navy);border-radius:6px;padding:4px 10px;font-size:14px;font-weight:600;color:var(--text);font-family:inherit;outline:none;min-width:260px;';
+  function save(){
+    var v=inp.value.trim()||SKUS[activeSku].tagline;
+    localStorage.setItem('lac_img_brief_desc_'+activeSku,v);
+    refreshHeaderTagline();
+    wrap.innerHTML='<span id="sku-title">'+SKUS[activeSku].name+' — '+v+'</span><button class="hdr-edit-btn" onclick="editTagline()" title="Edit description">✏️</button>';
+  }
+  inp.onblur=save;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=cur;inp.blur();}};
+  wrap.innerHTML='';wrap.appendChild(inp);inp.focus();inp.select();
+}
+</script>
+</body>
+</html>
