@@ -317,6 +317,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
   </div>
   <div class="header-right">
+    <button class="settings-btn" onclick="resetWeek()" style="color:var(--red);border-color:#f5c2c7">🗑️ New Week</button>
     <button class="settings-btn" onclick="openSettings()">⚙️ Settings</button>
   </div>
 </header>
@@ -562,12 +563,20 @@ let STATE = {
   posts: DAYS.map((_,i) => freshPost(i))
 };
 
+function getStateKey() {
+  const d = new Date();
+  const dow = d.getDay();
+  const diff = d.getDate() - dow + (dow === 0 ? -6 : 1);
+  const mon = new Date(d); mon.setDate(diff);
+  return 'lc_social_state_' + mon.toISOString().slice(0,10);
+}
+
 function saveState() {
-  try { localStorage.setItem('lc_social_state_week1', JSON.stringify(STATE)); } catch(e){}
+  try { localStorage.setItem(getStateKey(), JSON.stringify(STATE)); } catch(e){}
 }
 function loadState() {
   try {
-    const saved = localStorage.getItem('lc_social_state_week1');
+    const saved = localStorage.getItem(getStateKey());
     if (!saved) return;
     const parsed = JSON.parse(saved);
     if (parsed && Array.isArray(parsed.posts) && parsed.posts.length === 7) {
@@ -576,17 +585,30 @@ function loadState() {
   } catch(e){}
 }
 
+function resetWeek() {
+  if (!confirm('Clear all posts and start a fresh week?')) return;
+  localStorage.removeItem(getStateKey());
+  STATE = { weekOf: getWeekLabel(), platform: STATE.platform, posts: DAYS.map((_,i) => freshPost(i)) };
+  saveState();
+  document.getElementById('week-label').textContent = STATE.weekOf;
+  renderCalendarStrip();
+  renderAllPosts();
+}
+
 /* ═══════════════════════════════════════════
    CALENDAR STRIP
 ═══════════════════════════════════════════ */
 function renderCalendarStrip() {
   const strip = document.getElementById('week-strip');
+  const todayDow = new Date().getDay();
+  const todayIdx = todayDow === 0 ? 6 : todayDow - 1;
   strip.innerHTML = DAYS.map((d,i) => {
     const post = STATE.posts[i];
     const s = post.status;
     const dotClass = s === 'empty' ? '' : 's-' + (s === 'concept' ? 'concept' : s === 'image_generated' ? 'image' : s === 'approved' ? 'approved' : s === 'posted' ? 'posted' : '');
-    return `<div class="day-tile" id="tile-${i}" onclick="scrollToPost(${i})">
-      <div class="day-name">${d.short}</div>
+    const todayClass = i === todayIdx ? 'active-day' : '';
+    return `<div class="day-tile ${todayClass}" id="tile-${i}" onclick="scrollToPost(${i})">
+      <div class="day-name">${d.short}${i === todayIdx ? ' <span style="font-size:9px;color:var(--navy)">TODAY</span>' : ''}</div>
       <div class="day-type-label">${d.emoji} ${POST_TYPE_BRIEFS[d.type].label}</div>
       <div class="status-dot ${dotClass}"></div>
     </div>`;
@@ -872,6 +894,7 @@ function onHashtagsChange(idx, value) {
 function updateConceptCaption(idx, value) {
   if (STATE.posts[idx].concept) {
     STATE.posts[idx].concept.draft_caption = value;
+    saveState();
   }
 }
 
@@ -921,6 +944,11 @@ function updateLivePreview(idx) {
     const t = cap.length > 125 ? cap.substring(0,125)+'…' : cap;
     igCapEl.innerHTML = '<span class="ig-caption-user">lacalut.australia</span> ' + escHtml(t) + (cap.length > 125 ? ' <button class="ig-more-link">more</button>' : '');
   }
+  // Update hashtags in both previews
+  const fbHashEl = card.querySelector('.fb-hashtags');
+  if (fbHashEl) fbHashEl.textContent = post.fb.hashtags || '';
+  const igHashEl = card.querySelector('.ig-hashtags');
+  if (igHashEl) igHashEl.textContent = post.ig.hashtags || '';
 }
 
 /* ═══════════════════════════════════════════
@@ -1505,7 +1533,7 @@ function openSettings() {
   // Check Supabase
   const statusEl = document.getElementById('supa-status');
   statusEl.textContent = 'Supabase: checking…';
-  fetch(SUPABASE_URL + '/rest/v1/ad_training?limit=1', { headers: SUPA_HEADERS })
+  fetch(SUPABASE_URL + '/rest/v1/', { headers: SUPA_HEADERS })
     .then(r => { statusEl.textContent = r.ok ? 'Supabase: ✅ Connected' : 'Supabase: ⚠️ Error ' + r.status; })
     .catch(() => { statusEl.textContent = 'Supabase: ❌ Unreachable'; });
 
