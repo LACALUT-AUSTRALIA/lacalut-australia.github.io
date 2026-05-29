@@ -461,6 +461,7 @@ var CLAUDE_KEY=localStorage.getItem('lc_claude_key')||'';
 /* ── SKU DATA ── */
 var SKUS={
   aktiv:{name:'LACALUT® Aktiv',tab:'AKTIV',color:'#cf102d',
+    thumbnail:'https://lacalut-australia.github.io/social-content-calendar/images/post-5-product-hero.jpg',
     tagline:'Clinical gum treatment · Bleeding gums & gingivitis · Adults 35+',
     sys:'You are a performance Facebook video ads copywriter for LACALUT Aktiv — a clinical gum treatment toothpaste. Australian audience, adults 35+. The customer has bleeding gums and does not realise it is early gingivitis. Tone: clinical, direct, credible. Never salesy. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Aktiv (clinical gum treatment, Australian adults 35+, bleeding gums / gingivitis). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence describing opening 3 seconds), story (string, 2-3 sentences describing what the ad does).',
@@ -468,6 +469,7 @@ var SKUS={
     campaignId:'120241478653830229',adsetId:'120245973238020229',adsetName:'Aktiv - Original',
     productUrl:'https://lacalut.com.au/products/lacalut-aktiv-original-toothpaste?utm_source=facebook&utm_medium=paid&utm_campaign={{campaign.name}}&utm_content={{ad.name}}&utm_term={{adset.name}}'},
   aktiv_herbal:{name:'LACALUT® Aktiv Herbal',tab:'AKTIV HERBAL',color:'#5a8a3c',
+    thumbnail:'https://lacalut-australia.github.io/social-content-calendar/images/post-5-product-hero.jpg',
     tagline:'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
     sys:'You are a performance Facebook video ads copywriter for LACALUT Aktiv Herbal — a clinical gum toothpaste with 9 medicinal herbs. Australian adults 35+. Lead with sensory experience AND clinical proof. Tone: elevated, warm, ingredient-led. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Aktiv Herbal (clinical gum treatment with 9 medicinal herbs, Australian adults 35+). Each concept blends herbal aesthetics with clinical proof. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
@@ -475,6 +477,7 @@ var SKUS={
     campaignId:'120241478653830229',adsetId:'120246084126920229',adsetName:'Herbal',
     productUrl:'https://lacalut.com.au/products/lacalut-aktiv-herbal-toothpaste?utm_source=facebook&utm_medium=paid&utm_campaign={{campaign.name}}&utm_content={{ad.name}}&utm_term={{adset.name}}'},
   flora:{name:'LACALUT® Flora',tab:'FLORA',color:'#2d8f4e',
+    thumbnail:'https://lacalut-australia.github.io/audits/flora-static-image-review/images/ad1_3pm_crash_t0_5s.jpg',
     tagline:'Probiotic bad breath formula · Women 25–45',
     sys:'You are a performance Facebook video ads copywriter for LACALUT Flora — a probiotic toothpaste for bad breath. Australian women 25-45. PAS structure: Problem (bacteria, not hygiene) → Agitate (mints just mask) → Solution (eliminates bacteria). Tone: empowering, clean, credible. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Flora (probiotic bad breath toothpaste, Australian women 25-45). Use PAS: Problem (bad breath = bacteria problem) → Agitate (mints/sprays just mask, embarrassment returns) → Solution (Flora eliminates root-cause bacteria). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
@@ -511,6 +514,7 @@ var SKUS={
        cbeat:'Flora product. "Reclaim the closeness. Shop now."'}
     ]},
   sensitive:{name:'LACALUT® Sensitive',tab:'SENSITIVE',color:'#004a88',
+    thumbnail:'https://lacalut-australia.github.io/social-content-calendar/images/post-5-product-hero.jpg',
     tagline:'Fast-acting sensitivity relief · Potassium nitrate formula',
     sys:'You are a performance Facebook video ads copywriter for LACALUT Sensitive — toothpaste for sensitive teeth. Australian adults avoiding hot/cold/sweet due to sharp pain. Lead with restored freedom and relief. Tone: warm, empathetic, solution-led. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT Sensitive (sensitive teeth toothpaste, Australian adults). Focus on: sharp pain → clinical solution → restored freedom. Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
@@ -518,6 +522,7 @@ var SKUS={
     campaignId:'',adsetId:'',adsetName:'Sensitive / Tooth Pain — adset not yet created',
     productUrl:'https://lacalut.com.au'},
   white_repair:{name:'LACALUT® White & Repair',tab:'WHITE & REPAIR',color:'#c9a84c',
+    thumbnail:'https://lacalut-australia.github.io/social-content-calendar/images/post-5-product-hero.jpg',
     tagline:'Hydroxyapatite enamel repair + whitening · Science-led',
     sys:'You are a performance Facebook video ads copywriter for LACALUT White & Repair — a remineralising whitening toothpaste. Australian adults 25-45 who want whiter teeth but distrust harsh bleaching. Lead with repair-from-within. Tone: smart, results-driven, premium. Australian English. Return JSON only.',
     ideaP:'Generate 10 scroll-stopping Facebook video ad concepts for LACALUT White & Repair (enamel repair + whitening toothpaste, Australian adults 25-45). Focus on: want whiter teeth but worried about enamel damage. Hydroxyapatite repairs from within while whitening. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences).',
@@ -1115,7 +1120,7 @@ async function doApprove(){
         creative_name:c.title||id,
         primary_text:pt,
         headline:h1,
-        description:desc,
+        image_url:s.thumbnail||'',
         video_url:videoUrl,
         adset_id:s.adsetId,
         product_url:s.productUrl||'https://lacalut.com.au'
