@@ -1534,7 +1534,7 @@ function openSettings() {
   // Check Supabase
   const statusEl = document.getElementById('supa-status');
   statusEl.textContent = 'Supabase: checking…';
-  fetch(SUPABASE_URL + '/rest/v1/', { headers: SUPA_HEADERS })
+  fetch(SUPABASE_URL + '/auth/v1/health')
     .then(r => { statusEl.textContent = r.ok ? 'Supabase: ✅ Connected' : 'Supabase: ⚠️ Error ' + r.status; })
     .catch(() => { statusEl.textContent = 'Supabase: ❌ Unreachable'; });
 
