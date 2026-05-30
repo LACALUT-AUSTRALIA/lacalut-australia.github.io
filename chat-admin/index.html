@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3Qgd2lkdGg9JzMyJyBoZWlnaHQ9JzMyJyByeD0nNicgZmlsbD0nJTIzMDA0YTg4Jy8+PHBhdGggZD0nTTE2IDZjLTMuMyAwLTYgMi43LTYgNiAwIDEuNy43IDMuMiAxLjcgNC4zLS4zIDEuNS0uNyAzLjUtMSA1LjItLjIgMS4xLjYgMi41IDIgMi41IDEgMCAxLjctLjcgMi0xLjcuMy0xIC42LTIuMyAxLjMtMi4zcy45IDEuMiAxLjMgMi4zYy4zIDEgMS4xIDEuNyAyIDEuNyAxLjQgMCAyLjItMS40IDItMi41LS4zLTEuNy0uNy0zLjctMS01LjIgMS0xLjEgMS43LTIuNiAxLjctNC4zIDAtMy4zLTIuNy02LTYtNnonIGZpbGw9J3doaXRlJy8+PC9zdmc+">
+  <title>Lacalut Chat Admin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="top-bar">
+      <div class="top-bar-inner">
+        <div class="logo">
+          <span class="logo-icon">🦷</span>
+          <span class="logo-text">Lacalut Chat Admin</span>
+        </div>
+        <div class="header-actions">
+          <span id="save-status" class="save-status"></span>
+        </div>
+      </div>
+    </header>
+
+    <div class="config-warning" id="config-warning">
+      ⚠️ <strong>Setup required:</strong> Enter your Worker URL and Admin Secret in the
+      <button class="inline-link" onclick="switchTab('settings')">Settings tab</button> before using this panel.
+    </div>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="kb" onclick="switchTab('kb')">📚 Knowledge Base</button>
+      <button class="tab" data-tab="conversations" onclick="switchTab('conversations')">💬 Conversations</button>
+      <button class="tab" data-tab="settings" onclick="switchTab('settings')">⚙️ Settings</button>
+    </nav>
+
+    <!-- ── Knowledge Base ────────────────────────────────────────────── -->
+    <div id="tab-kb" class="tab-content active">
+      <div class="panel-header">
+        <h2>Knowledge Base</h2>
+        <button class="btn btn-primary" onclick="openAddModal()">+ Add Entry</button>
+      </div>
+
+      <div class="filter-row">
+        <select id="filter-category" onchange="filterKB()">
+          <option value="">All categories</option>
+          <option value="products">Products</option>
+          <option value="shipping">Shipping</option>
+          <option value="returns">Returns</option>
+          <option value="wholesale">Wholesale</option>
+          <option value="other">Other</option>
+        </select>
+        <input id="filter-search" type="text" placeholder="Search…" oninput="filterKB()" />
+      </div>
+
+      <div id="kb-loading" class="loading-state">Loading knowledge base…</div>
+      <div id="kb-empty" class="empty-state" style="display:none">No entries found. Add your first one!</div>
+
+      <table id="kb-table" class="data-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Category</th>
+            <th>Active</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="kb-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ── Conversations ─────────────────────────────────────────────── -->
+    <div id="tab-conversations" class="tab-content">
+      <div class="panel-header">
+        <h2>Recent Conversations</h2>
+        <button class="btn btn-outline" onclick="loadConversations()">↻ Refresh</button>
+      </div>
+      <div id="conv-loading" class="loading-state">Loading conversations…</div>
+      <div id="conv-empty" class="empty-state" style="display:none">No conversations yet.</div>
+      <div id="conv-list"></div>
+    </div>
+
+    <!-- ── Settings ──────────────────────────────────────────────────── -->
+    <div id="tab-settings" class="tab-content">
+      <div class="panel-header"><h2>Widget Settings</h2></div>
+
+      <div class="settings-section">
+        <h3>🔑 Connection</h3>
+        <p class="help-text">These are stored in your browser only — never sent to anyone except your own Worker.</p>
+        <label>Worker URL
+          <input type="text" id="setting-worker-url" placeholder="https://lacalut-chat.xyz.workers.dev" />
+        </label>
+        <label>Admin Secret
+          <input type="password" id="setting-admin-secret" placeholder="Your ADMIN_SECRET value" />
+        </label>
+        <button class="btn btn-primary" onclick="saveConnection()">Save Connection</button>
+        <button class="btn btn-outline" onclick="testConnection(event)">Test Connection</button>
+        <div id="connection-status" class="connection-status"></div>
+      </div>
+
+      <div class="settings-section">
+        <h3>💬 Widget Config</h3>
+        <p class="help-text">These are saved to your Supabase database and applied to the live widget.</p>
+        <label>Greeting message
+          <textarea id="setting-greeting" rows="2" placeholder="Hi! How can I help you today?"></textarea>
+        </label>
+        <label>Suggested questions (one per line)
+          <textarea id="setting-suggested" rows="4" placeholder="How long does shipping take?&#10;What's your return policy?&#10;Which product suits me?"></textarea>
+        </label>
+        <label>Brand colour
+          <div class="colour-row">
+            <input type="color" id="setting-colour" value="#cf102d" />
+            <input type="text" id="setting-colour-text" value="#cf102d" maxlength="7" />
+          </div>
+        </label>
+        <button class="btn btn-primary" onclick="saveWidgetConfig()">Save Widget Config</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Add/Edit Modal ─────────────────────────────────────────────── -->
+  <div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modal-title">Add KB Entry</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <label>Question
+        <input type="text" id="modal-question" placeholder="e.g. How long does shipping take?" />
+      </label>
+      <label>Answer
+        <textarea id="modal-answer" rows="4" placeholder="e.g. Standard shipping takes 3–7 business days…"></textarea>
+      </label>
+      <label>Category
+        <select id="modal-category">
+          <option value="products">Products</option>
+          <option value="shipping">Shipping</option>
+          <option value="returns">Returns</option>
+          <option value="wholesale">Wholesale</option>
+          <option value="other">Other</option>
+        </select>
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="modal-active" checked />
+        Active (included in AI responses)
+      </label>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" id="modal-save-btn" onclick="saveKBEntry()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
