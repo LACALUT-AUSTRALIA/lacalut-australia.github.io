@@ -726,10 +726,13 @@ function conceptBodyHTML(idx, post, d, brief) {
 
 /* ── FULL BODY (editor + preview) ── */
 function fullBodyHTML(idx, post, d) {
+  // Raw values for previews (preview functions escape internally)
+  const rawFbHashtags = post.fb.hashtags || (post.concept ? (Array.isArray(post.concept.hashtags) ? post.concept.hashtags.map(t=>'#'+t).join(' ') : post.concept.hashtags || '') : '');
+  const rawIgHashtags = post.ig.hashtags || rawFbHashtags;
+  // Escaped values for textarea/input elements only
   const fbCaption  = escHtml(post.fb.caption);
   const igCaption  = escHtml(post.ig.caption);
-  const fbHashtags = escHtml(post.fb.hashtags || (post.concept ? post.concept.hashtags.map(t=>'#'+t).join(' ') : ''));
-  const igHashtags = escHtml(post.ig.hashtags || fbHashtags);
+  const fbHashtags = escHtml(rawFbHashtags);
   const imgSrc     = post.fb.imageDataUrl || '';
   const isApproved = post.approved || post.posted;
   const isPosted   = post.posted;
@@ -791,10 +794,10 @@ function fullBodyHTML(idx, post, d) {
 
     <div class="card-preview">
       <div class="fb-preview-wrap platform-preview-wrap">
-        ${fbPreviewHTML(idx, post, fbCaption, fbHashtags, imgSrc)}
+        ${fbPreviewHTML(idx, post, post.fb.caption, rawFbHashtags, imgSrc)}
       </div>
       <div class="ig-preview-wrap platform-preview-wrap" style="display:none">
-        ${igPreviewHTML(idx, post, igCaption, igHashtags, imgSrc)}
+        ${igPreviewHTML(idx, post, post.ig.caption, rawIgHashtags, imgSrc)}
       </div>
     </div>
   </div>`;
@@ -1160,7 +1163,7 @@ async function rejectConcept(idx) {
 ═══════════════════════════════════════════ */
 async function callGeminiImageGen(prompt) {
   const res = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=' + KEYS.gemini,
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' + KEYS.gemini,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
