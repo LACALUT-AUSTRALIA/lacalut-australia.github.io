@@ -326,6 +326,9 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
       if(ck2)localStorage.setItem('lc_claude_key',ck2);
       if(gk2)localStorage.setItem('lc_gem_key',gk2);
       document.getElementById('gate').style.display='none';
+      if(typeof CLAUDE_KEY!=='undefined'&&ck2)CLAUDE_KEY=ck2;
+      if(typeof GEM_KEY!=='undefined'&&gk2)GEM_KEY=gk2;
+      if(typeof updateKeyStatus==='function')updateKeyStatus();
     }else{document.getElementById('gate-err').style.display='block';document.getElementById('gate-pw').value='';}
   };
 })();
@@ -337,6 +340,8 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <span class="hdr-badge">🖼️ Facebook Image Ads</span>
   <span id="sku-title-wrap" class="hdr-title"><span id="sku-title">Flora — Probiotic bad breath formula · Women 25–45</span><button class="hdr-edit-btn" onclick="editTagline()" title="Edit description">✏️</button></span>
   <span class="hdr-spacer"></span>
+  <span id="api-claude" style="font-size:11px;padding:3px 9px;border-radius:999px;background:#f0f0f0;color:#999;font-weight:600;white-space:nowrap;">Claude ❓</span>
+  <span id="api-gem" style="font-size:11px;padding:3px 9px;border-radius:999px;background:#f0f0f0;color:#999;font-weight:600;white-space:nowrap;">Gemini ❓</span>
 </header>
 
 <!-- SKU TABS -->
@@ -461,6 +466,7 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <span class="sb-n sb-a" id="ct-image">0</span> image ready &nbsp;·&nbsp;
   <span class="sb-n sb-r" id="ct-rejected">0</span> rejected &nbsp;&nbsp;
   <span id="total-lbl" style="color:var(--muted)">0 ideas</span>
+  <button id="btn-show-rej" onclick="toggleRejected()" style="margin-left:auto;background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);">👁️ Rejected</button>
 </div>
 
 <script>
@@ -503,35 +509,35 @@ var SKUS={
        pt:'They can smell what you can\'t see.\n\nBad breath isn\'t about brushing harder — it\'s caused by odour-producing bacteria that ordinary toothpaste misses entirely.\n\nLACALUT® Flora targets and eliminates these bacteria at the source, restoring your mouth\'s natural balance.\n\n✅ 100 years of German clinical science\n✅ Probiotic formula — not a masking agent\n✅ Real results from the very first brush',
        h1:'They Can Smell What You Can\'t',h2:'It\'s Not Hygiene. It\'s Bacteria.',h3:'German Science. Fresh Breath.',
        desc:'Eliminates odour-producing bacteria at the source.',
-       img:'https://lacalut-australia.github.io/audits/flora-gemini-concepts/images/concept-1-social-distance.jpg'},
+       img:''},
       {id:'flora-2',title:'🏭 The Bacteria Factory',angle:'Absurd Metaphor',
        hook:'Your mouth is running a sulfur factory — and regular toothpaste is just painting over it.',
        story:'Persistent bad breath is caused by bacteria that produce hydrogen sulphide gas deep in your oral microbiome. LACALUT® Flora is clinically formulated to disrupt and eliminate these bacteria.',
        pt:'Your mouth is running a sulfur factory — and regular toothpaste is just painting over it.\n\nThe real cause of persistent bad breath is bacteria that produce hydrogen sulphide gas deep in your oral microbiome.\n\nLACALUT® Flora is clinically formulated to disrupt and eliminate these odour-producing bacteria, not just mask what they leave behind.\n\n✅ German precision\n✅ Probiotic science\n✅ Actual fresh breath',
        h1:'Your Mouth. Their Factory.',h2:'Mints Just Paint Over It.',h3:'Eliminate. Don\'t Mask.',
        desc:'Clinically disrupts sulfur-producing bacteria.',
-       img:'https://lacalut-australia.github.io/audits/flora-gemini-concepts/images/concept-2-bacteria-factory.jpg'},
+       img:''},
       {id:'flora-3',title:'🌿 The Mint Lie',angle:'Competitor Takedown',
        hook:'A mint is just perfume on a chemical leak.',
        story:'When bad breath keeps coming back despite brushing, flossing, and mouthwash, the problem isn\'t your routine — it\'s the bacteria surviving it. LACALUT® Flora uses a clinically validated formula to eliminate odour-causing bacteria that others can\'t reach.',
        pt:'A mint is just perfume on a chemical leak — and your mouth knows the difference.\n\nWhen bad breath keeps coming back despite brushing, flossing, and mouthwash, the problem isn\'t your routine. It\'s the bacteria surviving it.\n\nLACALUT® Flora uses a clinically validated formula to eliminate odour-causing bacteria that others can\'t reach.\n\n✅ Switch your toothpaste\n✅ Solve the real problem\n✅ Made in Germany',
        h1:'Mints Lie. Flora Fixes.',h2:'The Bacteria Surviving Your Routine.',h3:'Switch. Solve. Done.',
        desc:'Clinically validated formula targets bacteria others miss.',
-       img:'https://lacalut-australia.github.io/audits/flora-gemini-concepts/images/concept-3-mint-lie.jpg'},
+       img:''},
       {id:'flora-4',title:'☣️ The Biohazard Zone',angle:'Dark Humour',
        hook:'Oral biohazard. Area under quarantine.',
        story:'Persistent halitosis is caused by specific bacteria that colonise your gums and tongue, producing sulfur compounds with every breath. LACALUT® Flora is the clinical-grade formula designed to target and eliminate them at the source.',
        pt:'Oral biohazard. Area under quarantine.\n\nIf your bad breath survives brushing, mints, and mouthwash — you\'re not fighting the right enemy.\n\nPersistent halitosis is caused by specific bacteria that colonise your gums and tongue, producing sulfur compounds with every breath.\n\nLACALUT® Flora is the clinical-grade formula designed to target and eliminate them at the source.\n\n✅ Germany\'s answer to the problem that won\'t go away',
        h1:'Wrong Enemy. Wrong Weapon.',h2:'Clinical-Grade. Bacteria-Grade.',h3:'Finally. A Real Solution.',
        desc:'Clinical-grade halitosis treatment. Made in Germany.',
-       img:'https://lacalut-australia.github.io/audits/flora-gemini-concepts/images/concept-4-biohazard-zone.jpg'},
+       img:''},
       {id:'flora-5',title:'🌩️ The Sulfur Forecast',angle:'Clever Metaphor',
        hook:'Today\'s forecast: 100% chance of sulfur — unless you fight back at the source.',
        story:'Most people with chronic bad breath brush twice a day and still can\'t shake it. That\'s because the problem isn\'t their routine — it\'s the bacteria that survive it. LACALUT® Flora clinically disrupts the hydrogen sulphide-producing bacteria that cause mouth odour.',
        pt:'Today\'s forecast: 100% chance of sulfur — unless you fight back at the source.\n\nMost people with chronic bad breath brush twice a day and still can\'t shake it. That\'s because the problem isn\'t their routine — it\'s the bacteria that survive it.\n\nLACALUT® Flora clinically disrupts the hydrogen sulphide-producing bacteria that cause mouth odour, restoring balance from the very first brush.\n\n✅ Probiotic oral science from Germany\n✅ Available in Australia now',
        h1:'100% Chance of Sulfur.',h2:'Your Routine Isn\'t Broken. Your Toothpaste Is.',h3:'Restore Balance. From First Brush.',
        desc:'Probiotic oral science. 12-hour freshness. Made in Germany.',
-       img:'https://lacalut-australia.github.io/audits/flora-gemini-concepts/images/concept-5-sulfur-forecast.jpg'}
+       img:''}
     ]},
   sensitive:{name:'LACALUT® Sensitive',tab:'SENSITIVE',color:'#004a88',
     tagline:'Fast-acting sensitivity relief · Potassium nitrate formula',
@@ -588,6 +594,7 @@ function buildTabBar(){
 }
 
 function switchSku(sku){
+  saveSession();
   // Save current SKU state before switching
   cardsBySku[activeSku]={cards:Object.assign({},cards),aiResults:Object.assign({},aiResults),refImgs:Object.assign({},refImgs)};
   activeSku=sku;
@@ -607,6 +614,7 @@ function switchSku(sku){
 
 function loadSku(sku){
   var s=SKUS[sku];
+  if(loadSession(sku)){renderAll();return;}
   if(sku==='flora'&&s.seeds){
     s.seeds.forEach(function(c){
       cards[c.id]={phase:'image',title:c.title,angle:c.angle,hook:c.hook,story:c.story,
@@ -645,6 +653,7 @@ function renderCard(id,append){
   if(existing)con.replaceChild(el,existing);
   else if(append===true)con.appendChild(el);
   else con.insertBefore(el,con.firstChild);
+  if(c.status==='rejected'&&!showRejected)el.style.display='none';
   setTimeout(function(){syncPreview(id);},20);
 }
 
@@ -699,7 +708,7 @@ function buildImageHTML(id,c,col,s){
     +'<textarea class="field-ta" id="pt-'+id+'" rows="7" oninput="syncPreview(\''+id+'\')" placeholder="'+(gen?'Generating copy…':'Primary text…')+'">'+esc(pt)+'</textarea>'
     +'</div>'
     +'<div class="field-sec"><div class="field-lbl">Headlines</div><div class="hls-group">'
-    +'<input type="text" class="field-in" id="h1-'+id+'" placeholder="Headline 1" value="'+esc(h1)+'" oninput="syncHl(\''+id+'\')">'
+    +'<input type="text" class="field-in" id="h1-'+id+'" placeholder="Headline 1 (≤40 chars)" value="'+esc(h1)+'" oninput="checkH1(\''+id+'\')">'
     +'<input type="text" class="field-in" id="h2-'+id+'" placeholder="Headline 2" value="'+esc(h2)+'">'
     +'<input type="text" class="field-in" id="h3-'+id+'" placeholder="Headline 3" value="'+esc(h3)+'">'
     +'</div></div>'
@@ -738,6 +747,8 @@ function buildImageHTML(id,c,col,s){
     +'<div class="copy-acts">'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
     +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🖼️ Generate Image</button>'
+    +'<button class="btn-imggen" style="background:#e8f8e8;color:#1e7e34;border-color:#b2dfb2;" onclick="openUpload(\''+id+'\')">📁 Upload Photo</button>'
+    +'<input type="file" accept="image/*" id="upf-'+id+'" style="display:none" onchange="acceptUpload(event,\''+id+'\')">'
     +'<button class="btn-higgsfield" id="hfbtn-'+id+'" onclick="openHiggsfield(\''+id+'\')">🎬 Make Video</button>'
     +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
     +'</div>'
@@ -767,6 +778,7 @@ function buildImageHTML(id,c,col,s){
     +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>🚀 Queued</button>'
        :'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">🚀 Approve &amp; Queue</button>')
     +'<button class="btn-reject-card" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
+    +'<button class="btn-dl btn-copycopy" onclick="copyCardCopy(\''+id+'\')">📋 Copy</button>'
     +(imgSrc?'<button class="btn-dl" onclick="dlImg(\''+id+'\')">📥 Download</button>':'')
     +'</div>';
 }
@@ -875,7 +887,7 @@ async function autoGenCopy(id){
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     var r=JSON.parse(raw);
     Object.assign(cards[id],{pt:r.primary_text||'',h1:r.h1||'',h2:r.h2||'',h3:r.h3||'',desc:r.description||'',phase:'image'});
-    renderCard(id);updateCounts();
+    renderCard(id);updateCounts();saveSession();
     setTimeout(function(){syncPreview(id);},50);
   }catch(err){
     cards[id].phase='image';renderCard(id);
@@ -906,8 +918,8 @@ async function regenConcept(id){
 function rejectCard(id){
   var el=document.getElementById('card-'+id);
   if(el){el.style.transition='opacity .3s';el.style.opacity='0';
-    setTimeout(function(){cards[id].status='rejected';renderCard(id);updateCounts();},300);}
-  else{cards[id].status='rejected';updateCounts();}
+    setTimeout(function(){cards[id].status='rejected';renderCard(id);updateCounts();saveSession();},300);}
+  else{cards[id].status='rejected';updateCounts();saveSession();}
 }
 
 /* ── PANELS ── */
@@ -988,9 +1000,9 @@ async function runImgGen(id){
     +'1080x1350 portrait format, 4:5 aspect ratio. Scroll-stopping, clinically credible. No text overlays on the image.';
   parts.push({text:fullPrompt});
   try{
-    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key='+GEM_KEY,{
+    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key='+GEM_KEY,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:parts}],generationConfig:{responseModalities:['IMAGE','TEXT']}})});
+      body:JSON.stringify({contents:[{parts:parts}],generationConfig:{responseModalities:['TEXT','IMAGE']}})});
     if(!res.ok){var e=await res.json();throw new Error((e.error&&e.error.message)||'HTTP '+res.status);}
     var data=await res.json();
     var imgPart=null;
@@ -1079,7 +1091,7 @@ async function doApprove(){
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify(payload)});
     if(!res.ok)throw new Error('HTTP '+res.status);
-    closeApp();cards[id].status='queued';renderCard(id);updateCounts();
+    closeApp();cards[id].status='queued';renderCard(id);updateCounts();saveSession();
   }catch(err){btn.textContent='🚀 Confirm & Queue';btn.disabled=false;alert('❌ '+err.message);}
 }
 
@@ -1311,6 +1323,88 @@ function editTagline(){
   }
   inp.onblur=save;inp.onkeydown=function(e){if(e.key==='Enter')inp.blur();if(e.key==='Escape'){inp.value=cur;inp.blur();}};
   wrap.innerHTML='';wrap.appendChild(inp);inp.focus();inp.select();
+}
+
+/* ── API KEY STATUS ── */
+function updateKeyStatus(){
+  var ck=CLAUDE_KEY||localStorage.getItem('lc_claude_key')||'';
+  var gk=GEM_KEY||localStorage.getItem('lc_gem_key')||'';
+  var ce=document.getElementById('api-claude'),ge=document.getElementById('api-gem');
+  if(ce){if(ck&&ck.length>20){ce.textContent='Claude ✅';ce.style.background='#e8f8e8';ce.style.color='#1e7e34';}else{ce.textContent='Claude ❌';ce.style.background='#fce8e8';ce.style.color='#c62828';}}
+  if(ge){if(gk&&gk.length>20){ge.textContent='Gemini ✅';ge.style.background='#e8f8e8';ge.style.color='#1e7e34';}else{ge.textContent='Gemini ❌';ge.style.background='#fce8e8';ge.style.color='#c62828';}}
+}
+updateKeyStatus();
+
+/* ── IMAGE UPLOAD PER CARD ── */
+function openUpload(id){var inp=document.getElementById('upf-'+id);if(inp)inp.click();}
+function acceptUpload(ev,id){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    cards[id].img=e.target.result;
+    var mainImg=document.getElementById('img-'+id);
+    var ph=document.getElementById('img-ph-'+id);
+    if(mainImg){mainImg.src=e.target.result;mainImg.style.display='block';}
+    if(ph)ph.style.display='none';
+    applyLogoAll();
+    saveSession();
+    renderCard(id);
+  };
+  r.readAsDataURL(f);
+}
+
+/* ── SESSION PERSISTENCE ── */
+function saveSession(){
+  try{
+    var toSave={};
+    Object.keys(cards).forEach(function(id){
+      var c=Object.assign({},cards[id]);
+      if(c.img&&c.img.startsWith('data:'))c.img='';
+      toSave[id]=c;
+    });
+    localStorage.setItem('lac_img_sess_'+activeSku,JSON.stringify(toSave));
+  }catch(e){}
+}
+function loadSession(sku){
+  try{
+    var saved=localStorage.getItem('lac_img_sess_'+sku);
+    if(!saved)return false;
+    var parsed=JSON.parse(saved);
+    if(parsed&&Object.keys(parsed).length>0){
+      Object.keys(parsed).forEach(function(id){var n=parseInt(id.replace(/\D/g,''));if(!isNaN(n)&&n>cardIdx)cardIdx=n;});
+      cards=parsed;return true;
+    }
+  }catch(e){}
+  return false;
+}
+
+/* ── TOGGLE REJECTED ── */
+var showRejected=false;
+function toggleRejected(){
+  showRejected=!showRejected;
+  var rejCount=Object.values(cards).filter(function(c){return c.status==='rejected';}).length;
+  var btn=document.getElementById('btn-show-rej');
+  if(btn)btn.textContent=showRejected?'🙈 Hide Rejected':'👁️ Rejected ('+rejCount+')';
+  document.querySelectorAll('.card.st-rejected').forEach(function(el){el.style.display=showRejected?'':'none';});
+}
+
+/* ── COPY CARD COPY ── */
+function copyCardCopy(id){
+  var pt=gv('pt-'+id),h1=gv('h1-'+id),h2=gv('h2-'+id),h3=gv('h3-'+id),desc=gv('desc-'+id);
+  if(!pt&&!h1){alert('No copy yet — generate or write copy first.');return;}
+  var text='PRIMARY TEXT:\n'+pt+(h1?'\n\nHEADLINE 1: '+h1:'')+(h2?'\nHEADLINE 2: '+h2:'')+(h3?'\nHEADLINE 3: '+h3:'')+(desc?'\nDESCRIPTION: '+desc:'');
+  navigator.clipboard.writeText(text).then(function(){
+    document.querySelectorAll('#card-'+id+' .btn-copycopy').forEach(function(b){var o=b.textContent;b.textContent='✅ Copied!';setTimeout(function(){b.textContent=o;},2000);});
+  }).catch(function(){var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);});
+}
+
+/* ── H1 CHAR WARNING ── */
+function checkH1(id){
+  var el=document.getElementById('h1-'+id);if(!el)return;
+  var len=el.value.length;
+  el.style.borderColor=len>60?'#c62828':len>40?'#e65100':'';
+  if(len>40){el.title='⚠️ '+len+' chars — Meta recommends ≤40';}else{el.title='';}
+  syncHl(id);
 }
 </script>
 </body>
