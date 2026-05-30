@@ -189,6 +189,14 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 .btn-reject-card{background:#fce8e8;color:#c62828;border:1.5px solid #ef9a9a;border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
 .btn-reject-card:hover{background:#c62828;color:#fff;}
 .btn-dl{background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:7px;padding:8px 14px;font-size:13px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;}
+.btn-fbig{background:linear-gradient(135deg,#1877f2,#e1306c);color:#fff;border:none;border-radius:7px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-fbig:hover{opacity:.88;}
+.btn-linkedin{background:#0077b5;color:#fff;border:none;border-radius:7px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-linkedin:hover{background:#005f91;}
+/* SHARE MODAL */
+.share-modal textarea{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:10px 12px;font-size:13px;resize:vertical;font-family:inherit;min-height:140px;color:var(--text);}
+.share-modal textarea:focus{outline:none;border-color:var(--navy);}
+.share-note{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5;background:var(--bg);border-radius:6px;padding:8px 10px;}
 
 /* STATUS BAR */
 #status-bar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--navy);padding:10px 26px;display:flex;align-items:center;gap:16px;font-size:14px;color:var(--muted);z-index:20;flex-wrap:wrap;}
@@ -439,6 +447,20 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
     <div class="mact">
       <button class="btn-cancel" onclick="closeTeach()">Cancel</button>
       <button class="btn-confirm" id="teach-save" onclick="doTeach()">💾 Save Training</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHARE MODAL -->
+<div class="modal-ov" id="share-modal">
+  <div class="modal share-modal" style="max-width:520px">
+    <h3 id="share-modal-title">📱 Create FB/IG Post</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;" id="share-modal-sub">Caption adapted from your ad copy. Edit before posting.</div>
+    <textarea id="share-caption" rows="6"></textarea>
+    <div class="share-note" id="share-note">📋 Copy this caption → paste into Meta Business Suite or your Social Content Calendar to post organically.</div>
+    <div class="mact" style="margin-top:14px;">
+      <button class="btn-cancel" onclick="document.getElementById('share-modal').classList.remove('on')">✕ Close</button>
+      <button class="btn-confirm" onclick="copyShareCaption()" id="share-copy-btn">📋 Copy Caption</button>
     </div>
   </div>
 </div>
@@ -741,7 +763,9 @@ function buildCopyHTML(id,c,col){
     +'<div class="card-acts">'
     +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>'
         :'<button class="btn-gen-video" onclick="startVeo(\''+id+'\')">🎬 Generate Video</button>')
-    +'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">🚀 Approve &amp; Queue</button>'
+    +'<button class="btn-fbig" onclick="showShare(\''+id+'\',\'fbig\')">📱 FB/IG Post</button>'
+    +'<button class="btn-linkedin" onclick="showShare(\''+id+'\',\'linkedin\')">💼 LinkedIn Post</button>'
+    +'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">📘 Create Draft FB Ad</button>'
     +'<button class="btn-reject-card" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
     +'</div>';
 }
@@ -811,8 +835,10 @@ function buildVideoHTML(id,c,col){
     // BOTTOM
     +'<div class="card-acts">'
     +'<button class="btn-gen-video" style="background:#e65100" onclick="startVeo(\''+id+'\')">🎬 Regenerate Video</button>'
-    +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>🚀 Queued</button>'
-       :'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">🚀 Approve &amp; Queue</button>')
+    +'<button class="btn-fbig" onclick="showShare(\''+id+'\',\'fbig\')">📱 FB/IG Post</button>'
+    +'<button class="btn-linkedin" onclick="showShare(\''+id+'\',\'linkedin\')">💼 LinkedIn Post</button>'
+    +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>📘 Queued</button>'
+       :'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">📘 Create Draft FB Ad</button>')
     +'<button class="btn-reject-card" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
     +'</div>';
 }
@@ -1357,6 +1383,50 @@ function copyHiggsfield(id){
     var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
     var btn=document.querySelector('#hf-'+id+' .btn-copy-hf');
     if(btn){var orig=btn.textContent;btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent=orig;},2000);}
+  });
+}
+
+/* ── SHARE (FB/IG POST & LINKEDIN) ── */
+function showShare(id,type){
+  var c=cards[id];
+  var pt=document.getElementById('pt-'+id);
+  var rawPt=(pt?pt.value:c.pt)||'';
+  var h1=document.getElementById('h1-'+id);
+  var headline=(h1?h1.value:c.h1)||'';
+  var modal=document.getElementById('share-modal');
+  var titleEl=document.getElementById('share-modal-title');
+  var subEl=document.getElementById('share-modal-sub');
+  var noteEl=document.getElementById('share-note');
+  var capEl=document.getElementById('share-caption');
+  modal._shareType=type;
+  if(type==='fbig'){
+    titleEl.textContent='📱 Create FB/IG Post';
+    subEl.textContent='Organic post caption adapted from your ad copy. Edit before posting.';
+    noteEl.textContent='📋 Copy → paste into Meta Business Suite (Posts) or your Social Content Calendar to publish organically to Facebook & Instagram.';
+    capEl.value=rawPt;
+  }else{
+    titleEl.textContent='💼 Create LinkedIn Post';
+    subEl.textContent='LinkedIn caption — professional tone, no emojis in first line. Edit before posting.';
+    noteEl.textContent='📋 Copy → paste into LinkedIn (lacalut.australia page) to publish. Best time: Tue–Thu 8–10am AEST.';
+    // Strip heavy emoji from first line for LinkedIn professionalism
+    var lines=rawPt.split('\n');
+    var liCaption=headline+'\n\n'+lines.filter(function(l){return l.trim();}).join('\n\n')
+      +'\n\n#GumHealth #OralHealth #Gingivitis #LACALUT #MadeInGermany #DentalCare';
+    capEl.value=liCaption;
+  }
+  document.getElementById('share-copy-btn').textContent='📋 Copy Caption';
+  modal.classList.add('on');
+}
+function copyShareCaption(){
+  var ta=document.getElementById('share-caption');
+  var btn=document.getElementById('share-copy-btn');
+  navigator.clipboard.writeText(ta.value).then(function(){
+    btn.textContent='✅ Copied!';
+    setTimeout(function(){btn.textContent='📋 Copy Caption';},2000);
+  }).catch(function(){
+    ta.select();document.execCommand('copy');
+    btn.textContent='✅ Copied!';
+    setTimeout(function(){btn.textContent='📋 Copy Caption';},2000);
   });
 }
 
