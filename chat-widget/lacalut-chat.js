@@ -1,5 +1,4 @@
-// Lacalut Chat Widget — Ask Timmy style
-// Paste into Shopify theme > Additional Scripts:
+// Lacalut Chat Widget
 // <script src="https://lacalut-australia.github.io/chat-widget/lacalut-chat.js" defer></script>
 
 (function () {
@@ -8,7 +7,6 @@
   var WORKER_URL = 'https://lacalut-chat.lacalut.workers.dev';
   var BRAND = '#cf102d';
 
-  // Session ID (no login required)
   var sessionId = sessionStorage.getItem('lc_sid');
   if (!sessionId) {
     sessionId = 'lc_' + Math.random().toString(36).slice(2, 9) + '_' + Date.now();
@@ -16,8 +14,9 @@
   }
 
   var isOpen = false;
-  var mode = 'home'; // 'home' | 'chat'
+  var mode = 'home';
   var isBusy = false;
+  var captureShown = false;
   var config = {
     greeting: 'Hi! Ask me anything about our products, shipping, or orders.',
     suggested_questions: '["Which product is best for bleeding gums?","How long does shipping take?","What is your return policy?","Do you offer free shipping?","Where can I buy LACALUT in store?"]',
@@ -54,31 +53,39 @@
     /* Header */
     #lc-head {
       background: var(--lc, #cf102d); color: #fff;
-      padding: 16px 18px; display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; display: flex; align-items: center; gap: 10px;
       flex-shrink: 0;
     }
+    .lc-back-btn {
+      background: rgba(255,255,255,0.2); border: none; cursor: pointer;
+      color: #fff; width: 32px; height: 32px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; transition: background 0.15s;
+    }
+    .lc-back-btn:hover { background: rgba(255,255,255,0.35); }
+    .lc-back-btn.lc-visible { display: flex; }
     .lc-avatar {
-      width: 40px; height: 40px; border-radius: 50%;
+      width: 38px; height: 38px; border-radius: 50%;
       background: rgba(255,255,255,0.2);
-      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      display: flex; align-items: center; justify-content: center; font-size: 19px;
       flex-shrink: 0;
     }
     .lc-head-info { flex: 1; }
     .lc-head-name { font-weight: 700; font-size: 15px; }
     .lc-head-status { font-size: 12px; opacity: 0.85; display: flex; align-items: center; gap: 5px; margin-top: 1px; }
     .lc-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
-    #lc-close { background: none; border: none; cursor: pointer; color: #fff; opacity: 0.8; font-size: 20px; line-height: 1; padding: 2px; }
+    #lc-close { background: none; border: none; cursor: pointer; color: #fff; opacity: 0.8; font-size: 20px; line-height: 1; padding: 4px; flex-shrink: 0; }
     #lc-close:hover { opacity: 1; }
 
     /* Home screen */
     #lc-home {
-      flex: 1; overflow-y: auto; padding: 20px 16px 12px;
+      flex: 1; overflow-y: auto; padding: 18px 16px 12px;
       display: flex; flex-direction: column;
     }
     .lc-greeting-bubble {
       background: #f3f4f6; border-radius: 0 16px 16px 16px;
       padding: 13px 15px; font-size: 14px; line-height: 1.5; color: #111;
-      margin-bottom: 20px; align-self: flex-start; max-width: 90%;
+      margin-bottom: 18px; align-self: flex-start; max-width: 90%;
     }
     .lc-qa-label {
       font-size: 12px; font-weight: 700; color: #6b7280; letter-spacing: 0.06em;
@@ -87,12 +94,22 @@
     .lc-qa-list { display: flex; flex-direction: column; gap: 8px; }
     .lc-qa-btn {
       width: 100%; background: #fff; border: 1.5px solid #e5e7eb;
-      border-radius: 12px; padding: 13px 16px; text-align: left;
+      border-radius: 12px; padding: 12px 16px; text-align: left;
       font-size: 14px; color: #111; cursor: pointer; line-height: 1.4;
       transition: border-color 0.15s, background 0.15s, color 0.15s;
       font-family: inherit;
     }
     .lc-qa-btn:hover { border-color: var(--lc, #cf102d); background: #fff5f5; color: var(--lc, #cf102d); }
+
+    /* Leave details link on home screen */
+    .lc-leave-details {
+      margin-top: 16px; text-align: center;
+      font-size: 13px; color: #9ca3af;
+    }
+    .lc-leave-details a {
+      color: var(--lc, #cf102d); text-decoration: none; cursor: pointer;
+    }
+    .lc-leave-details a:hover { text-decoration: underline; }
 
     /* Chat screen */
     #lc-chat { flex: 1; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 10px; }
@@ -104,6 +121,40 @@
     .lc-dot:nth-child(2) { animation-delay: 0.2s; }
     .lc-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes lc-bounce { 0%,80%,100%{transform:scale(0.75);opacity:0.5} 40%{transform:scale(1.1);opacity:1} }
+
+    /* Lead capture card */
+    .lc-capture-card {
+      background: #f8fafc; border: 1.5px solid #e5e7eb; border-radius: 14px;
+      padding: 14px; margin: 4px 0; align-self: stretch;
+    }
+    .lc-capture-title {
+      font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 10px;
+    }
+    .lc-capture-input {
+      width: 100%; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 9px 12px; font-size: 13px; margin-bottom: 8px;
+      box-sizing: border-box; font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    .lc-capture-input:focus { border-color: var(--lc, #cf102d); }
+    .lc-capture-btn {
+      width: 100%; background: var(--lc, #cf102d); color: #fff;
+      border: none; border-radius: 8px; padding: 10px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; transition: background 0.15s;
+    }
+    .lc-capture-btn:hover { background: #a80d24; }
+    .lc-capture-thanks {
+      font-size: 13px; color: #16a34a; font-weight: 600; text-align: center; padding: 4px 0;
+    }
+    .lc-capture-dismiss {
+      text-align: right; margin-bottom: 6px;
+    }
+    .lc-capture-dismiss button {
+      background: none; border: none; font-size: 11px; color: #9ca3af;
+      cursor: pointer; padding: 0;
+    }
+    .lc-capture-dismiss button:hover { color: #6b7280; }
 
     /* Input row */
     #lc-input-row {
@@ -139,7 +190,7 @@
     style.textContent = css;
     document.head.appendChild(style);
 
-    // Launcher
+    // Launcher button
     var btn = el('button', { id: 'lc-btn', 'aria-label': 'Open chat' });
     btn.innerHTML =
       '<svg class="lc-icon-chat" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>' +
@@ -151,6 +202,7 @@
     var panel = el('div', { id: 'lc-panel', role: 'dialog', 'aria-label': 'Ask Lacalut' });
     panel.innerHTML = `
       <div id="lc-head">
+        <button class="lc-back-btn" id="lc-back" aria-label="Back to menu" title="Back to quick questions">&#8592;</button>
         <div class="lc-avatar">🦷</div>
         <div class="lc-head-info">
           <div class="lc-head-name">Ask Lacalut</div>
@@ -162,6 +214,7 @@
         <div class="lc-greeting-bubble" id="lc-greeting-text">${config.greeting}</div>
         <div class="lc-qa-label">Quick Questions</div>
         <div class="lc-qa-list" id="lc-qa-list"></div>
+        <div class="lc-leave-details">or <a onclick="lcShowHomeCapture()">leave your email for a personal reply</a></div>
       </div>
       <div id="lc-chat" style="display:none"></div>
       <div id="lc-input-row">
@@ -175,6 +228,8 @@
     document.body.appendChild(panel);
 
     document.getElementById('lc-close').onclick = toggle;
+    document.getElementById('lc-back').onclick = goHome;
+
     var input = document.getElementById('lc-input');
     var sendBtn = document.getElementById('lc-send');
     input.addEventListener('input', function () { sendBtn.disabled = !this.value.trim(); });
@@ -218,8 +273,51 @@
     isOpen = !isOpen;
     document.getElementById('lc-panel').classList.toggle('lc-open', isOpen);
     document.getElementById('lc-btn').classList.toggle('lc-open', isOpen);
-    if (isOpen) setTimeout(function () { document.getElementById('lc-input').focus(); }, 300);
+    if (isOpen && mode === 'home') setTimeout(function () { document.getElementById('lc-input').focus(); }, 300);
   }
+
+  // ── Go back to home screen ───────────────────────────────────────────────────
+  function goHome() {
+    mode = 'home';
+    document.getElementById('lc-home').style.display = 'flex';
+    document.getElementById('lc-home').style.flexDirection = 'column';
+    document.getElementById('lc-chat').style.display = 'none';
+    document.getElementById('lc-back').classList.remove('lc-visible');
+  }
+
+  // ── Show capture form on home screen ────────────────────────────────────────
+  window.lcShowHomeCapture = function () {
+    if (document.getElementById('lc-home-capture')) return;
+    var homeEl = document.getElementById('lc-home');
+    var card = document.createElement('div');
+    card.id = 'lc-home-capture';
+    card.className = 'lc-capture-card';
+    card.innerHTML =
+      '<div class="lc-capture-title">Leave your details and we\'ll get back to you personally.</div>' +
+      '<input class="lc-capture-input" id="lc-hcap-email" type="email" placeholder="Email address (optional)" />' +
+      '<input class="lc-capture-input" id="lc-hcap-phone" type="tel" placeholder="Phone number (optional)" />' +
+      '<button class="lc-capture-btn" onclick="lcSubmitCapture(\'lc-hcap-email\',\'lc-hcap-phone\',\'lc-home-capture\')">Save details</button>';
+    homeEl.appendChild(card);
+    card.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('lc-hcap-email').focus();
+  };
+
+  // ── Submit capture (shared by home + chat cards) ─────────────────────────────
+  window.lcSubmitCapture = function (emailId, phoneId, cardId) {
+    var email = (document.getElementById(emailId).value || '').trim();
+    var phone = (document.getElementById(phoneId).value || '').trim();
+    if (!email && !phone) {
+      document.getElementById(emailId).focus();
+      return;
+    }
+    var card = document.getElementById(cardId);
+    card.innerHTML = '<div class="lc-capture-thanks">Thanks! We\'ll be in touch soon.</div>';
+    fetch(WORKER_URL + '/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, email: email, phone: phone }),
+    }).catch(function () {});
+  };
 
   // ── Switch to chat mode ──────────────────────────────────────────────────────
   function startChat(question) {
@@ -228,6 +326,7 @@
       document.getElementById('lc-home').style.display = 'none';
       document.getElementById('lc-chat').style.display = 'flex';
       document.getElementById('lc-chat').style.flexDirection = 'column';
+      document.getElementById('lc-back').classList.add('lc-visible');
     }
     sendText(question);
   }
@@ -257,11 +356,12 @@
         typingEl.remove();
         isBusy = false;
         appendMsg('bot', d.reply || 'Sorry, something went wrong. Please try again.');
+        maybeShowCapture();
       })
       .catch(function () {
         typingEl.remove();
         isBusy = false;
-        appendMsg('bot', 'I\'m having trouble connecting right now. Please email hello@lacalut.com.au.');
+        appendMsg('bot', 'I\'m having trouble connecting. Please email hello@lacalut.com.au.');
       });
   }
 
@@ -285,11 +385,28 @@
     return div;
   }
 
+  // ── Lead capture card (appears after first bot reply in chat) ─────────────
+  function maybeShowCapture() {
+    if (captureShown) return;
+    captureShown = true;
+    var chat = document.getElementById('lc-chat');
+    var card = document.createElement('div');
+    card.id = 'lc-chat-capture';
+    card.className = 'lc-capture-card';
+    card.innerHTML =
+      '<div class="lc-capture-dismiss"><button onclick="document.getElementById(\'lc-chat-capture\').remove()">Dismiss</button></div>' +
+      '<div class="lc-capture-title">Want a personal reply from our team?</div>' +
+      '<input class="lc-capture-input" id="lc-ccap-email" type="email" placeholder="Email address (optional)" />' +
+      '<input class="lc-capture-input" id="lc-ccap-phone" type="tel" placeholder="Phone number (optional)" />' +
+      '<button class="lc-capture-btn" onclick="lcSubmitCapture(\'lc-ccap-email\',\'lc-ccap-phone\',\'lc-chat-capture\')">Save details</button>';
+    chat.appendChild(card);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
   // ── Init ─────────────────────────────────────────────────────────────────────
   function init() {
     build();
     applyConfig();
-    // Load config from Worker (updates greeting + buttons from DB)
     fetch(WORKER_URL + '/config')
       .then(function (r) { return r.json(); })
       .then(function (d) { config = Object.assign(config, d); applyConfig(); })
