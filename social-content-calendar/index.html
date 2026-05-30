@@ -159,11 +159,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 }
 .hashtags-input:focus{outline:none;border-color:var(--navy)}
 .card-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
-.card-actions button{
+.card-actions > button{
   padding:7px 10px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);
   background:#fff;color:var(--text);transition:.12s;
 }
-.card-actions button:hover{background:var(--bg)}
+.card-actions > button:hover{background:var(--bg)}
+.card-actions > .btn-posted{background:var(--purple);color:#fff;border-color:var(--purple)}
+.card-actions > .btn-posted:hover{background:#5a2ca0}
 .btn-rewrite{color:var(--navy);border-color:var(--navy)}
 .btn-video{color:#7b2fff;border-color:#c9b3ff}
 .btn-approve{background:var(--green);color:#fff;border-color:var(--green)}
@@ -738,9 +740,9 @@ function fullBodyHTML(idx, post, d) {
   const isPosted   = post.posted;
 
   const approveBtn = isPosted
-    ? `<button class="card-actions btn-posted" disabled>✅ Posted</button>`
+    ? `<button class="btn-posted" disabled>✅ Posted</button>`
     : isApproved
-    ? `<button class="card-actions btn-posted" onclick="markPosted(${idx})">📤 Mark as Posted</button>`
+    ? `<button class="btn-posted" onclick="markPosted(${idx})">📤 Mark as Posted</button>`
     : `<div class="approve-btn-group">
          <button class="btn-approve btn-approve-both" onclick="approvePost(${idx},'both')">✅ Both</button>
          <button class="btn-approve btn-approve-fb"   onclick="approvePost(${idx},'fb')">📘 FB Only</button>
@@ -1532,7 +1534,7 @@ function openSettings() {
 
   // Mark active buttons
   document.querySelectorAll('.logo-pos-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === logoPos));
-  document.querySelectorAll('.logo-size-btn').forEach(b => b.classList.toggle('active', b.dataset.sz === String(logoSizeFrac)));
+  document.querySelectorAll('.logo-size-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.sz) === logoSizeFrac));
 
   // Check Supabase
   const statusEl = document.getElementById('supa-status');
@@ -1622,7 +1624,7 @@ function initApp() {
   // Load logo settings display
   if (logoDataUrl) {
     document.querySelectorAll('.logo-pos-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === logoPos));
-    document.querySelectorAll('.logo-size-btn').forEach(b => b.classList.toggle('active', b.dataset.sz === String(logoSizeFrac)));
+    document.querySelectorAll('.logo-size-btn').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.sz) === logoSizeFrac));
   }
 }
 
