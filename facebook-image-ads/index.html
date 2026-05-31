@@ -415,8 +415,9 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
     <div class="mrow"><span class="mlbl">SKU</span><span class="mval b" id="m-sku">—</span></div>
     <div class="mrow"><span class="mlbl">Ad Set</span><span class="mval g" id="m-adset">—</span></div>
     <div class="mrow"><span class="mlbl">Format</span><span class="mval">Static Image (JPG/PNG)</span></div>
+    <div class="mrow"><span class="mlbl">Sizes</span><span class="mval">🔲 Square 1:1 &nbsp;·&nbsp; 📱 Vertical 9:16 &nbsp;·&nbsp; 🖥️ Horizontal 1.91:1</span></div>
     <div class="mrow"><span class="mlbl">Status</span><span class="mval o">PAUSED — not live until you enable it</span></div>
-    <div class="mwarn">⚠️ Saves to Supabase as <strong>ready_to_push</strong>. Run <code style="background:#fef9c3;padding:1px 4px;border-radius:3px;font-size:0.8em">push_to_meta.py</code> in Claude Code to push draft to Ads Manager.</div>
+    <div class="mwarn">⚠️ Crops 9:16 master → 3 placement sizes, uploads all to Supabase, saves as <strong>ready_to_push</strong>. Run <code style="background:#fef9c3;padding:1px 4px;border-radius:3px;font-size:0.8em">push_to_meta.py</code> to push to Ads Manager.</div>
     <div class="mact">
       <button class="btn-cancel" onclick="closeApp()">Cancel</button>
       <button class="btn-confirm" onclick="doApprove()">🚀 Confirm &amp; Queue</button>
@@ -693,7 +694,7 @@ function buildImageHTML(id,c,col,s){
   var imgSrc=c.img||'';
   var imgContent=imgSrc
     ?'<img src="'+esc(imgSrc)+'" id="img-'+id+'" style="width:100%;height:100%;object-fit:cover;display:block;" alt="'+esc(c.title)+'">'
-    :'<div class="fb-placeholder" id="img-ph-'+id+'"><div class="ph-icon">🖼️</div><div>Image will appear here</div><div style="font-size:12px;margin-top:2px;color:#888">4:5 · 1080×1350px</div></div><img src="" id="img-'+id+'" style="display:none;width:100%;height:100%;object-fit:cover;" alt="">';
+    :'<div class="fb-placeholder" id="img-ph-'+id+'"><div class="ph-icon">🖼️</div><div>Image will appear here</div><div style="font-size:12px;margin-top:2px;color:#888">9:16 master → 3 sizes on approve</div></div><img src="" id="img-'+id+'" style="display:none;width:100%;height:100%;object-fit:cover;" alt="">';
 
   return '<div class="card-hdr">'
     +'<span class="phase-badge '+(gen?'pb-generating':q?'pb-queued':'pb-image')+'">'+(gen?'⏳ Building Copy':q?'🚀 Queued':'🖼️ Image Ready')+'</span>'
@@ -724,7 +725,7 @@ function buildImageHTML(id,c,col,s){
     +'</div>'
     // Image gen panel
     +'<div class="img-panel-inner" id="imgpanel-'+id+'">'
-    +'<div class="img-panel-lbl">🖼️ Generate Image — Gemini · 1080×1350 portrait</div>'
+    +'<div class="img-panel-lbl">🖼️ Generate Image — Gemini · 9:16 master → auto-crops to 1:1 + 1.91:1 on approve</div>'
     +'<div style="font-size:12px;color:#6b21a8;margin-bottom:8px">Style: '+esc(s?s.geminiStyle:'')+'</div>'
     +'<div class="ref-slots">'
     +'<label class="ref-slot"><input type="file" accept="image/*" onchange="addRef(event,\''+id+'\',0)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-0">+ Style ref</div></label>'
@@ -997,7 +998,7 @@ async function runImgGen(id){
   var fullPrompt='Generate a high-quality Facebook ad image for '+esc(s?s.name:'')+'. '
     +(conceptPrompt?'Visual concept: '+conceptPrompt+'. ':'')
     +'Style: '+prompt+'. '
-    +'1080x1350 portrait format, 4:5 aspect ratio. Scroll-stopping, clinically credible. No text overlays on the image.';
+    +'1080x1920 vertical portrait format, 9:16 aspect ratio. Scroll-stopping, clinically credible. No text overlays on the image. Keep the main subject centred — image will be cropped to square and horizontal formats.';
   parts.push({text:fullPrompt});
   try{
     var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key='+GEM_KEY,{
@@ -1027,6 +1028,26 @@ function acceptImg(id){
   applyLogoAll();
 }
 function discardImg(id){var r=document.getElementById('ires-'+id);if(r)r.style.display='none';}
+
+/* ── CENTER-CROP HELPER: crops a base64 data URL to target W×H ── */
+function cropImageToAspect(dataUrl,targetW,targetH){
+  return new Promise(function(resolve,reject){
+    var img=new Image();
+    img.onload=function(){
+      var srcW=img.naturalWidth,srcH=img.naturalHeight;
+      var targetRatio=targetW/targetH,srcRatio=srcW/srcH;
+      var cropW,cropH,cropX,cropY;
+      if(srcRatio>targetRatio){cropH=srcH;cropW=Math.round(srcH*targetRatio);cropX=Math.round((srcW-cropW)/2);cropY=0;}
+      else{cropW=srcW;cropH=Math.round(srcW/targetRatio);cropX=0;cropY=Math.round((srcH-cropH)/2);}
+      var c=document.createElement('canvas');c.width=targetW;c.height=targetH;
+      c.getContext('2d').drawImage(img,cropX,cropY,cropW,cropH,0,0,targetW,targetH);
+      resolve(c.toDataURL('image/jpeg',0.92));
+    };
+    img.onerror=function(){reject(new Error('Crop failed'));};
+    img.src=dataUrl;
+  });
+}
+
 function dlImg(id){
   var img=document.getElementById('img-'+id);
   if(!img||!img.src)return;
@@ -1080,13 +1101,27 @@ async function doApprove(){
   var imgEl=document.getElementById('img-'+id);
   var rawImageUrl=c.img||(imgEl?imgEl.src:'');
   try{
-    if(rawImageUrl&&rawImageUrl.startsWith('data:'))btn.textContent='⏳ Uploading image…';
-    else btn.textContent='⏳ Saving…';
-    var imageUrl=await resolveImageUrl(id,rawImageUrl);
+    // Step 1: crop 9:16 master to square and horizontal
+    btn.textContent='⏳ Cropping 3 sizes…';
+    var squareData=rawImageUrl?await cropImageToAspect(rawImageUrl,1080,1080):'';
+    var horizData=rawImageUrl?await cropImageToAspect(rawImageUrl,1200,628):'';
+
+    // Step 2: upload all three
+    btn.textContent='⏳ Uploading vertical (9:16)…';
+    var imageUrlVertical=await resolveImageUrl(id+'-v916',rawImageUrl);
+    btn.textContent='⏳ Uploading square (1:1)…';
+    var imageUrlSquare=squareData?await resolveImageUrl(id+'-sq11',squareData):'';
+    btn.textContent='⏳ Uploading horizontal (1.91:1)…';
+    var imageUrlHorizontal=horizData?await resolveImageUrl(id+'-h191',horizData):'';
+
     btn.textContent='⏳ Saving…';
     var payload=[{sku:c.sku||activeSku,creative_name:c.title||id,creative_type:'image',
       adset_id:s.adsetId,adset_name:s.adsetName,campaign_id:s.campaignId,template_ad_id:'',
-      primary_text:pt,headline:h1,description:desc,image_url:imageUrl,status:'ready_to_push'}];
+      primary_text:pt,headline:h1,description:desc,
+      image_url:imageUrlSquare||imageUrlVertical,
+      image_url_vertical:imageUrlVertical,
+      image_url_horizontal:imageUrlHorizontal,
+      status:'ready_to_push'}];
     var res=await fetch(SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
       body:JSON.stringify(payload)});
