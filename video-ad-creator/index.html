@@ -289,6 +289,30 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   #gen-bar{flex-direction:column;align-items:stretch;}
   #manual-idea-input{max-width:100%;}
 }
+
+/* TRIM PANEL */
+.trim-panel{background:#f8f9fa;border:1.5px solid #dde1e7;border-radius:8px;padding:14px;margin-top:14px;}
+.trim-panel-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy);margin-bottom:10px;}
+.trim-bar{position:relative;height:24px;background:#e4e6eb;border-radius:999px;cursor:pointer;margin-bottom:4px;user-select:none;overflow:hidden;}
+.trim-played{position:absolute;left:0;top:0;height:100%;background:var(--navy);opacity:.3;pointer-events:none;}
+.trim-thumb{position:absolute;top:50%;width:14px;height:14px;border-radius:50%;background:var(--navy);transform:translate(-50%,-50%);box-shadow:0 0 0 2px #fff,0 0 0 3px var(--navy);pointer-events:none;z-index:2;}
+.trim-cut-zone{position:absolute;top:0;height:100%;background:rgba(207,16,45,.45);pointer-events:none;z-index:1;}
+.trim-time-row{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px;}
+.trim-mark-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.trim-marker-val{font-size:13px;font-weight:700;color:var(--text);min-width:36px;font-family:monospace;}
+.trim-btn-sm{background:#fff;border:1.5px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;cursor:pointer;transition:.12s;}
+.trim-btn-sm:hover{background:#e4e6ea;}
+.trim-btn-sm.add{background:#e8f8e8;border-color:#b2dfb2;color:#1e7e34;}
+.trim-btn-sm.add:hover{background:#1e7e34;color:#fff;}
+.trim-btn-sm.danger{background:#fce8e8;border-color:#ef9a9a;color:#c62828;}
+.trim-btn-sm.danger:hover{background:#c62828;color:#fff;}
+.trim-cutlist{display:flex;flex-direction:column;gap:5px;margin-bottom:10px;min-height:20px;}
+.trim-cut-item{display:flex;align-items:center;gap:8px;background:#fff3e0;border:1.5px solid #ffcc80;border-radius:6px;padding:5px 10px;font-size:13px;font-weight:600;}
+.trim-act-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.btn-trim-apply{background:var(--navy);color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;transition:.12s;}
+.btn-trim-apply:hover{background:#003870;}
+.btn-trim-apply:disabled{background:#9eb3c8;cursor:not-allowed;}
+.trim-status{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -812,7 +836,10 @@ function buildVideoHTML(id,c,col){
     +'<button class="btn-higgsfield" id="hfb-'+id+'" onclick="genHiggsfield(\''+id+'\')">⚡ Higgsfield Prompt</button>'
     +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
     +'<a class="btn-dl" id="dl-'+id+'" href="'+(c.video||'#')+'" download>📥 Download</a>'
-    +'</div></div>'
+    +'<button class="btn-teach" onclick="openTrimPanel(\''+id+'\')">✂️ Trim Video</button>'
+    +'</div>'
+    +buildTrimPanelHTML(id)
+    +'</div>'
     // RIGHT
     +'<div class="split-right">'
     +'<div class="preview-lbl">📱 Ad Preview</div>'
@@ -1428,6 +1455,222 @@ function copyShareCaption(){
     btn.textContent='✅ Copied!';
     setTimeout(function(){btn.textContent='📋 Copy Caption';},2000);
   });
+}
+
+/* ── VIDEO TRIMMER ── */
+var trimState={};
+var _ffInst=null,_ffLoading=false,_ffCbs=[];
+
+function buildTrimPanelHTML(id){
+  return '<div class="trim-panel" id="trim-'+id+'" style="display:none">'
+    +'<div class="trim-panel-lbl">✂️ Video Trimmer — scrub to a bad moment · mark start → mark end → add cut</div>'
+    +'<video id="trim-vid-'+id+'" preload="metadata" controls playsinline muted style="width:100%;max-height:130px;border-radius:6px;background:#000;margin-bottom:10px;display:block;"></video>'
+    +'<div class="trim-bar" id="trim-bar-'+id+'" onmousedown="trimBarDown(event,\''+id+'\')">'
+    +'<div class="trim-played" id="trim-played-'+id+'" style="width:0%"></div>'
+    +'<div class="trim-thumb" id="trim-thumb-'+id+'" style="left:0%"></div>'
+    +'</div>'
+    +'<div class="trim-time-row"><span id="trim-ct-'+id+'">0.0s</span><span id="trim-dur-'+id+'">— </span></div>'
+    +'<div class="trim-mark-row">'
+    +'<button class="trim-btn-sm" onclick="markTrimPt(\''+id+'\',\'s\')">⬅️ Mark Start</button>'
+    +'<span class="trim-marker-val" id="trim-ms-'+id+'">—</span>'
+    +'<button class="trim-btn-sm" onclick="markTrimPt(\''+id+'\',\'e\')">➡️ Mark End</button>'
+    +'<span class="trim-marker-val" id="trim-me-'+id+'">—</span>'
+    +'<button class="trim-btn-sm add" onclick="addTrimCut(\''+id+'\')">+ Add Cut</button>'
+    +'</div>'
+    +'<div class="trim-cutlist" id="trim-cutlist-'+id+'"><div style="font-size:13px;color:var(--muted)">No cuts yet.</div></div>'
+    +'<div class="trim-act-row">'
+    +'<button class="btn-trim-apply" id="trim-apply-'+id+'" onclick="applyTrimCuts(\''+id+'\')">✅ Apply Cuts & Preview</button>'
+    +'<button class="trim-btn-sm danger" onclick="clearTrimCuts(\''+id+'\')">🗑 Clear All</button>'
+    +'<button class="trim-btn-sm" onclick="closeTrimPanel(\''+id+'\')">✕ Close</button>'
+    +'</div>'
+    +'<div class="trim-status" id="trim-status-'+id+'"></div>'
+    +'</div>';
+}
+
+function openTrimPanel(id){
+  var c=cards[id];if(!c||!c.video)return;
+  var panel=document.getElementById('trim-'+id);
+  var vid=document.getElementById('trim-vid-'+id);
+  if(!panel||!vid)return;
+  if(!trimState[id])trimState[id]={cuts:[],ms:null,me:null};
+  panel.style.display='';
+  if(vid.getAttribute('data-src')!==c.video){vid.src=c.video;vid.setAttribute('data-src',c.video);}
+  wireTrimVid(id);
+  renderTrimList(id);
+}
+function closeTrimPanel(id){var p=document.getElementById('trim-'+id);if(p)p.style.display='none';}
+
+function wireTrimVid(id){
+  var vid=document.getElementById('trim-vid-'+id);
+  if(!vid||vid._tw)return;vid._tw=true;
+  vid.ontimeupdate=function(){trimPlayhead(id);};
+  vid.onloadedmetadata=function(){
+    var d=document.getElementById('trim-dur-'+id);
+    if(d)d.textContent=tFmt(vid.duration);
+    trimPlayhead(id);renderTrimZones(id);
+  };
+}
+function trimPlayhead(id){
+  var vid=document.getElementById('trim-vid-'+id);if(!vid||!vid.duration)return;
+  var pct=vid.currentTime/vid.duration*100;
+  var pl=document.getElementById('trim-played-'+id);var th=document.getElementById('trim-thumb-'+id);
+  var ct=document.getElementById('trim-ct-'+id);
+  if(pl)pl.style.width=pct+'%';
+  if(th)th.style.left=pct+'%';
+  if(ct)ct.textContent=tFmt(vid.currentTime);
+}
+function trimBarDown(e,id){
+  var bar=document.getElementById('trim-bar-'+id);
+  var vid=document.getElementById('trim-vid-'+id);
+  if(!bar||!vid||!vid.duration)return;
+  function seek(ev){
+    var r=bar.getBoundingClientRect();
+    vid.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*vid.duration;
+  }
+  seek(e);
+  function mm(ev){seek(ev);}
+  function mu(){document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);}
+  document.addEventListener('mousemove',mm);document.addEventListener('mouseup',mu);
+}
+function tFmt(s){return(s||0).toFixed(1)+'s';}
+
+function markTrimPt(id,which){
+  var vid=document.getElementById('trim-vid-'+id);if(!vid||!vid.duration)return;
+  if(!trimState[id])trimState[id]={cuts:[],ms:null,me:null};
+  var t=parseFloat(vid.currentTime.toFixed(2));
+  trimState[id][which]=t;
+  var el=document.getElementById('trim-m'+which+'-'+id);if(el)el.textContent=tFmt(t);
+  renderTrimZones(id);
+}
+function addTrimCut(id){
+  var st=trimState[id];if(!st)return;
+  if(st.s===null||st.s===undefined||st.e===null||st.e===undefined){alert('Mark both a start and end point first.');return;}
+  var s=Math.min(st.s,st.e),e=Math.max(st.s,st.e);
+  if(e-s<0.05){alert('Cut must be longer than 0.05s.');return;}
+  st.cuts.push({s:s,e:e});st.s=null;st.e=null;
+  var ms=document.getElementById('trim-ms-'+id);if(ms)ms.textContent='—';
+  var me=document.getElementById('trim-me-'+id);if(me)me.textContent='—';
+  renderTrimList(id);renderTrimZones(id);
+}
+function removeTrimCut(id,i){
+  var st=trimState[id];if(!st)return;
+  st.cuts.splice(i,1);renderTrimList(id);renderTrimZones(id);
+}
+function clearTrimCuts(id){
+  trimState[id]={cuts:[],s:null,e:null};
+  var ms=document.getElementById('trim-ms-'+id);if(ms)ms.textContent='—';
+  var me=document.getElementById('trim-me-'+id);if(me)me.textContent='—';
+  renderTrimList(id);renderTrimZones(id);
+}
+function renderTrimList(id){
+  var el=document.getElementById('trim-cutlist-'+id);if(!el)return;
+  var st=trimState[id];
+  if(!st||!st.cuts.length){el.innerHTML='<div style="font-size:13px;color:var(--muted)">No cuts yet — scrub to a bad moment, mark start → end → add cut.</div>';return;}
+  el.innerHTML=st.cuts.map(function(c,i){
+    return '<div class="trim-cut-item">✂️ Remove '+tFmt(c.s)+' → '+tFmt(c.e)
+      +' <span style="color:var(--muted);font-weight:400">('+tFmt(c.e-c.s)+')</span>'
+      +'<button onclick="removeTrimCut(\''+id+'\','+i+')" style="margin-left:auto;background:#fce8e8;border:1.5px solid #ef9a9a;border-radius:4px;cursor:pointer;padding:2px 8px;font-size:11px;font-weight:700;color:#c62828;">✕</button>'
+      +'</div>';
+  }).join('');
+}
+function renderTrimZones(id){
+  var bar=document.getElementById('trim-bar-'+id);
+  var vid=document.getElementById('trim-vid-'+id);
+  if(!bar||!vid||!vid.duration)return;
+  bar.querySelectorAll('.trim-cut-zone').forEach(function(z){z.remove();});
+  var st=trimState[id];if(!st)return;
+  var dur=vid.duration;
+  st.cuts.forEach(function(c){
+    var z=document.createElement('div');z.className='trim-cut-zone';
+    z.style.left=(c.s/dur*100)+'%';z.style.width=((c.e-c.s)/dur*100)+'%';
+    bar.insertBefore(z,bar.querySelector('.trim-thumb'));
+  });
+}
+
+function loadFFmpeg(){
+  if(_ffInst)return Promise.resolve(_ffInst);
+  return new Promise(function(res,rej){
+    _ffCbs.push({res:res,rej:rej});
+    if(_ffLoading)return;
+    _ffLoading=true;
+    var s=document.createElement('script');
+    s.src='https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js';
+    s.onload=function(){
+      try{
+        var ff=FFmpeg.createFFmpeg({log:false,corePath:'https://unpkg.com/@ffmpeg/core@0.11.0/dist/ffmpeg-core.js'});
+        ff.load().then(function(){
+          _ffInst=ff;_ffLoading=false;
+          _ffCbs.forEach(function(cb){cb.res(ff);});_ffCbs=[];
+        }).catch(function(e){_ffLoading=false;_ffCbs.forEach(function(cb){cb.rej(e);});_ffCbs=[];});
+      }catch(e){_ffLoading=false;_ffCbs.forEach(function(cb){cb.rej(e);});_ffCbs=[];}
+    };
+    s.onerror=function(){var e=new Error('FFmpeg script failed to load');_ffLoading=false;_ffCbs.forEach(function(cb){cb.rej(e);});_ffCbs=[];};
+    document.head.appendChild(s);
+  });
+}
+
+async function applyTrimCuts(id){
+  var st=trimState[id];
+  if(!st||!st.cuts.length){alert('No cuts to apply. Mark a start and end point, then click + Add Cut.');return;}
+  var c=cards[id];if(!c||!c.video){alert('No video loaded.');return;}
+  var vid=document.getElementById('trim-vid-'+id);
+  if(!vid||!vid.duration){alert('Video not loaded yet — wait a moment and try again.');return;}
+  var dur=vid.duration;
+  var btn=document.getElementById('trim-apply-'+id);
+  var statusEl=document.getElementById('trim-status-'+id);
+  btn.disabled=true;btn.textContent='⏳ Processing…';
+  statusEl.textContent='Loading FFmpeg.wasm — first use takes ~30s…';
+  try{
+    var ff=await loadFFmpeg();
+    statusEl.textContent='Reading video…';
+    var src=c.video;var inputData;
+    if(src.startsWith('data:')){
+      var b64=src.split(',')[1];var bin=atob(b64);
+      var arr=new Uint8Array(bin.length);
+      for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+      inputData=arr;
+    }else{
+      var r2=await fetch(src);inputData=new Uint8Array(await r2.arrayBuffer());
+    }
+    ff.FS('writeFile','input.mp4',inputData);
+    var cuts=st.cuts.slice().sort(function(a,b){return a.s-b.s;});
+    var keeps=[],prev=0;
+    cuts.forEach(function(cut){if(cut.s>prev+0.01)keeps.push({s:prev,e:cut.s});prev=cut.e;});
+    if(prev<dur-0.01)keeps.push({s:prev,e:dur});
+    keeps=keeps.filter(function(k){return k.e-k.s>=0.05;});
+    if(!keeps.length){alert('Those cuts remove the entire video!');throw new Error('abort');}
+    statusEl.textContent='Joining '+keeps.length+' segment(s)…';
+    var n=keeps.length;
+    var vf=[],af=[],vout=[],aout=[];
+    keeps.forEach(function(k,i){
+      vf.push('[0:v]trim=start='+k.s.toFixed(3)+':end='+k.e.toFixed(3)+',setpts=PTS-STARTPTS[v'+i+']');
+      af.push('[0:a]atrim=start='+k.s.toFixed(3)+':end='+k.e.toFixed(3)+',asetpts=PTS-STARTPTS[a'+i+']');
+      vout.push('[v'+i+']');aout.push('[a'+i+']');
+    });
+    var ok=false;
+    try{
+      var filt=vf.concat(af).join(';')+';'+vout.join('')+aout.join('')+'concat=n='+n+':v=1:a=1[outv][outa]';
+      await ff.run('-i','input.mp4','-filter_complex',filt,'-map','[outv]','-map','[outa]','-c:v','libx264','-c:a','aac','-movflags','+faststart','output.mp4');
+      ok=true;
+    }catch(e){try{ff.FS('unlink','output.mp4');}catch(e2){}}
+    if(!ok){
+      var filt2=vf.join(';')+';'+vout.join('')+'concat=n='+n+':v=1[outv]';
+      await ff.run('-i','input.mp4','-filter_complex',filt2,'-map','[outv]','-c:v','libx264','-movflags','+faststart','output.mp4');
+    }
+    var out=ff.FS('readFile','output.mp4');
+    var blob=new Blob([out.buffer],{type:'video/mp4'});
+    var url=URL.createObjectURL(blob);
+    cards[id].video=url;
+    var mainVid=document.getElementById('vid-'+id);if(mainVid){mainVid.src=url;mainVid.load();}
+    var dl=document.getElementById('dl-'+id);if(dl)dl.href=url;
+    vid.src=url;vid.load();
+    clearTrimCuts(id);
+    statusEl.textContent='✅ Done! Preview updated on the right — cuts applied. You can make more cuts or download.';
+    try{ff.FS('unlink','input.mp4');}catch(e){}
+    try{ff.FS('unlink','output.mp4');}catch(e){}
+  }catch(err){
+    if(err.message!=='abort')statusEl.textContent='❌ Error: '+err.message;
+  }finally{btn.disabled=false;btn.textContent='✅ Apply Cuts & Preview';}
 }
 
 /* ── TAGLINE INLINE EDIT ── */
