@@ -11,8 +11,8 @@
   // ── Symptom intake chips ─────────────────────────────────────────────────────
   var SYMPTOMS = [
     { icon: '🩸', label: 'Bleeding or\nsore gums',   message: 'I have bleeding or sore gums — what do you recommend?' },
-    { icon: '😮', label: 'Bad breath',                message: 'I have bad breath and want to treat it at the source — what do you recommend?' },
-    { icon: '😬', label: 'Sensitive\nteeth',          message: 'I have sensitive teeth — what product do you recommend?' },
+    { icon: '🤢', label: 'Bad breath',                message: 'I have bad breath and want to treat it at the source — what do you recommend?' },
+    { icon: '😣', label: 'Sensitive\nteeth',          message: 'I have sensitive teeth — what product do you recommend?' },
     { icon: '🤔', label: 'Not sure\nwhere to start', message: "I'm not sure which Lacalut product is right for me — can you help?" },
   ];
 
