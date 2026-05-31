@@ -169,6 +169,80 @@ label input:focus, label textarea:focus, label select:focus { border-color: var(
 .modal-close:hover { color: var(--text); }
 .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 
+/* Panel sub-text */
+.panel-sub { color: var(--muted); font-size: 13px; margin: -8px 0 16px; line-height: 1.5; }
+.badge-count { background: #e5e7eb; color: #374151; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin-left: 6px; }
+.badge-needs { background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 12px; margin-left: 6px; }
+
+/* Training filters */
+.training-filters { display: flex; gap: 8px; margin-bottom: 16px; }
+.filter-pill {
+  padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: #fff; color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-pill.active { background: var(--red); color: #fff; border-color: var(--red); }
+.filter-pill:not(.active):hover { border-color: #999; color: var(--text); }
+
+/* Training cards */
+.training-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); }
+.training-card.needs-training { border-left: 4px solid #ef4444; }
+.training-card-head { padding: 14px 16px; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.training-card-head:hover { background: #f9fafb; }
+.training-pairs { display: none; border-top: 1px solid var(--border); }
+.training-card.open .training-pairs { display: block; }
+.training-card.open .conv-toggle { transform: rotate(180deg); }
+
+.training-pair { padding: 16px 18px; border-bottom: 1px solid #f3f4f6; }
+.training-pair:last-child { border-bottom: none; }
+.training-pair.escalated { background: #fff5f5; }
+.pair-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); display: block; margin-bottom: 4px; }
+.label-warn { color: #dc2626; }
+.pair-q, .pair-a { margin-bottom: 10px; }
+.pair-text { font-size: 14px; line-height: 1.5; color: var(--text); }
+.pair-text-bot { color: var(--muted); }
+.pair-actions { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.btn-train {
+  padding: 7px 14px; background: var(--red); color: #fff; border: none;
+  border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-train:hover { background: #a80d24; }
+.pair-hidden { display: none; }
+.flag-badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 12px; background: #fee2e2; color: #dc2626; }
+.flag-badge.flag-ok { background: #d1fae5; color: #065f46; }
+
+/* Leads tab */
+.badge-leads {
+  background: #cf102d; color: #fff; font-size: 11px; font-weight: 700;
+  padding: 1px 7px; border-radius: 10px; margin-left: 4px; vertical-align: middle;
+}
+
+.lead-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 18px; margin-bottom: 10px; box-shadow: var(--shadow);
+}
+.lead-card-main { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.lead-contacts { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.lead-contact {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: background 0.15s;
+}
+.lead-email { background: #dbeafe; color: #1e40af; }
+.lead-email:hover { background: #bfdbfe; }
+.lead-phone { background: #d1fae5; color: #065f46; }
+.lead-phone:hover { background: #a7f3d0; }
+.lead-anon { font-size: 13px; color: var(--muted); font-style: italic; }
+.lead-date { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.lead-preview { margin-top: 8px; font-size: 13px; color: var(--muted); font-style: italic; }
+
+/* Lead message in conversations */
+.conv-msg-lead .conv-text { background: #fef3c7; color: #92400e; font-weight: 500; }
+
+/* Leads export button */
+#export-btn { gap: 6px; }
+
 @media (max-width: 700px) {
   .tab-content { padding: 16px; }
   .modal { margin: 16px; }
