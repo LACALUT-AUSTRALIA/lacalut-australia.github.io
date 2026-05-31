@@ -666,6 +666,7 @@ function renderCard(id,append){
   if(existing)con.replaceChild(el,existing);
   else if(append===true)con.appendChild(el);
   else con.insertBefore(el,con.firstChild);
+  if(c.phase==='video')setTimeout(function(){openTrimPanel(id);},0);
 }
 
 /* ── CONCEPT CARD ── */
@@ -1492,7 +1493,7 @@ function openTrimPanel(id){
   var panel=document.getElementById('trim-'+id);
   var vid=document.getElementById('trim-vid-'+id);
   if(!panel||!vid)return;
-  if(!trimState[id])trimState[id]={cuts:[],ms:null,me:null};
+  if(!trimState[id])trimState[id]={cuts:[],s:null,e:null};
   panel.style.display='';
   if(vid.getAttribute('data-src')!==c.video){vid.src=c.video;vid.setAttribute('data-src',c.video);}
   wireTrimVid(id);
@@ -1536,7 +1537,7 @@ function tFmt(s){return(s||0).toFixed(1)+'s';}
 
 function markTrimPt(id,which){
   var vid=document.getElementById('trim-vid-'+id);if(!vid||!vid.duration)return;
-  if(!trimState[id])trimState[id]={cuts:[],ms:null,me:null};
+  if(!trimState[id])trimState[id]={cuts:[],s:null,e:null};
   var t=parseFloat(vid.currentTime.toFixed(2));
   trimState[id][which]=t;
   var el=document.getElementById('trim-m'+which+'-'+id);if(el)el.textContent=tFmt(t);
