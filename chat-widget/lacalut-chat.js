@@ -69,6 +69,7 @@
   var mode = 'home';
   var isBusy = false;
   var captureShown = false;
+  var quickQAs = [];
   var unreadCount = 0;
   var config = {
     greeting: 'Hi! Ask me anything about our products, shipping, or orders.',
@@ -146,6 +147,9 @@
       transition: transform 0.28s cubic-bezier(.34,1.2,.64,1), opacity 0.22s ease;
     }
     #lc-panel.lc-open { transform: scale(1) translateY(0); opacity: 1; pointer-events: all; }
+    @media (min-width: 441px) {
+      #lc-panel { top: 20px; bottom: 20px; height: auto; max-height: none; }
+    }
 
     /* Header */
     #lc-head {
@@ -306,8 +310,8 @@
     var panel = el('div', { id: 'lc-panel', role: 'dialog', 'aria-label': 'Ask Lacalut' });
     panel.innerHTML =
       '<div id="lc-head">' +
-        '<button class="lc-back-btn" id="lc-back" aria-label="Back">&#8592;</button>' +
-        '<div class="lc-avatar">🦷</div>' +
+        '<button class="lc-back-btn" id="lc-back" aria-label="Back">↩️</button>' +
+        '<div class="lc-avatar"><img src="https://cdn.shopify.com/s/files/1/0635/3960/9651/files/download_4.png" alt="Lacalut" style="width:38px;height:38px;border-radius:50%;object-fit:contain;background:#fff;padding:3px;" /></div>' +
         '<div class="lc-head-info">' +
           '<div class="lc-head-name">Ask Lacalut</div>' +
           '<div class="lc-head-status"><span class="lc-status-dot"></span>Always here to help</div>' +
@@ -318,6 +322,10 @@
         '<div class="lc-greeting-bubble" id="lc-greeting-text">' + config.greeting + '</div>' +
         '<p class="lc-symptom-label">What brings you here today?</p>' +
         '<div class="lc-symptom-grid" id="lc-symptom-grid"></div>' +
+        '<div id="lc-qas-section" style="display:none">' +
+          '<p class="lc-qa-label" style="margin-top:14px">⚡ Instant Answers</p>' +
+          '<div class="lc-qa-list" id="lc-qas-list"></div>' +
+        '</div>' +
         '<div class="lc-qa-label">Quick Questions</div>' +
         '<div class="lc-qa-list" id="lc-qa-list"></div>' +
         '<div class="lc-leave-details">or <a onclick="lcShowHomeCapture()">leave your email for a personal reply</a></div>' +
@@ -646,6 +654,40 @@
     chat.scrollTop = chat.scrollHeight;
   }
 
+  // ── Quick Answers (instant, no AI) ──────────────────────────────────────────
+  function renderQuickQASection() {
+    var section = document.getElementById('lc-qas-section');
+    var list = document.getElementById('lc-qas-list');
+    if (!section || !list) return;
+    list.innerHTML = '';
+    if (!quickQAs.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
+    quickQAs.forEach(function (qa) {
+      var btn = document.createElement('button');
+      btn.className = 'lc-qa-btn';
+      btn.textContent = qa.question;
+      btn.onclick = function () { showInstantAnswer(qa); };
+      list.appendChild(btn);
+    });
+  }
+
+  function showInstantAnswer(qa) {
+    if (mode === 'home') {
+      mode = 'chat';
+      document.getElementById('lc-home').style.display = 'none';
+      document.getElementById('lc-chat').style.display = 'flex';
+      document.getElementById('lc-chat').style.flexDirection = 'column';
+      document.getElementById('lc-back').classList.add('lc-visible');
+    }
+    appendMsg('user', qa.question);
+    var botDiv = appendMsg('bot', '');
+    typeMessage(botDiv, qa.answer, function () {
+      showProductCards(qa.answer);
+      if (!captureShown) maybeShowCapture();
+      if (!isOpen) setUnread(unreadCount + 1);
+    });
+  }
+
   // ── Init ─────────────────────────────────────────────────────────────────────
   function init() {
     build();
@@ -654,6 +696,10 @@
       .then(function (r) { return r.json(); })
       .then(function (d) { config = Object.assign(config, d); applyConfig(); setupProactiveTrigger(); })
       .catch(function () { setupProactiveTrigger(); });
+    fetch(WORKER_URL + '/quick-qas')
+      .then(function (r) { return r.json(); })
+      .then(function (data) { quickQAs = data || []; renderQuickQASection(); })
+      .catch(function () {});
   }
 
   if (document.readyState === 'loading') {

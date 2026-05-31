@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAzMiAzMic+PHJlY3Qgd2lkdGg9JzMyJyBoZWlnaHQ9JzMyJyByeD0nNicgZmlsbD0nJTIzMDA0YTg4Jy8+PHBhdGggZD0nTTE2IDZjLTMuMyAwLTYgMi43LTYgNiAwIDEuNy43IDMuMiAxLjcgNC4zLS4zIDEuNS0uNyAzLjUtMSA1LjItLjIgMS4xLjYgMi41IDIgMi41IDEgMCAxLjctLjcgMi0xLjcuMy0xIC42LTIuMyAxLjMtMi4zcy45IDEuMiAxLjMgMi4zYy4zIDEgMS4xIDEuNyAyIDEuNyAxLjQgMCAyLjItMS40IDItMi41LS4zLTEuNy0uNy0zLjctMS01LjIgMS0xLjEgMS43LTIuNiAxLjctNC4zIDAtMy4zLTIuNy02LTYtNnonIGZpbGw9J3doaXRlJy8+PC9zdmc+">
-  <title>Lacalut Chat Admin</title>
+  <title>Lacalut Chat — Admin</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -14,31 +12,33 @@
       <div class="top-bar-inner">
         <div class="logo">
           <span class="logo-icon">🦷</span>
-          <span class="logo-text">Lacalut Chat Admin</span>
+          <span class="logo-text">Ask Lacalut — Admin</span>
         </div>
-        <div class="header-actions">
-          <span id="save-status" class="save-status"></span>
-        </div>
+        <span id="save-status" class="save-status"></span>
       </div>
     </header>
 
     <div class="config-warning" id="config-warning">
-      ⚠️ <strong>Setup required:</strong> Enter your Worker URL and Admin Secret in the
-      <button class="inline-link" onclick="switchTab('settings')">Settings tab</button> before using this panel.
+      ⚠️ <strong>Setup required:</strong> Enter your Worker URL and Admin Secret in
+      <button class="inline-link" onclick="switchTab('settings')">Settings</button> before using this panel.
     </div>
 
     <nav class="tabs">
-      <button class="tab active" data-tab="kb" onclick="switchTab('kb')">📚 Knowledge Base</button>
-      <button class="tab" data-tab="conversations" onclick="switchTab('conversations')">💬 Conversations</button>
-      <button class="tab" data-tab="settings" onclick="switchTab('settings')">⚙️ Settings</button>
+      <button class="tab active" data-tab="kb"            onclick="switchTab('kb')">📚 Knowledge Base</button>
+      <button class="tab"        data-tab="qas"           onclick="switchTab('qas')">⚡ Quick Answers</button>
+      <button class="tab"        data-tab="training"      onclick="switchTab('training')">🧠 AI Training</button>
+      <button class="tab"        data-tab="leads"         onclick="switchTab('leads')">💌 Leads <span class="badge-leads" id="leads-badge" style="display:none"></span></button>
+      <button class="tab"        data-tab="conversations" onclick="switchTab('conversations')">💬 Conversations</button>
+      <button class="tab"        data-tab="settings"      onclick="switchTab('settings')">⚙️ Settings</button>
     </nav>
 
-    <!-- ── Knowledge Base ────────────────────────────────────────────── -->
+    <!-- ── Knowledge Base ──────────────────────────────────────────────── -->
     <div id="tab-kb" class="tab-content active">
       <div class="panel-header">
-        <h2>Knowledge Base</h2>
+        <h2>Knowledge Base <span class="badge-count" id="kb-count"></span></h2>
         <button class="btn btn-primary" onclick="openAddModal()">+ Add Entry</button>
       </div>
+      <p class="panel-sub">These Q&amp;A pairs are injected into every AI response. The AI uses them to answer customer questions accurately.</p>
 
       <div class="filter-row">
         <select id="filter-category" onchange="filterKB()">
@@ -49,63 +49,111 @@
           <option value="wholesale">Wholesale</option>
           <option value="other">Other</option>
         </select>
-        <input id="filter-search" type="text" placeholder="Search…" oninput="filterKB()" />
+        <input id="filter-search" type="text" placeholder="Search questions…" oninput="filterKB()" />
       </div>
 
       <div id="kb-loading" class="loading-state">Loading knowledge base…</div>
-      <div id="kb-empty" class="empty-state" style="display:none">No entries found. Add your first one!</div>
-
+      <div id="kb-empty" class="empty-state" style="display:none">No entries found.</div>
       <table id="kb-table" class="data-table" style="display:none">
-        <thead>
-          <tr>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Category</th>
-            <th>Active</th>
-            <th class="col-actions">Actions</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th>Question</th><th>Answer</th><th>Category</th><th>Active</th><th class="col-actions"></th>
+        </tr></thead>
         <tbody id="kb-tbody"></tbody>
       </table>
     </div>
 
-    <!-- ── Conversations ─────────────────────────────────────────────── -->
+    <!-- ── Quick Answers ────────────────────────────────────────────────── -->
+    <div id="tab-qas" class="tab-content">
+      <div class="panel-header">
+        <h2>Quick Answers <span class="badge-count" id="qas-count"></span></h2>
+        <button class="btn btn-primary" onclick="openAddQAModal()">+ Add Quick Answer</button>
+      </div>
+      <p class="panel-sub">These appear as instant-answer buttons on the chat home screen. Customers click them and get your pre-written answer immediately — no AI involved, no waiting.</p>
+      <div id="qas-loading" class="loading-state">Loading quick answers…</div>
+      <div id="qas-empty" class="empty-state" style="display:none">No quick answers yet. Add your first one above.</div>
+      <table id="qas-table" class="data-table" style="display:none">
+        <thead><tr>
+          <th>Question</th><th>Answer</th><th>Order</th><th>Active</th><th class="col-actions"></th>
+        </tr></thead>
+        <tbody id="qas-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ── AI Training ──────────────────────────────────────────────────── -->
+    <div id="tab-training" class="tab-content">
+      <div class="panel-header">
+        <h2>AI Training <span class="badge-needs" id="needs-count"></span></h2>
+        <button class="btn btn-outline" onclick="loadTraining()">↻ Refresh</button>
+      </div>
+      <p class="panel-sub">Review conversations where the AI couldn't answer or may have answered incorrectly. Click <strong>Train AI</strong> on any exchange to add the correct answer to your Knowledge Base.</p>
+
+      <div class="training-filters">
+        <button class="filter-pill active" id="pill-flagged" onclick="showFlagged()">🔴 Needs Training</button>
+        <button class="filter-pill" id="pill-all-training" onclick="showAllTraining()">All Conversations</button>
+      </div>
+
+      <div id="training-loading" class="loading-state">Loading conversations…</div>
+      <div id="training-empty" class="empty-state" style="display:none">
+        ✅ No flagged conversations — the AI is handling everything well!
+      </div>
+      <div id="training-list"></div>
+    </div>
+
+    <!-- ── Leads ────────────────────────────────────────────────────────── -->
+    <div id="tab-leads" class="tab-content">
+      <div class="panel-header">
+        <h2>Leads <span class="badge-count" id="leads-count"></span></h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="loadLeads()">↻ Refresh</button>
+          <button class="btn btn-primary" id="export-btn" onclick="exportLeadsCSV()" style="display:none">⬇ Export CSV</button>
+        </div>
+      </div>
+      <p class="panel-sub">Everyone who left their email or phone number via the chat widget. Each lead is auto-saved as a Shopify customer tagged <code>chat-widget-lead</code>.</p>
+
+      <div id="leads-loading" class="loading-state">Loading leads…</div>
+      <div id="leads-empty" class="empty-state" style="display:none">No leads yet. Once customers leave their details in the widget, they'll appear here.</div>
+      <div id="leads-list"></div>
+    </div>
+
+    <!-- ── Conversations ────────────────────────────────────────────────── -->
     <div id="tab-conversations" class="tab-content">
       <div class="panel-header">
-        <h2>Recent Conversations</h2>
+        <h2>All Conversations</h2>
         <button class="btn btn-outline" onclick="loadConversations()">↻ Refresh</button>
       </div>
-      <div id="conv-loading" class="loading-state">Loading conversations…</div>
+      <div id="conv-loading" class="loading-state">Loading…</div>
       <div id="conv-empty" class="empty-state" style="display:none">No conversations yet.</div>
       <div id="conv-list"></div>
     </div>
 
-    <!-- ── Settings ──────────────────────────────────────────────────── -->
+    <!-- ── Settings ─────────────────────────────────────────────────────── -->
     <div id="tab-settings" class="tab-content">
-      <div class="panel-header"><h2>Widget Settings</h2></div>
+      <div class="panel-header"><h2>Settings</h2></div>
 
       <div class="settings-section">
         <h3>🔑 Connection</h3>
-        <p class="help-text">These are stored in your browser only — never sent to anyone except your own Worker.</p>
+        <p class="help-text">Stored in your browser only — never shared with anyone else.</p>
         <label>Worker URL
-          <input type="text" id="setting-worker-url" placeholder="https://lacalut-chat.xyz.workers.dev" />
+          <input type="text" id="setting-worker-url" placeholder="https://lacalut-chat.lacalut.workers.dev" />
         </label>
         <label>Admin Secret
           <input type="password" id="setting-admin-secret" placeholder="Your ADMIN_SECRET value" />
         </label>
-        <button class="btn btn-primary" onclick="saveConnection()">Save Connection</button>
-        <button class="btn btn-outline" onclick="testConnection(event)">Test Connection</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="saveConnection()">Save Connection</button>
+          <button class="btn btn-outline" onclick="testConnection(event)">Test Connection</button>
+        </div>
         <div id="connection-status" class="connection-status"></div>
       </div>
 
       <div class="settings-section">
         <h3>💬 Widget Config</h3>
-        <p class="help-text">These are saved to your Supabase database and applied to the live widget.</p>
+        <p class="help-text">Changes here update the live chat widget on your store immediately.</p>
         <label>Greeting message
           <textarea id="setting-greeting" rows="2" placeholder="Hi! How can I help you today?"></textarea>
         </label>
-        <label>Suggested questions (one per line)
-          <textarea id="setting-suggested" rows="4" placeholder="How long does shipping take?&#10;What's your return policy?&#10;Which product suits me?"></textarea>
+        <label>Quick Questions (one per line, up to 6)
+          <textarea id="setting-suggested" rows="7"></textarea>
         </label>
         <label>Brand colour
           <div class="colour-row">
@@ -115,10 +163,20 @@
         </label>
         <button class="btn btn-primary" onclick="saveWidgetConfig()">Save Widget Config</button>
       </div>
+
+      <div class="settings-section">
+        <h3>🎯 Proactive Trigger</h3>
+        <p class="help-text">Shows a nudge bubble above the chat button after the customer has been on the page for a while. Appears once per browser session.</p>
+        <label>Delay before nudge appears (seconds)
+          <input type="number" id="setting-proactive-delay" min="0" max="120" value="8" placeholder="8" />
+        </label>
+        <p class="help-text" style="margin-top:-10px">Set to <strong>0</strong> to disable the proactive trigger entirely.</p>
+        <button class="btn btn-primary" onclick="saveProactiveDelay()">Save Trigger Setting</button>
+      </div>
     </div>
   </div>
 
-  <!-- ── Add/Edit Modal ─────────────────────────────────────────────── -->
+  <!-- ── Add/Edit KB Modal ──────────────────────────────────────────────── -->
   <div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -129,7 +187,7 @@
         <input type="text" id="modal-question" placeholder="e.g. How long does shipping take?" />
       </label>
       <label>Answer
-        <textarea id="modal-answer" rows="4" placeholder="e.g. Standard shipping takes 3–7 business days…"></textarea>
+        <textarea id="modal-answer" rows="5" placeholder="Write the correct answer here…"></textarea>
       </label>
       <label>Category
         <select id="modal-category">
@@ -151,28 +209,33 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
-
-  <!-- Live test widget + reset button -->
-  <div id="lc-test-reset" style="position:fixed;bottom:92px;right:24px;z-index:999999;">
-    <button onclick="lcResetSession()" title="Clear chat history and start a fresh test session" style="background:#004a88;color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.2);">&#8635; Reset chat</button>
+  <!-- ── Quick Answer Modal ───────────────────────────────────────────────── -->
+  <div id="qa-modal-overlay" class="modal-overlay" onclick="closeQAModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="qa-modal-title">Add Quick Answer</h3>
+        <button class="modal-close" onclick="closeQAModal()">✕</button>
+      </div>
+      <label>Question (shown as button on home screen)
+        <input type="text" id="qa-modal-question" placeholder="e.g. Do you offer free shipping?" />
+      </label>
+      <label>Answer (shown instantly when clicked)
+        <textarea id="qa-modal-answer" rows="4" placeholder="Write the answer customers will see immediately…"></textarea>
+      </label>
+      <label>Display order (lower = shows first)
+        <input type="number" id="qa-modal-order" value="0" min="0" max="99" style="width:80px" />
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" id="qa-modal-active" checked />
+        Active (visible on chat home screen)
+      </label>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeQAModal()">Cancel</button>
+        <button class="btn btn-primary" id="qa-modal-save-btn" onclick="saveQAEntry()">Save</button>
+      </div>
+    </div>
   </div>
-  <script>
-    function lcResetSession() {
-      sessionStorage.removeItem('lc_sid');
-      var panel = document.getElementById('lc-panel');
-      var btn = document.getElementById('lc-btn');
-      if (panel) panel.remove();
-      if (btn) btn.remove();
-      var resetBtn = document.getElementById('lc-test-reset');
-      // Reload widget
-      var s = document.createElement('script');
-      s.src = 'https://lacalut-australia.github.io/chat-widget/lacalut-chat.js?v=' + Date.now();
-      document.body.appendChild(s);
-      // Re-show reset button after short delay
-      setTimeout(function() { if(resetBtn) resetBtn.style.display='block'; }, 500);
-    }
-  </script>
-  <script src="https://lacalut-australia.github.io/chat-widget/lacalut-chat.js" defer></script>
+
+  <script src="app.js"></script>
 </body>
 </html>
