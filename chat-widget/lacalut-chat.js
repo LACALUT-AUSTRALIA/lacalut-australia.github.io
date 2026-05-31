@@ -200,14 +200,14 @@
     .lc-symptom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
     .lc-symptom-btn {
       background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
-      padding: 10px 10px; text-align: left; font-size: 13px; color: #374151;
+      padding: 10px 12px; text-align: left; font-size: 13px; color: #374151;
       cursor: pointer; line-height: 1.35; font-family: inherit;
       transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-      display: flex; flex-direction: column; gap: 3px;
+      display: flex; flex-direction: row; align-items: center; gap: 8px;
     }
     .lc-symptom-btn:hover { border-color: var(--lc, #cf102d); background: #fff5f5; box-shadow: 0 2px 8px rgba(207,16,45,0.08); }
-    .lc-symptom-icon { font-size: 18px; }
-    .lc-symptom-text { font-weight: 600; color: #111; font-size: 12px; }
+    .lc-symptom-icon { font-size: 20px; flex-shrink: 0; }
+    .lc-symptom-text { font-weight: 600; color: #111; font-size: 13px; }
 
     /* Chat */
     #lc-chat { flex: 1; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 10px; }
@@ -288,8 +288,10 @@
     #lc-powered { text-align: center; font-size: 11px; color: #d1d5db; padding: 0 0 6px; flex-shrink: 0; }
 
     @media (max-width: 440px) {
-      #lc-panel { width: calc(100vw - 20px); right: 10px; bottom: 90px; }
+      #lc-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
       #lc-btn, #lc-nudge { right: 10px; }
+      #lc-btn { width: 44px; height: 44px; bottom: 18px; }
+      #lc-btn svg { width: 20px; height: 20px; }
     }
   `;
 
@@ -462,6 +464,7 @@
     card.id = 'lc-home-capture';
     card.className = 'lc-capture-card';
     card.innerHTML =
+      '<div class="lc-capture-dismiss"><button onclick="document.getElementById(\'lc-home-capture\').remove()">✕ Close</button></div>' +
       '<div class="lc-capture-title">Leave your details and we\'ll get back to you personally.</div>' +
       '<input class="lc-capture-input" id="lc-hcap-email" type="email" placeholder="Email address (optional)" />' +
       '<input class="lc-capture-input" id="lc-hcap-phone" type="tel" placeholder="Phone number (optional)" />' +
