@@ -1644,24 +1644,21 @@ async function applyTrimCuts(id){
     if(prev<dur-0.01)keeps.push({s:prev,e:dur});
     keeps=keeps.filter(function(k){return k.e-k.s>=0.05;});
     if(!keeps.length){alert('Those cuts remove the entire video!');throw new Error('abort');}
-    statusEl.textContent='Joining '+keeps.length+' segment(s)…';
     var n=keeps.length;
-    var vf=[],af=[],vout=[],aout=[];
-    keeps.forEach(function(k,i){
-      vf.push('[0:v]trim=start='+k.s.toFixed(3)+':end='+k.e.toFixed(3)+',setpts=PTS-STARTPTS[v'+i+']');
-      af.push('[0:a]atrim=start='+k.s.toFixed(3)+':end='+k.e.toFixed(3)+',asetpts=PTS-STARTPTS[a'+i+']');
-      vout.push('[v'+i+']');aout.push('[a'+i+']');
-    });
-    var ok=false;
-    try{
-      var filt=vf.concat(af).join(';')+';'+vout.join('')+aout.join('')+'concat=n='+n+':v=1:a=1[outv][outa]';
-      await ff.run('-i','input.mp4','-filter_complex',filt,'-map','[outv]','-map','[outa]','-c:v','libx264','-c:a','aac','-movflags','+faststart','output.mp4');
-      ok=true;
-    }catch(e){try{ff.FS('unlink','output.mp4');}catch(e2){}}
-    if(!ok){
-      var filt2=vf.join(';')+';'+vout.join('')+'concat=n='+n+':v=1[outv]';
-      await ff.run('-i','input.mp4','-filter_complex',filt2,'-map','[outv]','-c:v','libx264','-movflags','+faststart','output.mp4');
+    // Cut each keep segment to a temp file, then join with concat demuxer (works for audio-free video)
+    for(var i=0;i<n;i++){
+      statusEl.textContent='Cutting segment '+(i+1)+' of '+n+'…';
+      try{ff.FS('unlink','seg'+i+'.mp4');}catch(e){}
+      await ff.run('-ss',String(keeps[i].s.toFixed(3)),'-to',String(keeps[i].e.toFixed(3)),'-i','input.mp4','-c','copy','seg'+i+'.mp4');
     }
+    var listLines=[];
+    for(var i=0;i<n;i++)listLines.push("file 'seg"+i+".mp4'");
+    ff.FS('writeFile','list.txt',new TextEncoder().encode(listLines.join('\n')));
+    statusEl.textContent='Joining '+n+' segment(s)…';
+    try{ff.FS('unlink','output.mp4');}catch(e){}
+    await ff.run('-f','concat','-safe','0','-i','list.txt','-c','copy','output.mp4');
+    for(var i=0;i<n;i++){try{ff.FS('unlink','seg'+i+'.mp4');}catch(e){}}
+    try{ff.FS('unlink','list.txt');}catch(e){}
     var out=ff.FS('readFile','output.mp4');
     var blob=new Blob([out.buffer],{type:'video/mp4'});
     var url=URL.createObjectURL(blob);
