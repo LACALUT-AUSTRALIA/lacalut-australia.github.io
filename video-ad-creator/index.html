@@ -1465,7 +1465,7 @@ var _ffInst=null,_ffLoading=false,_ffCbs=[];
 function buildTrimPanelHTML(id){
   return '<div class="trim-panel" id="trim-'+id+'" style="display:none">'
     +'<div class="trim-panel-lbl">✂️ Video Trimmer — scrub to a bad moment · mark start → mark end → add cut</div>'
-    +'<video id="trim-vid-'+id+'" preload="metadata" controls playsinline muted style="width:100%;max-height:130px;border-radius:6px;background:#000;margin-bottom:10px;display:block;"></video>'
+    +'<video id="trim-vid-'+id+'" preload="metadata" controls playsinline muted style="width:100%;max-height:320px;border-radius:6px;background:#000;margin-bottom:10px;display:block;"></video>'
     +'<div class="trim-bar" id="trim-bar-'+id+'" onmousedown="trimBarDown(event,\''+id+'\')">'
     +'<div class="trim-played" id="trim-played-'+id+'" style="width:0%"></div>'
     +'<div class="trim-thumb" id="trim-thumb-'+id+'" style="left:0%"></div>'
@@ -1529,7 +1529,7 @@ function trimBarDown(e,id){
     var pct=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
     vid.currentTime=pct*vid.duration;
     var mainVid=document.getElementById('vid-'+id);
-    if(mainVid&&mainVid.readyState>=1)mainVid.currentTime=pct*mainVid.duration;
+    if(mainVid){mainVid.currentTime=pct*(mainVid.duration||vid.duration);}
   }
   seek(e);
   function mm(ev){seek(ev);}
