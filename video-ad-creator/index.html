@@ -1526,7 +1526,10 @@ function trimBarDown(e,id){
   if(!bar||!vid||!vid.duration)return;
   function seek(ev){
     var r=bar.getBoundingClientRect();
-    vid.currentTime=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width))*vid.duration;
+    var pct=Math.max(0,Math.min(1,(ev.clientX-r.left)/r.width));
+    vid.currentTime=pct*vid.duration;
+    var mainVid=document.getElementById('vid-'+id);
+    if(mainVid&&mainVid.readyState>=1)mainVid.currentTime=pct*mainVid.duration;
   }
   seek(e);
   function mm(ev){seek(ev);}
