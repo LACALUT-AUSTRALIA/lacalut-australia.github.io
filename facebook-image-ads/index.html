@@ -675,10 +675,13 @@ function buildConceptHTML(id,c,col){
     +'<span class="card-angle">'+esc(c.angle)+'</span>'
     +'</div>'
     +'<div class="concept-body">'
+    +(c.headline?'<div class="concept-lbl">Headline</div><div class="concept-hook-text" style="font-weight:700">'+esc(c.headline)+'</div>':'')
     +'<div class="concept-lbl">Opening Hook</div>'
     +'<div class="concept-hook-text">'+esc(c.hook)+'</div>'
+    +(c.textOverlay?'<div class="concept-story-lbl">Text overlay (on image)</div><div class="concept-story" style="font-weight:600;color:'+col+'">“'+esc(c.textOverlay)+'”</div>':'')
     +'<div class="concept-story-lbl">What the ad does</div>'
     +'<div class="concept-story">'+esc(c.story)+'</div>'
+    +(c.imagePrompt?'<div class="concept-story-lbl">Visual</div><div class="concept-story" style="font-style:italic">'+esc(c.imagePrompt)+'</div>':'')
     +'<div class="concept-edit" id="cedit-'+id+'">'
     +'<div class="edit-lbl">Title</div><input type="text" class="edit-input" id="et-'+id+'" value="'+esc(c.title)+'">'
     +'<div class="edit-lbl">Opening Hook</div><input type="text" class="edit-input" id="eh-'+id+'" value="'+esc(c.hook)+'">'
@@ -821,7 +824,16 @@ async function generateIdeas(){
   btn.disabled=true;btn.innerHTML='⏳ Generating…';
   if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';btn.disabled=false;return;}
   try{
-    var prompt=(localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP)+'\n\n'+ANGLE_DIRECTIVE+'\n\nReturn ONLY the JSON array described above — no other text.';
+    var prompt=(localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP)+'\n\n'+ANGLE_DIRECTIVE
+      +'\n\nFor EACH of the 10, return these fields:'
+      +'\n  "title": short internal name with emoji (e.g. "The Luxury Analogy")'
+      +'\n  "angle": the buying-motivation named (e.g. "Prestige / Luxury Analogy")'
+      +'\n  "headline": the ad headline with emoji (e.g. "German Engineering For Your Smile 🇩🇪")'
+      +'\n  "hook": one visceral sentence'
+      +'\n  "story": 2-3 sentences on what the ad does'
+      +'\n  "textOverlay": the exact SHORT punchy text to render ON the image (e.g. "Stop Seeing Pink In The Sink")'
+      +'\n  "imagePrompt": a detailed VISUAL description of the scene for AI image generation (composition, subject, setting, lighting) — describe the picture only, do NOT include the overlay words here'
+      +'\nReturn ONLY a JSON array of 10 such objects — no other text.';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
@@ -832,7 +844,7 @@ async function generateIdeas(){
     Object.keys(cards).forEach(function(id){if(cards[id].phase==='concept')delete cards[id];});
     ideas.slice(0,10).forEach(function(idea){
       var id='idea-'+(++cardIdx);
-      cards[id]={phase:'concept',title:idea.title||('💡 Concept '+(cardIdx)),angle:idea.angle||'',hook:idea.hook||'',story:idea.story||'',status:'none',sku:activeSku,imagePrompt:idea.imagePrompt||''};
+      cards[id]={phase:'concept',title:idea.title||('💡 Concept '+(cardIdx)),angle:idea.angle||'',headline:idea.headline||'',hook:idea.hook||'',story:idea.story||'',textOverlay:idea.textOverlay||'',status:'none',sku:activeSku,imagePrompt:idea.imagePrompt||''};
     });
     renderAll();saveSession();
   }catch(err){alert('❌ Error: '+err.message);}
@@ -898,9 +910,13 @@ function saveEdit(id){
 function approveConcept(id){
   cards[id].phase='image';
   renderCard(id);updateCounts();saveSession();
-  // Creative-first: open the image panel so the user adds the creative; copy
-  // then auto-writes from that image on accept (acceptImg/acceptUpload).
-  setTimeout(function(){toggleImgPanel(id,true);},60);
+  // Creative-first: open the image panel AND auto-generate the creative from the
+  // concept's visual now. User then iterates (Retry / edit / import) until perfect,
+  // and copy is written FROM the final image on "✓ Use This".
+  setTimeout(function(){
+    toggleImgPanel(id,true);
+    if(GEM_KEY&&cards[id]&&cards[id].imagePrompt)runImgGen(id);
+  },80);
 }
 
 /* Write copy FROM the actual creative (vision) — the correct order. Uses the
@@ -916,7 +932,7 @@ async function autoGenCopyFromImage(id){
   }else{
     imgBlock={type:'image',source:{type:'url',url:img}};
   }
-  var ctx=c.title?('For context, the chosen creative angle is — Title: '+c.title+'; Angle: '+c.angle+'; Hook: '+c.hook+'; Concept: '+c.story+'. The copy must fit BOTH this angle AND what the image actually shows.\n\n'):'';
+  var ctx=c.title?('For context, the chosen creative angle is — Title: '+c.title+'; Angle: '+c.angle+(c.headline?'; Headline: '+c.headline:'')+'; Hook: '+c.hook+(c.textOverlay?'; On-image text: "'+c.textOverlay+'"':'')+'; Concept: '+c.story+'. The copy must fit BOTH this angle AND what the image actually shows.\n\n'):'';
   var msg=ctx+'This is the ad IMAGE for '+s.name+'. Look at it carefully and write a Facebook static image ad that matches what the image shows. Return ONLY valid JSON:\n{"primary_text":"3-5 sentences: hook → problem agitation → solution → proof → CTA. Include emoji. Australian English.","h1":"punchy headline under 30 chars","h2":"alternative headline","h3":"third headline","description":"one sentence"}';
   var eb=document.getElementById('err-'+id);if(eb){eb.style.display='block';eb.textContent='✍️ Writing copy from your creative…';}
   try{
@@ -1043,6 +1059,7 @@ async function runImgGen(id){
   var s=SKUS[cards[id]&&cards[id].sku||activeSku];
   var prompt=gv('ipr-'+id)||(s?s.geminiStyle:'');
   var conceptPrompt=(cards[id]&&cards[id].imagePrompt)||'';
+  var overlay=(cards[id]&&cards[id].textOverlay)||'';
   var btn=document.getElementById('igb-'+id),resEl=document.getElementById('ires-'+id);
   if(!GEM_KEY){alert('Enter your Gemini API key in the password gate.');return;}
   btn.textContent='⏳ Generating…';btn.disabled=true;
@@ -1058,7 +1075,8 @@ async function runImgGen(id){
   var fullPrompt='Generate a high-quality Facebook ad image for '+esc(s?s.name:'')+'. '
     +(conceptPrompt?'Visual concept: '+conceptPrompt+'. ':'')
     +'Style: '+prompt+'. '
-    +'1080x1920 vertical portrait format, 9:16 aspect ratio. Scroll-stopping, clinically credible. No text overlays on the image. Keep the main subject centred — image will be cropped to square and horizontal formats.';
+    +(overlay?('IMPORTANT — render this exact text ON the image as a bold, clean, high-contrast ad text overlay (spelled exactly, legible, large): "'+overlay+'". '):'No text overlays on the image. ')
+    +'1080x1920 vertical portrait format, 9:16 aspect ratio. Scroll-stopping, clinically credible. Keep the main subject and any text centred and clear of the edges — image will be cropped to square and horizontal formats.';
   parts.push({text:fullPrompt});
   try{
     var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key='+GEM_KEY,{
