@@ -485,7 +485,7 @@ var SKUS={
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Aktiv (clinical gum treatment, Australian adults 35+, bleeding gums / gingivitis). Use diverse angles: Social Shame, Fear/Stakes, Absurd Metaphor, Competitor Takedown, Authority/Science, Transformation, Curiosity Gap, Dark Humour, Relatable Moment, Aspirational Contrast. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence opening image hook), story (string, 2-3 sentences describing the concept), imagePrompt (string, detailed visual description for AI image gen).',
     geminiStyle:'Clinical, dramatic lighting, dark background, close-up dental or product shot, high contrast, serious urgent mood',
     motionStyle:'Cinematic slow push in, dark dramatic lighting, sharp clinical cuts, high contrast, serious urgent mood, close-up dental detail shots',
-    campaignId:'120241478653830229',adsetId:'120245973238020229',adsetName:'Aktiv - Original',
+    campaignId:'120241478653830229',adsetId:'120245973238020229',adsetName:'Aktiv - Original',templateAdId:'120246024212290229',
     productUrl:'https://lacalut.com.au/products/lacalut-aktiv-original-toothpaste'},
   aktiv_herbal:{name:'LACALUT® Aktiv Herbal',tab:'AKTIV HERBAL',color:'#5a8a3c',
     tagline:'Clinical gum treatment · 9 medicinal herbs · Premium wellness meets science',
@@ -493,7 +493,7 @@ var SKUS={
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Aktiv Herbal (clinical gum treatment with 9 medicinal herbs, Australian adults 35+). Each concept blends herbal aesthetics with clinical proof. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual description for AI image gen).',
     geminiStyle:'Warm botanical aesthetic, medicinal herbs, lush greenery, apothecary feel, premium natural, soft earthy tones',
     motionStyle:'Slow graceful camera movement, medicinal herbs floating and blooming, warm botanical tones, premium apothecary feel, lush and immersive',
-    campaignId:'120241478653830229',adsetId:'120246084126920229',adsetName:'Aktiv Herbal / Gingivitis',
+    campaignId:'120241478653830229',adsetId:'120246084126920229',adsetName:'Aktiv Herbal / Gingivitis',templateAdId:'120246089315790229',
     productUrl:'https://lacalut.com.au/products/lacalut-aktiv-herbal-toothpaste'},
   flora:{name:'LACALUT® Flora',tab:'FLORA',color:'#2d8f4e',
     tagline:'Probiotic bad breath formula · Women 25–45',
@@ -501,7 +501,7 @@ var SKUS={
     ideaP:'Generate 10 scroll-stopping Facebook static image ad concepts for LACALUT Flora (probiotic bad breath toothpaste, Australian women 25-45). PAS: Problem (bad breath = bacteria) → Agitate (mints/sprays just mask) → Solution (Flora eliminates root-cause bacteria). Each concept must be a distinct creative angle. Return ONLY a JSON array of 10 objects, each with: title (string, include emoji), angle (string, 3-5 words), hook (string, one sentence), story (string, 2-3 sentences), imagePrompt (string, detailed visual description for AI image gen).',
     geminiStyle:'Fresh, bright, clean wellness aesthetic, soft natural light, white or sage green tones, modern and premium',
     motionStyle:'Light flowing movement, fresh bright tones, soft natural light transitions, airy and confident energy, clean wellness aesthetic, sage and white palette',
-    campaignId:'120241478653830229',adsetId:'120244410306410229',adsetName:'Flora / Bad Breath',
+    campaignId:'120241478653830229',adsetId:'120244410306410229',adsetName:'Flora / Bad Breath',templateAdId:'120244410306420229',
     productUrl:'https://www.lacalut.com.au/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',
     seeds:[
       {id:'flora-1',title:'👥 The Social Distance',angle:'Social Shame',
@@ -732,7 +732,9 @@ function buildImageHTML(id,c,col,s){
     +'<label class="ref-slot"><input type="file" accept="image/*" onchange="addRef(event,\''+id+'\',1)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-1">+ Comp ref</div></label>'
     +'</div>'
     +'<textarea class="ai-in" id="ipr-'+id+'" rows="2" placeholder="Additional direction (optional)…">'+esc(s?s.geminiStyle:'')+'</textarea>'
-    +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
+    +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate (Gemini)</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
+    +'<div class="img-panel-lbl" style="margin-top:8px">🎨 …or bring your own creative (Higgsfield / any image)</div>'
+    +'<div class="ai-btns"><button class="btn-run" style="background:#0a7d3c" onclick="importImgUrl(\''+id+'\')">🔗 Paste image URL</button><label class="btn-run" style="background:#0a7d3c;cursor:pointer;display:inline-flex;align-items:center"><input type="file" accept="image/*" onchange="importImgFile(event,\''+id+'\')" style="display:none">📁 Upload file</label></div>'
     +'<div id="ires-'+id+'" style="display:none"><img id="iprev-'+id+'" class="gen-img-preview" src="" alt="Generated"><div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptImg(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="runImgGen(\''+id+'\')">🔄 Retry</button><button class="btn-discard-ai" onclick="discardImg(\''+id+'\')">🗑 Discard</button></div></div>'
     +'</div>'
     // Higgsfield video panel
@@ -1029,6 +1031,25 @@ function acceptImg(id){
 }
 function discardImg(id){var r=document.getElementById('ires-'+id);if(r)r.style.display='none';}
 
+/* ── IMPORT OWN CREATIVE (Higgsfield / any image) ── */
+function importImgUrl(id){
+  var url=prompt('Paste an image URL (e.g. a Higgsfield cdn.higgsfield.ai link):','');
+  if(!url)return;
+  url=url.trim();
+  if(!/^https?:\/\//i.test(url)){alert('Please paste a full http(s) image URL.');return;}
+  var prev=document.getElementById('iprev-'+id);if(prev)prev.src=url;
+  var resEl=document.getElementById('ires-'+id);if(resEl)resEl.style.display='block';
+}
+function importImgFile(ev,id){
+  var f=ev.target.files[0];if(!f)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var prev=document.getElementById('iprev-'+id);if(prev)prev.src=e.target.result;
+    var resEl=document.getElementById('ires-'+id);if(resEl)resEl.style.display='block';
+  };
+  reader.readAsDataURL(f);
+}
+
 /* ── CENTER-CROP HELPER: crops a base64 data URL to target W×H ── */
 function cropImageToAspect(dataUrl,targetW,targetH){
   return new Promise(function(resolve,reject){
@@ -1095,28 +1116,36 @@ function showApp(id){
 function closeApp(){document.getElementById('app-modal').classList.remove('on');pendApprove=null;}
 async function doApprove(){
   var id=pendApprove;var c=cards[id];var s=SKUS[c.sku||activeSku];
+  if(!s.adsetId||!s.templateAdId){alert('⚠️ '+s.name+' has no ad set / template winner configured yet — cannot queue. Create the ad set and set a template ad first.');return;}
   var btn=document.querySelector('#app-modal .btn-confirm');
   btn.disabled=true;
   var pt=gv('pt-'+id),h1=gv('h1-'+id),desc=gv('desc-'+id);
   var imgEl=document.getElementById('img-'+id);
   var rawImageUrl=c.img||(imgEl?imgEl.src:'');
   try{
-    // Step 1: crop 9:16 master to square and horizontal
-    btn.textContent='⏳ Cropping 3 sizes…';
-    var squareData=rawImageUrl?await cropImageToAspect(rawImageUrl,1080,1080):'';
-    var horizData=rawImageUrl?await cropImageToAspect(rawImageUrl,1200,628):'';
+    // Imported/hosted images (Higgsfield, Supabase, any http URL) are used as-is —
+    // in-browser cropping taints the canvas for cross-origin images, so only crop
+    // Gemini output (base64 data URLs, which are same-origin safe).
+    var isData=rawImageUrl&&rawImageUrl.indexOf('data:')===0;
+    // Step 1: crop 9:16 master to square and horizontal (data URLs only)
+    var squareData='',horizData='';
+    if(isData){
+      btn.textContent='⏳ Cropping 3 sizes…';
+      squareData=await cropImageToAspect(rawImageUrl,1080,1080);
+      horizData=await cropImageToAspect(rawImageUrl,1200,628);
+    }
 
-    // Step 2: upload all three
+    // Step 2: upload / resolve all three
     btn.textContent='⏳ Uploading vertical (9:16)…';
     var imageUrlVertical=await resolveImageUrl(id+'-v916',rawImageUrl);
     btn.textContent='⏳ Uploading square (1:1)…';
-    var imageUrlSquare=squareData?await resolveImageUrl(id+'-sq11',squareData):'';
+    var imageUrlSquare=squareData?await resolveImageUrl(id+'-sq11',squareData):imageUrlVertical;
     btn.textContent='⏳ Uploading horizontal (1.91:1)…';
-    var imageUrlHorizontal=horizData?await resolveImageUrl(id+'-h191',horizData):'';
+    var imageUrlHorizontal=horizData?await resolveImageUrl(id+'-h191',horizData):imageUrlVertical;
 
     btn.textContent='⏳ Saving…';
     var payload=[{sku:c.sku||activeSku,creative_name:c.title||id,creative_type:'image',
-      adset_id:s.adsetId,adset_name:s.adsetName,campaign_id:s.campaignId,template_ad_id:'',
+      adset_id:s.adsetId,adset_name:s.adsetName,campaign_id:s.campaignId,template_ad_id:s.templateAdId||'',
       primary_text:pt,headline:h1,description:desc,
       image_url:imageUrlSquare||imageUrlVertical,
       image_url_vertical:imageUrlVertical,
