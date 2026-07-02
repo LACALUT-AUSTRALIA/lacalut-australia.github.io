@@ -560,7 +560,7 @@ var SKUS={
 };
 
 /* ── STATE ── */
-var activeSku='flora';
+var activeSku=localStorage.getItem('lac_img_active_sku')||'flora';
 var cards={};
 var cardsBySku={};
 var aiResults={};
@@ -572,11 +572,14 @@ var refImgs={};
 
 /* ── INIT ── */
 buildTabBar();
-loadSku('flora');
-loadBriefPanel('flora');
+loadSku(activeSku);
+loadBriefPanel(activeSku);
 refreshHeaderTagline();
+var _initLbl=document.getElementById('gen-sku-lbl');if(_initLbl)_initLbl.textContent=SKUS[activeSku].tab;
 var sl=localStorage.getItem('lac_logo');
 if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
+// Live-doc safety net: never lose work on refresh/close.
+window.addEventListener('beforeunload',function(){try{saveSession();}catch(e){}});
 
 /* ── HELPERS ── */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -600,6 +603,7 @@ function switchSku(sku){
   // Save current SKU state before switching
   cardsBySku[activeSku]={cards:Object.assign({},cards),aiResults:Object.assign({},aiResults),refImgs:Object.assign({},refImgs)};
   activeSku=sku;
+  localStorage.setItem('lac_img_active_sku',sku);
   document.querySelectorAll('.sku-btn').forEach(function(b){b.classList.remove('active');});
   var t=document.getElementById('stab-'+sku);if(t)t.classList.add('active');
   document.getElementById('gen-sku-lbl').textContent=SKUS[sku].tab;
@@ -707,15 +711,15 @@ function buildImageHTML(id,c,col,s){
     +'<div class="split-left">'
     +'<div class="field-sec">'
     +'<div class="field-lbl">Primary Text <span class="char-note" id="ptc-'+id+'"></span></div>'
-    +'<textarea class="field-ta" id="pt-'+id+'" rows="7" oninput="syncPreview(\''+id+'\')" placeholder="'+(gen?'Generating copy…':'Primary text…')+'">'+esc(pt)+'</textarea>'
+    +'<textarea class="field-ta" id="pt-'+id+'" rows="7" oninput="syncPreview(\''+id+'\');scheduleSave()" placeholder="'+(gen?'Generating copy…':'Primary text…')+'">'+esc(pt)+'</textarea>'
     +'</div>'
     +'<div class="field-sec"><div class="field-lbl">Headlines</div><div class="hls-group">'
-    +'<input type="text" class="field-in" id="h1-'+id+'" placeholder="Headline 1 (≤40 chars)" value="'+esc(h1)+'" oninput="checkH1(\''+id+'\')">'
-    +'<input type="text" class="field-in" id="h2-'+id+'" placeholder="Headline 2" value="'+esc(h2)+'">'
-    +'<input type="text" class="field-in" id="h3-'+id+'" placeholder="Headline 3" value="'+esc(h3)+'">'
+    +'<input type="text" class="field-in" id="h1-'+id+'" placeholder="Headline 1 (≤40 chars)" value="'+esc(h1)+'" oninput="checkH1(\''+id+'\');scheduleSave()">'
+    +'<input type="text" class="field-in" id="h2-'+id+'" placeholder="Headline 2" value="'+esc(h2)+'" oninput="scheduleSave()">'
+    +'<input type="text" class="field-in" id="h3-'+id+'" placeholder="Headline 3" value="'+esc(h3)+'" oninput="scheduleSave()">'
     +'</div></div>'
     +'<div class="field-sec"><div class="field-lbl">Description</div>'
-    +'<input type="text" class="field-in" id="desc-'+id+'" placeholder="One-line description" value="'+esc(desc)+'"></div>'
+    +'<input type="text" class="field-in" id="desc-'+id+'" placeholder="One-line description" value="'+esc(desc)+'" oninput="scheduleSave()"></div>'
     // Rewrite panel
     +'<div class="ai-panel" id="rw-'+id+'">'
     +'<div class="ai-panel-lbl">✍️ Rewrite Copy — Claude Sonnet</div>'
@@ -826,7 +830,7 @@ async function generateIdeas(){
       var id='idea-'+(++cardIdx);
       cards[id]={phase:'concept',title:idea.title||('💡 Concept '+(cardIdx)),angle:idea.angle||'',hook:idea.hook||'',story:idea.story||'',status:'none',sku:activeSku,imagePrompt:idea.imagePrompt||''};
     });
-    renderAll();
+    renderAll();saveSession();
   }catch(err){alert('❌ Error: '+err.message);}
   finally{btn.disabled=false;btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';}
 }
@@ -850,12 +854,12 @@ async function addManualIdea(){
     var id='idea-'+(++cardIdx);
     cards[id]={phase:'concept',title:r.title||('💡 '+text.substring(0,50)),angle:r.angle||'Custom',hook:r.hook||text,story:r.story||'',status:'none',sku:activeSku,imagePrompt:r.imagePrompt||''};
     var es=document.getElementById('empty-state');if(es)es.remove();
-    renderCard(id,false);inputEl.value='';updateCounts();
+    renderCard(id,false);inputEl.value='';updateCounts();saveSession();
   }catch(err){
     var id='idea-'+(++cardIdx);
     cards[id]={phase:'concept',title:'💡 '+text.substring(0,50),angle:'Custom',hook:text,story:'Custom concept. Edit to refine, then Approve.',status:'none',sku:activeSku,imagePrompt:''};
     var es=document.getElementById('empty-state');if(es)es.remove();
-    renderCard(id,false);inputEl.value='';updateCounts();
+    renderCard(id,false);inputEl.value='';updateCounts();saveSession();
   }
   finally{btn.textContent='+ Add My Idea';btn.disabled=false;}
 }
@@ -903,7 +907,7 @@ function saveEdit(id){
   if(t)cards[id].title=t.value.trim();
   if(h)cards[id].hook=h.value.trim();
   if(s)cards[id].story=s.value.trim();
-  renderCard(id);
+  renderCard(id);saveSession();
 }
 
 /* ── APPROVE CONCEPT → COPY ── */
@@ -949,7 +953,7 @@ async function regenConcept(id){
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     var r=JSON.parse(raw);
     Object.assign(cards[id],{title:r.title,angle:r.angle,hook:r.hook,story:r.story,imagePrompt:r.imagePrompt||''});
-    renderCard(id);
+    renderCard(id);saveSession();
   }catch(err){if(el)el.style.opacity='1';alert('❌ '+err.message);}
 }
 
@@ -1454,8 +1458,24 @@ function acceptUpload(ev,id){
 }
 
 /* ── SESSION PERSISTENCE ── */
+// Pull the live values from every on-screen copy field back into `cards`
+// so a save (or refresh) never loses in-progress edits — live-doc behaviour.
+function harvestCard(id){
+  if(!cards[id])return;
+  var g=function(x){var e=document.getElementById(x+'-'+id);return e?e.value:undefined;};
+  var pt=g('pt'),h1=g('h1'),h2=g('h2'),h3=g('h3'),d=g('desc');
+  if(pt!==undefined)cards[id].pt=pt;
+  if(h1!==undefined)cards[id].h1=h1;
+  if(h2!==undefined)cards[id].h2=h2;
+  if(h3!==undefined)cards[id].h3=h3;
+  if(d!==undefined)cards[id].desc=d;
+}
+function harvestAll(){Object.keys(cards).forEach(harvestCard);}
+var _saveTimer=null;
+function scheduleSave(){if(_saveTimer)clearTimeout(_saveTimer);_saveTimer=setTimeout(saveSession,600);}
 function saveSession(){
   try{
+    harvestAll();
     var toSave={};
     Object.keys(cards).forEach(function(id){
       var c=Object.assign({},cards[id]);
