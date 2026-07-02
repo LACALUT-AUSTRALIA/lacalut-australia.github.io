@@ -592,6 +592,18 @@ window.addEventListener('beforeunload',function(){try{saveSession();}catch(e){}}
 /* ── HELPERS ── */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function gv(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
+/* Robust JSON extractor for LLM output: strips code fences + any prose around the
+   JSON, trims to the outermost [] or {}, and removes trailing commas before parse. */
+function extractJSON(raw){
+  var t=String(raw||'').replace(/```json\s*/gi,'').replace(/```/g,'').trim();
+  var fa=t.indexOf('['),fo=t.indexOf('{');
+  var start=(fa<0)?fo:(fo<0?fa:Math.min(fa,fo));
+  if(start>0)t=t.slice(start);
+  var end=Math.max(t.lastIndexOf(']'),t.lastIndexOf('}'));
+  if(end>=0)t=t.slice(0,end+1);
+  t=t.replace(/,(\s*[}\]])/g,'$1');
+  return JSON.parse(t);
+}
 
 /* ── TAB BAR ── */
 function buildTabBar(){
@@ -847,7 +859,7 @@ async function generateIdeas(){
     if(data.error){data=await askIdeas('claude-sonnet-4-6');}
     if(data.error)throw new Error(data.error.message||'Claude error');
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    var ideas=JSON.parse(raw);
+    var ideas=extractJSON(raw);
     if(!Array.isArray(ideas))throw new Error('Expected array');
     Object.keys(cards).forEach(function(id){if(cards[id].phase==='concept')delete cards[id];});
     ideas.slice(0,10).forEach(function(idea){
@@ -874,7 +886,7 @@ async function addManualIdea(){
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,system:s.sys,messages:[{role:'user',content:msg}]})});
     var data=await res.json();
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    var r=JSON.parse(raw);
+    var r=extractJSON(raw);
     var id='idea-'+(++cardIdx);
     cards[id]={phase:'concept',title:r.angle||('💡 '+text.substring(0,50)),angle:'',headline:r.headline||'',hook:'',story:'',textOverlay:r.textOverlay||'',status:'none',sku:activeSku,imagePrompt:r.imagePrompt||''};
     var es=document.getElementById('empty-state');if(es)es.remove();
@@ -951,7 +963,7 @@ async function autoGenCopyFromImage(id){
     var data=await res.json();
     if(data.error)throw new Error(data.error.message||'Claude error');
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    var r=JSON.parse(raw);
+    var r=extractJSON(raw);
     Object.assign(cards[id],{pt:r.primary_text||'',h1:r.h1||'',h2:r.h2||'',h3:r.h3||'',desc:r.description||''});
     renderCard(id);updateCounts();saveSession();
     setTimeout(function(){syncPreview(id);syncHl(id);},50);
@@ -971,7 +983,7 @@ async function autoGenCopy(id){
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.sys,messages:[{role:'user',content:msg}]})});
     var data=await res.json();
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    var r=JSON.parse(raw);
+    var r=extractJSON(raw);
     Object.assign(cards[id],{pt:r.primary_text||'',h1:r.h1||'',h2:r.h2||'',h3:r.h3||'',desc:r.description||'',phase:'image'});
     renderCard(id);updateCounts();saveSession();
     setTimeout(function(){syncPreview(id);},50);
@@ -994,7 +1006,7 @@ async function regenConcept(id){
       body:JSON.stringify({model:IDEAS_MODEL,max_tokens:600,system:IDEAS_SYSTEM,messages:[{role:'user',content:msg}]})});
     var data=await res.json();
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    var r=JSON.parse(raw);
+    var r=extractJSON(raw);
     Object.assign(cards[id],{title:r.angle||c.title,angle:'',headline:r.headline||'',hook:'',story:'',textOverlay:r.textOverlay||'',imagePrompt:r.imagePrompt||''});
     renderCard(id);saveSession();
   }catch(err){if(el)el.style.opacity='1';alert('❌ '+err.message);}
@@ -1034,7 +1046,7 @@ async function runRewrite(id){
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.sys,messages:[{role:'user',content:msg}]})});
     var data=await res.json();
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    aiResults[id+'_rw']=JSON.parse(raw);
+    aiResults[id+'_rw']=extractJSON(raw);
     var r=aiResults[id+'_rw'];
     document.getElementById('rwp-'+id).textContent='PT:\n'+(r.primary_text||'')+'\n\nH1: '+(r.h1||'')+'\nH2: '+(r.h2||'')+'\nH3: '+(r.h3||'')+'\nDesc: '+(r.description||'');
     resBox.classList.add('open');
