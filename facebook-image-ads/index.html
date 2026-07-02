@@ -758,7 +758,7 @@ function buildImageHTML(id,c,col,s){
     +'</div>'
     +'<textarea class="ai-in" id="ipr-'+id+'" rows="2" placeholder="Additional direction (optional)…">'+esc(s?s.geminiStyle:'')+'</textarea>'
     +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate (Gemini)</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
-    +'<div class="img-panel-lbl" style="margin-top:10px">🎬 Higgsfield final (text baked into the image — best quality)</div>'
+    +'<div class="img-panel-lbl" style="margin-top:10px">🎬 Higgsfield final — use model <b>GPT Image 2</b> (best text rendering) · text baked in</div>'
     +'<div class="ai-btns"><button class="btn-run" style="background:#e2b96f;color:#1a1a2e" id="hfib-'+id+'" onclick="genHiggsfieldImg(\''+id+'\')">🎨 Write Higgsfield image prompt</button></div>'
     +'<div id="hfibox-'+id+'" style="display:none;background:#1a1a2e;color:#eee;border:1.5px solid #e2b96f;border-radius:7px;padding:12px;margin-top:8px;font-size:13px;white-space:pre-wrap;line-height:1.5"></div>'
     +'<div class="ai-btns" id="hficopy-'+id+'" style="display:none;margin-top:6px"><button class="btn-run" onclick="copyHiggsfieldImg(\''+id+'\')">📋 Copy → paste into Higgsfield</button></div>'
@@ -1473,7 +1473,7 @@ async function genHiggsfieldImg(id){
     +(c.headline?('HEADLINE FOR REFERENCE: '+c.headline+'\n'):'')
     +'FORMAT: 9:16 vertical (must also read well cropped to 1:1 square). Keep the product label sharp and legible; keep all text clear of the outer edges.\n\n'
     +'Output ONLY the final prompt paragraph (120-180 words), ready to paste straight into Higgsfield. Explicitly instruct crisp, correctly-spelled, beautifully-typeset on-image text.';
-  var sys='You are an expert Higgsfield / GPT-Image prompt engineer for premium e-commerce ad creatives. You reliably produce prompts that render correctly-spelled, beautifully typeset text overlays on product images. Output only the prompt.';
+  var sys='You are an expert Higgsfield GPT Image 2 (gpt_image_2) prompt engineer for premium e-commerce ad creatives. GPT Image 2 renders on-image text extremely well, so write the prompt to exploit that: specify the exact overlay text in quotes, its placement, size and style. You reliably produce prompts that render correctly-spelled, beautifully typeset text overlays on product images. Output only the prompt.';
   async function ask(model){
     var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
