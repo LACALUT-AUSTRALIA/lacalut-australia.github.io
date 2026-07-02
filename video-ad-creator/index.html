@@ -336,7 +336,7 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 </div>
 <script>
 (function(){
-  var H='ec4c88ca7f69534f10c0611c1ecd13e7c2cdf73e1b915e9fd0cf27ac10da43fa';
+  var H='eaf5bea2ff240394bb4109c4edb070ce40a519733b6794bb628fb5c165388563';
   async function sha(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
   var saved=localStorage.getItem('lc_claude_key');
   if(saved)document.getElementById('gate-claude').value=saved;
@@ -503,7 +503,7 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 /* ── KEYS ── */
 var SUPA_URL='https://bfzvxxcsfxvgeblnkqne.supabase.co';
 var SUPA_KEY='sb_publishable_3Do5mWxJcwfj7Cr_U43CgA_T3sx8n3M';
-var GEM_KEY='AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
+// Gemini/Veo removed — Higgsfield is the video engine (see higgsfield_worker.py)
 var CLAUDE_KEY=localStorage.getItem('lc_claude_key')||'';
 
 /* ── SKU DATA ── */
@@ -583,7 +583,7 @@ var SKUS={
 var activeSku='flora';
 var cards={};
 var aiResults={};
-var veoTimers={};
+var jobPolls={};
 var pendApprove=null,pendTeach=null;
 var teachTab='c',teachReject=false,teachRType='c';
 var logoData=null;
@@ -618,7 +618,7 @@ function switchSku(sku){
   activeSku=sku;
   document.querySelectorAll('.sku-btn').forEach(function(b){b.classList.remove('active');});
   var t=document.getElementById('stab-'+sku);if(t)t.classList.add('active');
-  Object.keys(veoTimers).forEach(function(id){clearInterval(veoTimers[id]);});veoTimers={};
+  Object.keys(jobPolls).forEach(function(id){clearInterval(jobPolls[id]);});jobPolls={};
   document.getElementById('gen-sku-lbl').textContent=SKUS[sku].tab;
   refreshHeaderTagline();
   loadBriefPanel(sku);
@@ -788,7 +788,7 @@ function buildCopyHTML(id,c,col){
     // BOTTOM
     +'<div class="card-acts">'
     +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>'
-        :'<button class="btn-gen-video" onclick="startVeo(\''+id+'\')">🎬 Generate Video</button>')
+        :'<button class="btn-gen-video" onclick="startHiggsfield(\''+id+'\')">🎬 Generate 15s Video</button>')
     +'<button class="btn-fbig" onclick="showShare(\''+id+'\',\'fbig\')">📱 FB/IG Post</button>'
     +'<button class="btn-linkedin" onclick="showShare(\''+id+'\',\'linkedin\')">💼 LinkedIn Post</button>'
     +'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">📘 Create Draft FB Ad</button>'
@@ -863,7 +863,7 @@ function buildVideoHTML(id,c,col){
     +'</div></div></div>'
     // BOTTOM
     +'<div class="card-acts">'
-    +'<button class="btn-gen-video" style="background:#e65100" onclick="startVeo(\''+id+'\')">🎬 Regenerate Video</button>'
+    +'<button class="btn-gen-video" style="background:#e65100" onclick="startHiggsfield(\''+id+'\')">🎬 Regenerate Video</button>'
     +'<button class="btn-fbig" onclick="showShare(\''+id+'\',\'fbig\')">📱 FB/IG Post</button>'
     +'<button class="btn-linkedin" onclick="showShare(\''+id+'\',\'linkedin\')">💼 LinkedIn Post</button>'
     +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>📘 Queued</button>'
@@ -1088,60 +1088,82 @@ function acceptScript(id){
 }
 function discardAI(prefix,id){var r=document.getElementById(prefix+'-'+id);if(r)r.classList.remove('open');}
 
-/* ── VEO GENERATION ── */
-async function startVeo(id){
+/* ── HIGGSFIELD GENERATION (Supabase queue + PC worker) ──
+   Approve/Generate inserts a video_jobs row; the higgsfield_worker.py helper
+   on Quan's PC picks it up, runs Higgsfield Seedance 2.0 (15s), and writes the
+   video URL back. The page polls the row and shows the video when ready.
+   (jobPolls handle map is declared near the top of the script.) */
+
+async function buildHiggsfieldPrompt(id){
   var c=cards[id];var s=SKUS[c.sku||activeSku];
-  var hb=gv('hb-'+id)||c.hbeat||'';
-  var prompt=s.motionStyle+(hb?'. Opening: '+hb:'');
-  c.phase='generating';
-  renderCard(id);updateCounts();
-  var start=Date.now();
-  var elapsed=setInterval(function(){
-    var sec=Math.floor((Date.now()-start)/1000);
-    var st=document.getElementById('vstatus-'+id);if(st)st.textContent='Generating Gemini draft… '+sec+'s';
-    var vt=document.getElementById('vtimer-'+id);if(vt)vt.textContent='Generating video… '+sec+'s';
-  },1000);
+  if(!CLAUDE_KEY)throw new Error('Enter your Claude API key first.');
+  var hb=gv('hb-'+id)||c.hbeat||c.hook||'';
+  var mb=gv('mb-'+id)||c.mbeat||c.story||'';
+  var cb=gv('cb-'+id)||c.cbeat||'';
+  var pt=(gv('pt-'+id)||c.pt||'').split('\n')[0];
+  var msg='Write a Higgsfield Seedance 2.0 motion prompt for this Facebook video ad.\n\n'
+    +'PRODUCT: '+s.name+'\n'+'CONCEPT TITLE: '+c.title+'\n'+'CREATIVE ANGLE: '+c.angle+'\n'
+    +'HOOK (0-3s): '+(hb||c.hook)+'\n'+'MIDDLE (3-12s): '+(mb||c.story)+'\n'
+    +'CTA (12-15s): '+(cb||'Product reveal + call to action')+'\n'
+    +'AD COPY THEME: '+pt+'\n'+'MOTION STYLE REFERENCE: '+s.motionStyle+'\n\n'
+    +'Write the Higgsfield prompt now — one paragraph, 150-200 words, optimised for Seedance 2.0:';
+  var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+    headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:HF_SYS,messages:[{role:'user',content:msg}]})});
+  var data=await res.json();
+  var text=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
+  if(!text)throw new Error('Empty prompt from Claude');
+  c.hfPrompt=text;
+  return text;
+}
+
+async function startHiggsfield(id){
+  var c=cards[id];
+  var fmt=document.querySelector('#card-'+id+' #fmts-'+id+'.on')?'9:16':'4:5';
+  c.phase='generating';renderCard(id);updateCounts();
+  var st=document.getElementById('vstatus-'+id);if(st)st.textContent='Writing Higgsfield brief…';
   try{
-    var res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/veo-2.0-generate-001:predictLongRunning?key='+GEM_KEY,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{aspectRatio:'4:5',durationSeconds:8}})});
-    if(!res.ok){var e=await res.json();throw new Error((e.error&&e.error.message)||'HTTP '+res.status);}
-    var op=await res.json();
-    if(!op.name)throw new Error('No operation name');
-    pollVeo(id,op.name,elapsed);
+    var prompt=c.hfPrompt||await buildHiggsfieldPrompt(id);
+    var st2=document.getElementById('vstatus-'+id);if(st2)st2.textContent='Sending to Higgsfield…';
+    var res=await fetch(SUPA_URL+'/rest/v1/video_jobs',{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({sku:(c.sku||activeSku),concept_title:c.title,hf_prompt:prompt,aspect_ratio:fmt,status:'awaiting_generation'})});
+    var rows=await res.json();
+    if(!res.ok||!rows[0])throw new Error((rows&&rows.message)||'Queue insert failed');
+    c.jobId=rows[0].id;
+    pollJob(id,c.jobId);
   }catch(err){
-    clearInterval(elapsed);
     c.phase='copy';renderCard(id);
     var errEl=document.getElementById('err-'+id);
-    if(errEl){errEl.style.display='block';errEl.textContent='❌ Veo error: '+err.message+'.';}
+    if(errEl){errEl.style.display='block';errEl.textContent='❌ '+err.message;}
   }
 }
 
-function pollVeo(id,opName,elapsed){
-  var timer=setInterval(async function(){
+function pollJob(id,jobId){
+  var started=Date.now();
+  if(jobPolls[id])clearInterval(jobPolls[id]);
+  jobPolls[id]=setInterval(async function(){
+    var sec=Math.floor((Date.now()-started)/1000);
     try{
-      var res=await fetch('https://generativelanguage.googleapis.com/v1beta/'+opName+'?key='+GEM_KEY);
-      if(!res.ok)throw new Error('Poll HTTP '+res.status);
-      var op=await res.json();
-      if(op.done){
-        clearInterval(timer);clearInterval(elapsed);delete veoTimers[id];
-        var samples=op.response&&op.response.generateVideoResponse&&op.response.generateVideoResponse.generatedSamples;
-        if(!samples||!samples[0])throw new Error('No video in response');
-        var vid=samples[0].video;
-        var src=vid.uri||(vid.encodedVideo?('data:video/mp4;base64,'+vid.encodedVideo):null);
-        if(!src)throw new Error('No video URI');
-        cards[id].video=src;cards[id].phase='video';cards[id].status='none';
-        renderCard(id);updateCounts();
-        setTimeout(applyLogoAll,50);
+      var res=await fetch(SUPA_URL+'/rest/v1/video_jobs?id=eq.'+jobId+'&select=status,video_url,error',{
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+      var rows=await res.json();var job=rows&&rows[0];if(!job)return;
+      var msg='Higgsfield generating… '+sec+'s (usually 2-4 min)';
+      if(job.status==='awaiting_generation'&&sec>75)msg='Waiting for the Higgsfield helper on your PC… '+sec+'s';
+      var vt=document.getElementById('vtimer-'+id);if(vt)vt.textContent=msg;
+      var vs=document.getElementById('vstatus-'+id);if(vs)vs.textContent=msg;
+      if(job.status==='video_ready'&&job.video_url){
+        clearInterval(jobPolls[id]);delete jobPolls[id];
+        cards[id].video=job.video_url;cards[id].phase='video';cards[id].status='none';
+        renderCard(id);updateCounts();setTimeout(applyLogoAll,50);
+      }else if(job.status==='failed'){
+        clearInterval(jobPolls[id]);delete jobPolls[id];
+        cards[id].phase='copy';renderCard(id);
+        var errEl=document.getElementById('err-'+id);
+        if(errEl){errEl.style.display='block';errEl.textContent='❌ Higgsfield: '+(job.error||'generation failed');}
       }
-    }catch(err){
-      clearInterval(timer);clearInterval(elapsed);delete veoTimers[id];
-      cards[id].phase='copy';renderCard(id);
-      var errEl=document.getElementById('err-'+id);
-      if(errEl){errEl.style.display='block';errEl.textContent='❌ Veo poll error: '+err.message;}
-    }
-  },6000);
-  veoTimers[id]=timer;
+    }catch(e){/* transient — keep polling */}
+  },8000);
 }
 
 /* ── APPROVAL ── */
@@ -1367,7 +1389,6 @@ function resetBrain(){
 var HF_SYS='You are a world-class Higgsfield AI video director specialising in Seedance 2.0 cinematic performance ads. You write motion briefs that consistently produce scroll-stopping, emotionally resonant Facebook video ads that feel like they were shot by a real film crew — never AI-looking.\n\nYour output must be ONE flowing paragraph, 150-200 words, no headers or bullet points. Include:\n- Visual style: lighting quality, colour palette, mood reference\n- Camera: movement type, lens feel, angle (e.g. slow push-in, 85mm shallow focus)\n- Scene: location, time of day, atmosphere, props\n- Talent: who they are, micro-expression, body language, exact action second-by-second\n- Product: when and how it appears, how it\'s held or revealed\n- Beat mapping: 0-3s hook action / 3-12s emotional build / 12-15s CTA moment\n- Colour grade: cinematic reference (e.g. warm lifted shadows, slight vignette)\n- Sound feel: music energy, tempo, any VO tone\n\nOptimise every word for Seedance 2.0. Cinematic, grounded, human.';
 
 async function genHiggsfield(id){
-  var c=cards[id];var s=SKUS[c.sku||activeSku];
   if(!CLAUDE_KEY){alert('Enter your Claude API key first.');return;}
   var panel=document.getElementById('hf-'+id);
   var promptEl=document.getElementById('hfp-'+id);
@@ -1376,27 +1397,8 @@ async function genHiggsfield(id){
   panel.classList.add('open');
   promptEl.textContent='⏳ Writing world-class Higgsfield prompt…';
   if(btn){btn.disabled=true;btn.textContent='⏳ Writing…';}
-  var hb=gv('hb-'+id)||c.hbeat||c.hook||'';
-  var mb=gv('mb-'+id)||c.mbeat||c.story||'';
-  var cb=gv('cb-'+id)||c.cbeat||'';
-  var pt=(gv('pt-'+id)||c.pt||'').split('\n')[0];
-  var msg='Write a Higgsfield Seedance 2.0 motion prompt for this Facebook video ad.\n\n'
-    +'PRODUCT: '+s.name+'\n'
-    +'CONCEPT TITLE: '+c.title+'\n'
-    +'CREATIVE ANGLE: '+c.angle+'\n'
-    +'HOOK (0-3s): '+(hb||c.hook)+'\n'
-    +'MIDDLE (3-12s): '+(mb||c.story)+'\n'
-    +'CTA (12-15s): '+(cb||'Product reveal + call to action')+'\n'
-    +'AD COPY THEME: '+pt+'\n'
-    +'MOTION STYLE REFERENCE: '+s.motionStyle+'\n\n'
-    +'Write the Higgsfield prompt now — one paragraph, 150-200 words, optimised for Seedance 2.0:';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:500,system:HF_SYS,messages:[{role:'user',content:msg}]})});
-    var data=await res.json();
-    var text=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
-    if(!text)throw new Error('Empty response');
+    var text=await buildHiggsfieldPrompt(id);
     promptEl.textContent=text;
   }catch(err){promptEl.textContent='❌ Error: '+err.message;}
   finally{if(btn){btn.disabled=false;btn.textContent='⚡ Higgsfield Prompt';}}
