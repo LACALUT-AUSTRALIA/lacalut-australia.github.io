@@ -833,7 +833,7 @@ async function generateIdeas(){
       +'\n\nKeep each concept LEAN — only these 4 fields, nothing else:'
       +'\n  "angle": the concept name + buying-motivation (e.g. "The Luxury Analogy (Prestige)")'
       +'\n  "headline": the ad headline with emoji (e.g. "German Engineering For Your Smile 🇩🇪")'
-      +'\n  "imagePrompt": a detailed VISUAL description of the scene for AI image generation (composition, subject, setting, lighting) — describe the picture only, do NOT include the overlay words here'
+      +'\n  "imagePrompt": a SHORT one-line visual idea, MAX ~20 words / 2 lines — decision-level only, e.g. "Hand dropping a dime + penny next to a Lacalut tube on a pure white background." Do NOT write a detailed AI image prompt (that comes later at the image step) and do NOT include the overlay words.'
       +'\n  "textOverlay": the exact SHORT punchy text to render ON the image (e.g. "Cheaper than a single dental checkup.")'
       +'\nReturn ONLY a JSON array of 10 such objects — no other text.';
     async function askIdeas(model){
@@ -868,7 +868,7 @@ async function addManualIdea(){
   btn.textContent='⏳ Expanding…';btn.disabled=true;
   try{
     var s=SKUS[activeSku];
-    var msg='Expand this rough static image ad idea into a LEAN concept for '+s.name+'.\nRough idea: "'+text+'"\nReturn ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation, e.g. The Luxury Analogy (Prestige)","headline":"ad headline with emoji","imagePrompt":"detailed VISUAL description of the scene for AI image generation — picture only, no overlay words","textOverlay":"short punchy text to render ON the image"}';
+    var msg='Expand this rough static image ad idea into a LEAN concept for '+s.name+'.\nRough idea: "'+text+'"\nReturn ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation, e.g. The Luxury Analogy (Prestige)","headline":"ad headline with emoji","imagePrompt":"SHORT one-line visual idea, max ~20 words, decision-level only — no detailed AI prompt, no overlay words","textOverlay":"short punchy text to render ON the image"}';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,system:s.sys,messages:[{role:'user',content:msg}]})});
@@ -988,7 +988,7 @@ async function regenConcept(id){
   var el=document.getElementById('card-'+id);if(el)el.style.opacity='.5';
   if(!CLAUDE_KEY){if(el)el.style.opacity='1';alert('Enter your Claude API key first.');return;}
   try{
-    var msg='Generate ONE new Facebook static image ad concept for '+s.name+', using a DIFFERENT buying-motivation angle from: "'+c.title+'". Return ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation","headline":"ad headline with emoji","imagePrompt":"detailed VISUAL description of the scene — picture only, no overlay words","textOverlay":"short punchy text to render ON the image"}';
+    var msg='Generate ONE new Facebook static image ad concept for '+s.name+', using a DIFFERENT buying-motivation angle from: "'+c.title+'". Return ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation","headline":"ad headline with emoji","imagePrompt":"SHORT one-line visual idea, max ~20 words, decision-level only — no detailed AI prompt, no overlay words","textOverlay":"short punchy text to render ON the image"}';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:IDEAS_MODEL,max_tokens:600,system:IDEAS_SYSTEM,messages:[{role:'user',content:msg}]})});
