@@ -89,6 +89,12 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 .edit-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;margin-top:12px;}
 .edit-input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s;}
 .edit-input:focus{border-color:var(--navy);}
+.teach-box{margin-top:18px;background:#f0f8ee;border:1.5px solid #b6d9a8;border-left:5px solid #5a8a3c;border-radius:10px;padding:14px 16px;}
+.teach-box-lbl{font-size:14px;font-weight:800;color:#3f6b28;}
+.teach-box-opt{font-size:12px;font-weight:500;color:#7a9a63;}
+.teach-box-sub{font-size:12.5px;color:#5a7048;margin:2px 0 9px;}
+.teach-box-input{width:100%;border:1.5px solid #b6d9a8;border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;background:#fff;transition:border-color .15s;}
+.teach-box-input:focus{border-color:#5a8a3c;}
 .concept-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
 .btn-approve{background:#e8f8e8;color:#1e7e34;border:1.5px solid #b2dfb2;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
 .btn-approve:hover{background:#1e7e34;color:#fff;}
@@ -699,6 +705,11 @@ function buildConceptHTML(id,c,col){
     +'<div class="edit-lbl">Headline</div><input type="text" class="edit-input" id="eh-'+id+'" value="'+esc(c.headline)+'">'
     +'<div class="edit-lbl">Visual</div><textarea class="edit-input" id="es-'+id+'" rows="3">'+esc(c.imagePrompt)+'</textarea>'
     +'<div class="edit-lbl">Text overlay (on image)</div><input type="text" class="edit-input" id="eo-'+id+'" value="'+esc(c.textOverlay)+'">'
+    +'<div class="teach-box">'
+    +'<div class="teach-box-lbl">💡 Teach Claude <span class="teach-box-opt">(optional — applies to every future idea)</span></div>'
+    +'<div class="teach-box-sub">What\'s wrong and what should I do instead?</div>'
+    +'<textarea class="teach-box-input" id="ew-'+id+'" rows="3" placeholder="e.g. Don\'t use abstract concepts like &quot;grille dissolving into a tube&quot; — AI can\'t render them. Name a real, simple object instead: a green Mercedes bonnet with the logo showing, a Lacalut tube next to it."></textarea>'
+    +'</div>'
     +'<div style="display:flex;gap:8px;margin-top:12px;">'
     +'<button class="btn-save-edit" onclick="saveEdit(\''+id+'\')">💾 Save</button>'
     +'<button class="btn-cancel-edit" onclick="cancelEdit(\''+id+'\')">✕ Cancel</button>'
@@ -842,6 +853,7 @@ async function generateIdeas(){
   if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';btn.disabled=false;return;}
   try{
     var prompt=(localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP)+'\n\n'+ANGLE_DIRECTIVE
+      +learnedRulesBlock()
       +'\n\nKeep each concept LEAN — only these 4 fields, nothing else:'
       +'\n  "angle": the concept name + buying-motivation (e.g. "The Luxury Analogy (Prestige)")'
       +'\n  "headline": the ad headline with emoji (e.g. "German Engineering For Your Smile 🇩🇪")'
@@ -919,12 +931,76 @@ async function importFromImage(){
 function openEdit(id){var el=document.getElementById('cedit-'+id);if(el)el.classList.add('open');}
 function cancelEdit(id){var el=document.getElementById('cedit-'+id);if(el)el.classList.remove('open');}
 function saveEdit(id){
-  var t=document.getElementById('et-'+id),h=document.getElementById('eh-'+id),s=document.getElementById('es-'+id),o=document.getElementById('eo-'+id);
-  if(t)cards[id].title=t.value.trim();
-  if(h)cards[id].headline=h.value.trim();
-  if(s)cards[id].imagePrompt=s.value.trim();
-  if(o)cards[id].textOverlay=o.value.trim();
+  var c=cards[id];
+  var before={angle:c.title,headline:c.headline,visual:c.imagePrompt,overlay:c.textOverlay};
+  var t=document.getElementById('et-'+id),h=document.getElementById('eh-'+id),s=document.getElementById('es-'+id),o=document.getElementById('eo-'+id),w=document.getElementById('ew-'+id);
+  if(t)c.title=t.value.trim();
+  if(h)c.headline=h.value.trim();
+  if(s)c.imagePrompt=s.value.trim();
+  if(o)c.textOverlay=o.value.trim();
+  var why=w?w.value.trim():'';
+  var after={angle:c.title,headline:c.headline,visual:c.imagePrompt,overlay:c.textOverlay};
+  learnFromEdit(c,before,after,why);
   renderCard(id);saveSession();
+}
+
+/* ── LEARNING ENGINE ─────────────────────────────────────────────────────────
+   The Edit form doubles as a teacher. On Save we diff before→after and store a
+   rule (plus the optional "why") in a single growing local rulebook. Every
+   Generate / Regenerate then reads the rulebook back and obeys it. No server,
+   no keys — the lessons live in the browser like the Brain/Brief already do. */
+var LEARN_KEY='lac_img_learned';
+function getLearned(){try{return JSON.parse(localStorage.getItem(LEARN_KEY)||'[]');}catch(e){return[];}}
+function addLearnedRule(rule){
+  var all=getLearned();
+  // de-dup: same why + same after visual = skip
+  var sig=(rule.why||'')+'|'+(rule.after&&rule.after.visual||'');
+  if(all.some(function(r){return((r.why||'')+'|'+(r.after&&r.after.visual||''))===sig;}))return;
+  all.push(rule);
+  if(all.length>200)all=all.slice(all.length-200);
+  localStorage.setItem(LEARN_KEY,JSON.stringify(all));
+}
+function learnFromEdit(c,before,after,why){
+  var changed=[];
+  ['angle','headline','visual','overlay'].forEach(function(k){if((before[k]||'')!==(after[k]||''))changed.push(k);});
+  if(!changed.length&&!why)return; // nothing to teach
+  addLearnedRule({sku:c.sku||activeSku,angle:after.angle||c.title||'',changed:changed,before:before,after:after,why:why||''});
+  learnToast(why?'📚 Rule learned — I\'ll apply it to every future idea':'📚 Learned from your edit');
+}
+/* Build the prompt block injected into every generation. Newest rules last,
+   capped so the prompt can\'t balloon. The "why" lines are the gold — they are
+   the general rules; the before→after pairs are concrete examples. */
+function learnedRulesBlock(){
+  var all=getLearned();if(!all.length)return'';
+  var recent=all.slice(-30);
+  var lines=recent.map(function(r){
+    var bits=[];
+    if(r.why)bits.push('RULE: '+r.why);
+    if(r.before&&r.after&&(r.before.visual||'')!==(r.after.visual||''))bits.push('Visual: instead of "'+(r.before.visual||'—')+'" write like "'+(r.after.visual||'—')+'"');
+    else if(r.after&&r.after.visual&&!r.why)bits.push('Good visual example: "'+r.after.visual+'"');
+    if(r.before&&r.after&&(r.before.overlay||'')!==(r.after.overlay||''))bits.push('Overlay: prefer "'+(r.after.overlay||'')+'" over "'+(r.before.overlay||'')+'"');
+    return bits.length?('• '+bits.join(' | ')):'';
+  }).filter(Boolean);
+  if(!lines.length)return'';
+  return'\n\n═══ LEARNED RULES — Quan corrected these; OBEY THEM STRICTLY ═══\n'
+    +'(Especially for imagePrompt: name a real, concrete, recognisable object — e.g. "a red Mercedes-Benz bonnet with the logo showing, a Lacalut tube next to it". NEVER abstract/surreal concepts like "dissolving into", "morphing", "made of". Keep the visual simple so AI renders it first time. The clever idea belongs in the headline/overlay, not the image.)\n'
+    +lines.join('\n')+'\n═══════════════════════════════════════════════════════════════\n';
+}
+/* One-time seed so the loop works out of the box with the Mercedes lesson. */
+(function seedLearned(){
+  if(localStorage.getItem(LEARN_KEY))return;
+  localStorage.setItem(LEARN_KEY,JSON.stringify([{sku:'aktiv',angle:'The Luxury Analogy (Prestige)',changed:['visual'],
+    before:{visual:'A sleek German luxury car grille dissolving into a Lacalut tube on a dark premium background with subtle herb accents.'},
+    after:{visual:'A red or black Mercedes-Benz bonnet with the logo showing, a tube of Lacalut sitting next to it, dark premium background.'},
+    why:'Name a real, specific object (real Mercedes bonnet + real tube). Never abstract "dissolving/morphing" concepts — AI can\'t render them and it wastes hours of iterations.'}]));
+})();
+function learnToast(msg){
+  var t=document.getElementById('learn-toast');
+  if(!t){t=document.createElement('div');t.id='learn-toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#2d8f4e;color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:9999;opacity:0;transition:opacity .25s;';
+    document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._h);t._h=setTimeout(function(){t.style.opacity='0';},2600);
 }
 
 /* ── APPROVE CONCEPT → ADD CREATIVE FIRST (copy is written FROM the image) ── */
@@ -1000,7 +1076,7 @@ async function regenConcept(id){
   var el=document.getElementById('card-'+id);if(el)el.style.opacity='.5';
   if(!CLAUDE_KEY){if(el)el.style.opacity='1';alert('Enter your Claude API key first.');return;}
   try{
-    var msg='Generate ONE new Facebook static image ad concept for '+s.name+', using a DIFFERENT buying-motivation angle from: "'+c.title+'". Return ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation","headline":"ad headline with emoji","imagePrompt":"SHORT one-line visual idea, max ~20 words, decision-level only — no detailed AI prompt, no overlay words","textOverlay":"short punchy text to render ON the image"}';
+    var msg='Generate ONE new Facebook static image ad concept for '+s.name+', using a DIFFERENT buying-motivation angle from: "'+c.title+'".'+learnedRulesBlock()+' Return ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation","headline":"ad headline with emoji","imagePrompt":"SHORT one-line visual idea, max ~20 words, decision-level only — no detailed AI prompt, no overlay words","textOverlay":"short punchy text to render ON the image"}';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:IDEAS_MODEL,max_tokens:600,system:IDEAS_SYSTEM,messages:[{role:'user',content:msg}]})});
@@ -1326,21 +1402,23 @@ async function doTeach(){
     var orig=gv('pt-'+id);
     if(pref||n2)payload=[{sku:c.sku||activeSku,creative_name:c.title||id,feedback_type:'copy',original_copy:orig,preferred_copy:pref,visual_direction:null,notes:n2}];
   }
-  try{
-    if(payload){
-      var res=await fetch(SUPA_URL+'/rest/v1/ad_training',{method:'POST',
-        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-        body:JSON.stringify(payload)});
-      if(!res.ok)throw new Error('HTTP '+res.status);
-    }
-    document.getElementById('teach-modal').classList.remove('on');
-    var rej=teachReject,rt=teachRType;
-    pendTeach=null;teachReject=false;
-    if(rej){cards[id].status='rejected';renderCard(id);updateCounts();}
-  }catch(err){
-    saveBtn.textContent=teachReject?'💾 Save & Reject':'💾 Save Training';saveBtn.disabled=false;
-    alert('❌ '+err.message);
+  // Store locally FIRST (the rulebook is the source of truth). Only visual
+  // ("creative") feedback feeds the image-concept rulebook; copy feedback is a
+  // different consumer and would just be noise in image generation.
+  if(payload&&payload[0].feedback_type==='creative'&&(payload[0].visual_direction||payload[0].notes)){
+    addLearnedRule({sku:payload[0].sku,angle:payload[0].creative_name,changed:['teach'],
+      before:{},after:{},why:payload[0].visual_direction||payload[0].notes||''});
   }
+  // Supabase is best-effort only (legacy key may be disabled) — never block on it.
+  try{if(payload){await fetch(SUPA_URL+'/rest/v1/ad_training',{method:'POST',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(payload)});}}catch(e){}
+  document.getElementById('teach-modal').classList.remove('on');
+  var rej=teachReject;
+  pendTeach=null;teachReject=false;
+  if(rej){cards[id].status='rejected';renderCard(id);updateCounts();}
+  learnToast('📚 Training saved — I\'ll apply it to future ideas');
+  saveBtn.textContent='💾 Save Training';saveBtn.disabled=false;
 }
 
 /* ── COUNTS ── */
