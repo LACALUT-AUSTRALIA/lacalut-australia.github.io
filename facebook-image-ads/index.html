@@ -746,7 +746,11 @@ function buildImageHTML(id,c,col,s){
     +'</div>'
     +'<textarea class="ai-in" id="ipr-'+id+'" rows="2" placeholder="Additional direction (optional)…">'+esc(s?s.geminiStyle:'')+'</textarea>'
     +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate (Gemini)</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
-    +'<div class="img-panel-lbl" style="margin-top:8px">🎨 …or bring your own creative (Higgsfield / any image)</div>'
+    +'<div class="img-panel-lbl" style="margin-top:10px">🎬 Higgsfield final (text baked into the image — best quality)</div>'
+    +'<div class="ai-btns"><button class="btn-run" style="background:#e2b96f;color:#1a1a2e" id="hfib-'+id+'" onclick="genHiggsfieldImg(\''+id+'\')">🎨 Write Higgsfield image prompt</button></div>'
+    +'<div id="hfibox-'+id+'" style="display:none;background:#1a1a2e;color:#eee;border:1.5px solid #e2b96f;border-radius:7px;padding:12px;margin-top:8px;font-size:13px;white-space:pre-wrap;line-height:1.5"></div>'
+    +'<div class="ai-btns" id="hficopy-'+id+'" style="display:none;margin-top:6px"><button class="btn-run" onclick="copyHiggsfieldImg(\''+id+'\')">📋 Copy → paste into Higgsfield</button></div>'
+    +'<div class="img-panel-lbl" style="margin-top:10px">🔗 …then bring the finished creative back in</div>'
     +'<div class="ai-btns"><button class="btn-run" style="background:#0a7d3c" onclick="importImgUrl(\''+id+'\')">🔗 Paste image URL</button><label class="btn-run" style="background:#0a7d3c;cursor:pointer;display:inline-flex;align-items:center"><input type="file" accept="image/*" onchange="importImgFile(event,\''+id+'\')" style="display:none">📁 Upload file</label></div>'
     +'<div id="ires-'+id+'" style="display:none"><img id="iprev-'+id+'" class="gen-img-preview" src="" alt="Generated"><div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptImg(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="runImgGen(\''+id+'\')">🔄 Retry</button><button class="btn-discard-ai" onclick="discardImg(\''+id+'\')">🗑 Discard</button></div></div>'
     +'</div>'
@@ -1421,10 +1425,10 @@ async function genHiggsfield(id){
   var imgSrc=c.img||'';
   var msg='Write a Higgsfield Seedance 2.0 motion prompt for this Facebook video ad.\n\n'
     +'PRODUCT: '+s.name+'\n'
-    +'CONCEPT: '+c.title+'\n'
-    +'ANGLE: '+c.angle+'\n'
-    +'HOOK: '+c.hook+'\n'
-    +'STORY: '+c.story+'\n'
+    +'CONCEPT / ANGLE: '+c.title+'\n'
+    +(c.headline?'HEADLINE: '+c.headline+'\n':'')
+    +(c.textOverlay?'ON-IMAGE TEXT: "'+c.textOverlay+'"\n':'')
+    +(c.imagePrompt?'VISUAL: '+c.imagePrompt+'\n':'')
     +'AD COPY THEME: '+pt+'\n'
     +'MOTION STYLE: '+(s.motionStyle||s.geminiStyle)+'\n'
     +(imgSrc?'NOTE: The static image for this ad already exists — animate it with Seedance 2.0 image-to-video.\n\n':'')
@@ -1439,6 +1443,48 @@ async function genHiggsfield(id){
     promptEl.textContent=text;
   }catch(err){promptEl.textContent='❌ Error: '+err.message;}
   finally{if(btn){btn.disabled=false;btn.textContent='⚡ Generate Prompt';}}
+}
+
+/* ── HIGGSFIELD IMAGE PROMPT (text baked into the image) ── */
+async function genHiggsfieldImg(id){
+  var c=cards[id];var s=SKUS[c.sku||activeSku];
+  if(!CLAUDE_KEY){alert('Enter your Claude API key first.');return;}
+  var box=document.getElementById('hfibox-'+id),btn=document.getElementById('hfib-'+id),copyRow=document.getElementById('hficopy-'+id);
+  if(box){box.style.display='block';box.textContent='⏳ Writing Higgsfield image prompt…';}
+  if(btn){btn.disabled=true;btn.textContent='⏳ Writing…';}
+  var overlay=c.textOverlay||'';
+  var msg='Write ONE production-ready Higgsfield image-generation prompt for a premium Facebook STATIC IMAGE ad.\n\n'
+    +'PRODUCT: '+s.name+'\n'
+    +'VISUAL SCENE: '+(c.imagePrompt||'')+'\n'
+    +'BRAND STYLE: '+(s.geminiStyle||'')+'\n'
+    +(overlay?('TEXT OVERLAY — this exact text MUST appear on the image, spelled EXACTLY, large, clean, high-contrast, professional ad typography, correctly placed, ZERO spelling errors: "'+overlay+'"\n'):'No text overlay.\n')
+    +(c.headline?('HEADLINE FOR REFERENCE: '+c.headline+'\n'):'')
+    +'FORMAT: 9:16 vertical (must also read well cropped to 1:1 square). Keep the product label sharp and legible; keep all text clear of the outer edges.\n\n'
+    +'Output ONLY the final prompt paragraph (120-180 words), ready to paste straight into Higgsfield. Explicitly instruct crisp, correctly-spelled, beautifully-typeset on-image text.';
+  var sys='You are an expert Higgsfield / GPT-Image prompt engineer for premium e-commerce ad creatives. You reliably produce prompts that render correctly-spelled, beautifully typeset text overlays on product images. Output only the prompt.';
+  async function ask(model){
+    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:model,max_tokens:500,system:sys,messages:[{role:'user',content:msg}]})});
+    return r.json();
+  }
+  try{
+    var data=await ask(IDEAS_MODEL);
+    if(data.error)data=await ask('claude-sonnet-4-6');
+    if(data.error)throw new Error(data.error.message||'Claude error');
+    var text=((data.content&&data.content[0]&&data.content[0].text)||'').trim();
+    if(!text)throw new Error('Empty response');
+    if(box)box.textContent=text;
+    if(copyRow)copyRow.style.display='';
+  }catch(err){if(box)box.textContent='❌ '+err.message;}
+  finally{if(btn){btn.disabled=false;btn.textContent='🎨 Write Higgsfield image prompt';}}
+}
+function copyHiggsfieldImg(id){
+  var el=document.getElementById('hfibox-'+id);if(!el)return;
+  navigator.clipboard.writeText(el.textContent).then(function(){
+    var btn=document.querySelector('#hficopy-'+id+' .btn-run');
+    if(btn){var o=btn.textContent;btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent=o;},2000);}
+  }).catch(function(){var ta=document.createElement('textarea');ta.value=el.textContent;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);});
 }
 
 function copyHiggsfield(id){
