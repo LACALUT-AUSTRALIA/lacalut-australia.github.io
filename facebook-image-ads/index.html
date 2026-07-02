@@ -89,6 +89,14 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 .edit-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;margin-top:12px;}
 .edit-input{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-size:14px;font-family:inherit;resize:vertical;outline:none;transition:border-color .15s;}
 .edit-input:focus{border-color:var(--navy);}
+#prod-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 20px;background:#eef4fb;border-bottom:1px solid var(--border);}
+.prod-bar-lbl{font-size:13px;font-weight:800;color:var(--navy);white-space:nowrap;}
+.prod-bar-sku{color:#cf102d;}
+#prod-thumbs{display:flex;gap:8px;flex-wrap:wrap;}
+.prod-thumb{position:relative;width:52px;height:52px;border-radius:8px;border:1.5px solid var(--border);background:#fff;overflow:hidden;}
+.prod-thumb img{width:100%;height:100%;object-fit:cover;}
+.prod-thumb-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;line-height:16px;text-align:center;border-radius:50%;background:#cf102d;color:#fff;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #fff;}
+.prod-bar-hint{font-size:12px;color:var(--muted);flex:1;min-width:180px;}
 .teach-box{margin-top:18px;background:#f0f8ee;border:1.5px solid #b6d9a8;border-left:5px solid #5a8a3c;border-radius:10px;padding:14px 16px;}
 .teach-box-lbl{font-size:14px;font-weight:800;color:#3f6b28;}
 .teach-box-opt{font-size:12px;font-weight:500;color:#7a9a63;}
@@ -383,6 +391,14 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <button class="lu-clear" onclick="clearLogo()">✕ Remove</button>
 </div>
 
+<!-- PRODUCT IMAGES BAR (SKU-level real-product references for AI image gen) -->
+<div id="prod-bar">
+  <span class="prod-bar-lbl">📦 Product Images · <span class="prod-bar-sku" id="prod-bar-sku">FLORA</span></span>
+  <div id="prod-thumbs"></div>
+  <label class="lu-btn">➕ Add Product Shot<input type="file" accept="image/*" multiple onchange="uploadProductImg(event)" style="display:none"></label>
+  <span class="prod-bar-hint">📌 Upload the real product once per SKU — every AI image pulls these as the exact product reference (so it looks like YOUR tube, not an invented one).</span>
+</div>
+
 <!-- GENERATE BAR -->
 <div id="gen-bar">
   <button id="btn-gen-ideas" onclick="generateIdeas()">✨ Generate 10 Ideas for <span id="gen-sku-lbl">FLORA</span></button>
@@ -588,6 +604,7 @@ var refImgs={};
 buildTabBar();
 loadSku(activeSku);
 loadBriefPanel(activeSku);
+renderProductBar(activeSku);
 refreshHeaderTagline();
 var _initLbl=document.getElementById('gen-sku-lbl');if(_initLbl)_initLbl.textContent=SKUS[activeSku].tab;
 var sl=localStorage.getItem('lac_logo');
@@ -635,6 +652,7 @@ function switchSku(sku){
   document.getElementById('gen-sku-lbl').textContent=SKUS[sku].tab;
   refreshHeaderTagline();
   loadBriefPanel(sku);
+  renderProductBar(sku);
   // Close brain panel on SKU switch
   document.getElementById('brain-panel').classList.remove('open');
   document.getElementById('btn-brain').classList.remove('on');
@@ -1003,6 +1021,63 @@ function learnToast(msg){
   clearTimeout(t._h);t._h=setTimeout(function(){t.style.opacity='0';},2600);
 }
 
+/* ── SKU-LEVEL PRODUCT IMAGES ────────────────────────────────────────────────
+   Upload the real product shots ONCE per SKU. Every AI image generation for
+   that SKU passes them to Gemini as reference images, so it reproduces the
+   actual tube/branding instead of inventing one. Downscaled on upload to keep
+   localStorage well within quota. */
+var PROD_MAX=6; // per SKU
+function prodKey(sku){return 'lac_img_prod_'+sku;}
+function getProductImgs(sku){try{return JSON.parse(localStorage.getItem(prodKey(sku))||'[]');}catch(e){return[];}}
+function setProductImgs(sku,arr){
+  try{localStorage.setItem(prodKey(sku),JSON.stringify(arr));return true;}
+  catch(e){alert('⚠️ Browser storage is full — remove a product image (or use fewer) and try again.');return false;}
+}
+/* Downscale to max 1024px longest edge, JPEG ~0.85 — keeps the logo/text legible
+   for the AI while cutting file size ~10-20x vs a raw phone photo. */
+function downscaleImage(dataUrl,cb){
+  var img=new Image();
+  img.onload=function(){
+    var max=1024,w=img.width,h=img.height;
+    if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+    var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+    cb(cv.toDataURL('image/jpeg',0.85));
+  };
+  img.onerror=function(){cb(dataUrl);};
+  img.src=dataUrl;
+}
+function uploadProductImg(ev){
+  var files=Array.from(ev.target.files||[]);if(!files.length)return;
+  var sku=activeSku,arr=getProductImgs(sku);
+  var remaining=PROD_MAX-arr.length;
+  if(remaining<=0){alert('Max '+PROD_MAX+' product images per SKU. Remove one first.');ev.target.value='';return;}
+  var todo=files.slice(0,remaining),done=0;
+  todo.forEach(function(f){
+    var rd=new FileReader();
+    rd.onload=function(e){
+      downscaleImage(e.target.result,function(small){
+        arr.push(small);done++;
+        if(done===todo.length){if(setProductImgs(sku,arr)){renderProductBar(sku);learnToast('📦 Product image saved for '+SKUS[sku].tab);}}
+      });
+    };
+    rd.readAsDataURL(f);
+  });
+  ev.target.value='';
+}
+function removeProductImg(sku,idx){
+  var arr=getProductImgs(sku);arr.splice(idx,1);
+  if(setProductImgs(sku,arr))renderProductBar(sku);
+}
+function renderProductBar(sku){
+  var lbl=document.getElementById('prod-bar-sku');if(lbl)lbl.textContent=SKUS[sku].tab;
+  var box=document.getElementById('prod-thumbs');if(!box)return;
+  var arr=getProductImgs(sku);
+  box.innerHTML=arr.map(function(src,i){
+    return '<div class="prod-thumb"><img src="'+src+'"><div class="prod-thumb-x" title="Remove" onclick="removeProductImg(\''+sku+'\','+i+')">×</div></div>';
+  }).join('')||'<span style="font-size:12px;color:var(--muted);font-style:italic">None yet — add your real product shots 👉</span>';
+}
+
 /* ── APPROVE CONCEPT → ADD CREATIVE FIRST (copy is written FROM the image) ── */
 function approveConcept(id){
   cards[id].phase='image';
@@ -1161,7 +1236,9 @@ async function runImgGen(id){
   if(!GEM_KEY){alert('Enter your Gemini API key in the password gate.');return;}
   btn.textContent='⏳ Generating…';btn.disabled=true;
   if(resEl)resEl.style.display='none';
-  var refs=refImgs[id]||[];
+  var skuKey=(cards[id]&&cards[id].sku)||activeSku;
+  var prodRefs=getProductImgs(skuKey);
+  var refs=prodRefs.concat(refImgs[id]||[]);
   var parts=[];
   for(var i=0;i<refs.length;i++){
     if(!refs[i])continue;
@@ -1169,7 +1246,9 @@ async function runImgGen(id){
     var mime=(sp[0].match(/:([^;]+);/)||[])[1]||'image/jpeg';
     parts.push({inlineData:{mimeType:mime,data:sp[1]}});
   }
+  var prodNote=prodRefs.length?('The '+prodRefs.length+' reference image(s) provided show the EXACT real product. Reproduce the product FAITHFULLY — same tube shape, the exact "LACALUT" branding, logo, colours and label text — do NOT invent, restyle or alter the product or its packaging. Place this real product naturally into the scene. '):'';
   var fullPrompt='Generate a high-quality Facebook ad image for '+esc(s?s.name:'')+'. '
+    +prodNote
     +(conceptPrompt?'Visual concept: '+conceptPrompt+'. ':'')
     +'Style: '+prompt+'. '
     +(overlay?('IMPORTANT — render this exact text ON the image as a bold, clean, high-contrast ad text overlay (spelled exactly, legible, large): "'+overlay+'". '):'No text overlays on the image. ')
