@@ -651,7 +651,7 @@ function uploadProductImg(ev){
     rd.onload=function(e){
       downscaleImage(e.target.result,function(small){
         arr.push(small);done++;
-        if(done===todo.length){if(setProductImgs(sku,arr)){renderProductBar(sku);prodToast('📦 Product image saved for '+SKUS[sku].tab);}}
+        if(done===todo.length){if(setProductImgs(sku,arr)){renderProductBar(sku);syncProductToSupa(sku);prodToast('📦 Saved + synced for '+SKUS[sku].tab+' — ready for /video-ads');}}
       });
     };
     rd.readAsDataURL(f);
@@ -660,7 +660,20 @@ function uploadProductImg(ev){
 }
 function removeProductImg(sku,idx){
   var arr=getProductImgs(sku);arr.splice(idx,1);
-  if(setProductImgs(sku,arr))renderProductBar(sku);
+  if(setProductImgs(sku,arr)){renderProductBar(sku);syncProductToSupa(sku);}
+}
+/* Push the SKU's PRIMARY product shot to Supabase Storage so the /video-ads
+   skill (running on Quan's PC) can pull it as Higgsfield's start_image. One hero
+   shot per SKU at a deterministic path. Best-effort — never blocks the UI. */
+function syncProductToSupa(sku){
+  var arr=getProductImgs(sku);
+  var path=SUPA_URL+'/storage/v1/object/ad-images/product-refs/'+sku+'.jpg';
+  var hdr={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY};
+  if(!arr.length){fetch(path,{method:'DELETE',headers:hdr}).catch(function(){});return;}
+  fetch(arr[0]).then(function(r){return r.blob();}).then(function(blob){
+    return fetch(path,{method:'POST',headers:Object.assign({'Content-Type':'image/jpeg','x-upsert':'true'},hdr),body:blob});
+  }).then(function(res){if(!(res&&res.ok))console.warn('product sync HTTP',res&&res.status);})
+  .catch(function(e){console.warn('product sync failed',e);});
 }
 function renderProductBar(sku){
   var lbl=document.getElementById('prod-bar-sku');if(lbl)lbl.textContent=SKUS[sku].tab;
