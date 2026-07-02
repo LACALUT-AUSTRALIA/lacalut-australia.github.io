@@ -39,12 +39,20 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 
 /* LOGO BAR */
 #logo-bar{background:#fff;border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);}
-#logo-bar label.lu-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:600;color:var(--text);}
+#logo-bar label.lu-btn,#prod-bar label.lu-btn{background:var(--bg);border:1.5px solid var(--border);border-radius:6px;padding:5px 12px;cursor:pointer;font-weight:600;color:var(--text);}
 #logo-bar select{border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:13px;background:#fff;color:var(--text);}
 .lu-clear{background:#fce8e8;border:1.5px solid #ef9a9a;border-radius:6px;padding:4px 10px;font-size:13px;font-weight:600;color:#c62828;cursor:pointer;}
 #logo-thumb{height:28px;border-radius:3px;display:none;}
 
 /* GENERATE BAR */
+#prod-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 20px;background:#eef4fb;border-bottom:1px solid var(--border);}
+.prod-bar-lbl{font-size:13px;font-weight:800;color:var(--navy);white-space:nowrap;}
+.prod-bar-sku{color:#cf102d;}
+#prod-thumbs{display:flex;gap:8px;flex-wrap:wrap;}
+.prod-thumb{position:relative;width:52px;height:52px;border-radius:8px;border:1.5px solid var(--border);background:#fff;overflow:hidden;}
+.prod-thumb img{width:100%;height:100%;object-fit:cover;}
+.prod-thumb-x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;line-height:16px;text-align:center;border-radius:50%;background:#cf102d;color:#fff;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #fff;}
+.prod-bar-hint{font-size:12px;color:var(--muted);flex:1;min-width:180px;}
 #gen-bar{background:#fff;border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 #btn-gen-ideas{display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,74,136,.3);white-space:nowrap;transition:.15s;}
 #btn-gen-ideas:hover{background:#003870;transform:translateY(-1px);}
@@ -383,6 +391,14 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <button class="lu-clear" onclick="clearLogo()">✕ Remove</button>
 </div>
 
+<!-- PRODUCT IMAGES BAR (SKU-level real-product references — shared with the Image Ads Creator) -->
+<div id="prod-bar">
+  <span class="prod-bar-lbl">📦 Product Images · <span class="prod-bar-sku" id="prod-bar-sku">FLORA</span></span>
+  <div id="prod-thumbs"></div>
+  <label class="lu-btn">➕ Add Product Shot<input type="file" accept="image/*" multiple onchange="uploadProductImg(event)" style="display:none"></label>
+  <span class="prod-bar-hint">📌 Upload the real product once per SKU — Higgsfield uses these as the exact product so your video shows YOUR tube, not an invented one. Shared with the 🖼️ Image Ads Creator.</span>
+</div>
+
 <!-- GENERATE BAR -->
 <div id="gen-bar">
   <button id="btn-gen-ideas" onclick="generateIdeas()">✨ Generate 10 Ideas for <span id="gen-sku-lbl">FLORA</span></button>
@@ -582,6 +598,7 @@ var cardIdx=0;
 buildTabBar();
 loadSku('flora');
 loadBriefPanel('flora');
+renderProductBar('flora');
 refreshHeaderTagline();
 var sl=localStorage.getItem('lac_logo');
 if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
@@ -589,6 +606,70 @@ if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElem
 /* ── HELPERS ── */
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function gv(id){var el=document.getElementById(id);return el?(el.value||'').trim():'';}
+
+/* ── PRODUCT IMAGES (SKU-level real-product refs, SHARED with the Image Ads Creator) ──
+   Same localStorage key + same origin as facebook-image-ads, so a product shot
+   uploaded in either tool powers both. These feed Higgsfield as the start image
+   so the video renders the REAL product, not an AI-invented one. */
+var PROD_MAX=6;
+function prodKey(sku){return 'lac_img_prod_'+sku;}
+function getProductImgs(sku){try{return JSON.parse(localStorage.getItem(prodKey(sku))||'[]');}catch(e){return[];}}
+function setProductImgs(sku,arr){
+  try{localStorage.setItem(prodKey(sku),JSON.stringify(arr));return true;}
+  catch(e){alert('⚠️ Browser storage is full — remove a product image (or use fewer) and try again.');return false;}
+}
+/* Downscale to max 1024px longest edge, JPEG ~0.85 — keeps logo/text legible for
+   the AI while cutting file size ~10-20x vs a raw phone photo. */
+function downscaleImage(dataUrl,cb){
+  var img=new Image();
+  img.onload=function(){
+    var max=1024,w=img.width,h=img.height;
+    if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+    var cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    cv.getContext('2d').drawImage(img,0,0,w,h);
+    cb(cv.toDataURL('image/jpeg',0.85));
+  };
+  img.onerror=function(){cb(dataUrl);};
+  img.src=dataUrl;
+}
+function prodToast(msg){
+  var t=document.getElementById('prod-toast');
+  if(!t){t=document.createElement('div');t.id='prod-toast';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#004a88;color:#fff;padding:12px 20px;border-radius:10px;font-weight:600;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:9999;opacity:0;transition:opacity .25s;';
+    document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._h);t._h=setTimeout(function(){t.style.opacity='0';},2600);
+}
+function uploadProductImg(ev){
+  var files=Array.from(ev.target.files||[]);if(!files.length)return;
+  var sku=activeSku,arr=getProductImgs(sku);
+  var remaining=PROD_MAX-arr.length;
+  if(remaining<=0){alert('Max '+PROD_MAX+' product images per SKU. Remove one first.');ev.target.value='';return;}
+  var todo=files.slice(0,remaining),done=0;
+  todo.forEach(function(f){
+    var rd=new FileReader();
+    rd.onload=function(e){
+      downscaleImage(e.target.result,function(small){
+        arr.push(small);done++;
+        if(done===todo.length){if(setProductImgs(sku,arr)){renderProductBar(sku);prodToast('📦 Product image saved for '+SKUS[sku].tab);}}
+      });
+    };
+    rd.readAsDataURL(f);
+  });
+  ev.target.value='';
+}
+function removeProductImg(sku,idx){
+  var arr=getProductImgs(sku);arr.splice(idx,1);
+  if(setProductImgs(sku,arr))renderProductBar(sku);
+}
+function renderProductBar(sku){
+  var lbl=document.getElementById('prod-bar-sku');if(lbl)lbl.textContent=SKUS[sku].tab;
+  var box=document.getElementById('prod-thumbs');if(!box)return;
+  var arr=getProductImgs(sku);
+  box.innerHTML=arr.map(function(src,i){
+    return '<div class="prod-thumb"><img src="'+src+'"><div class="prod-thumb-x" title="Remove" onclick="removeProductImg(\''+sku+'\','+i+')">×</div></div>';
+  }).join('')||'<span style="font-size:12px;color:var(--muted);font-style:italic">None yet — add your real product shots 👉</span>';
+}
 
 /* ── TAB BAR ── */
 function buildTabBar(){
@@ -611,6 +692,7 @@ function switchSku(sku){
   document.getElementById('gen-sku-lbl').textContent=SKUS[sku].tab;
   refreshHeaderTagline();
   loadBriefPanel(sku);
+  renderProductBar(sku);
   cards={};aiResults={};
   loadSku(sku);
 }
