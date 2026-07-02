@@ -358,6 +358,7 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <span class="hdr-spacer"></span>
   <span id="api-claude" style="font-size:11px;padding:3px 9px;border-radius:999px;background:#f0f0f0;color:#999;font-weight:600;white-space:nowrap;">Claude ❓</span>
   <span id="api-gem" style="font-size:11px;padding:3px 9px;border-radius:999px;background:#f0f0f0;color:#999;font-weight:600;white-space:nowrap;">Gemini ❓</span>
+  <button onclick="updateKeys()" title="Update your Claude / Gemini API keys" style="font-size:11px;padding:4px 11px;border-radius:999px;background:#004a88;color:#fff;border:none;font-weight:700;cursor:pointer;white-space:nowrap;">🔑 Keys</button>
 </header>
 
 <!-- SKU TABS -->
@@ -781,15 +782,8 @@ function buildImageHTML(id,c,col,s){
     +'</div>'
     // Image gen panel
     +'<div class="img-panel-inner" id="imgpanel-'+id+'">'
-    +'<div class="img-panel-lbl">🖼️ Generate Image — Gemini · 9:16 master → auto-crops to 1:1 + 1.91:1 on approve</div>'
-    +'<div style="font-size:12px;color:#6b21a8;margin-bottom:8px">Style: '+esc(s?s.geminiStyle:'')+'</div>'
-    +'<div class="ref-slots">'
-    +'<label class="ref-slot"><input type="file" accept="image/*" onchange="addRef(event,\''+id+'\',0)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-0">+ Style ref</div></label>'
-    +'<label class="ref-slot"><input type="file" accept="image/*" onchange="addRef(event,\''+id+'\',1)" style="display:none"><div class="ref-slot-inner" id="rs-'+id+'-1">+ Comp ref</div></label>'
-    +'</div>'
-    +'<textarea class="ai-in" id="ipr-'+id+'" rows="2" placeholder="Additional direction (optional)…">'+esc(s?s.geminiStyle:'')+'</textarea>'
-    +'<div class="ai-btns"><button class="btn-run" style="background:#6b21a8" id="igb-'+id+'" onclick="runImgGen(\''+id+'\')">🖼️ Generate (Gemini)</button><button class="btn-close-p" onclick="toggleImgPanel(\''+id+'\',false)">✕ Close</button></div>'
-    +'<div class="img-panel-lbl" style="margin-top:10px">🎬 Higgsfield final — use model <b>GPT Image 2</b> (best text rendering) · text baked in</div>'
+    +'<div class="img-panel-lbl">🎨 Create Image in Higgsfield — use model <b>GPT Image 2</b> (best text rendering) · text baked in</div>'
+    +'<div style="font-size:12px;color:#6b21a8;margin-bottom:8px">💡 Upload your SKU product image into Higgsfield\'s reference slot so it renders the real Lacalut tube.</div>'
     +'<div class="ai-btns"><button class="btn-run" style="background:#e2b96f;color:#1a1a2e" id="hfib-'+id+'" onclick="genHiggsfieldImg(\''+id+'\')">🎨 Write Higgsfield image prompt</button></div>'
     +'<div id="hfibox-'+id+'" style="display:none;background:#1a1a2e;color:#eee;border:1.5px solid #e2b96f;border-radius:7px;padding:12px;margin-top:8px;font-size:13px;white-space:pre-wrap;line-height:1.5"></div>'
     +'<div class="ai-btns" id="hficopy-'+id+'" style="display:none;margin-top:6px"><button class="btn-run" onclick="copyHiggsfieldImg(\''+id+'\')">📋 Copy → paste into Higgsfield</button></div>'
@@ -809,7 +803,7 @@ function buildImageHTML(id,c,col,s){
     +'</div></div>'
     +'<div class="copy-acts">'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
-    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🖼️ Generate Image</button>'
+    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Create Image (Higgsfield)</button>'
     +'<button class="btn-imggen" style="background:#e8f8e8;color:#1e7e34;border-color:#b2dfb2;" onclick="openUpload(\''+id+'\')">📁 Upload Photo</button>'
     +'<input type="file" accept="image/*" id="upf-'+id+'" style="display:none" onchange="acceptUpload(event,\''+id+'\')">'
     +'<button class="btn-higgsfield" id="hfbtn-'+id+'" onclick="openHiggsfield(\''+id+'\')">🎬 Make Video</button>'
@@ -837,7 +831,7 @@ function buildImageHTML(id,c,col,s){
     // BOTTOM
     +'<div class="card-acts">'
     +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>'
-        :'<button class="btn-gen-img" onclick="toggleImgPanel(\''+id+'\',true)">🖼️ Generate Image</button>')
+        :'<button class="btn-gen-img" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Create Image (Higgsfield)</button>')
     +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>🚀 Queued</button>'
        :'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">🚀 Approve &amp; Queue</button>')
     +'<button class="btn-reject-card" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
@@ -1084,13 +1078,11 @@ function renderProductBar(sku){
 function approveConcept(id){
   cards[id].phase='image';
   renderCard(id);updateCounts();saveSession();
-  // Creative-first: open the image panel AND auto-generate the creative from the
-  // concept's visual now. User then iterates (Retry / edit / import) until perfect,
-  // and copy is written FROM the final image on "✓ Use This".
-  setTimeout(function(){
-    toggleImgPanel(id,true);
-    if(GEM_KEY&&cards[id]&&cards[id].imagePrompt)runImgGen(id);
-  },80);
+  // Higgsfield-first: open the image panel to the "Write Higgsfield prompt" flow.
+  // We do NOT auto-fire Gemini (retired last session; key is dead). Quan writes the
+  // Higgsfield prompt, generates in Higgsfield, then imports the finished creative
+  // back in — copy auto-writes FROM that image on "✓ Use This".
+  setTimeout(function(){toggleImgPanel(id,true);},80);
 }
 
 /* Write copy FROM the actual creative (vision) — the correct order. Uses the
@@ -1693,6 +1685,15 @@ function updateKeyStatus(){
   var ce=document.getElementById('api-claude'),ge=document.getElementById('api-gem');
   if(ce){if(ck&&ck.length>20){ce.textContent='Claude ✅';ce.style.background='#e8f8e8';ce.style.color='#1e7e34';}else{ce.textContent='Claude ❌';ce.style.background='#fce8e8';ce.style.color='#c62828';}}
   if(ge){if(gk&&gk.length>20){ge.textContent='Gemini ✅';ge.style.background='#e8f8e8';ge.style.color='#1e7e34';}else{ge.textContent='Gemini ❌';ge.style.background='#fce8e8';ge.style.color='#c62828';}}
+}
+/* Update API keys any time without re-doing the password gate. */
+function updateKeys(){
+  var c=prompt('🔑 Paste your CLAUDE (Anthropic) API key.\n\nThis powers everything you use: Generate Ideas, copy writing, and the Higgsfield prompt. Leave blank to keep the current key.', localStorage.getItem('lc_claude_key')||'');
+  if(c!==null){c=c.trim();if(c){localStorage.setItem('lc_claude_key',c);CLAUDE_KEY=c;}}
+  var g=prompt('🔑 (Optional) Gemini API key — only for the retired built-in Gemini drafts. You use Higgsfield for images, so you can leave this blank.', localStorage.getItem('lc_gem_key')||'');
+  if(g!==null){g=g.trim();if(g){localStorage.setItem('lc_gem_key',g);GEM_KEY=g;}}
+  updateKeyStatus();
+  alert('✅ Keys updated.');
 }
 updateKeyStatus();
 
