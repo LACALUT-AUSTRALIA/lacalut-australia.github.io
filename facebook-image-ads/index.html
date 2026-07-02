@@ -383,6 +383,7 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <span class="gen-or">or</span>
   <input type="text" id="manual-idea-input" placeholder="Describe your own idea… e.g. Person on a date, green breath cloud only visible to the audience">
   <button id="btn-add-idea" onclick="addManualIdea()">+ Add My Idea</button>
+  <button id="btn-import-img" onclick="importFromImage()" style="background:#0a7d3c;color:#fff;border:2px solid #0a7d3c;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Import Image → Auto-Copy</button>
   <button id="btn-brain" onclick="toggleBrain()">⚙️ Edit Brain</button>
   <div class="gen-hint">💡 Ideas are text-only first — approve a concept to build copy &amp; generate image</div>
 </div>
@@ -857,6 +858,41 @@ async function addManualIdea(){
     renderCard(id,false);inputEl.value='';updateCounts();
   }
   finally{btn.textContent='+ Add My Idea';btn.disabled=false;}
+}
+
+/* ── IMPORT IMAGE → AUTO-WRITE COPY (image-first flow) ── */
+async function importFromImage(){
+  if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');return;}
+  var url=prompt('Paste an image URL (e.g. a Higgsfield cdn.higgsfield.ai link).\nClaude will look at the image and write the ad copy for you:','');
+  if(!url)return;
+  url=url.trim();
+  if(!/^https?:\/\//i.test(url)){alert('Please paste a full http(s) image URL.');return;}
+  var s=SKUS[activeSku];
+  var id='idea-'+(++cardIdx);
+  cards[id]={phase:'generating',title:'📥 Imported image',angle:'From your creative',hook:'',story:'',status:'none',sku:activeSku,imagePrompt:'',img:url};
+  var es=document.getElementById('empty-state');if(es)es.remove();
+  renderCard(id,false);updateCounts();
+  try{
+    var msg='This is the ad IMAGE for '+s.name+'. Look at it carefully and write a Facebook static image ad that matches what the image shows. '
+      +'Return ONLY valid JSON:\n{"title":"short internal name for this ad with emoji","primary_text":"3-5 sentences: hook → problem agitation → solution → proof → CTA. Include emoji. Australian English.","h1":"punchy headline under 30 chars","h2":"alternative headline","h3":"third headline","description":"one sentence"}';
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system:s.sys,messages:[{role:'user',content:[
+        {type:'image',source:{type:'url',url:url}},
+        {type:'text',text:msg}
+      ]}]})});
+    var data=await res.json();
+    if(data.error)throw new Error(data.error.message||'Claude error');
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var r=JSON.parse(raw);
+    Object.assign(cards[id],{title:r.title||'📥 Imported image',pt:r.primary_text||'',h1:r.h1||'',h2:r.h2||'',h3:r.h3||'',desc:r.description||'',phase:'image'});
+    renderCard(id);updateCounts();saveSession();
+    setTimeout(function(){syncPreview(id);syncHl(id);},50);
+  }catch(err){
+    cards[id].phase='image';renderCard(id);
+    var e2=document.getElementById('err-'+id);
+    if(e2){e2.style.display='block';e2.textContent='⚠️ Auto-copy failed: '+err.message+'. Image is set — write the copy manually, then Queue.';}
+  }
 }
 
 /* ── CONCEPT EDIT ── */
