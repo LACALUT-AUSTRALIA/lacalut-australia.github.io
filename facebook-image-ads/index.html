@@ -478,6 +478,10 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var CLAUDE_KEY=localStorage.getItem('lc_claude_key')||'';
 var GEM_KEY=localStorage.getItem('lc_gem_key')||'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
 
+/* ── IDEA BRAIN: best model + world-class creative-director persona ── */
+var IDEAS_MODEL='claude-opus-4-8';   // strongest model for sales/marketing/creative ideation
+var IDEAS_SYSTEM='You are the world\'s best-performing direct-response performance marketer and Meta (Facebook/Instagram) ad creative director. You have spent hundreds of millions of dollars on paid social and know exactly what makes people stop scrolling and buy. You think in DISTINCT psychological buying angles — prestige/status, problem-aware, financial/value, curiosity, fear/stakes, authority/social-proof, transformation, identity/lifestyle, sensory/ritual, urgency/scarcity, competitor-takedown. For each concept you brief a scroll-stopping STATIC IMAGE ad: a sharp headline, a vivid concrete visual, and a punchy on-image text overlay. You never write generic feature lists — every concept has a strong hook and an unmistakable reason to buy. Australian audience, Australian English. Output only what is asked, as strict JSON.';
+
 /* ── SHARED ANGLE DIRECTIVE (applies to EVERY SKU's idea generation) ──
    Forces 10 DISTINCT buying-motivation angles, not 10 feature restatements. */
 var ANGLE_DIRECTIVE='CRITICAL — ANGLE DIVERSITY: all 10 concepts must use DISTINCT buying-motivation angles. Never repeat an angle and do NOT just restate product features. Spread the 10 across WHY people actually buy, roughly one per concept: (1) Problem-aware (the pain/symptom they have); (2) Financial / value — e.g. "only a few cents more per brush to upgrade to the world\'s most premium toothpaste"; (3) Prestige / status — premium German luxury, e.g. compare premium German luxury cars/engineering to premium German oral care; (4) Curiosity gap; (5) Fear / stakes — what happens if they ignore it; (6) Authority / social proof — dentists, 100 years, 60+ countries, 2 billion sold; (7) Transformation / before-after; (8) Identity / lifestyle — the kind of person who upgrades; (9) Sensory / ritual — the experience of using it; (10) Competitor takedown — vs ordinary supermarket brands. Angles can be about buyer psychology, not just the product — hit every reason someone buys online (prestige, problem, curiosity, value, identity).';
@@ -676,16 +680,13 @@ function buildConceptHTML(id,c,col){
     +'</div>'
     +'<div class="concept-body">'
     +(c.headline?'<div class="concept-lbl">Headline</div><div class="concept-hook-text" style="font-weight:700">'+esc(c.headline)+'</div>':'')
-    +'<div class="concept-lbl">Opening Hook</div>'
-    +'<div class="concept-hook-text">'+esc(c.hook)+'</div>'
-    +(c.textOverlay?'<div class="concept-story-lbl">Text overlay (on image)</div><div class="concept-story" style="font-weight:600;color:'+col+'">“'+esc(c.textOverlay)+'”</div>':'')
-    +'<div class="concept-story-lbl">What the ad does</div>'
-    +'<div class="concept-story">'+esc(c.story)+'</div>'
     +(c.imagePrompt?'<div class="concept-story-lbl">Visual</div><div class="concept-story" style="font-style:italic">'+esc(c.imagePrompt)+'</div>':'')
+    +(c.textOverlay?'<div class="concept-story-lbl">Text overlay (on image)</div><div class="concept-story" style="font-weight:600;color:'+col+'">“'+esc(c.textOverlay)+'”</div>':'')
     +'<div class="concept-edit" id="cedit-'+id+'">'
-    +'<div class="edit-lbl">Title</div><input type="text" class="edit-input" id="et-'+id+'" value="'+esc(c.title)+'">'
-    +'<div class="edit-lbl">Opening Hook</div><input type="text" class="edit-input" id="eh-'+id+'" value="'+esc(c.hook)+'">'
-    +'<div class="edit-lbl">What the Ad Does</div><textarea class="edit-input" id="es-'+id+'" rows="3">'+esc(c.story)+'</textarea>'
+    +'<div class="edit-lbl">Angle</div><input type="text" class="edit-input" id="et-'+id+'" value="'+esc(c.title)+'">'
+    +'<div class="edit-lbl">Headline</div><input type="text" class="edit-input" id="eh-'+id+'" value="'+esc(c.headline)+'">'
+    +'<div class="edit-lbl">Visual</div><textarea class="edit-input" id="es-'+id+'" rows="3">'+esc(c.imagePrompt)+'</textarea>'
+    +'<div class="edit-lbl">Text overlay (on image)</div><input type="text" class="edit-input" id="eo-'+id+'" value="'+esc(c.textOverlay)+'">'
     +'<div style="display:flex;gap:8px;margin-top:12px;">'
     +'<button class="btn-save-edit" onclick="saveEdit(\''+id+'\')">💾 Save</button>'
     +'<button class="btn-cancel-edit" onclick="cancelEdit(\''+id+'\')">✕ Cancel</button>'
@@ -825,26 +826,29 @@ async function generateIdeas(){
   if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';btn.disabled=false;return;}
   try{
     var prompt=(localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP)+'\n\n'+ANGLE_DIRECTIVE
-      +'\n\nFor EACH of the 10, return these fields:'
-      +'\n  "title": short internal name with emoji (e.g. "The Luxury Analogy")'
-      +'\n  "angle": the buying-motivation named (e.g. "Prestige / Luxury Analogy")'
+      +'\n\nKeep each concept LEAN — only these 4 fields, nothing else:'
+      +'\n  "angle": the concept name + buying-motivation (e.g. "The Luxury Analogy (Prestige)")'
       +'\n  "headline": the ad headline with emoji (e.g. "German Engineering For Your Smile 🇩🇪")'
-      +'\n  "hook": one visceral sentence'
-      +'\n  "story": 2-3 sentences on what the ad does'
-      +'\n  "textOverlay": the exact SHORT punchy text to render ON the image (e.g. "Stop Seeing Pink In The Sink")'
       +'\n  "imagePrompt": a detailed VISUAL description of the scene for AI image generation (composition, subject, setting, lighting) — describe the picture only, do NOT include the overlay words here'
+      +'\n  "textOverlay": the exact SHORT punchy text to render ON the image (e.g. "Cheaper than a single dental checkup.")'
       +'\nReturn ONLY a JSON array of 10 such objects — no other text.';
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
-    var data=await res.json();
+    async function askIdeas(model){
+      var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+        headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:model,max_tokens:4000,system:IDEAS_SYSTEM,messages:[{role:'user',content:prompt}]})});
+      return r.json();
+    }
+    var data=await askIdeas(IDEAS_MODEL);
+    // Fallback if the key can't reach the top model (e.g. access/model-id error)
+    if(data.error){data=await askIdeas('claude-sonnet-4-6');}
+    if(data.error)throw new Error(data.error.message||'Claude error');
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     var ideas=JSON.parse(raw);
     if(!Array.isArray(ideas))throw new Error('Expected array');
     Object.keys(cards).forEach(function(id){if(cards[id].phase==='concept')delete cards[id];});
     ideas.slice(0,10).forEach(function(idea){
       var id='idea-'+(++cardIdx);
-      cards[id]={phase:'concept',title:idea.title||('💡 Concept '+(cardIdx)),angle:idea.angle||'',headline:idea.headline||'',hook:idea.hook||'',story:idea.story||'',textOverlay:idea.textOverlay||'',status:'none',sku:activeSku,imagePrompt:idea.imagePrompt||''};
+      cards[id]={phase:'concept',title:idea.angle||('💡 Concept '+(cardIdx)),angle:'',headline:idea.headline||'',hook:'',story:'',textOverlay:idea.textOverlay||'',status:'none',sku:activeSku,imagePrompt:idea.imagePrompt||''};
     });
     renderAll();saveSession();
   }catch(err){alert('❌ Error: '+err.message);}
@@ -860,7 +864,7 @@ async function addManualIdea(){
   btn.textContent='⏳ Expanding…';btn.disabled=true;
   try{
     var s=SKUS[activeSku];
-    var msg='Expand this rough static image ad idea into a full concept for '+s.name+'.\nRough idea: "'+text+'"\nReturn ONLY valid JSON: {"title":"engaging title with emoji","angle":"3-5 word creative angle","hook":"one visceral sentence describing the image hook","story":"2-3 sentences describing the concept and what it communicates","imagePrompt":"detailed visual description for AI image generation"}';
+    var msg='Expand this rough static image ad idea into a LEAN concept for '+s.name+'.\nRough idea: "'+text+'"\nReturn ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation, e.g. The Luxury Analogy (Prestige)","headline":"ad headline with emoji","imagePrompt":"detailed VISUAL description of the scene for AI image generation — picture only, no overlay words","textOverlay":"short punchy text to render ON the image"}';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:400,system:s.sys,messages:[{role:'user',content:msg}]})});
@@ -868,12 +872,12 @@ async function addManualIdea(){
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     var r=JSON.parse(raw);
     var id='idea-'+(++cardIdx);
-    cards[id]={phase:'concept',title:r.title||('💡 '+text.substring(0,50)),angle:r.angle||'Custom',hook:r.hook||text,story:r.story||'',status:'none',sku:activeSku,imagePrompt:r.imagePrompt||''};
+    cards[id]={phase:'concept',title:r.angle||('💡 '+text.substring(0,50)),angle:'',headline:r.headline||'',hook:'',story:'',textOverlay:r.textOverlay||'',status:'none',sku:activeSku,imagePrompt:r.imagePrompt||''};
     var es=document.getElementById('empty-state');if(es)es.remove();
     renderCard(id,false);inputEl.value='';updateCounts();saveSession();
   }catch(err){
     var id='idea-'+(++cardIdx);
-    cards[id]={phase:'concept',title:'💡 '+text.substring(0,50),angle:'Custom',hook:text,story:'Custom concept. Edit to refine, then Approve.',status:'none',sku:activeSku,imagePrompt:''};
+    cards[id]={phase:'concept',title:'💡 '+text.substring(0,50),angle:'',headline:'',hook:'',story:'',textOverlay:'',status:'none',sku:activeSku,imagePrompt:text};
     var es=document.getElementById('empty-state');if(es)es.remove();
     renderCard(id,false);inputEl.value='';updateCounts();saveSession();
   }
@@ -899,10 +903,11 @@ async function importFromImage(){
 function openEdit(id){var el=document.getElementById('cedit-'+id);if(el)el.classList.add('open');}
 function cancelEdit(id){var el=document.getElementById('cedit-'+id);if(el)el.classList.remove('open');}
 function saveEdit(id){
-  var t=document.getElementById('et-'+id),h=document.getElementById('eh-'+id),s=document.getElementById('es-'+id);
+  var t=document.getElementById('et-'+id),h=document.getElementById('eh-'+id),s=document.getElementById('es-'+id),o=document.getElementById('eo-'+id);
   if(t)cards[id].title=t.value.trim();
-  if(h)cards[id].hook=h.value.trim();
-  if(s)cards[id].story=s.value.trim();
+  if(h)cards[id].headline=h.value.trim();
+  if(s)cards[id].imagePrompt=s.value.trim();
+  if(o)cards[id].textOverlay=o.value.trim();
   renderCard(id);saveSession();
 }
 
@@ -932,7 +937,7 @@ async function autoGenCopyFromImage(id){
   }else{
     imgBlock={type:'image',source:{type:'url',url:img}};
   }
-  var ctx=c.title?('For context, the chosen creative angle is — Title: '+c.title+'; Angle: '+c.angle+(c.headline?'; Headline: '+c.headline:'')+'; Hook: '+c.hook+(c.textOverlay?'; On-image text: "'+c.textOverlay+'"':'')+'; Concept: '+c.story+'. The copy must fit BOTH this angle AND what the image actually shows.\n\n'):'';
+  var ctx=(c.title||c.headline)?('For context, the chosen creative angle is — Angle: '+(c.title||'')+(c.headline?'; Headline: '+c.headline:'')+(c.textOverlay?'; On-image text: "'+c.textOverlay+'"':'')+'. The copy must fit BOTH this angle AND what the image actually shows.\n\n'):'';
   var msg=ctx+'This is the ad IMAGE for '+s.name+'. Look at it carefully and write a Facebook static image ad that matches what the image shows. Return ONLY valid JSON:\n{"primary_text":"3-5 sentences: hook → problem agitation → solution → proof → CTA. Include emoji. Australian English.","h1":"punchy headline under 30 chars","h2":"alternative headline","h3":"third headline","description":"one sentence"}';
   var eb=document.getElementById('err-'+id);if(eb){eb.style.display='block';eb.textContent='✍️ Writing copy from your creative…';}
   try{
@@ -979,14 +984,14 @@ async function regenConcept(id){
   var el=document.getElementById('card-'+id);if(el)el.style.opacity='.5';
   if(!CLAUDE_KEY){if(el)el.style.opacity='1';alert('Enter your Claude API key first.');return;}
   try{
-    var msg='Generate ONE new Facebook static image ad concept for '+s.name+'. Different angle from: "'+c.title+'". Return ONLY valid JSON: {"title":"string with emoji","angle":"3-5 words","hook":"one sentence","story":"2-3 sentences","imagePrompt":"visual description for AI image gen"}';
+    var msg='Generate ONE new Facebook static image ad concept for '+s.name+', using a DIFFERENT buying-motivation angle from: "'+c.title+'". Return ONLY valid JSON with exactly these 4 fields: {"angle":"concept name + buying-motivation","headline":"ad headline with emoji","imagePrompt":"detailed VISUAL description of the scene — picture only, no overlay words","textOverlay":"short punchy text to render ON the image"}';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:300,messages:[{role:'user',content:msg}]})});
+      body:JSON.stringify({model:IDEAS_MODEL,max_tokens:600,system:IDEAS_SYSTEM,messages:[{role:'user',content:msg}]})});
     var data=await res.json();
     var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
     var r=JSON.parse(raw);
-    Object.assign(cards[id],{title:r.title,angle:r.angle,hook:r.hook,story:r.story,imagePrompt:r.imagePrompt||''});
+    Object.assign(cards[id],{title:r.angle||c.title,angle:'',headline:r.headline||'',hook:'',story:'',textOverlay:r.textOverlay||'',imagePrompt:r.imagePrompt||''});
     renderCard(id);saveSession();
   }catch(err){if(el)el.style.opacity='1';alert('❌ '+err.message);}
 }
