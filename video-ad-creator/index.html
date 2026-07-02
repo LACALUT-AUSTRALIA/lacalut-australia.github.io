@@ -318,37 +318,26 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 </head>
 <body>
 
-<!-- PASSWORD GATE -->
-<div id="gate" style="display:flex;position:fixed;inset:0;background:#f0f2f5;z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
-  <div style="background:#fff;border:1px solid #dde1e7;border-radius:14px;padding:40px 48px;text-align:center;max-width:360px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,.12);">
+<!-- CLAUDE KEY SETUP (no password — single-user tool) -->
+<div id="gate" style="display:none;position:fixed;inset:0;background:#f0f2f5;z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="background:#fff;border:1px solid #dde1e7;border-radius:14px;padding:40px 48px;text-align:center;max-width:400px;width:90%;box-shadow:0 4px 20px rgba(0,0,0,.12);">
     <div style="font-size:2rem;margin-bottom:8px">🎬</div>
-    <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px;color:#cf102d">LACALUT® Australia</div>
-    <div style="font-size:14px;color:#65676b;margin-bottom:22px">Video Ads Creator — authorised access only</div>
-    <input id="gate-pw" type="password" placeholder="Enter password" autocomplete="off"
-      style="width:100%;padding:10px 14px;border:2px solid #dde1e7;border-radius:8px;font-size:16px;outline:none;margin-bottom:10px;font-family:inherit;"
-      onkeydown="if(event.key==='Enter')doGate()">
+    <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px;color:#cf102d">LACALUT® Video Ads Creator</div>
+    <div style="font-size:14px;color:#65676b;margin-bottom:22px">Paste your Claude API key to start — saved on this device only, no password needed.</div>
     <input id="gate-claude" type="password" placeholder="Claude API key (sk-ant-…)" autocomplete="off"
       style="width:100%;padding:10px 14px;border:2px solid #dde1e7;border-radius:8px;font-size:14px;outline:none;margin-bottom:12px;font-family:inherit;"
       onkeydown="if(event.key==='Enter')doGate()">
-    <button onclick="doGate()" style="width:100%;padding:11px;background:#cf102d;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">Unlock</button>
-    <div id="gate-err" style="color:#c62828;font-size:13px;margin-top:10px;display:none">Incorrect password</div>
+    <button onclick="doGate()" style="width:100%;padding:11px;background:#cf102d;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer">Start</button>
   </div>
 </div>
 <script>
 (function(){
-  var H='eaf5bea2ff240394bb4109c4edb070ce40a519733b6794bb628fb5c165388563';
-  async function sha(s){var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
-  var saved=localStorage.getItem('lc_claude_key');
-  if(saved)document.getElementById('gate-claude').value=saved;
-  if(localStorage.getItem('lac_auth')===H)document.getElementById('gate').style.display='none';
-  window.doGate=async function(){
-    var v=document.getElementById('gate-pw').value,h=await sha(v);
+  // No password. Only ask for the Claude API key if one isn't already saved.
+  if(!localStorage.getItem('lc_claude_key')){document.getElementById('gate').style.display='flex';}
+  window.doGate=function(){
     var ck=document.getElementById('gate-claude').value.trim();
-    if(h===H){
-      localStorage.setItem('lac_auth',H);
-      if(ck)localStorage.setItem('lc_claude_key',ck);
-      document.getElementById('gate').style.display='none';
-    }else{document.getElementById('gate-err').style.display='block';document.getElementById('gate-pw').value='';}
+    if(ck){localStorage.setItem('lc_claude_key',ck);CLAUDE_KEY=ck;}
+    document.getElementById('gate').style.display='none';
   };
 })();
 </script>
