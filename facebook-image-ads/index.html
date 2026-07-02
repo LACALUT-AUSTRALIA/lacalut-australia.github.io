@@ -478,6 +478,10 @@ var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 var CLAUDE_KEY=localStorage.getItem('lc_claude_key')||'';
 var GEM_KEY=localStorage.getItem('lc_gem_key')||'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
 
+/* ── SHARED ANGLE DIRECTIVE (applies to EVERY SKU's idea generation) ──
+   Forces 10 DISTINCT buying-motivation angles, not 10 feature restatements. */
+var ANGLE_DIRECTIVE='CRITICAL — ANGLE DIVERSITY: all 10 concepts must use DISTINCT buying-motivation angles. Never repeat an angle and do NOT just restate product features. Spread the 10 across WHY people actually buy, roughly one per concept: (1) Problem-aware (the pain/symptom they have); (2) Financial / value — e.g. "only a few cents more per brush to upgrade to the world\'s most premium toothpaste"; (3) Prestige / status — premium German luxury, e.g. compare premium German luxury cars/engineering to premium German oral care; (4) Curiosity gap; (5) Fear / stakes — what happens if they ignore it; (6) Authority / social proof — dentists, 100 years, 60+ countries, 2 billion sold; (7) Transformation / before-after; (8) Identity / lifestyle — the kind of person who upgrades; (9) Sensory / ritual — the experience of using it; (10) Competitor takedown — vs ordinary supermarket brands. Angles can be about buyer psychology, not just the product — hit every reason someone buys online (prestige, problem, curiosity, value, identity).';
+
 /* ── SKU DATA ── */
 var SKUS={
   aktiv:{name:'LACALUT® Aktiv',tab:'AKTIV',color:'#cf102d',
@@ -684,7 +688,7 @@ function buildConceptHTML(id,c,col){
     +'<button class="btn-cancel-edit" onclick="cancelEdit(\''+id+'\')">✕ Cancel</button>'
     +'</div></div>'
     +'<div class="concept-actions">'
-    +'<button class="btn-approve" onclick="approveConcept(\''+id+'\')">✅ Approve — Build Copy</button>'
+    +'<button class="btn-approve" onclick="approveConcept(\''+id+'\')">✅ Approve → Write Copy (add image next)</button>'
     +'<button class="btn-edit-c" onclick="openEdit(\''+id+'\')">✏️ Edit</button>'
     +'<button class="btn-regen" onclick="regenConcept(\''+id+'\')">🔄 Regenerate</button>'
     +'<button class="btn-reject-c" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
@@ -817,7 +821,7 @@ async function generateIdeas(){
   btn.disabled=true;btn.innerHTML='⏳ Generating…';
   if(!CLAUDE_KEY){alert('Enter your Claude API key in the password gate first.');btn.innerHTML='✨ Generate 10 Ideas for <span id="gen-sku-lbl">'+s.tab+'</span>';btn.disabled=false;return;}
   try{
-    var prompt=localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP;
+    var prompt=(localStorage.getItem('lac_img_brain_'+activeSku)||s.ideaP)+'\n\n'+ANGLE_DIRECTIVE+'\n\nReturn ONLY the JSON array described above — no other text.';
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:3000,messages:[{role:'user',content:prompt}]})});
