@@ -499,7 +499,8 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 <script>
 /* ── KEYS ── */
 var SUPA_URL='https://bfzvxxcsfxvgeblnkqne.supabase.co';
-var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
+/* New publishable key — legacy anon/service keys were disabled 31/05/2026. */
+var SUPA_KEY='sb_publishable_3Do5mWxJcwfj7Cr_U43CgA_T3sx8n3M';
 var CLAUDE_KEY=localStorage.getItem('lc_claude_key')||'';
 var GEM_KEY=localStorage.getItem('lc_gem_key')||'AIzaSyBTKEZtcxwEQ4iAAZMwNLPHXZGRx9whiKQ';
 
@@ -802,8 +803,9 @@ function buildImageHTML(id,c,col,s){
     +'<button class="btn-close-p" onclick="document.getElementById(\'hf-'+id+'\').classList.remove(\'open\')">✕ Close</button>'
     +'</div></div>'
     +'<div class="copy-acts">'
+    +'<button class="btn-imggen" id="cc-'+id+'" style="background:#6d28d9;color:#fff;border-color:#6d28d9;font-weight:700" onclick="createCreative(\''+id+'\')" title="Writes the prompt, renders the image on your PC, and drops it in — no Higgsfield tab needed">✨ Create Creative</button>'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
-    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Create Image (Higgsfield)</button>'
+    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Manual (Higgsfield)</button>'
     +'<button class="btn-imggen" style="background:#e8f8e8;color:#1e7e34;border-color:#b2dfb2;" onclick="openUpload(\''+id+'\')">📁 Upload Photo</button>'
     +'<input type="file" accept="image/*" id="upf-'+id+'" style="display:none" onchange="acceptUpload(event,\''+id+'\')">'
     +'<button class="btn-higgsfield" id="hfbtn-'+id+'" onclick="openHiggsfield(\''+id+'\')">🎬 Make Video</button>'
@@ -1648,6 +1650,60 @@ function copyHiggsfieldImg(id){
     var btn=document.querySelector('#hficopy-'+id+' .btn-run');
     if(btn){var o=btn.textContent;btn.textContent='✅ Copied!';setTimeout(function(){btn.textContent=o;},2000);}
   }).catch(function(){var ta=document.createElement('textarea');ta.value=el.textContent;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);});
+}
+
+/* ── ONE-CLICK CREATE CREATIVE ──
+   Writes the Higgsfield prompt (if needed) → queues an image_jobs row →
+   the PC worker (higgsfield_image_worker.py, Scheduled Task) renders it via
+   GPT Image 2 → we poll and drop the finished image straight into the card.
+   The user never leaves the page or opens Higgsfield. */
+async function createCreative(id){
+  var c=cards[id];if(!c)return;
+  var btn=document.getElementById('cc-'+id);
+  function setBtn(t,dis){if(btn){btn.textContent=t;btn.disabled=!!dis;}}
+  // 1. Ensure a Higgsfield image prompt exists — write it first if the box is empty.
+  toggleImgPanel(id,true);
+  var box=document.getElementById('hfibox-'+id);
+  var promptText=(box&&box.style.display!=='none'&&box.textContent)?box.textContent.trim():'';
+  var placeholderish=(!promptText||promptText.indexOf('Writing Higgsfield')>=0||promptText.charAt(0)==='❌'||promptText.charAt(0)==='⏳');
+  if(placeholderish){
+    setBtn('⏳ Writing prompt…',true);
+    await genHiggsfieldImg(id);
+    box=document.getElementById('hfibox-'+id);
+    promptText=(box&&box.textContent)?box.textContent.trim():'';
+    if(!promptText||promptText.charAt(0)==='❌'){setBtn('✨ Create Creative',false);alert('❌ Couldn\'t write the image prompt — check your Claude key (top-right).');return;}
+  }
+  // 2. Queue the image job.
+  setBtn('⏳ Queuing…',true);
+  var jobId='';
+  try{
+    var qr=await fetch(SUPA_URL+'/rest/v1/image_jobs',{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({card_id:id,sku:c.sku||activeSku,aspect_ratio:'9:16',status:'awaiting_generation',hf_prompt:promptText})});
+    if(!qr.ok)throw new Error('HTTP '+qr.status);
+    var jd=await qr.json();jobId=jd&&jd[0]&&jd[0].id;
+    if(!jobId)throw new Error('no job id');
+  }catch(err){setBtn('✨ Create Creative',false);alert('❌ Couldn\'t queue the image: '+err.message);return;}
+  // 3. Poll for the finished image (your PC renders it, ~60-90s).
+  var start=Date.now(),MAXMS=6*60*1000;
+  setBtn('🎨 Rendering… ~60-90s',true);
+  var poll=setInterval(async function(){
+    if(Date.now()-start>MAXMS){clearInterval(poll);setBtn('✨ Create Creative',false);alert('⏳ Taking longer than usual. Make sure the image worker is running on your PC, then press Create Creative again.');return;}
+    try{
+      var pr=await fetch(SUPA_URL+'/rest/v1/image_jobs?id=eq.'+jobId+'&select=status,image_url,error',{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+      var pd=await pr.json();var row=pd&&pd[0];if(!row)return;
+      if(row.status==='image_ready'&&row.image_url){
+        clearInterval(poll);
+        var prev=document.getElementById('iprev-'+id);if(prev)prev.src=row.image_url;
+        var resEl=document.getElementById('ires-'+id);if(resEl)resEl.style.display='block';
+        acceptImg(id);            // drops image into card + auto-writes the ad copy
+        setBtn('✅ Created',false);
+      }else if(row.status==='failed'){
+        clearInterval(poll);setBtn('✨ Create Creative',false);
+        alert('❌ Image render failed: '+(row.error||'unknown')+'\n\nTip: keep the visual a real, concrete object — not an abstract morph.');
+      }
+    }catch(e){/* transient network — keep polling */}
+  },5000);
 }
 
 function copyHiggsfield(id){
