@@ -872,7 +872,7 @@ function buildCopyHTML(id,c,col){
     // BOTTOM
     +'<div class="card-acts">'
     +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>'
-        :'<button class="btn-gen-video" onclick="startHiggsfield(\''+id+'\')">🎬 Generate 15s Video</button>')
+        :'<label class="btn-gen-video" id="upbtn-'+id+'" style="cursor:pointer">📤 Upload Video<input type="file" accept="video/mp4,video/*" style="display:none" onchange="uploadVideo(\''+id+'\',this.files[0])"></label>')
     +'<button class="btn-fbig" onclick="showShare(\''+id+'\',\'fbig\')">📱 FB/IG Post</button>'
     +'<button class="btn-linkedin" onclick="showShare(\''+id+'\',\'linkedin\')">💼 LinkedIn Post</button>'
     +'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">📘 Create Draft FB Ad</button>'
@@ -947,7 +947,7 @@ function buildVideoHTML(id,c,col){
     +'</div></div></div>'
     // BOTTOM
     +'<div class="card-acts">'
-    +'<button class="btn-gen-video" style="background:#e65100" onclick="startHiggsfield(\''+id+'\')">🎬 Regenerate Video</button>'
+    +'<label class="btn-gen-video" id="upbtn-'+id+'" style="background:#e65100;cursor:pointer">🔁 Replace Video<input type="file" accept="video/mp4,video/*" style="display:none" onchange="uploadVideo(\''+id+'\',this.files[0])"></label>'
     +'<button class="btn-fbig" onclick="showShare(\''+id+'\',\'fbig\')">📱 FB/IG Post</button>'
     +'<button class="btn-linkedin" onclick="showShare(\''+id+'\',\'linkedin\')">💼 LinkedIn Post</button>'
     +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>📘 Queued</button>'
@@ -984,7 +984,8 @@ async function generateIdeas(){
   var btn=document.getElementById('btn-gen-ideas');
   btn.disabled=true;btn.textContent='⏳ Generating…';
   try{
-    var prompt=localStorage.getItem('lac_brain_'+activeSku)||buildIdeaPrompt(activeSku)||s.ideaP;
+    var ANGLE_SPREAD='\n\nMOTIVATION SPREAD — across the 10 concepts, deliberately span these four buyer-motivation lenses (~2-3 concepts each), because different buyers convert on different reasons:\n(1) BEST PRODUCT — clinical quality, proven efficacy, "the one that actually works".\n(2) PRICE / VALUE — cost-per-use, worth it, affordable vs dentist/alternatives.\n(3) FEATURES & BENEFITS — the mechanism, active ingredients, how it works.\n(4) GERMAN HERITAGE — 100+ years of German engineering, trust, science.\nMake each concept\'s "angle" field clearly reflect which of the four lenses it uses.';
+    var prompt=(localStorage.getItem('lac_brain_'+activeSku)||buildIdeaPrompt(activeSku)||s.ideaP)+ANGLE_SPREAD;
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:2000,messages:[{role:'user',content:prompt}]})});
@@ -1050,6 +1051,21 @@ function approveConcept(id){
   autoGenCopy(id);
 }
 
+/* Pull the latest Teach-Claude feedback for a SKU → PREFER / AVOID lists so the
+   copywriter is grounded in what actually converts. Cached per SKU. Never blocks. */
+var _training={};
+async function loadTraining(sku){
+  if(_training[sku])return _training[sku];
+  try{
+    var r=await fetch(SUPA_URL+'/rest/v1/ad_training?sku=eq.'+encodeURIComponent(sku)+'&order=created_at.desc&limit=20',
+      {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    var rows=await r.json();if(!Array.isArray(rows))rows=[];
+    var avoid=rows.map(function(x){return x.notes;}).filter(Boolean);
+    var prefer=rows.reduce(function(a,x){if(x.preferred_copy)a.push(x.preferred_copy);if(x.visual_direction)a.push(x.visual_direction);return a;},[]);
+    return _training[sku]={avoid:avoid,prefer:prefer};
+  }catch(e){return {avoid:[],prefer:[]};}
+}
+
 async function autoGenCopy(id){
   var c=cards[id];var s=SKUS[c.sku||activeSku];
   var statusEl=document.getElementById('vstatus-'+id);
@@ -1057,6 +1073,12 @@ async function autoGenCopy(id){
   try{
     var msg='Write a 15-second Facebook video ad script for the concept: "'+c.title+'"\nAngle: '+c.angle+'\nOpening hook: '+c.hook+'\nAd story: '+c.story
       +'\n\nReturn ONLY valid JSON:\n{"primary_text":"full ad copy (3-5 paragraphs, include emoji, Australian English)","h1":"short headline","h2":"alternative headline","h3":"third headline","description":"one sentence","hbeat":"0-3s action/spoken line","mbeat":"3-12s key message","cbeat":"12-15s call to action"}';
+    // GROUNDING — write like the best performance marketer, based on what converts
+    var t=await loadTraining(c.sku||activeSku);
+    var proven=((s.seeds||[]).map(function(x){return x.pt;}).filter(Boolean)).slice(0,3);
+    if(proven.length)msg+='\n\nPROVEN WINNING COPY (mirror this tone, structure & rhythm — these have converted for us):\n'+proven.join('\n---\n');
+    if(t.prefer.length)msg+='\n\nTRAINING — PREFER (echo these patterns):\n- '+t.prefer.join('\n- ');
+    if(t.avoid.length)msg+='\n\nTRAINING — AVOID (never do these):\n- '+t.avoid.join('\n- ');
     var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
       headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:buildSys(c.sku||activeSku),messages:[{role:'user',content:msg}]})});
@@ -1172,11 +1194,34 @@ function acceptScript(id){
 }
 function discardAI(prefix,id){var r=document.getElementById(prefix+'-'+id);if(r)r.classList.remove('open');}
 
-/* ── HIGGSFIELD GENERATION (Supabase queue + PC worker) ──
-   Approve/Generate inserts a video_jobs row; the higgsfield_worker.py helper
-   on Quan's PC picks it up, runs Higgsfield Seedance 2.0 (15s), and writes the
-   video URL back. The page polls the row and shows the video when ready.
-   (jobPolls handle map is declared near the top of the script.) */
+/* ── HIGGSFIELD MOTION PROMPT ──
+   The page no longer generates videos itself. Quan copies this prompt into
+   Higgsfield, makes the 15s video there, downloads the .mp4, and uploads it
+   back via uploadVideo() (below). buildHiggsfieldPrompt writes the motion
+   brief shown by the ⚡ Higgsfield Prompt button. */
+
+/* Upload a user-supplied .mp4 to Supabase Storage (public ad-images bucket,
+   videos/ prefix) → stable public https URL that Meta can ingest, then move the
+   card to the video phase (same end-state the old worker produced). */
+async function uploadVideo(id,file){
+  if(!file){return;}
+  if(file.type&&file.type.indexOf('video')!==0){alert('Please choose a video file (.mp4).');return;}
+  var c=cards[id];var sku=c.sku||activeSku;
+  var lbl=document.getElementById('upbtn-'+id);
+  if(lbl)lbl.innerHTML='⏳ Uploading video…';
+  var path='videos/'+sku+'-'+id+'-'+Date.now()+'.mp4';
+  try{
+    var res=await fetch(SUPA_URL+'/storage/v1/object/ad-images/'+path,{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'video/mp4','x-upsert':'true'},body:file});
+    if(!res.ok){var tx='';try{tx=await res.text();}catch(e){}throw new Error('HTTP '+res.status+(tx?' — '+tx.slice(0,140):''));}
+    cards[id].video=SUPA_URL+'/storage/v1/object/public/ad-images/'+path;
+    cards[id].phase='video';cards[id].status='none';
+    renderCard(id);updateCounts();setTimeout(applyLogoAll,50);
+  }catch(err){
+    if(lbl)lbl.innerHTML='📤 Upload Video<input type="file" accept="video/mp4,video/*" style="display:none" onchange="uploadVideo(\''+id+'\',this.files[0])">';
+    alert('❌ Video upload failed: '+err.message+'\n\nTip: files up to ~50MB upload best. If it keeps failing, trim the clip shorter first.');
+  }
+}
 
 async function buildHiggsfieldPrompt(id){
   var c=cards[id];var s=SKUS[c.sku||activeSku];
@@ -1199,55 +1244,6 @@ async function buildHiggsfieldPrompt(id){
   if(!text)throw new Error('Empty prompt from Claude');
   c.hfPrompt=text;
   return text;
-}
-
-async function startHiggsfield(id){
-  var c=cards[id];
-  var fmt=document.querySelector('#card-'+id+' #fmts-'+id+'.on')?'9:16':'4:5';
-  c.phase='generating';renderCard(id);updateCounts();
-  var st=document.getElementById('vstatus-'+id);if(st)st.textContent='Writing Higgsfield brief…';
-  try{
-    var prompt=c.hfPrompt||await buildHiggsfieldPrompt(id);
-    var st2=document.getElementById('vstatus-'+id);if(st2)st2.textContent='Sending to Higgsfield…';
-    var res=await fetch(SUPA_URL+'/rest/v1/video_jobs',{method:'POST',
-      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=representation'},
-      body:JSON.stringify({sku:(c.sku||activeSku),concept_title:c.title,hf_prompt:prompt,aspect_ratio:fmt,status:'awaiting_generation'})});
-    var rows=await res.json();
-    if(!res.ok||!rows[0])throw new Error((rows&&rows.message)||'Queue insert failed');
-    c.jobId=rows[0].id;
-    pollJob(id,c.jobId);
-  }catch(err){
-    c.phase='copy';renderCard(id);
-    var errEl=document.getElementById('err-'+id);
-    if(errEl){errEl.style.display='block';errEl.textContent='❌ '+err.message;}
-  }
-}
-
-function pollJob(id,jobId){
-  var started=Date.now();
-  if(jobPolls[id])clearInterval(jobPolls[id]);
-  jobPolls[id]=setInterval(async function(){
-    var sec=Math.floor((Date.now()-started)/1000);
-    try{
-      var res=await fetch(SUPA_URL+'/rest/v1/video_jobs?id=eq.'+jobId+'&select=status,video_url,error',{
-        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
-      var rows=await res.json();var job=rows&&rows[0];if(!job)return;
-      var msg='Higgsfield generating… '+sec+'s (usually 2-4 min)';
-      if(job.status==='awaiting_generation'&&sec>75)msg='Waiting for the Higgsfield helper on your PC… '+sec+'s';
-      var vt=document.getElementById('vtimer-'+id);if(vt)vt.textContent=msg;
-      var vs=document.getElementById('vstatus-'+id);if(vs)vs.textContent=msg;
-      if(job.status==='video_ready'&&job.video_url){
-        clearInterval(jobPolls[id]);delete jobPolls[id];
-        cards[id].video=job.video_url;cards[id].phase='video';cards[id].status='none';
-        renderCard(id);updateCounts();setTimeout(applyLogoAll,50);
-      }else if(job.status==='failed'){
-        clearInterval(jobPolls[id]);delete jobPolls[id];
-        cards[id].phase='copy';renderCard(id);
-        var errEl=document.getElementById('err-'+id);
-        if(errEl){errEl.style.display='block';errEl.textContent='❌ Higgsfield: '+(job.error||'generation failed');}
-      }
-    }catch(e){/* transient — keep polling */}
-  },8000);
 }
 
 /* ── APPROVAL ── */
@@ -1748,12 +1744,25 @@ async function applyTrimCuts(id){
     var out=ff.FS('readFile','output.mp4');
     var blob=new Blob([out.buffer],{type:'video/mp4'});
     var url=URL.createObjectURL(blob);
-    cards[id].video=url;
+    // instant local preview
     var mainVid=document.getElementById('vid-'+id);if(mainVid){mainVid.src=url;mainVid.load();}
     var dl=document.getElementById('dl-'+id);if(dl)dl.href=url;
     vid.src=url;vid.load();
+    // Upload the trimmed clip to Storage → stable public URL (Meta can't ingest blob: URLs)
+    statusEl.textContent='Uploading trimmed video…';
+    var tsku=c.sku||activeSku;
+    var tpath='videos/'+tsku+'-'+id+'-trim-'+Date.now()+'.mp4';
+    var tup=await fetch(SUPA_URL+'/storage/v1/object/ad-images/'+tpath,{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'video/mp4','x-upsert':'true'},body:blob});
     clearTrimCuts(id);
-    statusEl.textContent='✅ Done! Preview updated on the right — cuts applied. You can make more cuts or download.';
+    if(tup&&tup.ok){
+      cards[id].video=SUPA_URL+'/storage/v1/object/public/ad-images/'+tpath;
+      var dl2=document.getElementById('dl-'+id);if(dl2)dl2.href=cards[id].video;
+      statusEl.textContent='✅ Done! Trimmed & uploaded — ready to push to FB, or make more cuts.';
+    }else{
+      cards[id].video=url;
+      statusEl.textContent='⚠️ Trim preview updated, but the upload failed — download the clip and re-upload it before pushing to FB.';
+    }
     try{ff.FS('unlink','input.mp4');}catch(e){}
     try{ff.FS('unlink','output.mp4');}catch(e){}
   }catch(err){
