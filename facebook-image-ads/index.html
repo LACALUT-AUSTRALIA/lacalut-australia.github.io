@@ -790,12 +790,12 @@ function buildImageHTML(id,c,col,s){
     +'<div class="ai-btns" id="hficopy-'+id+'" style="display:none;margin-top:6px"><button class="btn-run" onclick="copyHiggsfieldImg(\''+id+'\')">📋 Copy → paste into Higgsfield</button></div>'
     +'<div class="img-panel-lbl" style="margin-top:10px">🔗 …then bring the finished creative back in</div>'
     +'<div class="ai-btns"><button class="btn-run" style="background:#0a7d3c" onclick="importImgUrl(\''+id+'\')">🔗 Paste image URL</button><label class="btn-run" style="background:#0a7d3c;cursor:pointer;display:inline-flex;align-items:center"><input type="file" accept="image/*" onchange="importImgFile(event,\''+id+'\')" style="display:none">📁 Upload file</label></div>'
-    +'<div id="ires-'+id+'" style="display:none"><img id="iprev-'+id+'" class="gen-img-preview" src="" alt="Generated"><div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptImg(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="runImgGen(\''+id+'\')">🔄 Retry</button><button class="btn-discard-ai" onclick="discardImg(\''+id+'\')">🗑 Discard</button></div></div>'
+    +'<div id="ires-'+id+'" style="display:none"><img id="iprev-'+id+'" class="gen-img-preview" src="" alt="Generated"><div class="ai-result-acts"><button class="btn-accept-ai" onclick="acceptImg(\''+id+'\')">✓ Use This</button><button class="btn-discard-ai" onclick="discardImg(\''+id+'\')">🗑 Discard</button></div></div>'
     +'</div>'
     // Higgsfield video panel
     +'<div class="hf-panel" id="hf-'+id+'">'
     +'<div class="hf-lbl">🎬 Make Video — Higgsfield Seedance 2.0</div>'
-    +'<div class="hf-note" style="color:#aaa;margin-bottom:10px">Generates a 15-second motion brief → copy prompt → paste in Claude Code → run <code style="background:#0d0d1a;color:#e2b96f;padding:1px 4px;border-radius:3px">/higgsfield-generate</code></div>'
+    +'<div class="hf-note" style="color:#aaa;margin-bottom:10px">Generates a 15-second motion brief → 📋 copy the prompt → paste into Higgsfield directly to make the video by hand.</div>'
     +'<div class="hf-prompt" id="hfp-'+id+'">Click Generate Prompt to auto-write a Higgsfield motion brief…</div>'
     +'<div class="hf-acts">'
     +'<button class="btn-run" style="background:var(--red)" id="hfb-'+id+'" onclick="genHiggsfield(\''+id+'\')">⚡ Generate Prompt</button>'
@@ -804,9 +804,7 @@ function buildImageHTML(id,c,col,s){
     +'</div></div>'
     +'<div class="copy-acts">'
     +'<button class="btn-rewrite" onclick="togglePanel(\'rw\',\''+id+'\',true)">✍️ Rewrite Copy</button>'
-    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Manual (Higgsfield)</button>'
-    +'<button class="btn-imggen" style="background:#e8f8e8;color:#1e7e34;border-color:#b2dfb2;" onclick="openUpload(\''+id+'\')">📁 Upload Photo</button>'
-    +'<input type="file" accept="image/*" id="upf-'+id+'" style="display:none" onchange="acceptUpload(event,\''+id+'\')">'
+    +'<button class="btn-imggen" id="imgbtn-'+id+'" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Higgsfield Image</button>'
     +'<button class="btn-higgsfield" id="hfbtn-'+id+'" onclick="openHiggsfield(\''+id+'\')">🎬 Make Video</button>'
     +'<button class="btn-teach" onclick="openTeach(\''+id+'\',\'c\')">📚 Teach Claude</button>'
     +'</div>'
@@ -831,8 +829,7 @@ function buildImageHTML(id,c,col,s){
     +'</div></div></div>'
     // BOTTOM
     +'<div class="card-acts">'
-    +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>'
-        :'<button class="btn-gen-img" onclick="toggleImgPanel(\''+id+'\',true)">🎨 Create Image (Higgsfield)</button>')
+    +(gen?'<div class="spinner-row"><div class="spinner"></div><span id="vstatus-'+id+'">Auto-generating copy…</span></div>':'')
     +(q?'<button class="btn-queue" style="margin-left:auto;background:#65676b;cursor:default" disabled>🚀 Queued</button>'
        :'<button class="btn-queue" style="margin-left:auto" onclick="showApp(\''+id+'\')">🚀 Approve &amp; Queue</button>')
     +'<button class="btn-reject-card" onclick="rejectCard(\''+id+'\')">❌ Reject</button>'
