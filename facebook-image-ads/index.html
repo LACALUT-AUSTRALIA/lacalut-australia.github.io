@@ -394,13 +394,10 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <button class="lu-clear" onclick="clearLogo()">✕ Remove</button>
 </div>
 
-<!-- PRODUCT IMAGES BAR (SKU-level real-product references for AI image gen) -->
-<div id="prod-bar">
-  <span class="prod-bar-lbl">📦 Product Images · <span class="prod-bar-sku" id="prod-bar-sku">FLORA</span></span>
-  <div id="prod-thumbs"></div>
-  <label class="prod-add-btn">➕ Upload Product Image<input type="file" accept="image/*" multiple onchange="uploadProductImg(event)" style="display:none"></label>
-  <span class="prod-bar-hint">📌 Upload the real product once per SKU — every AI image pulls these as the exact product reference (so it looks like YOUR tube, not an invented one).</span>
-</div>
+<!-- PRODUCT IMAGES BAR removed 08/07/2026 — it only fed the on-page Gemini image
+     generator (runImgGen), which is gone. Product references are now uploaded
+     directly into Higgsfield's reference slot when making the image by hand. -->
+
 
 <!-- GENERATE BAR -->
 <div id="gen-bar">
