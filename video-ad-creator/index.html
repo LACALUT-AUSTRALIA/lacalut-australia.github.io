@@ -322,6 +322,23 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
 .btn-trim-apply:hover{background:#003870;}
 .btn-trim-apply:disabled{background:#9eb3c8;cursor:not-allowed;}
 .trim-status{font-size:12px;color:var(--muted);margin-top:8px;min-height:16px;line-height:1.4;}
+
+/* UPLOAD YOUR OWN VIDEO — primary path */
+#upload-bar{background:linear-gradient(135deg,#e9f9ec,#eef6ff);border-bottom:2px solid var(--navy);padding:16px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;transition:background .15s;}
+#upload-bar.drag{background:#d8eeff;outline:2px dashed var(--navy);outline-offset:-7px;}
+.ub-left{flex:1;min-width:240px;}
+.ub-title{font-size:16px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;}
+.ub-sub{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.45;max-width:640px;}
+.ub-btn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:13px 28px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(207,16,45,.3);white-space:nowrap;transition:.15s;}
+.ub-btn:hover{background:#a50d24;transform:translateY(-1px);}
+#ub-status{width:100%;font-size:13px;font-weight:700;color:var(--navy);display:none;margin-top:4px;}
+/* matching-copy bar on uploaded cards */
+.mc-bar{background:#f3efff;border:1.5px solid #ce93d8;border-radius:8px;padding:12px 14px;margin-bottom:16px;}
+.mc-tone{font-size:13px;font-weight:700;color:#5a2ca0;margin-bottom:9px;line-height:1.45;}
+.btn-mc{background:#5a2ca0;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:.15s;}
+.btn-mc:hover{background:#432080;}
+.btn-mc:disabled{background:#9b8bc0;cursor:not-allowed;}
+.mc-status{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.45;min-height:14px;}
 </style>
 </head>
 <body>
@@ -397,6 +414,16 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <div id="prod-thumbs"></div>
   <label class="lu-btn">➕ Add Product Shot<input type="file" accept="image/*" multiple onchange="uploadProductImg(event)" style="display:none"></label>
   <span class="prod-bar-hint">📌 Upload the real product once per SKU — Higgsfield uses these as the exact product so your video shows YOUR tube, not an invented one. Shared with the 🖼️ Image Ads Creator.</span>
+</div>
+
+<!-- UPLOAD YOUR OWN VIDEO (primary path) -->
+<div id="upload-bar" ondragover="ubDrag(event,true)" ondragleave="ubDrag(event,false)" ondrop="ubDrop(event)">
+  <div class="ub-left">
+    <div class="ub-title">📤 Upload Your Own Video</div>
+    <div class="ub-sub">Drop your finished <strong>.mp4</strong> here (or choose it) → Claude <strong>watches the video</strong>, reads its mood (funny / sad / serious) and writes the <strong>primary text to match</strong>. Then push straight to Meta as a paused draft.</div>
+    <div id="ub-status"></div>
+  </div>
+  <label class="ub-btn">🎬 Choose Video<input type="file" accept="video/mp4,video/*" style="display:none" onchange="uploadOwnVideo(this.files[0]);this.value=''"></label>
 </div>
 
 <!-- GENERATE BAR -->
@@ -892,6 +919,11 @@ function buildVideoHTML(id,c,col){
     +'<div class="split-body">'
     // LEFT
     +'<div class="split-left">'
+    +(c.own?('<div class="mc-bar"><div class="mc-tone" id="mctone-'+id+'">'
+        +(c.tone?('🎭 Detected tone: '+esc(c.tone)):'🎬 Your uploaded video — click below and Claude will watch it, read the mood, and write copy that matches.')
+        +'</div>'
+        +'<button class="btn-mc" id="mcb-'+id+'" onclick="writeMatchingCopy(\''+id+'\')">✍️ '+(c.pt?'Rewrite':'Write')+' Matching Copy</button>'
+        +'<div class="mc-status" id="mc-status-'+id+'" style="display:none"></div></div>'):'')
     +'<div class="field-sec"><div class="field-lbl">Primary Text <span class="char-note" id="ptc-'+id+'"></span></div>'
     +'<textarea class="field-ta" id="pt-'+id+'" rows="6" oninput="syncPreview(\''+id+'\')">'+esc(pt)+'</textarea></div>'
     +'<div class="field-sec"><div class="field-lbl">Headlines</div><div class="hls-group">'
@@ -1220,6 +1252,137 @@ async function uploadVideo(id,file){
   }catch(err){
     if(lbl)lbl.innerHTML='📤 Upload Video<input type="file" accept="video/mp4,video/*" style="display:none" onchange="uploadVideo(\''+id+'\',this.files[0])">';
     alert('❌ Video upload failed: '+err.message+'\n\nTip: files up to ~50MB upload best. If it keeps failing, trim the clip shorter first.');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   UPLOAD-FIRST FLOW — Quan uploads a finished .mp4, Claude watches it and
+   writes primary text that matches the video's mood (comedy / sad / serious).
+   This is the page's primary path. Idea generator stays available below.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+function ubDrag(e,on){e.preventDefault();var b=document.getElementById('upload-bar');if(b)b.classList.toggle('drag',on);}
+function ubDrop(e){e.preventDefault();var b=document.getElementById('upload-bar');if(b)b.classList.remove('drag');
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)uploadOwnVideo(f);}
+
+function ubStatus(msg,show){var el=document.getElementById('ub-status');if(!el)return;
+  el.style.display=(show===false)?'none':'block';if(msg)el.textContent=msg;}
+
+/* Grab N still frames evenly across the clip, client-side, as base64 JPEGs
+   (scaled ≤512px) so Claude can literally see the video and read its tone.
+   Resolves to [] on any failure — copy generation still runs from the brief. */
+function extractKeyframes(file,count){
+  count=count||5;
+  return new Promise(function(resolve){
+    var done=false,frames=[],times=[],idx=0;
+    var url=URL.createObjectURL(file);
+    var v=document.createElement('video');
+    var canvas=document.createElement('canvas');
+    function finish(){if(done)return;done=true;try{URL.revokeObjectURL(url);}catch(e){}resolve(frames);}
+    v.muted=true;v.playsInline=true;v.preload='auto';
+    v.onloadedmetadata=function(){
+      var dur=(v.duration&&isFinite(v.duration))?v.duration:0;
+      for(var i=0;i<count;i++){times.push(dur?(dur*(i+0.5)/count):0);}
+      seek();
+    };
+    function seek(){if(idx>=times.length){finish();return;}v.currentTime=times[idx];}
+    v.onseeked=function(){
+      try{
+        var w=v.videoWidth,h=v.videoHeight;
+        if(w&&h){
+          var scale=Math.min(1,512/Math.max(w,h));
+          canvas.width=Math.max(1,Math.round(w*scale));
+          canvas.height=Math.max(1,Math.round(h*scale));
+          canvas.getContext('2d').drawImage(v,0,0,canvas.width,canvas.height);
+          var d=canvas.toDataURL('image/jpeg',0.6).split(',')[1];
+          if(d)frames.push(d);
+        }
+      }catch(e){}
+      idx++;seek();
+    };
+    v.onerror=function(){finish();};
+    setTimeout(finish,15000); // safety net — never hang the flow
+    v.src=url;
+  });
+}
+
+/* Upload a finished .mp4 → Storage, extract frames, drop a video-phase card at
+   the top, then auto-write tone-matched copy. */
+async function uploadOwnVideo(file){
+  if(!file){return;}
+  if(file.type&&file.type.indexOf('video')!==0){alert('Please choose a video file (.mp4).');return;}
+  var sku=activeSku;
+  var id='own-'+(++cardIdx);
+  ubStatus('⏳ Reading video frames…',true);
+  cards[id]={phase:'video',title:'My Uploaded Video',angle:'Uploaded',hook:'',story:'',
+    pt:'',h1:'',h2:'',h3:'',desc:'',status:'none',sku:sku,own:true,frames:[]};
+  try{
+    cards[id].frames=await extractKeyframes(file);
+    ubStatus('⏳ Uploading video to storage…',true);
+    var path='videos/'+sku+'-'+id+'-'+Date.now()+'.mp4';
+    var res=await fetch(SUPA_URL+'/storage/v1/object/ad-images/'+path,{method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'video/mp4','x-upsert':'true'},body:file});
+    if(!res.ok){var tx='';try{tx=await res.text();}catch(e){}throw new Error('HTTP '+res.status+(tx?' — '+tx.slice(0,140):''));}
+    cards[id].video=SUPA_URL+'/storage/v1/object/public/ad-images/'+path;
+    var es=document.getElementById('empty-state');if(es)es.remove();
+    renderCard(id,false); // prepend — show it at the very top
+    updateCounts();setTimeout(applyLogoAll,50);
+    ubStatus('✅ Video uploaded — Claude is now watching it and writing matching copy…',true);
+    await writeMatchingCopy(id);
+    ubStatus('',false);
+  }catch(err){
+    delete cards[id];
+    ubStatus('❌ Upload failed: '+err.message,true);
+    alert('❌ Video upload failed: '+err.message+'\n\nTip: files up to ~50MB upload best. Trim the clip shorter if it keeps failing.');
+  }
+}
+
+/* Claude watches the extracted frames, names the video's tone, and writes
+   primary text + headlines that MATCH that tone — grounded in ad_training and
+   proven winners. Re-runnable from the card. */
+async function writeMatchingCopy(id){
+  var c=cards[id];if(!c)return;
+  var s=SKUS[c.sku||activeSku];
+  if(!CLAUDE_KEY){alert('Enter your Claude API key first (top of page).');return;}
+  var btn=document.getElementById('mcb-'+id);
+  var st=document.getElementById('mc-status-'+id);
+  if(btn){btn.disabled=true;btn.textContent='⏳ Watching video…';}
+  if(st){st.style.display='block';st.textContent='🤖 Claude is watching your video and reading its mood…';}
+  try{
+    var frames=c.frames||[];
+    var t=await loadTraining(c.sku||activeSku);
+    var bd=gv('brief-desc'),ba=gv('brief-aud'),bc=gv('brief-claim');
+    var brief='PRODUCT: '+s.name+(s.tab?(' ('+s.tab+')'):'');
+    if(bd)brief+='\nWHAT IT IS: '+bd;
+    if(ba)brief+='\nAUDIENCE: '+ba;
+    if(bc)brief+='\nKEY CLAIM / USP: '+bc;
+    var instr='You are an elite Facebook/Instagram direct-response copywriter for '+s.name+'.\n'
+      +'Attached are '+frames.length+' still frames sampled IN ORDER from a short video ad this brand is about to run.\n\n'
+      +'STEP 1 — WATCH: Study the frames and infer the video\'s EMOTIONAL TONE / GENRE. Pick the single best label from: comedy/funny, playful, heartwarming, sad/emotional, dramatic, shocking, serious/clinical, aspirational, or calm. Note the setting, who\'s in it, and what seems to be happening.\n'
+      +'STEP 2 — MATCH: Write the Facebook ad PRIMARY TEXT + 3 headlines + 1 description whose voice, rhythm and emotion MATCH that tone. A funny video gets witty, punchy copy; a sad/emotional video gets tender, moving copy; a clinical video gets authoritative, precise copy. It must feel like it belongs to THIS exact video.\n'
+      +'Australian English. Tasteful emoji. Primary text = 3–5 short, scroll-stopping paragraphs.\n\n'
+      +'BRAND BRIEF:\n'+brief+'\n';
+    var proven=((s.seeds||[]).map(function(x){return x.pt;}).filter(Boolean)).slice(0,2);
+    if(proven.length)instr+='\nVOICE REFERENCE — proven winners (echo the brand voice, but ONLY the tone that fits this video):\n'+proven.join('\n---\n')+'\n';
+    if(t.prefer.length)instr+='\nTRAINING — PREFER:\n- '+t.prefer.join('\n- ')+'\n';
+    if(t.avoid.length)instr+='\nTRAINING — AVOID:\n- '+t.avoid.join('\n- ')+'\n';
+    instr+='\nReturn ONLY valid JSON:\n{"tone":"tone label + a 6–10 word reason","primary_text":"...","h1":"short headline","h2":"alt headline","h3":"third headline","description":"one sentence"}';
+    var content=[{type:'text',text:instr}];
+    frames.forEach(function(f){content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:f}});});
+    if(!frames.length)content.push({type:'text',text:'(No frames could be read from the file — infer a sensible tone from the brand brief and write accordingly.)'});
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
+      headers:{'x-api-key':CLAUDE_KEY,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1400,system:buildSys(c.sku||activeSku),messages:[{role:'user',content:content}]})});
+    var data=await res.json();
+    if(data.error)throw new Error(data.error.message||'Claude API error');
+    var raw=((data.content&&data.content[0]&&data.content[0].text)||'').replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    var r=JSON.parse(raw);
+    Object.assign(cards[id],{pt:r.primary_text||'',h1:r.h1||'',h2:r.h2||'',h3:r.h3||'',desc:r.description||'',tone:r.tone||''});
+    renderCard(id);updateCounts();
+    setTimeout(function(){syncPreview(id);syncHl(id);applyLogoAll();},50);
+  }catch(err){
+    if(btn){btn.disabled=false;btn.textContent='✍️ Write Matching Copy';}
+    if(st){st.style.display='block';st.textContent='⚠️ '+err.message+' — edit the copy manually, or try again.';}
   }
 }
 
