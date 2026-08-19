@@ -180,6 +180,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-posted{background:var(--purple);color:#fff;border-color:var(--purple)}
 .btn-posted:hover{background:#5a2ca0}
 .btn-logo{color:#555}
+.btn-marky{background:var(--navy);color:#fff;border-color:var(--navy);font-weight:700}
+.btn-marky:hover{background:#003870}
+.btn-marky:disabled{background:#9eb3c8;border-color:#9eb3c8;cursor:not-allowed}
+.btn-marky-pushed{background:#e8f8e8;color:#1e7e34;border-color:#bfe6bf;font-weight:700}
 
 /* ── PLATFORM PREVIEWS ── */
 .platform-preview-wrap{width:100%;max-width:340px}
@@ -337,7 +341,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     style="display:inline-flex;align-items:center;gap:8px;margin-left:10px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(66,183,42,.35)">
     ✅ Approve All &amp; Generate All Images
   </button>
-  <p class="generate-hint">Step 1: generate 7 ideas. Step 2: one click approves them all and generates every image.</p>
+  <button id="btn-push-all" onclick="pushAllToMarky()"
+    style="display:inline-flex;align-items:center;gap:8px;margin-left:10px;background:#7b2fff;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(123,47,255,.35)">
+    🚀 Push All to All Platforms
+  </button>
+  <p class="generate-hint">1: generate 7 ideas → 2: approve + generate all images → 3: push all to every platform via Marky.</p>
 </div>
 
 <!-- POST CARDS -->
@@ -351,6 +359,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <input type="password" id="s-gemini" placeholder="AIzaSy…">
     <label>Claude API Key</label>
     <input type="password" id="s-claude" placeholder="sk-ant-…">
+    <label>Marky API Key (one-click posting to all platforms)</label>
+    <input type="password" id="s-marky" placeholder="mk_live_…">
     <label>Profile Picture URL (shown in previews)</label>
     <input type="text" id="s-profile" placeholder="https://… or paste base64">
 
@@ -465,6 +475,14 @@ const SUPA_HEADERS = {
 };
 
 /* ═══════════════════════════════════════════
+   MARKY API (one-click multi-platform posting)
+   Browser calls Marky directly — CORS is open (allow-origin *).
+═══════════════════════════════════════════ */
+const MARKY_BASE = 'https://api.mymarky.ai';
+const MARKY_VERSION = '2026-08-06';
+const MARKY_BUSINESS_ID = '5156d77a-932f-45ac-9d20-bc118007c2ab'; // Lacalut workspace
+
+/* ═══════════════════════════════════════════
    COMPLIANCE GUARDRAILS (AICIS — cosmetic, not therapeutic)
    Injected into every Claude copy-generation prompt.
 ═══════════════════════════════════════════ */
@@ -545,7 +563,8 @@ const DAYS = [
 ═══════════════════════════════════════════ */
 const KEYS = {
   get gemini(){ return localStorage.getItem('lc_gemini_key') || '' },
-  get claude(){ return localStorage.getItem('lc_claude_key') || '' }
+  get claude(){ return localStorage.getItem('lc_claude_key') || '' },
+  get marky(){ return localStorage.getItem('lc_marky_key') || '' }
 };
 let logoDataUrl  = localStorage.getItem('lc_logo') || '';
 let logoPos      = localStorage.getItem('lc_logo_pos')  || 'br';
@@ -566,7 +585,8 @@ function freshPost(idx) {
     concept: null, conceptApproved: false,
     fb: { caption:'', hashtags:'', imageDataUrl:'' },
     ig: { caption:'', hashtags:'', imageDataUrl:'' },
-    videoQueued: false, approved: false, approvedChannels: null, posted: false
+    videoQueued: false, approved: false, approvedChannels: null, posted: false,
+    pushedToMarky: false, markyPostId: null
   };
 }
 
@@ -824,6 +844,9 @@ function fullBodyHTML(idx, post, d) {
         <button class="btn-rewrite" onclick="openRewriteModal(${idx})">✍️ Rewrite Copy</button>
         <button class="btn-video" onclick="openVideoModal(${idx})">${post.videoQueued ? '🎬 Queued' : '🎬 Make Video'}</button>
         ${approveBtn}
+        ${post.pushedToMarky
+          ? `<button class="btn-marky-pushed" disabled>✅ Pushed to Marky</button>`
+          : `<button class="btn-marky" id="marky-btn-${idx}" onclick="pushPostToMarky(${idx})">🚀 Push to All Platforms</button>`}
       </div>
     </div>
 
@@ -1604,11 +1627,110 @@ async function logToSupabase(idx, event) {
 }
 
 /* ═══════════════════════════════════════════
+   MARKY — ONE-CLICK PUSH TO ALL PLATFORMS
+   Browser → Marky API directly (CORS open). Creates the post in
+   Marky as a ready-to-publish draft (status NEW) across every
+   connected platform. Review + publish in Marky (v1 safe mode).
+═══════════════════════════════════════════ */
+function dataUrlToBlob(dataUrl) {
+  const [meta, b64] = dataUrl.split(',');
+  const mime = (meta.match(/data:([^;]+)/) || [])[1] || 'image/png';
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
+async function markyUploadImage(dataUrl, altText) {
+  const blob = dataUrlToBlob(dataUrl);
+  const ext = (blob.type.split('/')[1] || 'png').replace('jpeg', 'jpg');
+  const fd = new FormData();
+  fd.append('file', blob, 'post.' + ext);
+  const res = await fetch(
+    MARKY_BASE + '/api/businesses/' + MARKY_BUSINESS_ID + '/media?alt_text=' + encodeURIComponent(altText || 'LACALUT'),
+    { method: 'POST', headers: { 'Authorization': 'Bearer ' + KEYS.marky, 'Marky-Version': MARKY_VERSION }, body: fd }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.detail || 'Media upload failed ' + res.status);
+  return data.id;
+}
+
+async function pushPostToMarky(idx) {
+  if (!KEYS.marky) { alert('Add your Marky API key in ⚙️ Settings first.'); openSettings(); return false; }
+  const post = STATE.posts[idx];
+  const dataUrl = post.fb.imageDataUrl;
+  if (!dataUrl) { alert('Generate the image first before pushing to Marky.'); return false; }
+
+  const caption  = (post.fb.caption || '').trim();
+  const hashtags = (post.fb.hashtags || '').trim();
+  const fullCaption = hashtags ? caption + '\n\n' + hashtags : caption;
+  const pinTitle = (post.concept?.hook || caption.split('\n')[0] || 'LACALUT').replace(/^"|"$/g, '').substring(0, 95);
+
+  const btn = document.getElementById('marky-btn-' + idx);
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Uploading…'; }
+
+  try {
+    const mediaId = await markyUploadImage(dataUrl, pinTitle);
+    if (btn) btn.innerHTML = '<span class="spinner"></span>Pushing…';
+
+    const body = {
+      caption: fullCaption,
+      media_ids: [mediaId],
+      status: 'NEW'
+    };
+
+    const res = await fetch(MARKY_BASE + '/api/businesses/' + MARKY_BUSINESS_ID + '/posts', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + KEYS.marky,
+        'Marky-Version': MARKY_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.detail || JSON.stringify(data).substring(0, 200));
+
+    STATE.posts[idx].pushedToMarky = true;
+    STATE.posts[idx].markyPostId = data.id || null;
+    saveState();
+    renderPost(idx);
+    initCharCounters(idx);
+    return true;
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '🚀 Push to All Platforms'; }
+    alert('❌ Push failed: ' + err.message);
+    return false;
+  }
+}
+
+async function pushAllToMarky() {
+  if (!KEYS.marky) { alert('Add your Marky API key in ⚙️ Settings first.'); openSettings(); return; }
+  const todo = STATE.posts.map((p,i)=>({p,i})).filter(x => x.p.fb.imageDataUrl && !x.p.pushedToMarky);
+  if (!todo.length) { alert('Nothing to push — generate + approve images first (or all posts already pushed).'); return; }
+  if (!confirm('Push ' + todo.length + ' post(s) to Marky as ready-to-publish drafts across all connected platforms?')) return;
+
+  const btn = document.getElementById('btn-push-all');
+  const orig = btn ? btn.innerHTML : '';
+  if (btn) btn.disabled = true;
+  let done = 0, ok = 0;
+  for (const { i } of todo) {
+    done++;
+    if (btn) btn.innerHTML = '<span class="spinner"></span>Pushing ' + done + ' of ' + todo.length + '…';
+    const success = await pushPostToMarky(i);
+    if (success) ok++;
+  }
+  if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+  alert('✅ Pushed ' + ok + ' of ' + todo.length + ' to Marky. Open Marky → Posts to review + publish.');
+}
+
+/* ═══════════════════════════════════════════
    SETTINGS MODAL
 ═══════════════════════════════════════════ */
 function openSettings() {
   document.getElementById('s-gemini').value  = KEYS.gemini;
   document.getElementById('s-claude').value  = KEYS.claude;
+  document.getElementById('s-marky').value   = KEYS.marky;
   document.getElementById('s-profile').value = profilePic;
   renderLibThumbs('product');
   renderLibThumbs('style');
@@ -1635,6 +1757,7 @@ function openSettings() {
 function saveSettings() {
   localStorage.setItem('lc_gemini_key',  document.getElementById('s-gemini').value.trim());
   localStorage.setItem('lc_claude_key',  document.getElementById('s-claude').value.trim());
+  localStorage.setItem('lc_marky_key',   document.getElementById('s-marky').value.trim());
   profilePic = document.getElementById('s-profile').value.trim();
   localStorage.setItem('lc_profile_pic', profilePic);
   closeModal();
