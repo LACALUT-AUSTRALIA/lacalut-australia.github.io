@@ -571,9 +571,46 @@ let logoPos      = localStorage.getItem('lc_logo_pos')  || 'br';
 let logoSizeFrac = parseFloat(localStorage.getItem('lc_logo_size') || '0.20');
 let profilePic   = localStorage.getItem('lc_profile_pic') || '';
 let productImages = [];
-try { productImages = JSON.parse(localStorage.getItem('lc_product_images') || '[]'); } catch(e) { productImages = []; }
 let styleImages = [];
-try { styleImages = JSON.parse(localStorage.getItem('lc_style_images') || '[]'); } catch(e) { styleImages = []; }
+
+/* IndexedDB store for image libraries (much bigger quota than localStorage) */
+const IDB_NAME = 'lc_social', IDB_STORE = 'kv';
+function idbOpen() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(IDB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore(IDB_STORE);
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbGet(key) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const t = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key);
+    t.onsuccess = () => res(t.result); t.onerror = () => rej(t.error);
+  });
+}
+async function idbSet(key, val) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(val, key);
+    tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error);
+  });
+}
+async function loadImageLibs() {
+  try {
+    const p = await idbGet('lc_product_images');
+    const s = await idbGet('lc_style_images');
+    productImages = p || JSON.parse(localStorage.getItem('lc_product_images') || '[]');
+    styleImages   = s || JSON.parse(localStorage.getItem('lc_style_images') || '[]');
+    // migrate any legacy localStorage copies into IndexedDB, then free the 5MB cap
+    if (!p && productImages.length) { await idbSet('lc_product_images', productImages); localStorage.removeItem('lc_product_images'); }
+    if (!s && styleImages.length)   { await idbSet('lc_style_images', styleImages);     localStorage.removeItem('lc_style_images'); }
+  } catch(e) { /* keep whatever is in memory */ }
+  const modal = document.getElementById('settings-modal');
+  if (modal && modal.classList.contains('active')) { renderLibThumbs('product'); renderLibThumbs('style'); }
+}
 
 /* ═══════════════════════════════════════════
    STATE
@@ -1778,11 +1815,9 @@ const LIB_EMPTY = {
 };
 
 function persistLib(name) {
-  try {
-    localStorage.setItem(libKey(name), JSON.stringify(libArr(name)));
-  } catch(e) {
-    alert('⚠️ Storage full — too many/large images. Remove some or use smaller (compressed) images.');
-  }
+  idbSet(libKey(name), libArr(name)).catch(() => {
+    alert('⚠️ Could not save images to the local database. Try fewer/smaller images.');
+  });
 }
 
 function handleImgUpload(input, name) {
@@ -1896,6 +1931,7 @@ function escHtml(str) {
    INIT
 ═══════════════════════════════════════════ */
 function initApp() {
+  loadImageLibs();
   loadState();
   document.getElementById('week-label').textContent = STATE.weekOf;
   renderCalendarStrip();
