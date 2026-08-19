@@ -355,9 +355,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <input type="text" id="s-profile" placeholder="https://… or paste base64">
 
     <label style="margin-top:16px;color:var(--navy);font-weight:700">📸 Your Real Product Photos</label>
-    <input type="file" id="s-product-files" accept="image/*" multiple onchange="handleProductUpload(this)">
-    <p class="modal-hint">Upload clean shots of your <strong>actual</strong> LACALUT products. The AI will place these real products into every scene instead of inventing a fake tube. Upload a few angles per SKU.</p>
+    <input type="file" id="s-product-files" accept="image/*" multiple onchange="handleImgUpload(this,'product')">
+    <p class="modal-hint">Upload clean shots of your <strong>actual</strong> LACALUT products. The AI reproduces the real product in every scene instead of inventing a fake tube. A few angles per SKU.</p>
     <div id="product-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+
+    <label style="margin-top:16px;color:var(--navy);font-weight:700">🎨 Style / Ad Template References</label>
+    <input type="file" id="s-style-files" accept="image/*" multiple onchange="handleImgUpload(this,'style')">
+    <p class="modal-hint">Upload your <strong>best existing ad creatives / designed posts</strong>. The AI copies their layout, fonts, colour-blocking and badges — so daily posts look professionally designed, not like raw photos. (It won't copy their product or text — just the style.)</p>
+    <div id="style-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
 
     <label>Brand Logo (for canvas compositing)</label>
     <input type="file" id="s-logo-file" accept="image/*" onchange="handleLogoUpload(this)">
@@ -548,6 +553,8 @@ let logoSizeFrac = parseFloat(localStorage.getItem('lc_logo_size') || '0.20');
 let profilePic   = localStorage.getItem('lc_profile_pic') || '';
 let productImages = [];
 try { productImages = JSON.parse(localStorage.getItem('lc_product_images') || '[]'); } catch(e) { productImages = []; }
+let styleImages = [];
+try { styleImages = JSON.parse(localStorage.getItem('lc_style_images') || '[]'); } catch(e) { styleImages = []; }
 
 /* ═══════════════════════════════════════════
    STATE
@@ -1225,16 +1232,21 @@ function dataUrlToInlinePart(dataUrl) {
   return { inlineData: { mimeType: m[1], data: m[2] } };
 }
 
-async function callGeminiImageGen(prompt, refImages) {
-  const refs = (refImages || []).map(dataUrlToInlinePart).filter(Boolean).slice(0, 3);
+async function callGeminiImageGen(prompt, productRefs, styleRefs) {
+  const pRefs = (productRefs || []).map(dataUrlToInlinePart).filter(Boolean).slice(0, 3);
+  const sRefs = (styleRefs   || []).map(dataUrlToInlinePart).filter(Boolean).slice(0, 3);
 
-  let finalText = prompt + ' Portrait orientation, 3:4 aspect ratio.';
-  if (refs.length) {
-    finalText = 'Use the EXACT LACALUT product shown in the attached reference photo(s). Reproduce the real packaging, label, colours and text precisely — do NOT invent, redesign, or alter the product or its wording. Place this real product naturally into the following scene: '
-      + prompt + ' Portrait orientation, 3:4 aspect ratio.';
+  let instr = '';
+  if (pRefs.length) {
+    instr += 'The FIRST ' + pRefs.length + ' reference image(s) show the EXACT LACALUT product — reproduce its real packaging, label, colours and wording precisely; never invent, redesign or alter the product or its text. ';
   }
+  if (sRefs.length) {
+    instr += 'The NEXT ' + sRefs.length + ' reference image(s) show the DESIGN STYLE to emulate — match their professional graphic-design layout, typography, colour-blocking, badges and composition, but do NOT copy their product, logos or wording. ';
+  }
+  const finalText = (instr ? instr + 'Now create the following: ' : '')
+    + prompt + ' Portrait orientation, 3:4 aspect ratio.';
 
-  const parts = [{ text: finalText }, ...refs];
+  const parts = [{ text: finalText }, ...pRefs, ...sRefs];
 
   const res = await fetch(
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' + KEYS.gemini,
@@ -1263,7 +1275,7 @@ async function generateImage(idx) {
   const post = STATE.posts[idx];
   const imagePrompt = post.concept?.image_prompt || POST_TYPE_BRIEFS[post.postType].imageStyle + '. LACALUT® product packaging prominently visible.';
 
-  let dataUrl = await callGeminiImageGen(imagePrompt, productImages);
+  let dataUrl = await callGeminiImageGen(imagePrompt, productImages, styleImages);
 
   if (logoDataUrl) {
     try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e) { console.warn('Logo composite failed:', e); }
@@ -1362,7 +1374,7 @@ async function submitReviseImage() {
   if (problem) finalPrompt = 'Problem to fix: ' + problem + '. New direction: ' + imgPrompt;
 
   try {
-    let dataUrl = await callGeminiImageGen(finalPrompt, productImages);
+    let dataUrl = await callGeminiImageGen(finalPrompt, productImages, styleImages);
     if (logoDataUrl) { try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e){} }
 
     STATE.posts[idx].fb.imageDataUrl = dataUrl;
@@ -1598,7 +1610,8 @@ function openSettings() {
   document.getElementById('s-gemini').value  = KEYS.gemini;
   document.getElementById('s-claude').value  = KEYS.claude;
   document.getElementById('s-profile').value = profilePic;
-  renderProductThumbs();
+  renderLibThumbs('product');
+  renderLibThumbs('style');
 
   if (logoDataUrl) {
     document.getElementById('logo-preview-img').src = logoDataUrl;
@@ -1629,50 +1642,56 @@ function saveSettings() {
   updateCalendarStrip();
 }
 
-/* ── PRODUCT PHOTO LIBRARY ── */
-function persistProductImages() {
+/* ── IMAGE LIBRARIES (product photos + style references) ── */
+function libArr(name)  { return name === 'product' ? productImages : styleImages; }
+function libKey(name)  { return name === 'product' ? 'lc_product_images' : 'lc_style_images'; }
+function libThumb(name){ return name === 'product' ? 'product-thumbs' : 'style-thumbs'; }
+const LIB_EMPTY = {
+  product: 'No product photos yet — the AI will invent product images until you add some.',
+  style:   'No style references yet — add your best ad creatives so posts look designed.'
+};
+
+function persistLib(name) {
   try {
-    localStorage.setItem('lc_product_images', JSON.stringify(productImages));
+    localStorage.setItem(libKey(name), JSON.stringify(libArr(name)));
   } catch(e) {
-    alert('⚠️ Storage full — too many/large product photos. Remove some or use smaller images.');
+    alert('⚠️ Storage full — too many/large images. Remove some or use smaller (compressed) images.');
   }
 }
 
-function handleProductUpload(input) {
+function handleImgUpload(input, name) {
   const files = Array.from(input.files || []);
   if (!files.length) return;
   let pending = files.length;
   files.forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
-      productImages.push(e.target.result);
-      if (--pending === 0) {
-        persistProductImages();
-        renderProductThumbs();
-      }
+      libArr(name).push(e.target.result);
+      if (--pending === 0) { persistLib(name); renderLibThumbs(name); }
     };
     reader.readAsDataURL(file);
   });
   input.value = '';
 }
 
-function removeProductImage(i) {
-  productImages.splice(i, 1);
-  persistProductImages();
-  renderProductThumbs();
+function removeLibImage(name, i) {
+  libArr(name).splice(i, 1);
+  persistLib(name);
+  renderLibThumbs(name);
 }
 
-function renderProductThumbs() {
-  const wrap = document.getElementById('product-thumbs');
+function renderLibThumbs(name) {
+  const wrap = document.getElementById(libThumb(name));
   if (!wrap) return;
-  if (!productImages.length) {
-    wrap.innerHTML = '<span style="font-size:12px;color:var(--muted)">No product photos yet — the AI will invent product images until you add some.</span>';
+  const arr = libArr(name);
+  if (!arr.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--muted)">' + LIB_EMPTY[name] + '</span>';
     return;
   }
-  wrap.innerHTML = productImages.map((src,i) =>
+  wrap.innerHTML = arr.map((src,i) =>
     `<div style="position:relative;width:60px;height:75px">
       <img src="${src}" style="width:60px;height:75px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
-      <button onclick="removeProductImage(${i})" title="Remove"
+      <button onclick="removeLibImage('${name}',${i})" title="Remove"
         style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:12px;cursor:pointer;line-height:1">×</button>
     </div>`).join('');
 }
