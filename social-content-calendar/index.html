@@ -333,7 +333,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <button id="btn-generate-week" onclick="generateWeekConcepts()">
     ✨ Generate This Week's 7 Posts
   </button>
-  <p class="generate-hint">Claude creates 7 post ideas — approve each before the image is generated.</p>
+  <button id="btn-approve-all" onclick="approveAllAndGenerate()"
+    style="display:inline-flex;align-items:center;gap:8px;margin-left:10px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(66,183,42,.35)">
+    ✅ Approve All &amp; Generate All Images
+  </button>
+  <p class="generate-hint">Step 1: generate 7 ideas. Step 2: one click approves them all and generates every image.</p>
 </div>
 
 <!-- POST CARDS -->
@@ -349,6 +353,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <input type="password" id="s-claude" placeholder="sk-ant-…">
     <label>Profile Picture URL (shown in previews)</label>
     <input type="text" id="s-profile" placeholder="https://… or paste base64">
+
+    <label style="margin-top:16px;color:var(--navy);font-weight:700">📸 Your Real Product Photos</label>
+    <input type="file" id="s-product-files" accept="image/*" multiple onchange="handleProductUpload(this)">
+    <p class="modal-hint">Upload clean shots of your <strong>actual</strong> LACALUT products. The AI will place these real products into every scene instead of inventing a fake tube. Upload a few angles per SKU.</p>
+    <div id="product-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+
     <label>Brand Logo (for canvas compositing)</label>
     <input type="file" id="s-logo-file" accept="image/*" onchange="handleLogoUpload(this)">
     <div id="logo-preview-wrap" style="display:none;margin-top:6px">
@@ -450,6 +460,17 @@ const SUPA_HEADERS = {
 };
 
 /* ═══════════════════════════════════════════
+   COMPLIANCE GUARDRAILS (AICIS — cosmetic, not therapeutic)
+   Injected into every Claude copy-generation prompt.
+═══════════════════════════════════════════ */
+const COMPLIANCE_RULES = `CRITICAL COMPLIANCE RULES — these are legal requirements, never break them:
+1. NO DISEASE TREATMENT/CURE CLAIMS. LACALUT is a cosmetic oral-care product, NOT a medicine. Never say it treats, cures, heals, fixes, stops, reverses or reduces any disease or condition (e.g. NEVER "treats gingivitis", "cures gum disease", "heals inflamed gums", "stops bleeding gums", "reduces inflammation"). Use cosmetic/support language only: "supports gum health", "helps maintain healthy gums", "for gums prone to sensitivity", "helps remove plaque", "for fresher breath".
+2. SYMPTOMS, NOT DIAGNOSES. You may reference everyday symptoms in a general educational way (e.g. "gums that bleed when brushing", "bad breath") but must NOT position the product as a treatment for a named disease.
+3. NEVER FABRICATE TESTIMONIALS OR QUOTES. Do NOT invent a customer, a name, a review, or a personal success story. If a post format calls for a testimonial, instead write a caption inviting real customers to share their experience, OR insert the literal placeholder text "[PASTE REAL CUSTOMER REVIEW HERE]" where a genuine review would go. Never make up a person or an outcome.
+4. NEVER FABRICATE STATISTICS OR NUMBERS. Do NOT invent percentages, "1 in X" figures, study results, or clinical data. Use general phrasing ("many Australians", "a common problem") instead of specific unsourced numbers. If a real cited statistic is not provided to you, do not state one.
+5. No TGA/therapeutic-good implications, no "clinically proven" unless generically about the brand's German research heritage, no comparisons to specific competitor brands by name.`;
+
+/* ═══════════════════════════════════════════
    POST TYPE BRIEFS
 ═══════════════════════════════════════════ */
 const POST_TYPE_BRIEFS = {
@@ -470,15 +491,15 @@ const POST_TYPE_BRIEFS = {
   testimonial: {
     label: 'Testimonial', emoji: '💬',
     imageStyle: 'Warm portrait lifestyle photo, Australian home or bathroom setting, natural window light, genuine smile, product subtly visible in hand or background',
-    copyTone: 'first-person authentic voice, real problem solved, relatable',
-    captionFormat: 'Open with a direct quote. One context sentence. Validation + shop CTA.',
-    hashtagTheme: 'review customerreview gumhealth testimonial lacalut australianreview realresults'
+    copyTone: 'warm and community-led. NEVER invent a customer, name, quote or outcome.',
+    captionFormat: 'Do NOT fabricate a review. Either (a) write an invitation for real customers to share their experience, or (b) leave the literal placeholder "[PASTE REAL CUSTOMER REVIEW HERE]" for Quan to drop in a genuine review. End with a soft CTA.',
+    hashtagTheme: 'review customerreview gumhealth lacalut australianreview realpeople'
   },
   before_after: {
     label: 'Before / After', emoji: '🔄',
     imageStyle: 'Split composition: left panel shows red inflamed gums with yellow clinical arrows pointing to problem areas, right panel shows healthy pink gums. Medical-grade clinical photography. Clean white background between panels.',
-    copyTone: 'empathetic to the problem, celebratory of the transformation',
-    captionFormat: 'Name the before state (bleeding, pain). Name the after state (healthy, confident). How LACALUT bridges it. CTA.',
+    copyTone: 'empathetic and educational. Cosmetic support language only, no cure/treatment claims.',
+    captionFormat: 'Describe the everyday goal (from gums that bleed when brushing, to a fresher, healthier-feeling routine) in GENERAL terms. Never claim the product treats or cures a condition. Position LACALUT as part of a supportive daily routine. Soft CTA.',
     hashtagTheme: 'beforeandafter transformation gumcare lacalutresults gingivitis bleedinggums'
   },
   lifestyle: {
@@ -525,6 +546,8 @@ let logoDataUrl  = localStorage.getItem('lc_logo') || '';
 let logoPos      = localStorage.getItem('lc_logo_pos')  || 'br';
 let logoSizeFrac = parseFloat(localStorage.getItem('lc_logo_size') || '0.20');
 let profilePic   = localStorage.getItem('lc_profile_pic') || '';
+let productImages = [];
+try { productImages = JSON.parse(localStorage.getItem('lc_product_images') || '[]'); } catch(e) { productImages = []; }
 
 /* ═══════════════════════════════════════════
    STATE
@@ -1037,7 +1060,7 @@ async function generateSingleConcept(idx) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 600,
-        system: 'You are a social media copywriter for LACALUT® Australia (German clinical oral healthcare brand). Return ONLY valid JSON — no markdown, no explanation.',
+        system: 'You are a social media copywriter for LACALUT® Australia (German clinical oral healthcare brand). Australian spelling. Never use em dashes.\n\n' + COMPLIANCE_RULES + '\n\nReturn ONLY valid JSON — no markdown, no explanation.',
         messages: [{ role:'user', content: `Generate ONE social media post concept for ${d.day}.
 Post type: ${d.type} — ${brief.label}
 Image style: ${brief.imageStyle}
@@ -1083,8 +1106,11 @@ function buildWeekPrompt() {
     model: 'claude-sonnet-4-6',
     max_tokens: 3000,
     system: `You are a social media copywriter for LACALUT® Australia, a premium German clinical oral healthcare brand.
-Products: LACALUT Aktiv (gingivitis / bleeding gums), LACALUT Flora (bad breath elimination), LACALUT Sensitive (coming soon), LACALUT White & Repair (coming soon).
-Brand voice: clinical authority meets Australian warmth. Never make TGA-prohibited medical claims. Australian spelling.
+Products: LACALUT Aktiv (supports gum health / plaque control), LACALUT Flora (fresh breath), LACALUT Sensitive (coming soon), LACALUT White & Repair (coming soon).
+Brand voice: clinical authority meets Australian warmth. Australian spelling. Never use em dashes.
+
+${COMPLIANCE_RULES}
+
 Return ONLY a valid JSON array — no markdown, no explanation, no code fences.`,
     messages: [{
       role: 'user',
@@ -1154,6 +1180,33 @@ async function approveConcept(idx) {
   }
 }
 
+async function approveAllAndGenerate() {
+  if (!KEYS.claude || !KEYS.gemini) { alert('Add BOTH your Claude and Gemini API keys in ⚙️ Settings first.'); openSettings(); return; }
+  if (!productImages.length) {
+    if (!confirm('⚠️ No product photos uploaded yet — the AI will invent fake product images.\n\nUpload real photos in ⚙️ Settings for accurate products.\n\nGenerate anyway with AI-invented products?')) { openSettings(); return; }
+  }
+
+  const todo = STATE.posts.map((p,i)=>({p,i})).filter(x => x.p.concept && x.p.status === 'concept');
+  if (!todo.length) { alert('No concepts to approve. Click "Generate This Week\'s 7 Posts" first.'); return; }
+
+  const btn = document.getElementById('btn-approve-all');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  document.getElementById('btn-generate-week').disabled = true;
+
+  let done = 0;
+  for (const { i } of todo) {
+    done++;
+    btn.innerHTML = '<span class="spinner"></span>Generating image ' + done + ' of ' + todo.length + '…';
+    try { await approveConcept(i); } catch(e) { console.warn('Batch item ' + i + ' failed:', e); }
+  }
+
+  btn.disabled = false;
+  document.getElementById('btn-generate-week').disabled = false;
+  btn.innerHTML = origHtml;
+  alert('✅ Done — approved ' + todo.length + ' posts and generated all images. Scroll down to review and post.');
+}
+
 async function rejectConcept(idx) {
   STATE.posts[idx].concept = null;
   STATE.posts[idx].status = 'empty';
@@ -1166,14 +1219,30 @@ async function rejectConcept(idx) {
 /* ═══════════════════════════════════════════
    IMAGE GENERATION (Gemini Flash)
 ═══════════════════════════════════════════ */
-async function callGeminiImageGen(prompt) {
+function dataUrlToInlinePart(dataUrl) {
+  const m = /^data:([^;]+);base64,(.*)$/.exec(dataUrl || '');
+  if (!m) return null;
+  return { inlineData: { mimeType: m[1], data: m[2] } };
+}
+
+async function callGeminiImageGen(prompt, refImages) {
+  const refs = (refImages || []).map(dataUrlToInlinePart).filter(Boolean).slice(0, 3);
+
+  let finalText = prompt + ' Portrait orientation, 3:4 aspect ratio.';
+  if (refs.length) {
+    finalText = 'Use the EXACT LACALUT product shown in the attached reference photo(s). Reproduce the real packaging, label, colours and text precisely — do NOT invent, redesign, or alter the product or its wording. Place this real product naturally into the following scene: '
+      + prompt + ' Portrait orientation, 3:4 aspect ratio.';
+  }
+
+  const parts = [{ text: finalText }, ...refs];
+
   const res = await fetch(
     'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' + KEYS.gemini,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt + ' Portrait orientation, 3:4 aspect ratio.' }] }],
+        contents: [{ role: 'user', parts }],
         generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
       })
     }
@@ -1194,7 +1263,7 @@ async function generateImage(idx) {
   const post = STATE.posts[idx];
   const imagePrompt = post.concept?.image_prompt || POST_TYPE_BRIEFS[post.postType].imageStyle + '. LACALUT® product packaging prominently visible.';
 
-  let dataUrl = await callGeminiImageGen(imagePrompt);
+  let dataUrl = await callGeminiImageGen(imagePrompt, productImages);
 
   if (logoDataUrl) {
     try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e) { console.warn('Logo composite failed:', e); }
@@ -1293,7 +1362,7 @@ async function submitReviseImage() {
   if (problem) finalPrompt = 'Problem to fix: ' + problem + '. New direction: ' + imgPrompt;
 
   try {
-    let dataUrl = await callGeminiImageGen(finalPrompt);
+    let dataUrl = await callGeminiImageGen(finalPrompt, productImages);
     if (logoDataUrl) { try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e){} }
 
     STATE.posts[idx].fb.imageDataUrl = dataUrl;
@@ -1370,7 +1439,7 @@ async function submitRewriteCopy() {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 500,
-        system: `You are a social media copywriter for LACALUT® Australia (German clinical oral healthcare brand). Tone: ${brief.copyTone}. Australian spelling. Never use em dashes. No TGA-prohibited medical claims. Return ONLY the rewritten caption text.`,
+        system: `You are a social media copywriter for LACALUT® Australia (German clinical oral healthcare brand). Tone: ${brief.copyTone}. Australian spelling. Never use em dashes.\n\n${COMPLIANCE_RULES}\n\nReturn ONLY the rewritten caption text.`,
         messages: [{ role:'user', content: `Rewrite this ${platform === 'ig' ? 'Instagram' : 'Facebook'} caption.
 ${platformNote}
 Post type: ${brief.label} — ${brief.captionFormat}
@@ -1529,6 +1598,7 @@ function openSettings() {
   document.getElementById('s-gemini').value  = KEYS.gemini;
   document.getElementById('s-claude').value  = KEYS.claude;
   document.getElementById('s-profile').value = profilePic;
+  renderProductThumbs();
 
   if (logoDataUrl) {
     document.getElementById('logo-preview-img').src = logoDataUrl;
@@ -1557,6 +1627,54 @@ function saveSettings() {
   closeModal();
   renderAllPosts();
   updateCalendarStrip();
+}
+
+/* ── PRODUCT PHOTO LIBRARY ── */
+function persistProductImages() {
+  try {
+    localStorage.setItem('lc_product_images', JSON.stringify(productImages));
+  } catch(e) {
+    alert('⚠️ Storage full — too many/large product photos. Remove some or use smaller images.');
+  }
+}
+
+function handleProductUpload(input) {
+  const files = Array.from(input.files || []);
+  if (!files.length) return;
+  let pending = files.length;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      productImages.push(e.target.result);
+      if (--pending === 0) {
+        persistProductImages();
+        renderProductThumbs();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function removeProductImage(i) {
+  productImages.splice(i, 1);
+  persistProductImages();
+  renderProductThumbs();
+}
+
+function renderProductThumbs() {
+  const wrap = document.getElementById('product-thumbs');
+  if (!wrap) return;
+  if (!productImages.length) {
+    wrap.innerHTML = '<span style="font-size:12px;color:var(--muted)">No product photos yet — the AI will invent product images until you add some.</span>';
+    return;
+  }
+  wrap.innerHTML = productImages.map((src,i) =>
+    `<div style="position:relative;width:60px;height:75px">
+      <img src="${src}" style="width:60px;height:75px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+      <button onclick="removeProductImage(${i})" title="Remove"
+        style="position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:12px;cursor:pointer;line-height:1">×</button>
+    </div>`).join('');
 }
 
 function handleLogoUpload(input) {
