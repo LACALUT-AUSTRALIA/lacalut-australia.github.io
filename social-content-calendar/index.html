@@ -1304,6 +1304,8 @@ async function generateImage(idx) {
     try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e) { console.warn('Logo composite failed:', e); }
   }
 
+  dataUrl = await compressImage(dataUrl, 1080, 0.85);
+
   STATE.posts[idx].fb.imageDataUrl = dataUrl;
   STATE.posts[idx].ig.imageDataUrl = dataUrl;
   STATE.posts[idx].status = 'image_generated';
@@ -1399,6 +1401,7 @@ async function submitReviseImage() {
   try {
     let dataUrl = await callGeminiImageGen(finalPrompt, productImages, styleImages);
     if (logoDataUrl) { try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e){} }
+    dataUrl = await compressImage(dataUrl, 1080, 0.85);
 
     STATE.posts[idx].fb.imageDataUrl = dataUrl;
     STATE.posts[idx].ig.imageDataUrl = dataUrl;
@@ -1788,8 +1791,9 @@ function handleImgUpload(input, name) {
   let pending = files.length;
   files.forEach(file => {
     const reader = new FileReader();
-    reader.onload = e => {
-      libArr(name).push(e.target.result);
+    reader.onload = async e => {
+      const small = await compressImage(e.target.result, 1024, 0.82);
+      libArr(name).push(small);
       if (--pending === 0) { persistLib(name); renderLibThumbs(name); }
     };
     reader.readAsDataURL(file);
@@ -1860,6 +1864,27 @@ function closeModal(e) {
 /* ═══════════════════════════════════════════
    UTILITIES
 ═══════════════════════════════════════════ */
+function compressImage(dataUrl, maxDim, quality) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+      if (Math.max(w, h) > maxDim) {
+        const s = maxDim / Math.max(w, h);
+        w = Math.round(w * s); h = Math.round(h * s);
+      }
+      try {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL('image/jpeg', quality));
+      } catch(e) { resolve(dataUrl); }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+
 function escHtml(str) {
   if (!str) return '';
   return String(str)
