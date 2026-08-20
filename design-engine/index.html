@@ -152,6 +152,8 @@
   <h2>✏️ Describe an edit</h2>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
+  <div style="margin-top:6px"><button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
+    <span style="font-size:11px;color:#888;margin-left:6px">fills the box with the re-pose instruction</span></div>
   <label class="row" style="margin-top:10px">📎 Reference product photos <span style="color:#999;font-weight:600">optional — for "use the real product"</span></label>
   <p style="font-size:11px;color:#888;margin:0 0 6px">Upload real packshots, then tell the edit which goes where. Up to 4.</p>
   <input type="file" id="editRefFiles" accept="image/*" multiple onchange="addEditRefs(this)">
@@ -347,6 +349,10 @@ function editImage(cardId){
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
   _editSrc=src; _editRefs=[]; renderEditRefs(); $('editInstruction').value=''; if($('editRefFiles'))$('editRefFiles').value='';
   editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+}
+function presetUpright(){
+  $('editInstruction').value = 'Re-pose this toothpaste tube so it stands fully UPRIGHT and VERTICAL, with the cap at the top, as if standing on a surface. Keep the label design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background. Product only — no text overlays, no badges.';
+  $('editInstruction').focus();
 }
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
