@@ -1443,6 +1443,15 @@ async function generateImage(idx) {
   }
 
   const post = STATE.posts[idx];
+  const photos = getProductImgsForSku(post.sku);
+  const brain = E.resolveBrain(post.brainId || 'mixed');
+  // Product-usage rule for the calendar (predictable, not random):
+  //  • 'none' brains (memes, anatomy, quotes) → never a product
+  //  • 'required' brains (product heroes) → always a product
+  //  • everything else → use the REAL product whenever this SKU has photos (stops the random logo-only path that invented fake tubes)
+  const useProd = brain && brain.product === 'none' ? false
+                : brain && brain.product === 'required' ? true
+                : photos.length > 0;
 
   // Silently drive the shared brand engine: brand kit + chosen strategy brain + real product photos.
   const res = await E.generateImage({
@@ -1451,10 +1460,11 @@ async function generateImage(idx) {
     mode:     'social',
     render:   'mixed',
     brief:    (post.concept && post.concept.brief) || '',
-    productImgs: getProductImgsForSku(post.sku),
+    useProd:  useProd,
+    productImgs: photos,
     styleImgs:   [],   // global style refs removed — brand kit + brain drive design per-post
     apiKey:   KEYS.gemini,
-    model:    localStorage.getItem('de_model') || 'gemini-2.5-flash-image'
+    model:    localStorage.getItem('de_model') || 'gemini-3-pro-image-preview'
   });
   let dataUrl = res.url;
 
@@ -1570,7 +1580,8 @@ async function submitReviseImage() {
   if (problem) finalPrompt = 'Problem to fix: ' + problem + '. New direction: ' + imgPrompt;
 
   try {
-    let dataUrl = await callGeminiImageGen(finalPrompt, getProductImgsForSku(STATE.posts[idx].sku), []);
+    let dataUrl = await E.callGemini({ prompt: finalPrompt, productImgs: getProductImgsForSku(STATE.posts[idx].sku), styleImgs: [],
+      render: 'photoreal', model: localStorage.getItem('de_model') || 'gemini-3-pro-image-preview', apiKey: KEYS.gemini, aspectRatio: '4:5' });
     if (logoDataUrl) { try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e){} }
     dataUrl = await compressImage(dataUrl, 1080, 0.85);
 

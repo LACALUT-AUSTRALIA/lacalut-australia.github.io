@@ -264,7 +264,8 @@ function buildPrompt(brain, useProd){
 }
 function callGemini(prompt, pRefsRaw, sRefsRaw, renderOverride){
   return E.callGemini({ prompt, productImgs:pRefsRaw, styleImgs:sRefsRaw,
-    render: renderOverride||($('render')?.value)||'photoreal', model:curModel, apiKey:KEYS.gemini });
+    render: renderOverride||($('render')?.value)||'photoreal', model:curModel, apiKey:KEYS.gemini,
+    aspectRatio: (MODES[curMode].ar||'4:5').split(' ')[0] });
 }
 const dataUrlToInlinePart = E.dataUrlToInlinePart;
 

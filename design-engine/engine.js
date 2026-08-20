@@ -184,9 +184,13 @@
     }
     if(sRefs.length) instr+=`The NEXT ${sRefs.length} reference image(s) show the DESIGN STYLE to emulate — match their layout, typography, colour-blocking and composition, but do NOT copy their product, logos or wording. `;
     const parts=[{text:(instr?instr+'Now create the following: ':'')+prompt}, ...pRefs, ...sRefs];
+    // Aspect ratio: gemini-3 pro image supports imageConfig.aspectRatio natively (4:5, 9:16, 1:1…).
+    // Nano (2.5-flash-image) ignores it — relies on the prompt text instead — so only send it to Pro to avoid a 400.
+    const gcfg = { responseModalities:['TEXT','IMAGE'] };
+    if (opts.aspectRatio && /gemini-3/.test(model)) gcfg.imageConfig = { aspectRatio: opts.aspectRatio };
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
       { method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ contents:[{role:'user',parts}], generationConfig:{responseModalities:['TEXT','IMAGE']} }) });
+        body:JSON.stringify({ contents:[{role:'user',parts}], generationConfig: gcfg }) });
     const data=await res.json();
     if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
     const part=data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
@@ -204,12 +208,13 @@
     const brain = opts.brain || resolveBrain(opts.brainId);
     const useProd = (typeof opts.useProd==='boolean') ? opts.useProd : brainUsesProduct(brain);
     const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, advNeg:opts.advNeg, useProd });
+    const aspectRatio = ((MODES[mode] && MODES[mode].ar) || '4:5').split(' ')[0];
 
     const url = await callGemini({
       prompt,
       productImgs: useProd ? (opts.productImgs||[]).filter(Boolean) : [],
       styleImgs:   useProd ? (opts.styleImgs||[]).filter(Boolean) : [],
-      render, model: opts.model, apiKey: opts.apiKey
+      render, model: opts.model, apiKey: opts.apiKey, aspectRatio
     });
     const finish = render==='graphical'?'CGI':render==='exact'?'flat':'photoreal';
     const label = (brain?brain.name:'Hero') + (useProd?' · '+finish:' · logo-only');
