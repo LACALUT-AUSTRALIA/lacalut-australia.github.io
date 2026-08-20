@@ -57,6 +57,15 @@
   dialog h2{ margin:0 0 12px; font-size:18px; }
   .kbadge{ font-size:12px; padding:4px 10px; border-radius:999px; font-weight:700; }
   .kbadge.ok{ background:#e6f7ec; color:#137a3c; } .kbadge.no{ background:#fdeaea; color:#b3261e; }
+  /* product reference library grid */
+  .reflib{ display:grid; gap:6px; align-items:center; }
+  .refslot{ position:relative; aspect-ratio:1; border:2px solid var(--line); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; color:#bbb; cursor:pointer; background:#fafafa; overflow:hidden; }
+  .refslot img{ width:100%; height:100%; object-fit:contain; background:#fff; }
+  .refslot.on{ border-color:var(--accent); box-shadow:0 0 0 2px rgba(207,16,45,.25); }
+  .refslot .rm{ position:absolute; top:2px; right:2px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer; }
+  .refslot .tick{ position:absolute; bottom:2px; left:2px; background:var(--accent); color:#fff; font-size:10px; font-weight:700; border-radius:4px; padding:1px 4px; }
+  .refhdr{ font-size:11px; font-weight:700; text-align:center; color:var(--navy); }
+  .reftype{ font-size:11px; font-weight:700; color:#555; }
 </style>
 </head>
 <body>
@@ -148,16 +157,15 @@
   </div>
 </div></dialog>
 
-<dialog id="editDlg" style="max-width:540px"><div class="dlg">
+<dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
   <div style="margin-top:6px"><button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
     <span style="font-size:11px;color:#888;margin-left:6px">fills the box with the re-pose instruction</span></div>
-  <label class="row" style="margin-top:10px">📎 Reference product photos <span style="color:#999;font-weight:600">optional — for "use the real product"</span></label>
-  <p style="font-size:11px;color:#888;margin:0 0 6px">Upload real packshots, then tell the edit which goes where. Up to 4.</p>
-  <input type="file" id="editRefFiles" accept="image/*" multiple onchange="addEditRefs(this)">
-  <div id="editRefThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+  <label class="row" style="margin-top:12px">📎 Product reference library <span style="color:#999;font-weight:600">— upload once, then click to select for this edit</span></label>
+  <div id="refLibGrid" style="margin-top:6px"></div>
+  <p style="font-size:11px;color:#888;margin:6px 0 0">Empty slot = upload once (saved forever in this browser). Click a photo to select it as a reference (highlighted ✓ = selected). Selected products are what the edit will insert.</p>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
     <button class="btn" onclick="editDlg.close()">Cancel</button>
     <button class="btn primary" onclick="applyEdit()">Apply edit</button>
@@ -309,9 +317,37 @@ function dl(url,name){ const a=document.createElement('a'); a.href=url; a.downlo
 /* ═══ PERSISTENT GALLERY (IndexedDB — survives refresh) ═══ */
 let _db;
 function idb(){ return new Promise((res,rej)=>{ if(_db)return res(_db);
-  const r=indexedDB.open('lacalut_de',1);
-  r.onupgradeneeded=e=>{ const db=e.target.result; if(!db.objectStoreNames.contains('gens')){ const s=db.createObjectStore('gens',{keyPath:'id'}); s.createIndex('sku','sku'); } };
+  const r=indexedDB.open('lacalut_de',2);
+  r.onupgradeneeded=e=>{ const db=e.target.result;
+    if(!db.objectStoreNames.contains('gens')){ const s=db.createObjectStore('gens',{keyPath:'id'}); s.createIndex('sku','sku'); }
+    if(!db.objectStoreNames.contains('reflib')){ db.createObjectStore('reflib',{keyPath:'key'}); } };
   r.onsuccess=e=>{ _db=e.target.result; res(_db); }; r.onerror=()=>rej(r.error); }); }
+
+/* ═══ PRODUCT REFERENCE LIBRARY (persistent, click-to-select) ═══ */
+const REF_TYPES=[['toothpaste','🧴 Paste'],['mouthwash','🫧 Rinse'],['toothbrush','🪥 Brush']];
+let _refLib={};   // key `${sku}_${type}` -> dataUrl
+async function refPut(key,url){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').put({key,url}); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
+async function refDel(key){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').delete(key); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
+async function refAll(){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readonly'); const rq=t.objectStore('reflib').getAll(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
+async function loadRefLib(){ try{ const all=await refAll(); _refLib={}; all.forEach(r=>_refLib[r.key]=r.url); }catch(e){} }
+function compressRef(url,max){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; if(Math.max(w,h)>max){ const s=max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s);} const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); res(c.toDataURL('image/jpeg',0.85)); }; img.onerror=()=>res(url); img.src=url; }); }
+function renderRefLibGrid(){
+  const wrap=$('refLibGrid'); if(!wrap) return;
+  const skus=Object.entries(SKUS);
+  let h=`<div class="reflib" style="grid-template-columns:60px repeat(${skus.length},1fr)">`;
+  h+=`<div></div>`+skus.map(([k,v])=>`<div class="refhdr">${v.name}</div>`).join('');
+  for(const [type,tlabel] of REF_TYPES){
+    h+=`<div class="reftype">${tlabel}</div>`;
+    h+=skus.map(([k])=>{ const key=k+'_'+type; const url=_refLib[key]; const sel=_editRefs.includes(key);
+      if(url) return `<div class="refslot${sel?' on':''}" onclick="toggleRefSelect('${key}')" title="click to ${sel?'deselect':'select'}"><img src="${url}"><button class="rm" onclick="event.stopPropagation();removeRef('${key}')">×</button>${sel?'<span class="tick">✓</span>':''}</div>`;
+      return `<div class="refslot" onclick="pickRefSlot('${key}')" title="upload">📷</div>`;
+    }).join('');
+  }
+  wrap.innerHTML=h+`</div>`;
+}
+function pickRefSlot(key){ fileToDataUrl(async d=>{ const small=await compressRef(d,1024); _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderRefLibGrid(); }); }
+function toggleRefSelect(key){ const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); else _editRefs.push(key); renderRefLibGrid(); }
+async function removeRef(key){ if(!confirm('Remove this saved reference photo?'))return; delete _refLib[key]; const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); try{ await refDel(key); }catch(e){} renderRefLibGrid(); }
 async function idbPut(rec){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').put(rec); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
@@ -332,22 +368,14 @@ async function renderGallery(sku){ const recs=(await idbBySku(sku)).sort((a,b)=>
 /* ═══ DESCRIBE AN EDIT (image-to-image via Gemini) ═══ */
 function callGeminiEdit(imgDataUrl, instruction){
   // Force Pro for edits — far better at product-swap fidelity + on-image text
-  return E.editImage({ imgDataUrl, instruction, refImgs:_editRefs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini });
+  const refImgs=_editRefs.map(k=>_refLib[k]).filter(Boolean);
+  return E.editImage({ imgDataUrl, instruction, refImgs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini });
 }
-let _editSrc=null, _editRefs=[];
-function addEditRefs(input){
-  const files=Array.from(input.files||[]);
-  files.forEach(f=>{ const r=new FileReader(); r.onload=()=>{ if(_editRefs.length<4){ _editRefs.push(r.result); renderEditRefs(); } }; r.readAsDataURL(f); });
-  input.value='';
-}
-function renderEditRefs(){
-  $('editRefThumbs').innerHTML=_editRefs.map((src,i)=>
-    `<div style="position:relative;width:54px;height:68px"><img src="${src}" style="width:54px;height:68px;object-fit:cover;border-radius:5px;border:1px solid var(--line)"><button class="rm" style="position:absolute;top:-6px;right:-6px" onclick="_editRefs.splice(${i},1);renderEditRefs()">×</button></div>`).join('');
-}
+let _editSrc=null, _editRefs=[];   // _editRefs holds selected library KEYS (e.g. 'aktiv_toothpaste')
 function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
-  _editSrc=src; _editRefs=[]; renderEditRefs(); $('editInstruction').value=''; if($('editRefFiles'))$('editRefFiles').value='';
+  _editSrc=src; _editRefs=[]; renderRefLibGrid(); $('editInstruction').value='';
   editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function presetUpright(){
@@ -356,7 +384,7 @@ function presetUpright(){
 }
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
-  fileToDataUrl(d=>{ _editSrc=d; _editRefs=[]; renderEditRefs(); $('editInstruction').value=''; if($('editRefFiles'))$('editRefFiles').value='';
+  fileToDataUrl(d=>{ _editSrc=d; _editRefs=[]; renderRefLibGrid(); $('editInstruction').value='';
     editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60); });
 }
 async function applyEdit(){
@@ -374,6 +402,7 @@ async function applyEdit(){
 
 /* ═══ INIT ═══ */
 renderTabs(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); renderGallery(curSku);
+loadRefLib();
 $('advNeg').addEventListener('change',renderNeg);
 </script>
 </body>
