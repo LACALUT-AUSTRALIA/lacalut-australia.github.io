@@ -1461,6 +1461,7 @@ async function generateImage(idx) {
     mode:     'social',
     render:   'mixed',
     brief:    (post.concept && post.concept.brief) || '',
+    headline: (post.concept && (post.concept.brief || post.concept.hook)) || '',  // tie on-image text to the caption topic
     useProd:  useProd,
     productImgs: photos,
     styleImgs:   [],   // global style refs removed — brand kit + brain drive design per-post

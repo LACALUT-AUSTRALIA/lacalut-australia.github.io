@@ -151,6 +151,7 @@
       const bg=pickRand(g.backgrounds,1)[0]; if(bg) p += `Background scene: ${bg}. `;
     }
     if(brief) p += `Art-director note (priority): ${brief}. `;
+    if(opts.headline) p += `TOPIC LOCK (highest priority): the MAIN on-image headline and all overlay text must convey THIS exact message/topic — "${opts.headline}". Do NOT substitute a different tip, fact or headline; everything written on the image must be consistent with it. `;
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
     p += `ALL overlay/design text — headline, labels, badges, captions — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (The product's own printed packaging text stays unchanged.) Keep it clean and uncluttered — no extra call-to-action stickers or badges unless specified. `;
     if(useProd){
@@ -207,7 +208,7 @@
 
     const brain = opts.brain || resolveBrain(opts.brainId);
     const useProd = (typeof opts.useProd==='boolean') ? opts.useProd : brainUsesProduct(brain);
-    const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, advNeg:opts.advNeg, useProd });
+    const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, headline:opts.headline, advNeg:opts.advNeg, useProd });
     const aspectRatio = ((MODES[mode] && MODES[mode].ar) || '4:5').split(' ')[0];
 
     const url = await callGemini({
