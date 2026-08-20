@@ -127,6 +127,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn-gen-single:hover{background:#e8eff5}
 .concept-spinner{font-size:13px;color:var(--muted);padding:20px;text-align:center}
 
+/* ── STRATEGY + SKU PICKER (per day) ── */
+.strat-row{display:flex;gap:10px;flex-wrap:wrap;padding:10px 12px;margin:0 0 12px;background:#f0f4ff;border:1px solid #d6e0f5;border-radius:8px}
+.strat-field{flex:1;min-width:160px;display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.03em}
+.strat-field select{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:13px;font-family:inherit;color:var(--text);background:#fff;font-weight:600;text-transform:none;letter-spacing:0}
+.strat-field select:focus{outline:none;border-color:var(--navy)}
+
 /* ── FULL CARD (2-column) ── */
 .card-body{display:flex;gap:0}
 .card-editor{flex:1;padding:16px;border-right:1px solid var(--border);min-width:0}
@@ -364,9 +370,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <label>Profile Picture URL (shown in previews)</label>
     <input type="text" id="s-profile" placeholder="https://… or paste base64">
 
-    <label style="margin-top:16px;color:var(--navy);font-weight:700">📸 Your Real Product Photos</label>
+    <label style="margin-top:16px;color:var(--navy);font-weight:700">🧴 Product Photos — Per Product (recommended)</label>
+    <p class="modal-hint">Upload real packshots for <strong>each product</strong>. When a day's <strong>Product</strong> dropdown is set to that SKU, the engine reproduces the correct tube. A few angles each. (Shared with the Design Engine.)</p>
+    <div id="sku-product-libs"></div>
+
+    <label style="margin-top:16px;color:var(--navy);font-weight:700">📸 Generic Product Photos (fallback)</label>
     <input type="file" id="s-product-files" accept="image/*" multiple onchange="handleImgUpload(this,'product')">
-    <p class="modal-hint">Upload clean shots of your <strong>actual</strong> LACALUT products. The AI reproduces the real product in every scene instead of inventing a fake tube. A few angles per SKU.</p>
+    <p class="modal-hint">Used only when the selected product above has no photos of its own. A few clean shots of any LACALUT product.</p>
     <div id="product-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
 
     <label style="margin-top:16px;color:var(--navy);font-weight:700">🎨 Style / Ad Template References</label>
@@ -460,10 +470,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- Shared design engine (single source of truth for brand kits + 51 strategy brains) -->
+<script src="../design-engine/strategies.js"></script>
+<script src="../design-engine/engine.js"></script>
 <script>
 /* ═══════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════ */
+const E = window.LacalutEngine;
 const SUPABASE_URL  = 'https://bfzvxxcsfxvgeblnkqne.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmenZ4eGNzZnh2Z2VibG5rcW5lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4ODU5MjgsImV4cCI6MjA5NDQ2MTkyOH0.n0Kyh9uzoz84F3X_Bn4dVtLDV4Pbd1KYqkBnhxlM7ko';
 
@@ -558,6 +572,61 @@ const DAYS = [
   { day:'Sunday',    short:'SUN', type:'community',    emoji:'🤝' }
 ];
 
+/* Each day is anchored to brain CATEGORIES (from the 51-brain library). The
+   "Generate 7 Posts" button picks a default brain from that day's categories;
+   Quan can then swap to any of the 51 strategies via the per-day dropdown. */
+const DAY_PLAN = [
+  { cats:['Educational'],            prefer:[] },                                 // Mon
+  { cats:['Sales'],                  prefer:['benefit-first','trust-proof'] },    // Tue
+  { cats:['Social Proof','Story'],   prefer:[] },                                 // Wed
+  { cats:['Sales'],                  prefer:['before-after','problem-vs-solution'] }, // Thu
+  { cats:['Lifestyle','Seasonal'],   prefer:[] },                                 // Fri
+  { cats:['Sales'],                  prefer:['benefit-first'] },                  // Sat
+  { cats:['Community','Engagement'], prefer:[] }                                  // Sun
+];
+/* Default product rotation across the week (weighted to live SKUs). Editable per post. */
+const DEFAULT_SKU_ROTATION = ['aktiv','flora','aktiv','aktiv-herbal','sensitive','white-repair','flora'];
+const SKU_OPTIONS = Object.keys(E.SKUS);
+
+/* Per-day strategy + SKU pickers (Sociamonials-style) ─────────────────── */
+function brainOptionsHTML(sel){
+  const cats={}; E.BRAINS.forEach(b=>{ (cats[b.cat]=cats[b.cat]||[]).push(b); });
+  let h=`<option value="mixed"${(!sel||sel==='mixed')?' selected':''}>🎲 Surprise me (random)</option>`;
+  for(const c of Object.keys(cats)){
+    h+=`<optgroup label="${escHtml(c)}">`+cats[c].map(b=>`<option value="${b.id}"${b.id===sel?' selected':''}>${escHtml(b.name)}</option>`).join('')+`</optgroup>`;
+  }
+  return h;
+}
+function skuOptionsHTML(sel){ return SKU_OPTIONS.map(k=>`<option value="${k}"${k===sel?' selected':''}>${escHtml(E.SKUS[k].name)}</option>`).join(''); }
+function strategyPickerHTML(idx){
+  const p = STATE.posts[idx];
+  return `<div class="strat-row">
+    <label class="strat-field">🎯 Strategy
+      <select onchange="setPostBrain(${idx},this.value)">${brainOptionsHTML(p.brainId)}</select></label>
+    <label class="strat-field">🧴 Product
+      <select onchange="setPostSku(${idx},this.value)">${skuOptionsHTML(p.sku)}</select></label>
+  </div>`;
+}
+function setPostBrain(idx,id){
+  const b = id==='mixed' ? null : E.BRAINS.find(x=>x.id===id);
+  STATE.posts[idx].brainId = id;
+  STATE.posts[idx].brainName = b ? b.name : 'Surprise me';
+  STATE.posts[idx].category = b ? b.cat : '';
+  if(STATE.posts[idx].concept) STATE.posts[idx].concept.brainId = id;
+  saveState();
+}
+function setPostSku(idx,sku){
+  STATE.posts[idx].sku = sku;
+  if(STATE.posts[idx].concept) STATE.posts[idx].concept.sku = sku;
+  saveState();
+}
+/* Product photos per SKU — reuses the design-engine's per-SKU library
+   (localStorage de_product_<sku>), falling back to the generic pool. */
+function getProductImgsForSku(sku){
+  try{ const a=JSON.parse(localStorage.getItem('de_product_'+sku)||'[]').filter(Boolean); if(a.length) return a; }catch(e){}
+  return (productImages||[]).filter(Boolean);
+}
+
 /* ═══════════════════════════════════════════
    SETTINGS
 ═══════════════════════════════════════════ */
@@ -618,6 +687,8 @@ async function loadImageLibs() {
 function freshPost(idx) {
   return {
     day: DAYS[idx].day, postType: DAYS[idx].type,
+    sku: DEFAULT_SKU_ROTATION[idx] || 'aktiv',
+    brainId: null, brainName: '', category: '',
     status: 'empty',
     concept: null, conceptApproved: false,
     fb: { caption:'', hashtags:'', imageDataUrl:'' },
@@ -792,23 +863,24 @@ function renderPost(idx) {
 /* ── CONCEPT BODY ── */
 function conceptBodyHTML(idx, post, d, brief) {
   if (!post.concept) {
-    return `<div class="empty-concept">
-      <h3>${brief.emoji} ${brief.label} post for ${d.day}</h3>
-      <p>Click <strong>Generate This Week's 7 Posts</strong> above — or generate just this day.</p>
-      <button class="btn-gen-single" onclick="generateSingleConcept(${idx})">✨ Generate ${d.day} concept</button>
+    return `<div class="concept-body">
+      ${strategyPickerHTML(idx)}
+      <div class="empty-concept">
+        <h3>${brief.emoji} ${brief.label} post for ${d.day}</h3>
+        <p>Pick a <strong>Strategy</strong> + <strong>Product</strong> above, then click <strong>Generate This Week's 7 Posts</strong> — or generate just this day.</p>
+        <button class="btn-gen-single" onclick="generateSingleConcept(${idx})">✨ Generate ${d.day} concept</button>
+      </div>
     </div>`;
   }
 
   const c = post.concept;
   const tags = Array.isArray(c.hashtags) ? c.hashtags.map(t => '#'+t).join(' ') : c.hashtags || '';
   return `<div class="concept-body">
+    ${strategyPickerHTML(idx)}
     <div class="concept-hook">"${escHtml(c.hook)}"</div>
     <textarea class="concept-caption" id="concept-caption-${idx}" oninput="updateConceptCaption(${idx},this.value)">${escHtml(c.draft_caption)}</textarea>
     <div class="concept-hashtags">${escHtml(tags)}</div>
-    <details style="margin-top:8px">
-      <summary class="concept-image-prompt">🎨 Image prompt (click to view)</summary>
-      <p style="font-size:12px;color:var(--muted);padding:8px 0 0">${escHtml(c.image_prompt)}</p>
-    </details>
+    <div class="concept-image-prompt" style="cursor:default">🎨 Image auto-designed by the brand engine from strategy <strong>${escHtml(post.brainName || 'Surprise me')}</strong>${c.brief ? ' · ' + escHtml(c.brief) : ''}</div>
     <div class="concept-actions">
       <button class="btn-approve-concept" onclick="approveConcept(${idx})">✅ Approve & Generate Image</button>
       <button class="btn-reject-concept" onclick="rejectConcept(${idx})">🔄 Reject & Rewrite</button>
@@ -841,6 +913,7 @@ function fullBodyHTML(idx, post, d) {
 
   return `<div class="card-body">
     <div class="card-editor">
+      ${strategyPickerHTML(idx)}
       <div class="img-row">
         <div class="img-thumb-wrap">
           ${imgSrc
@@ -849,7 +922,8 @@ function fullBodyHTML(idx, post, d) {
           <div class="img-spinner" id="img-spinner-${idx}" style="display:none">⏳ Generating…</div>
         </div>
         <div class="img-actions">
-          <button class="btn-revise-img" onclick="openReviseModal(${idx})">🖼️ Revise Image</button>
+          <button class="btn-revise-img" onclick="regenerateImage(${idx})">🎨 Regenerate (uses strategy)</button>
+          <button class="btn-revise-img" onclick="openReviseModal(${idx})">🖼️ Revise (custom prompt)</button>
           ${logoDataUrl ? `<button class="btn-revise-img btn-logo" onclick="applyLogoToPost(${idx})">🏷️ Apply Logo</button>` : ''}
         </div>
       </div>
@@ -1061,6 +1135,14 @@ async function generateWeekConcepts() {
   btn.innerHTML = '<span class="spinner"></span>Generating 7 concepts…';
 
   try {
+    // Assign each day a default strategy brain from its category (unless Quan already picked one)
+    STATE.posts.forEach((p,i) => {
+      if (!p.brainId) {
+        const b = E.pickBrainForCategories(DAY_PLAN[i].cats, DAY_PLAN[i].prefer);
+        if (b) { p.brainId = b.id; p.brainName = b.name; p.category = b.cat; }
+      }
+    });
+
     const prompt = buildWeekPrompt();
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1087,6 +1169,12 @@ async function generateWeekConcepts() {
     if (!Array.isArray(concepts) || concepts.length < 7) throw new Error('Expected 7 concepts, got ' + (concepts?.length || 0));
 
     concepts.slice(0, 7).forEach((c, i) => {
+      // AICIS compliance guard — strip disease/therapeutic terms from copy + hashtags
+      c.hook = E.sanitizeCopy(c.hook || '');
+      c.draft_caption = E.sanitizeCopy(c.draft_caption || '');
+      c.hashtags = E.sanitizeHashtags(c.hashtags || []);
+      c.brainId = STATE.posts[i].brainId;
+      c.sku = STATE.posts[i].sku;
       STATE.posts[i].concept = c;
       STATE.posts[i].status = 'concept';
     });
@@ -1111,6 +1199,13 @@ async function generateSingleConcept(idx) {
 
   const d = DAYS[idx];
   const brief = POST_TYPE_BRIEFS[d.type];
+  // Assign a strategy brain if Quan hasn't picked one
+  if (!STATE.posts[idx].brainId) {
+    const b = E.pickBrainForCategories(DAY_PLAN[idx].cats, DAY_PLAN[idx].prefer);
+    if (b) { STATE.posts[idx].brainId = b.id; STATE.posts[idx].brainName = b.name; STATE.posts[idx].category = b.cat; }
+  }
+  const strategyName = STATE.posts[idx].brainName || brief.label;
+  const productName = E.SKUS[STATE.posts[idx].sku] ? E.SKUS[STATE.posts[idx].sku].name : 'Aktiv';
   const container = document.getElementById('post-' + idx);
   const emptyDiv = container.querySelector('.empty-concept');
   if (emptyDiv) emptyDiv.innerHTML = '<p class="concept-spinner"><span class="spinner"></span>Generating concept…</p>';
@@ -1129,14 +1224,15 @@ async function generateSingleConcept(idx) {
         max_tokens: 600,
         system: 'You are a social media copywriter for LACALUT® Australia (German clinical oral healthcare brand). Australian spelling. Never use em dashes.\n\n' + COMPLIANCE_RULES + '\n\nReturn ONLY valid JSON — no markdown, no explanation.',
         messages: [{ role:'user', content: `Generate ONE social media post concept for ${d.day}.
-Post type: ${d.type} — ${brief.label}
-Image style: ${brief.imageStyle}
+Product: LACALUT ${productName}
+Creative strategy: ${strategyName}
 Copy tone: ${brief.copyTone}
 Caption format: ${brief.captionFormat}
 Hashtag theme: ${brief.hashtagTheme}
 
+The caption must match the creative strategy and be about the product above.
 Return a single JSON object (not an array):
-{"day":"${d.day}","post_type":"${d.type}","hook":"One-line attention hook (max 15 words)","draft_caption":"Full caption 2-4 paragraphs no hashtags Australian spelling","hashtags":["tag1","tag2"],"image_prompt":"Detailed Gemini Imagen 4 prompt. LACALUT® product packaging visible."}` }]
+{"day":"${d.day}","post_type":"${d.type}","hook":"One-line attention hook (max 15 words)","draft_caption":"Full caption 2-4 paragraphs no hashtags Australian spelling","hashtags":["tag1","tag2"],"brief":"Optional short art-direction note (a headline/focal idea)"}` }]
       })
     });
     const data = await res.json();
@@ -1147,6 +1243,13 @@ Return a single JSON object (not an array):
       const jsonMatch = raw.match(/\{[\s\S]*\}/);
       concept = JSON.parse(jsonMatch ? jsonMatch[0] : raw);
     } catch(e) { throw new Error('Parse failed: ' + raw.substring(0,200)); }
+
+    // AICIS compliance guard
+    concept.hook = E.sanitizeCopy(concept.hook || '');
+    concept.draft_caption = E.sanitizeCopy(concept.draft_caption || '');
+    concept.hashtags = E.sanitizeHashtags(concept.hashtags || []);
+    concept.brainId = STATE.posts[idx].brainId;
+    concept.sku = STATE.posts[idx].sku;
 
     STATE.posts[idx].concept = concept;
     STATE.posts[idx].status = 'concept';
@@ -1162,9 +1265,12 @@ Return a single JSON object (not an array):
 function buildWeekPrompt() {
   const daysList = DAYS.map((d,i) => {
     const brief = POST_TYPE_BRIEFS[d.type];
+    const p = STATE.posts[i];
     return {
       day: d.day, post_type: d.type, label: brief.label,
-      imageStyle: brief.imageStyle, copyTone: brief.copyTone,
+      strategy: p.brainName || brief.label,
+      product: E.SKUS[p.sku] ? E.SKUS[p.sku].name : 'Aktiv',
+      copyTone: brief.copyTone,
       captionFormat: brief.captionFormat, hashtagTheme: brief.hashtagTheme
     };
   });
@@ -1181,7 +1287,7 @@ ${COMPLIANCE_RULES}
 Return ONLY a valid JSON array — no markdown, no explanation, no code fences.`,
     messages: [{
       role: 'user',
-      content: `Generate 7 social media post concepts — one per day.
+      content: `Generate 7 social media post concepts — one per day. Each day has a chosen creative STRATEGY and a specific PRODUCT (SKU). The caption must match that day's strategy angle and be about that product.
 
 Days and briefs:
 ${JSON.stringify(daysList, null, 2)}
@@ -1190,10 +1296,10 @@ Return a JSON array of exactly 7 objects. Each object must have these exact keys
 {
   "day": "Monday",
   "post_type": "educational",
-  "hook": "One attention-grabbing opening sentence (max 15 words)",
-  "draft_caption": "Full caption 2-4 short paragraphs. No hashtags. Australian spelling.",
+  "hook": "One attention-grabbing opening sentence (max 15 words) that fits the day's strategy",
+  "draft_caption": "Full caption 2-4 short paragraphs. No hashtags. Australian spelling. On-brand for the day's product + strategy.",
   "hashtags": ["tag1", "tag2"],
-  "image_prompt": "Detailed Gemini Imagen 4 image generation prompt. Must include: LACALUT® product packaging prominently visible, lighting mood, composition style, colour palette."
+  "brief": "Optional one-line art-direction note for the image (a headline or focal idea). The image itself is generated separately by the brand engine, so keep this short."
 }`
     }]
   };
@@ -1206,13 +1312,15 @@ async function approveConcept(idx) {
   const post = STATE.posts[idx];
   if (!post.concept) return;
 
-  // Get caption from textarea (may have been edited)
+  // Get caption from textarea (may have been edited) — then run the compliance guard
   const captionEl = document.getElementById('concept-caption-' + idx);
   if (captionEl) post.concept.draft_caption = captionEl.value;
+  post.concept.draft_caption = E.sanitizeCopy(post.concept.draft_caption || '');
 
-  const tags = Array.isArray(post.concept.hashtags)
-    ? post.concept.hashtags.map(t => '#'+t).join(' ')
-    : post.concept.hashtags || '';
+  const tagArr = E.sanitizeHashtags(Array.isArray(post.concept.hashtags)
+    ? post.concept.hashtags
+    : String(post.concept.hashtags || '').split(/\s+/));
+  const tags = tagArr.map(t => '#' + t).join(' ');
 
   post.fb.caption  = post.concept.draft_caption;
   post.ig.caption  = post.concept.draft_caption;
@@ -1249,8 +1357,11 @@ async function approveConcept(idx) {
 
 async function approveAllAndGenerate() {
   if (!KEYS.claude || !KEYS.gemini) { alert('Add BOTH your Claude and Gemini API keys in ⚙️ Settings first.'); openSettings(); return; }
-  if (!productImages.length) {
-    if (!confirm('⚠️ No product photos uploaded yet — the AI will invent fake product images.\n\nUpload real photos in ⚙️ Settings for accurate products.\n\nGenerate anyway with AI-invented products?')) { openSettings(); return; }
+  // Warn if none of this week's chosen SKUs have real product photos
+  const weekSkus = [...new Set(STATE.posts.map(p => p.sku))];
+  const anyPhotos = weekSkus.some(s => getProductImgsForSku(s).length);
+  if (!anyPhotos) {
+    if (!confirm('⚠️ No product photos uploaded for this week\'s products — the AI will invent fake product images.\n\nUpload real photos per product in ⚙️ Settings for accurate results.\n\nGenerate anyway?')) { openSettings(); return; }
   }
 
   const todo = STATE.posts.map((p,i)=>({p,i})).filter(x => x.p.concept && x.p.status === 'concept');
@@ -1333,9 +1444,20 @@ async function generateImage(idx) {
   }
 
   const post = STATE.posts[idx];
-  const imagePrompt = post.concept?.image_prompt || POST_TYPE_BRIEFS[post.postType].imageStyle + '. LACALUT® product packaging prominently visible.';
 
-  let dataUrl = await callGeminiImageGen(imagePrompt, productImages, styleImages);
+  // Silently drive the shared brand engine: brand kit + chosen strategy brain + real product photos.
+  const res = await E.generateImage({
+    sku:      post.sku || 'aktiv',
+    brainId:  post.brainId || 'mixed',
+    mode:     'social',
+    render:   'mixed',
+    brief:    (post.concept && post.concept.brief) || '',
+    productImgs: getProductImgsForSku(post.sku),
+    styleImgs:   styleImages,
+    apiKey:   KEYS.gemini,
+    model:    localStorage.getItem('de_model') || 'gemini-2.5-flash-image'
+  });
+  let dataUrl = res.url;
 
   if (logoDataUrl) {
     try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e) { console.warn('Logo composite failed:', e); }
@@ -1353,6 +1475,19 @@ async function generateImage(idx) {
   initCharCounters(idx);
   updateCalendarStrip();
   logToSupabase(idx, 'image_generated');
+}
+
+// Regenerate the image from the currently-selected strategy + SKU (full-card button)
+async function regenerateImage(idx) {
+  if (!KEYS.gemini) { alert('Add your Gemini API key in ⚙️ Settings first.'); openSettings(); return; }
+  const spinner = document.getElementById('img-spinner-' + idx);
+  if (spinner) spinner.style.display = 'flex';
+  try {
+    await generateImage(idx);
+  } catch(e) {
+    if (spinner) spinner.style.display = 'none';
+    alert('❌ Image generation failed: ' + e.message);
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -1436,7 +1571,7 @@ async function submitReviseImage() {
   if (problem) finalPrompt = 'Problem to fix: ' + problem + '. New direction: ' + imgPrompt;
 
   try {
-    let dataUrl = await callGeminiImageGen(finalPrompt, productImages, styleImages);
+    let dataUrl = await callGeminiImageGen(finalPrompt, getProductImgsForSku(STATE.posts[idx].sku), styleImages);
     if (logoDataUrl) { try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e){} }
     dataUrl = await compressImage(dataUrl, 1080, 0.85);
 
@@ -1701,8 +1836,8 @@ async function pushPostToMarky(idx) {
   const dataUrl = post.fb.imageDataUrl;
   if (!dataUrl) { alert('Generate the image first before pushing to Marky.'); return false; }
 
-  const caption  = (post.fb.caption || '').trim();
-  const hashtags = (post.fb.hashtags || '').trim();
+  const caption  = E.sanitizeCopy((post.fb.caption || '').trim());
+  const hashtags = E.sanitizeHashtags((post.fb.hashtags || '').trim());
   const fullCaption = hashtags ? caption + '\n\n' + hashtags : caption;
   const pinTitle = (post.concept?.hook || caption.split('\n')[0] || 'LACALUT').replace(/^"|"$/g, '').substring(0, 95);
 
@@ -1772,6 +1907,7 @@ function openSettings() {
   document.getElementById('s-claude').value  = KEYS.claude;
   document.getElementById('s-marky').value   = KEYS.marky;
   document.getElementById('s-profile').value = profilePic;
+  renderSkuProductLibs();
   renderLibThumbs('product');
   renderLibThumbs('style');
 
@@ -1804,6 +1940,41 @@ function saveSettings() {
   renderAllPosts();
   updateCalendarStrip();
 }
+
+/* ── PER-SKU PRODUCT PHOTOS (shared with design-engine via de_product_<sku>) ── */
+function getSkuProductArr(sku){ try{ return JSON.parse(localStorage.getItem('de_product_'+sku)||'[]').filter(Boolean); }catch(e){ return []; } }
+function saveSkuProductArr(sku,arr){ try{ localStorage.setItem('de_product_'+sku, JSON.stringify(arr)); }catch(e){ alert('⚠️ Could not save these photos (browser storage full) — try fewer or smaller images.'); } }
+function renderSkuProductLibs(){
+  const wrap = document.getElementById('sku-product-libs'); if(!wrap) return;
+  wrap.innerHTML = SKU_OPTIONS.map(sku => {
+    const arr = getSkuProductArr(sku);
+    const thumbs = arr.length
+      ? arr.map((src,i)=>`<div style="position:relative;width:52px;height:65px"><img src="${src}" style="width:52px;height:65px;object-fit:cover;border-radius:5px;border:1px solid var(--border)"><button onclick="removeSkuProductImage('${sku}',${i})" title="Remove" style="position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;border:none;background:var(--red);color:#fff;font-size:11px;cursor:pointer;line-height:1">×</button></div>`).join('')
+      : '<span style="font-size:11px;color:var(--muted)">No photos yet</span>';
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-top:8px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <strong style="font-size:13px;color:var(--navy)">${escHtml(E.SKUS[sku].name)}</strong>
+        <label class="settings-btn" style="cursor:pointer;font-size:12px;margin-left:auto;color:var(--navy)">＋ Add<input type="file" accept="image/*" multiple style="display:none" onchange="handleSkuProductUpload(this,'${sku}')"></label>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${thumbs}</div>
+    </div>`;
+  }).join('');
+}
+function handleSkuProductUpload(input, sku){
+  const files = Array.from(input.files||[]); if(!files.length) return;
+  const arr = getSkuProductArr(sku); let pending = files.length;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const small = await compressImage(e.target.result, 1024, 0.82);
+      arr.push(small);
+      if (--pending === 0) { saveSkuProductArr(sku, arr); renderSkuProductLibs(); }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+function removeSkuProductImage(sku,i){ const arr=getSkuProductArr(sku); arr.splice(i,1); saveSkuProductArr(sku,arr); renderSkuProductLibs(); }
 
 /* ── IMAGE LIBRARIES (product photos + style references) ── */
 function libArr(name)  { return name === 'product' ? productImages : styleImages; }
