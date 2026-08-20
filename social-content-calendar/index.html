@@ -379,10 +379,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <p class="modal-hint">Used only when the selected product above has no photos of its own. A few clean shots of any LACALUT product.</p>
     <div id="product-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
 
-    <label style="margin-top:16px;color:var(--navy);font-weight:700">🎨 Style / Ad Template References</label>
-    <input type="file" id="s-style-files" accept="image/*" multiple onchange="handleImgUpload(this,'style')">
-    <p class="modal-hint">Upload your <strong>best existing ad creatives / designed posts</strong>. The AI copies their layout, fonts, colour-blocking and badges — so daily posts look professionally designed, not like raw photos. (It won't copy their product or text — just the style.)</p>
-    <div id="style-thumbs" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+    <!-- Style / Ad Template References removed: a global style lock would flatten all 52 strategy
+         brains into one look. Layout/design variety is driven per-post by the chosen brain + brand kit.
+         (Per-image style-matching could live in the Revise modal later if ever wanted.) -->
 
     <label>Brand Logo (for canvas compositing)</label>
     <input type="file" id="s-logo-file" accept="image/*" onchange="handleLogoUpload(this)">
@@ -1453,7 +1452,7 @@ async function generateImage(idx) {
     render:   'mixed',
     brief:    (post.concept && post.concept.brief) || '',
     productImgs: getProductImgsForSku(post.sku),
-    styleImgs:   styleImages,
+    styleImgs:   [],   // global style refs removed — brand kit + brain drive design per-post
     apiKey:   KEYS.gemini,
     model:    localStorage.getItem('de_model') || 'gemini-2.5-flash-image'
   });
@@ -1571,7 +1570,7 @@ async function submitReviseImage() {
   if (problem) finalPrompt = 'Problem to fix: ' + problem + '. New direction: ' + imgPrompt;
 
   try {
-    let dataUrl = await callGeminiImageGen(finalPrompt, getProductImgsForSku(STATE.posts[idx].sku), styleImages);
+    let dataUrl = await callGeminiImageGen(finalPrompt, getProductImgsForSku(STATE.posts[idx].sku), []);
     if (logoDataUrl) { try { dataUrl = await compositeLogoOntoImage(dataUrl); } catch(e){} }
     dataUrl = await compressImage(dataUrl, 1080, 0.85);
 
