@@ -63,6 +63,7 @@
   <div class="brand">LACALUT <small>Design Engine · Scalable-Lite</small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
+  <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
   <button class="btn" onclick="openGuide()">📖 Brand Guide</button>
   <button class="btn" onclick="openKeys()">🔑 Keys</button>
 </header>
@@ -148,8 +149,12 @@
 
 <dialog id="editDlg" style="max-width:540px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
-  <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", "make the tubes larger and shift the rocks down a little to make room".</p>
+  <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
+  <label class="row" style="margin-top:10px">📎 Reference product photos <span style="color:#999;font-weight:600">optional — for "use the real product"</span></label>
+  <p style="font-size:11px;color:#888;margin:0 0 6px">Upload real packshots, then tell the edit which goes where. Up to 4.</p>
+  <input type="file" id="editRefFiles" accept="image/*" multiple onchange="addEditRefs(this)">
+  <div id="editRefThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
   <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
     <button class="btn" onclick="editDlg.close()">Cancel</button>
     <button class="btn primary" onclick="applyEdit()">Apply edit</button>
@@ -323,13 +328,29 @@ async function renderGallery(sku){ const recs=(await idbBySku(sku)).sort((a,b)=>
 
 /* ═══ DESCRIBE AN EDIT (image-to-image via Gemini) ═══ */
 function callGeminiEdit(imgDataUrl, instruction){
-  return E.editImage({ imgDataUrl, instruction, sku:curSku, model:curModel, apiKey:KEYS.gemini });
+  // Force Pro for edits — far better at product-swap fidelity + on-image text
+  return E.editImage({ imgDataUrl, instruction, refImgs:_editRefs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini });
 }
-let _editSrc=null;
+let _editSrc=null, _editRefs=[];
+function addEditRefs(input){
+  const files=Array.from(input.files||[]);
+  files.forEach(f=>{ const r=new FileReader(); r.onload=()=>{ if(_editRefs.length<4){ _editRefs.push(r.result); renderEditRefs(); } }; r.readAsDataURL(f); });
+  input.value='';
+}
+function renderEditRefs(){
+  $('editRefThumbs').innerHTML=_editRefs.map((src,i)=>
+    `<div style="position:relative;width:54px;height:68px"><img src="${src}" style="width:54px;height:68px;object-fit:cover;border-radius:5px;border:1px solid var(--line)"><button class="rm" style="position:absolute;top:-6px;right:-6px" onclick="_editRefs.splice(${i},1);renderEditRefs()">×</button></div>`).join('');
+}
 function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
-  _editSrc=src; $('editInstruction').value=''; editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+  _editSrc=src; _editRefs=[]; renderEditRefs(); $('editInstruction').value=''; if($('editRefFiles'))$('editRefFiles').value='';
+  editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+}
+function editUpload(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  fileToDataUrl(d=>{ _editSrc=d; _editRefs=[]; renderEditRefs(); $('editInstruction').value=''; if($('editRefFiles'))$('editRefFiles').value='';
+    editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60); });
 }
 async function applyEdit(){
   const instruction=$('editInstruction').value.trim(); if(!instruction){ editDlg.close(); return; }

@@ -227,13 +227,17 @@
     const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-2.5-flash-image';
     const sku = opts.sku || 'aktiv';
     const part = dataUrlToInlinePart(opts.imgDataUrl); if(!part) throw new Error('bad image');
+    const refs = (opts.refImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,4);
     const bans=[...GLOBAL_BAN, ...(SKUS[sku]?.ban||[])];
-    const text=`Edit the attached image. Apply ONLY this change: ${opts.instruction}. `
-      +`Keep the ENTIRE rest of the image pixel-identical — same layout, product, packaging, colours, background and all other text. Do not restyle or regenerate anything else. `
+    let text=`Edit the FIRST attached image. Apply ONLY this change: ${opts.instruction}. `;
+    if(refs.length){
+      text+=`The ${refs.length} image(s) AFTER the first are REFERENCE photos of the EXACT real product(s). Wherever the instruction says to insert, replace or correct a product, reproduce the real product from these references precisely — real packaging shape, label layout, colours, logo and exact wording; never invent, garble or alter the product or its text. Match each product to the correct position described in the instruction. `;
+    }
+    text+=`Keep the ENTIRE rest of the image pixel-identical — same layout, background, other elements and all overlay text. Do not restyle or regenerate anything else. `
       +`Never add any of these words/claims: ${bans.join(', ')}.`;
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
       { method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ contents:[{role:'user',parts:[{text}, part]}], generationConfig:{responseModalities:['TEXT','IMAGE']} }) });
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text}, part, ...refs]}], generationConfig:{responseModalities:['TEXT','IMAGE']} }) });
     const data=await res.json();
     if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
     const p=data.candidates?.[0]?.content?.parts?.find(x=>x.inlineData);
