@@ -231,7 +231,8 @@
     const bans=[...GLOBAL_BAN, ...(SKUS[sku]?.ban||[])];
     let text=`Edit the FIRST attached image. Apply ONLY this change: ${opts.instruction}. `;
     if(refs.length){
-      text+=`The ${refs.length} image(s) AFTER the first are REFERENCE photos of the EXACT real product(s). Wherever the instruction says to insert, replace or correct a product, reproduce the real product from these references precisely — real packaging shape, label layout, colours, logo and exact wording; never invent, garble or alter the product or its text. Match each product to the correct position described in the instruction. `;
+      text+=`The ${refs.length} image(s) AFTER the first are REFERENCE photos of the EXACT real product(s), used ONLY as the source of truth for each product's branding: real packaging shape, label layout, colours, logo and exact wording; never invent, garble or alter the product text. Match each product to the correct position described in the instruction. `
+        +`CRITICAL: keep each replaced product in the SAME position, orientation, upright/standing angle, scale, perspective and lighting as in the ORIGINAL first image. Do NOT copy the reference photo's orientation, angle, lighting or background — if a tube stands vertical in the original, it must stay vertical; the reference only supplies the label artwork. `;
     }
     text+=`Keep the ENTIRE rest of the image pixel-identical — same layout, background, other elements and all overlay text. Do not restyle or regenerate anything else. `
       +`Never add any of these words/claims: ${bans.join(', ')}.`;
