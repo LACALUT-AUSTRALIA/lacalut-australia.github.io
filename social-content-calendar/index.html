@@ -923,6 +923,7 @@ function fullBodyHTML(idx, post, d) {
         <div class="img-actions">
           <button class="btn-revise-img" onclick="regenerateImage(${idx})">🎨 Regenerate (uses strategy)</button>
           <button class="btn-revise-img" onclick="openReviseModal(${idx})">🖼️ Revise (custom prompt)</button>
+          ${imgSrc ? `<button class="btn-revise-img" onclick="downloadPostImage(${idx})">⬇ Download (free)</button>` : ''}
           ${logoDataUrl ? `<button class="btn-revise-img btn-logo" onclick="applyLogoToPost(${idx})">🏷️ Apply Logo</button>` : ''}
         </div>
       </div>
@@ -1549,6 +1550,16 @@ function applyLogoToPost(idx) {
     const card = document.getElementById('post-' + idx);
     if (card) card.querySelectorAll('.fb-image-wrap img, .ig-image-wrap img').forEach(img => img.src = dataUrl);
   }).catch(e => alert('Logo apply failed: ' + e.message));
+}
+
+/* Download the full generated image (free — no API, recovers the complete picture) */
+function downloadPostImage(idx) {
+  const src = STATE.posts[idx].fb.imageDataUrl;
+  if (!src) { alert('No image generated for this day yet.'); return; }
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = 'lacalut-' + STATE.posts[idx].day.toLowerCase() + '-' + (STATE.posts[idx].sku || 'aktiv') + '.png';
+  document.body.appendChild(a); a.click(); a.remove();
 }
 
 /* ═══════════════════════════════════════════
