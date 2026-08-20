@@ -139,7 +139,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .card-preview{width:380px;flex-shrink:0;padding:12px;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:8px}
 .img-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
 .img-thumb-wrap{position:relative;width:120px;flex-shrink:0}
-.img-thumb{width:120px;height:150px;object-fit:cover;border-radius:6px;border:1px solid var(--border);background:#eee;display:block}
+.img-thumb{width:120px;height:150px;object-fit:contain;border-radius:6px;border:1px solid var(--border);background:#eee;display:block}
 .img-spinner{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
   background:rgba(255,255,255,.85);border-radius:6px;font-size:13px;color:var(--muted);
@@ -207,8 +207,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .fb-more{margin-left:auto;font-size:22px;color:#65676b;cursor:pointer;padding:0 4px}
 .fb-caption{padding:0 16px 10px;font-size:15px;color:#1c1e21;line-height:1.4;word-break:break-word}
 .fb-see-more{background:none;border:none;color:#65676b;font-size:15px;cursor:pointer;padding:0}
-.fb-image-wrap{overflow:hidden;background:#e4e6ea;aspect-ratio:4/5}
-.fb-image-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.fb-image-wrap{overflow:hidden;background:#e4e6ea}
+.fb-image-wrap img{width:100%;height:auto;display:block}
 .fb-image-placeholder{
   width:100%;height:200px;display:flex;align-items:center;justify-content:center;
   background:#e4e6ea;color:#bcc0c4;font-size:13px;
@@ -239,8 +239,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .ig-username{font-size:14px;font-weight:600;color:#000}
 .ig-location{font-size:12px;color:#8e8e8e}
 .ig-more{margin-left:auto;font-size:20px;color:#000;cursor:pointer}
-.ig-image-wrap{overflow:hidden;background:#fafafa;aspect-ratio:4/5}
-.ig-image-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.ig-image-wrap{overflow:hidden;background:#fafafa}
+.ig-image-wrap img{width:100%;height:auto;display:block}
 .ig-image-placeholder{
   width:100%;height:220px;display:flex;align-items:center;justify-content:center;
   background:#fafafa;color:#bcc0c4;font-size:13px;
