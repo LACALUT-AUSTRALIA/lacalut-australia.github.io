@@ -65,7 +65,7 @@
   .refslot .rm{ position:absolute; top:2px; right:2px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; cursor:pointer; }
   .refslot .tick{ position:absolute; bottom:2px; left:2px; background:var(--accent); color:#fff; font-size:10px; font-weight:700; border-radius:4px; padding:1px 4px; }
   .refhdr{ font-size:11px; font-weight:700; text-align:center; color:var(--navy); }
-  .reftype{ font-size:11px; font-weight:700; color:#555; }
+  .reftype{ font-size:10px; font-weight:700; color:#555; line-height:1.2; }
 </style>
 </head>
 <body>
@@ -159,10 +159,13 @@
 
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
+  <div id="editSrcSlot" style="margin:0 0 10px"></div>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
-  <div style="margin-top:6px"><button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
-    <span style="font-size:11px;color:#888;margin-left:6px">fills the box with the re-pose instruction</span></div>
+  <div style="margin-top:6px">
+    <button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
+    <button class="btn" style="font-size:12px;padding:5px 10px;margin-left:6px" onclick="presetBoxUpright()">📦 Stand box upright</button>
+    <span style="font-size:11px;color:#888;margin-left:6px">one-click fills the instruction box</span></div>
   <label class="row" style="margin-top:12px">📎 Product reference library <span style="color:#999;font-weight:600">— upload once, then click to select for this edit</span></label>
   <div id="refLibGrid" style="margin-top:6px"></div>
   <p style="font-size:11px;color:#888;margin:6px 0 0">Empty slot = upload once (saved forever in this browser). Click a photo to select it as a reference (highlighted ✓ = selected). Selected products are what the edit will insert.</p>
@@ -324,7 +327,14 @@ function idb(){ return new Promise((res,rej)=>{ if(_db)return res(_db);
   r.onsuccess=e=>{ _db=e.target.result; res(_db); }; r.onerror=()=>rej(r.error); }); }
 
 /* ═══ PRODUCT REFERENCE LIBRARY (persistent, click-to-select) ═══ */
-const REF_TYPES=[['toothpaste','🧴 Paste'],['mouthwash','🫧 Rinse'],['toothbrush','🪥 Brush']];
+const REF_TYPES=[
+  ['tp_box','🦷 Box'],
+  ['toothpaste','🦷 Tube'],
+  ['tp_boxtube','🦷 Box+Tube'],
+  ['mw_bottle','💧 Bottle'],
+  ['mouthwash','💧 Bottle+Box'],
+  ['toothbrush','🪥 Brush'],
+];
 let _refLib={};   // key `${sku}_${type}` -> dataUrl
 async function refPut(key,url){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').put({key,url}); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 async function refDel(key){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').delete(key); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
@@ -334,7 +344,7 @@ function compressRef(url,max){ return new Promise(res=>{ const img=new Image(); 
 function renderRefLibGrid(){
   const wrap=$('refLibGrid'); if(!wrap) return;
   const skus=Object.entries(SKUS);
-  let h=`<div class="reflib" style="grid-template-columns:60px repeat(${skus.length},1fr)">`;
+  let h=`<div class="reflib" style="grid-template-columns:78px repeat(${skus.length},1fr)">`;
   h+=`<div></div>`+skus.map(([k,v])=>`<div class="refhdr">${v.name}</div>`).join('');
   for(const [type,tlabel] of REF_TYPES){
     h+=`<div class="reftype">${tlabel}</div>`;
@@ -369,23 +379,36 @@ async function renderGallery(sku){ const recs=(await idbBySku(sku)).sort((a,b)=>
 function callGeminiEdit(imgDataUrl, instruction){
   // Force Pro for edits — far better at product-swap fidelity + on-image text
   const refImgs=_editRefs.map(k=>_refLib[k]).filter(Boolean);
-  return E.editImage({ imgDataUrl, instruction, refImgs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini });
+  const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
+  return E.editImage({ imgDataUrl, instruction, refImgs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio });
 }
 let _editSrc=null, _editRefs=[];   // _editRefs holds selected library KEYS (e.g. 'aktiv_toothpaste')
 function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
-  _editSrc=src; _editRefs=[]; renderRefLibGrid(); $('editInstruction').value='';
+  _editSrc=src; _editRefs=[]; renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
   editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
+function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
+  if(_editSrc){ w.innerHTML=`<div style="display:flex;gap:10px;align-items:center">
+    <img src="${_editSrc}" style="width:90px;height:112px;object-fit:contain;border:1px solid #ddd;border-radius:8px;background:#fafafa">
+    <div><div style="font-size:12px;color:#666;margin-bottom:5px">Image being edited</div>
+    <button class="btn" style="font-size:12px;padding:5px 10px" onclick="pickEditSrc()">🔄 Load a different image</button></div></div>`;
+  } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image to edit</div>`; }
+}
+function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; renderEditSrc(); }); }
 function presetUpright(){
   $('editInstruction').value = 'Re-pose this toothpaste tube so it stands fully UPRIGHT and VERTICAL, with the cap at the top, as if standing on a surface. Keep the label design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background. Product only — no text overlays, no badges.';
   $('editInstruction').focus();
 }
+function presetBoxUpright(){
+  $('editInstruction').value = 'Re-pose this product carton/box so it stands fully UPRIGHT and VERTICAL, standing on its base as if on a shelf, shown front-on at a slight three-quarter angle. Keep the box design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background with a soft realistic shadow beneath. Product only — no text overlays, no badges.';
+  $('editInstruction').focus();
+}
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
-  fileToDataUrl(d=>{ _editSrc=d; _editRefs=[]; renderRefLibGrid(); $('editInstruction').value='';
-    editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60); });
+  _editRefs=[]; renderEditSrc(); renderRefLibGrid();
+  editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 async function applyEdit(){
   const instruction=$('editInstruction').value.trim(); if(!instruction){ editDlg.close(); return; }

@@ -237,9 +237,12 @@
     }
     text+=`Keep the ENTIRE rest of the image pixel-identical — same layout, background, other elements and all overlay text. Do not restyle or regenerate anything else. `
       +`Never add any of these words/claims: ${bans.join(', ')}.`;
+    const gcfg={responseModalities:['TEXT','IMAGE']};
+    if(opts.aspectRatio && /gemini-3/.test(model)){ gcfg.imageConfig={aspectRatio:opts.aspectRatio};
+      text+=` Output the final image in a ${opts.aspectRatio} portrait aspect ratio (fill the frame; add clean matching background around the product if needed — never squash or stretch it).`; }
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
       { method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ contents:[{role:'user',parts:[{text}, part, ...refs]}], generationConfig:{responseModalities:['TEXT','IMAGE']} }) });
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text}, part, ...refs]}], generationConfig:gcfg }) });
     const data=await res.json();
     if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
     const p=data.candidates?.[0]?.content?.parts?.find(x=>x.inlineData);
