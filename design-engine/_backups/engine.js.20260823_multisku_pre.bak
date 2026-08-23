@@ -48,9 +48,9 @@
   const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up'];
 
   const MODES = {
-    'social':  { label:'Feed 4:5',      dims:'1080×1350', ar:'4:5 portrait' },
-    'ad':      { label:'Reels / Story', dims:'1080×1920', ar:'9:16 vertical' },
-    'listing': { label:'Square 1:1',    dims:'1080×1080', ar:'1:1 square' }
+    'social':  { label:'Social Post', dims:'1080×1350', ar:'4:5 portrait' },
+    'ad':      { label:'Meta Ad',     dims:'900×1600',  ar:'9:16 vertical' },
+    'listing': { label:'Listing',     dims:'1080×1080', ar:'1:1 square' }
   };
 
   /* ═══ EDITABLE BRAND GUIDES (per-SKU pools) ═══ */
@@ -159,30 +159,6 @@
     } else {
       p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
     }
-    p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
-    return p;
-  }
-
-  /* ═══ MULTI-SKU PROMPT BUILD (range / family / campaign shot) ═══ */
-  function buildMultiPrompt(opts){
-    const mode = opts.mode || 'social', brain = opts.brain;
-    const brief = (opts.brief || '').trim();
-    const advNeg = opts.advNeg !== false;
-    const names = opts.skuNames || [];
-    const m = MODES[mode];
-    const bans = [...new Set([...GLOBAL_BAN, ...(opts.bans || [])])];
-    let p = `Professional graphic-designed ${m.label} for LACALUT (premium German pharmacy oral-care brand) featuring MULTIPLE products together — ${names.length} products: ${names.join(', ')}. `;
-    p += `STRICT brand colours — dominant LACALUT red #CF102D + navy #004A88, clean premium palette (each product may keep its own accent). `;
-    p += `Arrange all ${names.length} products together as ONE cohesive premium hero composition — a "range line-up" / family shot: every product clearly visible, evenly balanced and distinct, none obscured or merged. `;
-    if(brain){
-      p += `CREATIVE STRATEGY — "${brain.name}": `;
-      brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p += `${d} — ${v}. `; });
-    }
-    if(brief) p += `Art-director note (HIGHEST priority — follow it exactly): ${brief}. `;
-    if(opts.headline) p += `TOPIC LOCK (highest priority): the main on-image headline and all overlay text must convey THIS exact message — "${opts.headline}". `;
-    if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
-    p += `ALL overlay/design text — headline, labels, badges — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (Each product's own printed packaging text stays unchanged.) `;
-    p += `The products are LARGE and dominant as the clear hero of the composition. Prefer "Clinical Formula", never "Mineral Formula". `;
     p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
     return p;
   }
@@ -338,7 +314,7 @@
     BRAINS, SKUS, MODES, GLOBAL_BAN, DEFAULT_GUIDES, GUIDE_SECTIONS,
     getGuide, pickStr, pickRand,
     resolveBrain, brainUsesProduct, pickBrainForCategories,
-    buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
+    buildPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm
   };
 

@@ -198,15 +198,13 @@ let curModel = localStorage.getItem('de_model') || 'gemini-2.5-flash-image';
 let curSku='aktiv', curMode='social';
 let productImgs = JSON.parse(localStorage.getItem('de_product_'+curSku)||'[]');
 let styleImgs   = JSON.parse(localStorage.getItem('lc_style_images')||'[]');
-let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","sensitive","white-repair"]');
 let curBrain = null;
 const $ = id => document.getElementById(id);
 
 /* ═══ RENDER ═══ */
 function renderTabs(){
   $('tabs').innerHTML = Object.entries(SKUS).map(([k,v])=>
-    `<button class="tab ${k===curSku?'active':''}" onclick="pickSku('${k}')"><span class="dot" style="background:${v.dot}"></span>${v.name}</button>`).join('')
-  + `<button class="tab ${curSku==='multi'?'active':''}" onclick="pickSku('multi')" title="Combine multiple SKUs into one range / gift / campaign image"><span class="dot" style="background:linear-gradient(90deg,#CF102D,#008490,#8a8f98)"></span>🎁 Multi-SKU</button>`;
+    `<button class="tab ${k===curSku?'active':''}" onclick="pickSku('${k}')"><span class="dot" style="background:${v.dot}"></span>${v.name}</button>`).join('');
 }
 function renderModes(){
   $('modes').innerHTML = Object.entries(MODES).map(([k,v])=>
@@ -214,53 +212,22 @@ function renderModes(){
   $('fmtLabel').textContent = MODES[curMode].dims+' · '+MODES[curMode].ar;
 }
 function renderSlots(){
-  if(curSku==='multi'){
-    renderMultiProductPanel();
-  } else {
-    const html=[];
-    for(let i=0;i<3;i++){
-      const img=productImgs[i];
-      const roles=['Main','Angle','Detail'];
-      html.push(`<div class="slot" onclick="${img?'':'pickPhoto('+i+')'}">${img?`<img src="${img}"><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷'}<span class="lbl">${roles[i]}</span></div>`);
-    }
-    $('slots').innerHTML=html.join('');
-    $('slotCount').textContent = productImgs.filter(Boolean).length+'/3';
-    $('fidWarn').innerHTML = productImgs.filter(Boolean).length===1
-      ? `<div class="warn">⚠ Only 1 angle — product fidelity may drop. Add 1–2 more angles.</div>`:'';
+  const html=[];
+  for(let i=0;i<3;i++){
+    const img=productImgs[i];
+    const roles=['Main','Angle','Detail'];
+    html.push(`<div class="slot" onclick="${img?'':'pickPhoto('+i+')'}">${img?`<img src="${img}"><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷'}<span class="lbl">${roles[i]}</span></div>`);
   }
-  // style slots (common to both modes)
+  $('slots').innerHTML=html.join('');
+  $('slotCount').textContent = productImgs.filter(Boolean).length+'/3';
+  $('fidWarn').innerHTML = productImgs.filter(Boolean).length===1
+    ? `<div class="warn">⚠ Only 1 angle — product fidelity may drop. Add 1–2 more angles.</div>`:'';
+  // style slots
   const s=[];
   for(let i=0;i<3;i++){ const im=styleImgs[i];
     s.push(`<div class="slot" onclick="${im?'':'pickStyle('+i+')'}">${im?`<img src="${im}"><button class="rm" onclick="event.stopPropagation();delStyle(${i})">×</button>`:'🎨'}</div>`); }
   $('styleSlots').innerHTML=s.join('');
 }
-/* ═══ MULTI-SKU product panel (pick which SKUs go in the range/campaign shot) ═══ */
-function multiImgFor(k){
-  return _refLib[k+'_tp_boxtube'] || _refLib[k+'_toothpaste'] || _refLib[k+'_tp_box']
-    || (JSON.parse(localStorage.getItem('de_product_'+k)||'[]').filter(Boolean)[0]) || null;
-}
-function renderMultiProductPanel(){
-  const rows = Object.entries(SKUS).map(([k,v])=>{
-    const on = multiSel.includes(k);
-    const img = multiImgFor(k);
-    const thumb = img
-      ? `<img src="${img}" style="width:34px;height:34px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px">`
-      : `<button class="btn" style="font-size:11px;padding:4px 8px" onclick="uploadMultiImg('${k}')">📷 Upload pack</button>`;
-    return `<label class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin:4px 0;${on?'':'opacity:.5'}">
-      <span style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${on?'checked':''} onchange="toggleMultiSku('${k}')"><span style="width:9px;height:9px;border-radius:50%;background:${v.dot};display:inline-block"></span>${v.name}</span>
-      <span style="display:flex;align-items:center;gap:6px">${thumb}${img?`<button class="iconbtn" style="padding:3px 6px" title="replace pack" onclick="uploadMultiImg('${k}')">🔄</button>`:''}</span>
-    </label>`;
-  }).join('');
-  $('slots').innerHTML = `<div style="grid-column:1/-1">${rows}</div>`;
-  const n = multiSel.filter(k=>multiImgFor(k)).length;
-  $('slotCount').textContent = multiSel.length+' SKUs';
-  $('fidWarn').innerHTML = `<div class="guide" style="margin-top:2px">Tick the SKUs to include in one image. Upload each pack once — it's saved forever &amp; reused everywhere.</div>`
-    + (n<multiSel.length ? `<div class="warn">⚠ ${multiSel.length-n} selected SKU(s) have no pack uploaded yet — upload them or untick.</div>` : '');
-}
-function toggleMultiSku(k){ const i=multiSel.indexOf(k); if(i>=0)multiSel.splice(i,1); else multiSel.push(k);
-  localStorage.setItem('de_multi_sel',JSON.stringify(multiSel)); renderSlots(); renderNeg(); }
-function uploadMultiImg(k){ fileToDataUrl(async d=>{ const small=await compressRef(d,1024); const key=k+'_tp_boxtube';
-  _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderSlots(); }); }
 function renderBrains(){
   if(!BRAINS.length){ $('chips').innerHTML='<span style="font-size:11px;color:#b3261e">strategies.js not loaded — reload</span>'; return; }
   const cats={}; BRAINS.forEach(b=>{ (cats[b.cat]=cats[b.cat]||[]).push(b); });
@@ -274,17 +241,15 @@ function renderBrains(){
 }
 function selectBrain(id){ curBrain=(curBrain===id?null:id); renderBrains(); }
 function renderNeg(){
-  const bans = curSku==='multi'
-    ? [...new Set([...GLOBAL_BAN, ...multiSel.flatMap(k=>SKUS[k]?.ban||[])])]
-    : [...GLOBAL_BAN, ...SKUS[curSku].ban];
+  const bans=[...GLOBAL_BAN, ...SKUS[curSku].ban];
   $('negPreview').textContent = $('advNeg').checked ? 'Blocking: '+bans.join(', ') : 'Off — no compliance guard.';
 }
-function renderTitle(){ const nm = curSku==='multi'?'Multi-SKU':SKUS[curSku].name; $('skuTitle').textContent = `${nm} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
+function renderTitle(){ $('skuTitle').textContent = `${SKUS[curSku].name} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
 function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes('3-pro')?'Pro 🍌':'Nano 🍌';
   if(KEYS.gemini){ b.className='kbadge ok'; b.textContent='✓ '+mdl; } else { b.className='kbadge no'; b.textContent='⚠ No Gemini key'; } }
 
 /* ═══ ACTIONS ═══ */
-function pickSku(k){ curSku=k; if(k!=='multi') productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
+function pickSku(k){ curSku=k; productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
 function pickMode(m){ curMode=m; renderModes(); renderTitle(); }
 function resolveBrain(){ if(curBrain==='mixed') return BRAINS[Math.floor(Math.random()*BRAINS.length)]; return BRAINS.find(b=>b.id===curBrain)||null; }
 function saveProduct(){ localStorage.setItem('de_product_'+curSku, JSON.stringify(productImgs)); }
@@ -308,7 +273,7 @@ function guideRow(item){ return `<div class="grow" style="display:flex;gap:6px;a
   <input type="checkbox" ${item.on!==false?'checked':''}>
   <input type="text" value="${esc(item.text)}" style="flex:1">
   <button class="iconbtn" onclick="this.parentElement.remove()">🗑</button></div>`; }
-function openGuide(){ if(curSku==='multi'){ alert('Brand Guide is per-SKU — switch to a specific SKU tab to edit its guide. Multi-SKU builds straight from your Brief + Strategy + the selected packs.'); return; } $('guideTitle').textContent=SKUS[curSku].name; const g=getGuide(curSku);
+function openGuide(){ $('guideTitle').textContent=SKUS[curSku].name; const g=getGuide(curSku);
   let h=`<label class="row">🎨 Locked brand colours (applied to every image)</label><input type="text" id="g-colours" value="${esc(g.colours)}">`;
   for(const [key,label] of GUIDE_SECTIONS){
     h+=`<h3 style="margin:14px 0 4px">${label}</h3><div class="glist" data-key="${key}">${(g[key]||[]).map(guideRow).join('')}</div>`;
@@ -333,18 +298,9 @@ const dataUrlToInlinePart = E.dataUrlToInlinePart;
 
 async function runGenerate(){
   if(!KEYS.gemini){ openKeys(); return; }
-  const isMulti = curSku==='multi';
-  let multiImgs=[], multiLabels=[];
-  if(isMulti){
-    multiLabels = multiSel.map(k=>SKUS[k]?.name).filter(Boolean);
-    multiImgs   = multiSel.map(multiImgFor).filter(Boolean);
-    if(!multiImgs.length){ alert('Upload at least one selected SKU pack for the Multi-SKU set (📷 Upload pack).'); return; }
-    if(!$('brief').value.trim() && !curBrain){ alert('Add a Brief (or pick a strategy) so the engine knows the layout for the range shot.'); return; }
-  } else {
-    if(!curBrain){ alert('Pick a strategy first (or 🎲 Mixed).'); return; }
-    const selBrain = curBrain==='mixed'? null : BRAINS.find(b=>b.id===curBrain);
-    if(selBrain && selBrain.product==='required' && !productImgs.filter(Boolean).length){ alert('This strategy needs a product photo — upload one in the Main slot.'); return; }
-  }
+  if(!curBrain){ alert('Pick a strategy first (or 🎲 Mixed).'); return; }
+  const selBrain = curBrain==='mixed'? null : BRAINS.find(b=>b.id===curBrain);
+  if(selBrain && selBrain.product==='required' && !productImgs.filter(Boolean).length){ alert('This strategy needs a product photo — upload one in the Main slot.'); return; }
   const qty=parseInt($('qty').value); const btn=$('genBtn');
   btn.disabled=true; btn.textContent='✨ Generating…';
   if($('output').querySelector('.empty')) $('output').innerHTML='';
@@ -354,25 +310,13 @@ async function runGenerate(){
     try{
       const rsel=$('render').value;
       const rmode = rsel==='mixed' ? (i%2===0?'photoreal':'graphical') : rsel;
-      const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
-      let prompt, label, refImgs, refLabels=null;
-      if(isMulti){
-        const brain = curBrain ? resolveBrain() : null;
-        const bans=[...new Set([...GLOBAL_BAN, ...multiSel.flatMap(k=>SKUS[k]?.ban||[])])];
-        prompt = E.buildMultiPrompt({ skuNames:multiLabels, mode:curMode, brain, brief:$('brief').value, advNeg:$('advNeg').checked, bans });
-        refImgs = multiImgs; refLabels = multiLabels;
-        label = (brain?brain.name:'Range')+' · '+multiLabels.length+' SKUs';
-      } else {
-        const brain=resolveBrain();
-        const useProd = brainUsesProduct(brain);
-        prompt=buildPrompt(brain, useProd);
-        refImgs = useProd?productImgs.filter(Boolean):[];
-        const finish = rmode==='graphical'?'CGI':rmode==='exact'?'flat':'photoreal';
-        label=(brain?brain.name:'Hero')+(useProd?' · '+finish:' · logo-only');
-      }
-      const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
-        render:rmode, model:curModel, apiKey:KEYS.gemini, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:isMulti?'multi':curSku, mode:curMode, label, ts:Date.now(), url, fav:false};
+      const brain=resolveBrain();
+      const useProd = brainUsesProduct(brain);
+      const prompt=buildPrompt(brain, useProd);
+      const url=await callGemini(prompt, useProd?productImgs.filter(Boolean):[], useProd?styleImgs.filter(Boolean):[], rmode);
+      const finish = rmode==='graphical'?'CGI':rmode==='exact'?'flat':'photoreal';
+      const label=(brain?brain.name:'Hero')+(useProd?' · '+finish:' · logo-only');
+      const rec={id:'g'+Date.now()+'_'+i, sku:curSku, mode:curMode, label, ts:Date.now(), url, fav:false};
       await idbPut(rec);
       $(id).outerHTML=cardHTML(rec);
     }catch(e){ $(id).querySelector('.t').textContent='⚠ '+e.message; }
@@ -426,8 +370,8 @@ async function idbPut(rec){ const db=await idb(); return new Promise((res,rej)=>
 async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
-function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); return `<div class="card" id="${rec.id}" data-sku="${rec.sku}"><img src="${rec.url}">
-  <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
+function cardHTML(rec){ return `<div class="card" id="${rec.id}" data-sku="${rec.sku}"><img src="${rec.url}">
+  <div class="meta"><span class="t">${SKUS[rec.sku]?.name||rec.sku} · ${rec.label}</span>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dl(this.closest('.card').querySelector('img').src,'${rec.sku}-${rec.mode}')">⬇</button>
