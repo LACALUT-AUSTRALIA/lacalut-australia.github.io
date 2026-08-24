@@ -9,12 +9,16 @@
   var STORE = 'https://lacalut.com.au';
 
   // ── Symptom intake chips ─────────────────────────────────────────────────────
+  // Each maps to a Lacalut range + the Klaviyo oral_concern tag used for segmentation.
   var SYMPTOMS = [
-    { icon: '🩸', label: 'Bleeding or\nsore gums',   message: 'I have bleeding or sore gums — what do you recommend?' },
-    { icon: '🤢', label: 'Bad breath',                message: 'I have bad breath and want to treat it at the source — what do you recommend?' },
-    { icon: '😣', label: 'Sensitive\nteeth',          message: 'I have sensitive teeth — what product do you recommend?' },
-    { icon: '🤔', label: 'Not sure\nwhere to start', message: "I'm not sure which Lacalut product is right for me — can you help?" },
+    { icon: '🩸', label: 'Bleeding or\nsore gums',   concern: 'Bleeding Gums',        range: 'AKTIV',          url: STORE + '/products/lacalut%C2%AE-aktiv-anti-gingivitis-toothpaste-for-gum-disease',   message: 'I have bleeding or sore gums — what do you recommend?' },
+    { icon: '🤢', label: 'Bad breath',                concern: 'Bad Breath',           range: 'FLORA',          url: STORE + '/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',      message: 'I have bad breath and want to treat it at the source — what do you recommend?' },
+    { icon: '😣', label: 'Sensitive\nteeth',          concern: 'Sensitive Teeth',      range: 'SENSITIVE',      url: STORE + '/products/lacalut-sensitive-toothpaste-75ml',                                 message: 'I have sensitive teeth — what product do you recommend?' },
+    { icon: '✨', label: 'Weak or\nStained Teeth',    concern: 'Weak or Stained Teeth', range: 'WHITE & REPAIR', url: STORE + '/products/lacalut-white-repair-toothpaste-75ml',                              message: 'I have weak or stained teeth — what product do you recommend?' },
   ];
+
+  // ── 10%-off discount flow ────────────────────────────────────────────────────
+  var DISCOUNT_CODE = 'WELCOME10';
 
   // ── Product recommendation cards ─────────────────────────────────────────────
   // Keywords are checked against the bot's reply (case-insensitive).
@@ -76,7 +80,37 @@
     suggested_questions: '["Which product is best for bleeding gums?","How long does shipping take?","What is your return policy?","Do you offer free shipping?","Where can I buy LACALUT in store?"]',
     brand_colour: BRAND,
     proactive_delay: '8000',
+    teaser_enabled: 'true',
+    teaser_answer: 'Yes 👍',
+    teaser_rotate_ms: '4500',
+    teaser_questions: '',
   };
+
+  // Default rotating teaser questions — used only if the admin hasn't set any.
+  var TEASER_QUESTIONS = [
+    'Will it stop my gums bleeding?',
+    'Is it safe for sensitive teeth?',
+    'Does it fight bad breath at the source?',
+    'Clinically proven to work?',
+    'Made in Germany?',
+    'Trusted by dentists?',
+    'Free shipping over $99?',
+    'Gentle enough for daily use?',
+  ];
+  var activeTeaserList = [];
+
+  // Resolve the live teaser question list from config (array of {q, active} or strings),
+  // falling back to the hardcoded defaults if nothing is set.
+  function getTeaserQuestions() {
+    var list = null;
+    try { list = JSON.parse(config.teaser_questions); } catch (e) { list = null; }
+    if (!Array.isArray(list) || !list.length) return TEASER_QUESTIONS.slice();
+    var out = list
+      .map(function (it) { return typeof it === 'string' ? { q: it, active: true } : it; })
+      .filter(function (it) { return it && it.q && it.active !== false; })
+      .map(function (it) { return it.q; });
+    return out.length ? out : TEASER_QUESTIONS.slice();
+  }
 
   // ── CSS ──────────────────────────────────────────────────────────────────────
   var css = `
@@ -109,31 +143,56 @@
       100% { box-shadow: 0 0 0 0 rgba(207,16,45,0); }
     }
 
-    /* Proactive nudge bubble */
-    #lc-nudge {
+    /* Proactive teaser card (rotating Q&A) */
+    #lc-teaser {
       position: fixed; bottom: 96px; right: 24px; z-index: 99998;
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 6px 28px rgba(0,0,0,0.18);
-      padding: 12px 14px 12px 16px; max-width: 220px;
-      display: flex; align-items: center; gap: 8px; cursor: pointer;
-      animation: lc-nudge-in 0.35s cubic-bezier(.34,1.2,.64,1);
+      width: 268px; background: #fff; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.22); cursor: pointer;
+      animation: lc-teaser-in 0.4s cubic-bezier(.34,1.2,.64,1);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
-    #lc-nudge::after {
-      content: ''; position: absolute; bottom: -8px; right: 26px;
+    #lc-teaser::after {
+      content: ''; position: absolute; bottom: -8px; right: 30px;
       border-left: 8px solid transparent; border-right: 8px solid transparent;
       border-top: 8px solid #fff;
     }
-    @keyframes lc-nudge-in {
-      from { transform: scale(0.8) translateY(12px); opacity: 0; }
+    @keyframes lc-teaser-in {
+      from { transform: scale(0.85) translateY(14px); opacity: 0; }
       to   { transform: scale(1) translateY(0); opacity: 1; }
     }
-    #lc-nudge-text { font-size: 14px; font-weight: 600; color: #111; flex: 1; line-height: 1.3; }
-    #lc-nudge-dismiss {
-      background: none; border: none; cursor: pointer; color: #9ca3af;
-      font-size: 14px; padding: 2px 0 2px 4px; line-height: 1; flex-shrink: 0;
+    .lc-teaser-head {
+      background: var(--lc, #cf102d); color: #fff;
+      padding: 11px 14px; display: flex; align-items: center; gap: 8px;
     }
-    #lc-nudge-dismiss:hover { color: #374151; }
+    .lc-teaser-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #6ee7a8; flex-shrink: 0;
+    }
+    .lc-teaser-title { font-size: 14px; font-weight: 700; flex: 1; }
+    .lc-teaser-x {
+      background: none; border: none; color: rgba(255,255,255,0.85); cursor: pointer;
+      font-size: 15px; line-height: 1; padding: 2px 0 2px 6px; flex-shrink: 0;
+    }
+    .lc-teaser-x:hover { color: #fff; }
+    .lc-teaser-body { padding: 14px; }
+    .lc-teaser-q {
+      background: #f1f3f5; color: #111; font-size: 13.5px; font-weight: 600;
+      line-height: 1.35; border-radius: 12px; padding: 11px 13px;
+      transition: opacity 0.25s; min-height: 18px;
+    }
+    .lc-teaser-q.lc-fade { opacity: 0; }
+    .lc-teaser-a {
+      margin: 9px 0 0 auto; width: fit-content;
+      background: var(--lc, #cf102d); color: #fff; font-size: 14px; font-weight: 700;
+      border-radius: 12px; padding: 8px 16px; transition: opacity 0.3s; opacity: 0;
+    }
+    .lc-teaser-cta {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      width: 100%; margin-top: 12px; padding: 11px;
+      background: #fdeaec; color: var(--lc, #cf102d); border: none; border-radius: 12px;
+      font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+      font-family: inherit;
+    }
+    .lc-teaser-cta:hover { background: #fbd9dd; }
 
     /* Panel */
     #lc-panel {
@@ -269,14 +328,56 @@
     .lc-capture-dismiss button { background: none; border: none; font-size: 11px; color: #9ca3af; cursor: pointer; padding: 0; }
     .lc-capture-dismiss button:hover { color: #6b7280; }
 
-    /* Input row */
-    #lc-input-row { padding: 10px 12px 14px; border-top: 1px solid #f0f0f0; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
+    /* Full-width 10%-off button */
+    .lc-discount-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px;
+      background: linear-gradient(135deg, #004a88 0%, #0a63b0 100%); color: #fff;
+      border: none; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+      font-size: 15px; font-weight: 800; letter-spacing: 0.01em; cursor: pointer;
+      font-family: inherit; box-shadow: 0 3px 12px rgba(0,74,136,0.28);
+      transition: transform 0.15s, box-shadow 0.15s; animation: lc-pulse 2.4s ease-in-out infinite;
+    }
+    .lc-discount-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(0,74,136,0.36); }
+    .lc-discount-emoji { font-size: 19px; }
+    @keyframes lc-pulse { 0%,100%{box-shadow:0 3px 12px rgba(0,74,136,0.28)} 50%{box-shadow:0 3px 20px rgba(0,74,136,0.5)} }
+
+    /* Discount flow — concern buttons + code reveal (inside chat) */
+    .lc-discount-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-self: stretch; margin: 2px 0 4px; animation: lc-fadein 0.2s ease; }
+    .lc-discount-choice {
+      background: #fff; border: 1.5px solid #e5e7eb; border-radius: 12px;
+      padding: 10px 12px; text-align: left; font-size: 13px; color: #111;
+      cursor: pointer; line-height: 1.3; font-family: inherit; font-weight: 600;
+      display: flex; align-items: center; gap: 8px; transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+    .lc-discount-choice:hover { border-color: #004a88; background: #f0f6fc; box-shadow: 0 2px 8px rgba(0,74,136,0.1); }
+    .lc-code-reveal {
+      align-self: stretch; background: #f0f6fc; border: 2px dashed #004a88; border-radius: 14px;
+      padding: 16px; text-align: center; margin: 4px 0; animation: lc-fadein 0.25s ease;
+    }
+    .lc-code-value {
+      font-size: 24px; font-weight: 800; letter-spacing: 0.08em; color: #004a88;
+      font-family: 'Courier New', monospace; margin: 4px 0 10px; user-select: all;
+    }
+    .lc-code-copy {
+      background: #004a88; color: #fff; border: none; border-radius: 8px;
+      padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .lc-code-copy:hover { background: #003a6d; }
+    .lc-code-shop {
+      display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700;
+      color: var(--lc, #cf102d); text-decoration: none;
+    }
+    .lc-code-shop:hover { text-decoration: underline; }
+
+    /* Input row — light-blue highlight so customers know they can type */
+    #lc-input-row { padding: 10px 12px 14px; border-top: 1px solid #dbeafe; background: #eaf3fb; display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
     #lc-input {
-      flex: 1; border: 1.5px solid #e5e7eb; border-radius: 24px;
+      flex: 1; border: 1.5px solid #bcd7f0; border-radius: 24px; background: #fff;
       padding: 10px 16px; font-size: 14px; outline: none; font-family: inherit;
       transition: border-color 0.15s; resize: none; max-height: 80px; line-height: 1.4;
     }
-    #lc-input:focus { border-color: var(--lc, #cf102d); }
+    #lc-input:focus { border-color: #004a88; }
+    #lc-input::placeholder { color: #6b8bad; }
     #lc-send {
       width: 40px; height: 40px; border-radius: 50%; background: var(--lc, #cf102d);
       border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -289,7 +390,8 @@
 
     @media (max-width: 440px) {
       #lc-panel { width: calc(100vw - 20px); right: 10px; bottom: 80px; }
-      #lc-btn, #lc-nudge { right: 10px; }
+      #lc-btn { right: 10px; }
+      #lc-teaser { right: 10px; width: calc(100vw - 84px); max-width: 268px; }
       #lc-btn { width: 44px; height: 44px; bottom: 18px; }
       #lc-btn svg { width: 20px; height: 20px; }
     }
@@ -323,6 +425,7 @@
       '<div id="lc-home">' +
         '<div class="lc-greeting-bubble" id="lc-greeting-text">' + config.greeting + '</div>' +
         '<p class="lc-symptom-label">What brings you here today?</p>' +
+        '<button id="lc-discount-btn" class="lc-discount-btn"><span class="lc-discount-emoji">🎁</span><span class="lc-discount-text">Get 10% Off Code</span></button>' +
         '<div class="lc-symptom-grid" id="lc-symptom-grid"></div>' +
         '<div id="lc-qas-section" style="display:none">' +
           '<p class="lc-qa-label" style="margin-top:14px">⚡ Instant Answers</p>' +
@@ -334,7 +437,7 @@
       '</div>' +
       '<div id="lc-chat" style="display:none"></div>' +
       '<div id="lc-input-row">' +
-        '<input id="lc-input" type="text" placeholder="Type a message…" autocomplete="off" />' +
+        '<input id="lc-input" type="text" placeholder="Type your own question here…" autocomplete="off" />' +
         '<button id="lc-send" aria-label="Send" disabled>' +
           '<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>' +
         '</button>' +
@@ -344,6 +447,7 @@
 
     document.getElementById('lc-close').onclick = toggle;
     document.getElementById('lc-back').onclick = goHome;
+    document.getElementById('lc-discount-btn').onclick = startDiscountFlow;
 
     var input = document.getElementById('lc-input');
     var sendBtn = document.getElementById('lc-send');
@@ -394,6 +498,7 @@
 
   // ── Proactive trigger ────────────────────────────────────────────────────────
   function setupProactiveTrigger() {
+    if (config.teaser_enabled === 'false' || config.teaser_enabled === false) return;
     var delay = parseInt(config.proactive_delay || '8000', 10);
     if (!delay || sessionStorage.getItem('lc_nudge_shown')) return;
     setTimeout(function () {
@@ -403,23 +508,71 @@
     }, delay);
   }
 
+  var teaserRotateTimer, teaserAnswerTimer, teaserIdx = 0;
+
   function showNudge() {
-    var nudge = document.createElement('div');
-    nudge.id = 'lc-nudge';
-    nudge.innerHTML =
-      '<span id="lc-nudge-text">🦷 Got a gum question?</span>' +
-      '<button id="lc-nudge-dismiss" aria-label="Dismiss">&#10005;</button>';
-    document.getElementById('lc-nudge-dismiss').addEventListener('click', function (e) {
+    var teaser = document.createElement('div');
+    teaser.id = 'lc-teaser';
+    teaser.innerHTML =
+      '<div class="lc-teaser-head">' +
+        '<span class="lc-teaser-dot"></span>' +
+        '<span class="lc-teaser-title">Ask Lacalut</span>' +
+        '<button class="lc-teaser-x" id="lc-teaser-x" aria-label="Dismiss">&#10005;</button>' +
+      '</div>' +
+      '<div class="lc-teaser-body">' +
+        '<div class="lc-teaser-q" id="lc-teaser-q"></div>' +
+        '<div class="lc-teaser-a" id="lc-teaser-a"></div>' +
+        '<button class="lc-teaser-cta">Ask me anything ›</button>' +
+      '</div>';
+
+    document.getElementById('lc-teaser') && document.getElementById('lc-teaser').remove();
+    document.body.appendChild(teaser);
+
+    activeTeaserList = getTeaserQuestions();
+    document.getElementById('lc-teaser-a').textContent = config.teaser_answer || 'Yes 👍';
+
+    document.getElementById('lc-teaser-x').addEventListener('click', function (e) {
       e.stopPropagation();
-      nudge.remove();
+      removeTeaser();
     });
-    nudge.addEventListener('click', function () { nudge.remove(); toggle(); });
-    document.body.appendChild(nudge);
+    teaser.addEventListener('click', function () { removeTeaser(); toggle(); });
+
+    teaserIdx = 0;
+    rotateTeaser();
 
     var btn = document.getElementById('lc-btn');
     btn.classList.add('lc-pulse');
     setTimeout(function () { btn.classList.remove('lc-pulse'); }, 6000);
-    setTimeout(function () { if (nudge.parentNode) nudge.remove(); }, 10000);
+  }
+
+  function rotateTeaser() {
+    var qEl = document.getElementById('lc-teaser-q');
+    var aEl = document.querySelector('#lc-teaser .lc-teaser-a');
+    if (!qEl || !activeTeaserList.length) return;
+    var rotateMs = parseInt(config.teaser_rotate_ms || '4500', 10) || 4500;
+    qEl.textContent = activeTeaserList[teaserIdx % activeTeaserList.length];
+    qEl.classList.remove('lc-fade');
+    if (aEl) aEl.style.opacity = '0';
+    clearTimeout(teaserAnswerTimer);
+    teaserAnswerTimer = setTimeout(function () { if (aEl) aEl.style.opacity = '1'; }, 700);
+
+    clearTimeout(teaserRotateTimer);
+    teaserRotateTimer = setTimeout(function () {
+      if (!document.getElementById('lc-teaser')) return;
+      qEl.classList.add('lc-fade');
+      if (aEl) aEl.style.opacity = '0';
+      setTimeout(function () {
+        teaserIdx = (teaserIdx + 1) % activeTeaserList.length;
+        rotateTeaser();
+      }, 300);
+    }, rotateMs);
+  }
+
+  function removeTeaser() {
+    clearTimeout(teaserRotateTimer);
+    clearTimeout(teaserAnswerTimer);
+    var t = document.getElementById('lc-teaser');
+    if (t) t.remove();
   }
 
   // ── Open / close ─────────────────────────────────────────────────────────────
@@ -441,8 +594,7 @@
     isOpen = !isOpen;
     document.getElementById('lc-panel').classList.toggle('lc-open', isOpen);
     document.getElementById('lc-btn').classList.toggle('lc-open', isOpen);
-    var nudge = document.getElementById('lc-nudge');
-    if (nudge) nudge.remove();
+    removeTeaser();
     if (isOpen) {
       setUnread(0);
       setTimeout(function () { if (mode === 'home') document.getElementById('lc-input').focus(); }, 300);
@@ -484,6 +636,104 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: sessionId, email: email, phone: phone }),
     }).catch(function () {});
+  };
+
+  // ── 10%-off discount flow ─────────────────────────────────────────────────────
+  var discountChoice = null;
+
+  function enterChatMode() {
+    if (mode === 'home') {
+      mode = 'chat';
+      document.getElementById('lc-home').style.display = 'none';
+      var chat = document.getElementById('lc-chat');
+      chat.style.display = 'flex';
+      chat.style.flexDirection = 'column';
+      document.getElementById('lc-back').classList.add('lc-visible');
+    }
+  }
+
+  function startDiscountFlow() {
+    enterChatMode();
+    appendMsg('bot', "Awesome — 10% off your first order! 🎁 Which product would you like your 10% off on?");
+    var chat = document.getElementById('lc-chat');
+    var grid = document.createElement('div');
+    grid.className = 'lc-discount-choices';
+    SYMPTOMS.forEach(function (s) {
+      var b = document.createElement('button');
+      b.className = 'lc-discount-choice';
+      b.innerHTML = '<span class="lc-symptom-icon">' + s.icon + '</span><span>' + s.concern + '</span>';
+      b.onclick = function () { pickDiscountConcern(s, grid); };
+      grid.appendChild(b);
+    });
+    chat.appendChild(grid);
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  function pickDiscountConcern(s, gridEl) {
+    discountChoice = s;
+    if (gridEl) gridEl.remove();
+    appendMsg('user', s.concern);
+    appendMsg('bot', "Great choice! Pop your email in below and I'll unlock your 10% code 👇");
+    var chat = document.getElementById('lc-chat');
+    var card = document.createElement('div');
+    card.className = 'lc-capture-card';
+    card.id = 'lc-discount-capture';
+    card.innerHTML =
+      '<div class="lc-capture-title">Your email</div>' +
+      '<input class="lc-capture-input" id="lc-dcap-email" type="email" placeholder="you@email.com" autocomplete="email" />' +
+      '<button class="lc-capture-btn" onclick="lcSubmitDiscountEmail()">Unlock my 10% code</button>';
+    chat.appendChild(card);
+    chat.scrollTop = chat.scrollHeight;
+    var inp = document.getElementById('lc-dcap-email');
+    inp.focus();
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); lcSubmitDiscountEmail(); } });
+  }
+
+  window.lcSubmitDiscountEmail = function () {
+    var inp = document.getElementById('lc-dcap-email');
+    var email = (inp.value || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      inp.style.borderColor = '#dc2626';
+      inp.focus();
+      return;
+    }
+    var card = document.getElementById('lc-discount-capture');
+    if (card) card.innerHTML = '<div class="lc-capture-thanks">Unlocking your code…</div>';
+
+    fetch(WORKER_URL + '/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, email: email, oral_concern: (discountChoice || {}).concern || '', source: 'discount-10' }),
+    }).catch(function () {});
+
+    revealDiscountCode();
+  };
+
+  function revealDiscountCode() {
+    var card = document.getElementById('lc-discount-capture');
+    var s = discountChoice || {};
+    var html =
+      '<div style="font-size:13px;font-weight:600;color:#374151;margin-bottom:2px">🎉 Here\'s your code — 10% off your first order:</div>' +
+      '<div class="lc-code-value" id="lc-code-value">' + DISCOUNT_CODE + '</div>' +
+      '<button class="lc-code-copy" onclick="lcCopyCode()">Copy code</button>' +
+      (s.url ? '<div><a class="lc-code-shop" href="' + s.url + '" target="_blank" rel="noopener">Shop ' + s.range + ' →</a></div>' : '') +
+      '<div style="font-size:11px;color:#6b7280;margin-top:9px">Enter it at checkout. One use per customer.</div>';
+    if (card) { card.className = 'lc-code-reveal'; card.innerHTML = html; }
+    var chat = document.getElementById('lc-chat');
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  window.lcCopyCode = function () {
+    var v = document.getElementById('lc-code-value');
+    var text = v ? v.textContent : DISCOUNT_CODE;
+    var done = function () { var btn = document.querySelector('.lc-code-copy'); if (btn) { btn.textContent = 'Copied ✓'; setTimeout(function () { btn.textContent = 'Copy code'; }, 2000); } };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(done);
+    } else {
+      var r = document.createRange(); r.selectNode(v); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      try { document.execCommand('copy'); } catch (e) {}
+      sel.removeAllRanges(); done();
+    }
   };
 
   // ── Chat mode ────────────────────────────────────────────────────────────────
