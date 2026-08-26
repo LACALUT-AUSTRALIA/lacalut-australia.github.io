@@ -79,7 +79,7 @@
     greeting: 'Hi! Ask me anything about our products, shipping, or orders.',
     suggested_questions: '["Which product is best for bleeding gums?","How long does shipping take?","What is your return policy?","Do you offer free shipping?","Where can I buy LACALUT in store?"]',
     brand_colour: BRAND,
-    proactive_delay: '8000',
+    proactive_delay: '4500',
     teaser_enabled: 'true',
     teaser_answer: 'Yes 👍',
     teaser_rotate_ms: '4500',
@@ -324,6 +324,7 @@
     }
     .lc-capture-btn:hover { background: #a80d24; }
     .lc-capture-thanks { font-size: 13px; color: #16a34a; font-weight: 600; text-align: center; padding: 4px 0; }
+    .lc-capture-microcopy { font-size: 11px; color: #9ca3af; font-style: italic; text-align: center; margin-top: 7px; }
     .lc-capture-dismiss { text-align: right; margin-bottom: 6px; }
     .lc-capture-dismiss button { background: none; border: none; font-size: 11px; color: #9ca3af; cursor: pointer; padding: 0; }
     .lc-capture-dismiss button:hover { color: #6b7280; }
@@ -414,12 +415,12 @@
     var panel = el('div', { id: 'lc-panel', role: 'dialog', 'aria-label': 'Ask Lacalut' });
     panel.innerHTML =
       '<div id="lc-head">' +
-        '<button class="lc-back-btn" id="lc-back" aria-label="Back">↩️</button>' +
         '<div class="lc-avatar"><img src="https://cdn.shopify.com/s/files/1/0635/3960/9651/files/download_4.png" alt="Lacalut" style="width:38px;height:38px;border-radius:50%;object-fit:contain;background:#fff;padding:3px;" /></div>' +
         '<div class="lc-head-info">' +
           '<div class="lc-head-name">Ask Lacalut</div>' +
           '<div class="lc-head-status"><span class="lc-status-dot"></span>Always here to help</div>' +
         '</div>' +
+        '<button class="lc-back-btn" id="lc-back" aria-label="Go back">←</button>' +
         '<button id="lc-close" aria-label="Close">&#10005;</button>' +
       '</div>' +
       '<div id="lc-home">' +
@@ -510,6 +511,26 @@
 
   var teaserRotateTimer, teaserAnswerTimer, teaserIdx = 0;
 
+  // Page-aware opening hook — matches keywords in the URL to the most relevant offer.
+  // Order matters: most specific (dentists) first, generic 10%-off last.
+  function getPageTeaser() {
+    var p = (location.pathname + ' ' + location.search).toLowerCase();
+    function has() { for (var i = 0; i < arguments.length; i++) { if (p.indexOf(arguments[i]) > -1) return true; } return false; }
+    if (has('dentist', 'for-professional', 'professionals', 'wholesale', 'clinic'))
+      return { q: 'Want ongoing free samples for your clinic? 🦷', a: 'Yes please 👍', cta: 'Count me in ›' };
+    if (has('flora', 'bad-breath', 'halitosis', 'breath'))
+      return { q: 'Want 10% off our bad-breath range? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
+    if (has('sensitive'))
+      return { q: 'Want 10% off for sensitive teeth? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
+    if (has('white', 'repair', 'whiten', 'stain'))
+      return { q: 'Want 10% off our whitening range? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
+    if (has('mouthwash', 'rinse'))
+      return { q: 'Want 10% off our mouthwash? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
+    if (has('aktiv', 'herbal', 'gingivitis', 'gum', 'bleeding', 'periodont'))
+      return { q: 'Want 10% off our gum-care range? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
+    return { q: 'Want a 10% off code? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
+  }
+
   function showNudge() {
     var teaser = document.createElement('div');
     teaser.id = 'lc-teaser';
@@ -528,17 +549,20 @@
     document.getElementById('lc-teaser') && document.getElementById('lc-teaser').remove();
     document.body.appendChild(teaser);
 
-    activeTeaserList = getTeaserQuestions();
-    document.getElementById('lc-teaser-a').textContent = config.teaser_answer || 'Yes 👍';
+    var pt = getPageTeaser();
+    document.getElementById('lc-teaser-q').textContent = pt.q;
+    var aEl = document.getElementById('lc-teaser-a');
+    aEl.textContent = pt.a;
+    aEl.style.opacity = '0';
+    setTimeout(function () { if (aEl) aEl.style.opacity = '1'; }, 600);
+    var ctaEl = teaser.querySelector('.lc-teaser-cta');
+    if (ctaEl) ctaEl.textContent = pt.cta;
 
     document.getElementById('lc-teaser-x').addEventListener('click', function (e) {
       e.stopPropagation();
       removeTeaser();
     });
     teaser.addEventListener('click', function () { removeTeaser(); toggle(); });
-
-    teaserIdx = 0;
-    rotateTeaser();
 
     var btn = document.getElementById('lc-btn');
     btn.classList.add('lc-pulse');
@@ -681,7 +705,8 @@
     card.innerHTML =
       '<div class="lc-capture-title">Your email</div>' +
       '<input class="lc-capture-input" id="lc-dcap-email" type="email" placeholder="you@email.com" autocomplete="email" />' +
-      '<button class="lc-capture-btn" onclick="lcSubmitDiscountEmail()">Unlock my 10% code</button>';
+      '<button class="lc-capture-btn" onclick="lcSubmitDiscountEmail()">UNLOCK MY 10% CODE</button>' +
+      '<div class="lc-capture-microcopy">because I love a good deal</div>';
     chat.appendChild(card);
     chat.scrollTop = chat.scrollHeight;
     var inp = document.getElementById('lc-dcap-email');
