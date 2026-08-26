@@ -776,9 +776,14 @@
         typeMessage(botDiv, reply, function () {
           isBusy = false;
           document.getElementById('lc-send').disabled = !document.getElementById('lc-input').value.trim();
-          showSuggestions(suggestions);
-          showProductCards(reply);
-          maybeShowCapture();
+          if (d.escalate) {
+            // Human requested / urgent — offer the SMS text-back handoff only.
+            showSmsEscalation();
+          } else {
+            showSuggestions(suggestions);
+            showProductCards(reply);
+            maybeShowCapture();
+          }
           if (!isOpen) setUnread(unreadCount + 1);
         });
       })
@@ -906,6 +911,37 @@
     chat.appendChild(card);
     chat.scrollTop = chat.scrollHeight;
   }
+
+  // ── SMS escalation (last resort: human requested / urgent) ───────────────────
+  function showSmsEscalation() {
+    if (document.getElementById('lc-sms-escalation')) return; // don't stack cards
+    var chat = document.getElementById('lc-chat');
+    var card = document.createElement('div');
+    card.id = 'lc-sms-escalation';
+    card.className = 'lc-capture-card';
+    card.innerHTML =
+      '<div class="lc-capture-dismiss"><button onclick="document.getElementById(\'lc-sms-escalation\').remove()">Dismiss</button></div>' +
+      '<div class="lc-capture-title">Leave your mobile and a real person will text you back.</div>' +
+      '<input class="lc-capture-input" id="lc-scap-phone" type="tel" inputmode="tel" placeholder="Your mobile number" autocomplete="tel" />' +
+      '<button class="lc-capture-btn" onclick="lcSubmitSmsEscalation()">Text me back</button>';
+    chat.appendChild(card);
+    chat.scrollTop = chat.scrollHeight;
+    var inp = document.getElementById('lc-scap-phone');
+    if (inp) inp.focus();
+  }
+
+  window.lcSubmitSmsEscalation = function () {
+    var inp = document.getElementById('lc-scap-phone');
+    var phone = (inp.value || '').trim();
+    if (phone.replace(/\D/g, '').length < 8) { inp.focus(); return; }
+    var card = document.getElementById('lc-sms-escalation');
+    if (card) card.innerHTML = '<div class="lc-capture-thanks">Thanks! A real person will text you shortly 📱</div>';
+    fetch(WORKER_URL + '/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, phone: phone, source: 'sms-escalation' }),
+    }).catch(function () {});
+  };
 
   // ── Quick Answers (instant, no AI) ──────────────────────────────────────────
   function renderQuickQASection() {
