@@ -166,7 +166,7 @@
 
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
-  <div id="editSrcSlot" style="margin:0 0 10px"></div>
+  <div id="editSrcSlot" style="margin:0 0 10px" ondragover="editDragOver(event)" ondragenter="editDragOver(event)" ondragleave="editDragLeave(event)" ondrop="editDrop(event)"></div>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
   <div style="margin-top:6px">
@@ -379,7 +379,10 @@ async function runGenerate(){
   }
   btn.disabled=false; btn.textContent='✨ Generate';
 }
-function dl(url,name){ const a=document.createElement('a'); a.href=url; a.download='lacalut-'+name+'.png'; a.click(); }
+function _saveA(url,name){ const a=document.createElement('a'); a.href=url; a.download='lacalut-'+name+'.png'; a.click(); }
+// Centre-crop any image to exactly 1200×628 (true PMax 1.91:1), no distortion.
+function cropPMax(url){ return new Promise(res=>{ const TW=1200,TH=628,TR=TW/TH; const img=new Image(); img.onload=()=>{ let sw=img.width,sh=img.height,sr=sw/sh,cx=0,cy=0,cw=sw,ch=sh; if(sr>TR){ cw=Math.round(sh*TR); cx=Math.round((sw-cw)/2);} else { ch=Math.round(sw/TR); cy=Math.round((sh-ch)/2);} const c=document.createElement('canvas'); c.width=TW;c.height=TH; c.getContext('2d').drawImage(img,cx,cy,cw,ch,0,0,TW,TH); res(c.toDataURL('image/png')); }; img.onerror=()=>res(url); img.src=url; }); }
+async function dl(url,name){ if(/pmax/i.test(name) || curMode==='pmax'){ url=await cropPMax(url); } _saveA(url,name); }
 
 /* ═══ PERSISTENT GALLERY (IndexedDB — survives refresh) ═══ */
 let _db;
@@ -431,12 +434,54 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dl(this.closest('.card').querySelector('img').src,'${rec.sku}-${rec.mode}')">⬇</button>
-   <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button></div>
-   <button class="markybtn" id="marky-${rec.id}" title="Auto-write a caption from this image + push to all social platforms via Marky" onclick="pushCardToMarky('${rec.id}')">🚀 Push to All Platforms</button></div>`; }
+   <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
+   <select class="iconbtn moveSel" title="Move this image to another SKU tab" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku)}</select></div>
+   <button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button></div>`; }
 
 async function toggleFav(id,btn){ const db=await idb(); const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
   rq.onsuccess=()=>{ const r=rq.result; if(!r)return; r.fav=!r.fav; st.put(r); btn.textContent=r.fav?'❤️':'🤍'; }; }
 async function delGen(id){ if(!confirm('Delete this image?'))return; await idbDel(id); const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku); }
+/* ═══ MOVE IMAGE TO ANOTHER SKU TAB ═══ */
+function moveOptions(cur){
+  const o=['<option value="" selected>↗</option>'];
+  for(const [k,v] of Object.entries(SKUS)){ if(k===cur) continue; o.push(`<option value="${k}">→ ${v.name}</option>`); }
+  if(cur!=='multi') o.push('<option value="multi">→ 🎁 Multi-SKU</option>');
+  return o.join('');
+}
+function toast(msg){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'); t.id='lc_toast';
+  t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.25)';
+  document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity='0',2200); }
+async function moveGen(id,target){
+  if(!target) return;
+  const db=await idb();
+  await new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
+    rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sku=target; st.put(r); } };
+    t.oncomplete=res; t.onerror=()=>rej(t.error); });
+  const el=$(id); if(el) el.remove();
+  if(!$('output').children.length) renderGallery(curSku);
+  const nm = target==='multi'?'Multi-SKU':(SKUS[target]?.name||target);
+  toast('✅ Moved to '+nm); }
+
+/* ═══ SEND TO SOCIAL CONTENT CALENDAR (shared IndexedDB inbox, same origin) ═══ */
+function socialIdbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('lc_social',1);
+  r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv'); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function socialIdbGet(k){ const db=await socialIdbOpen(); return new Promise((res,rej)=>{ const t=db.transaction('kv','readonly').objectStore('kv').get(k); t.onsuccess=()=>res(t.result); t.onerror=()=>rej(t.error); }); }
+async function socialIdbSet(k,v){ const db=await socialIdbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
+async function sendToCalendar(cardId){
+  const card=$(cardId); const img=card?.querySelector('img')?.src; if(!img){ alert('No image on this card.'); return; }
+  const sku=card.getAttribute('data-sku')||curSku;
+  const label=(card.querySelector('.t')?.textContent||'').trim();
+  const btn=$('marky-'+cardId);
+  try{
+    const inbox=(await socialIdbGet('lc_social_inbox'))||[];
+    inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId });
+    await socialIdbSet('lc_social_inbox', inbox);
+    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Calendar'; }
+    toast('📅 Sent to Calendar — open the Social Content Calendar to schedule it');
+  }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to calendar: '+e.message); }
+}
 async function renderGallery(sku){ const recs=(await idbBySku(sku)).sort((a,b)=>b.ts-a.ts);
   $('output').innerHTML = recs.length ? recs.map(cardHTML).join('') : `<div class="empty">No saved images for ${SKUS[sku]?.name||sku} yet. Upload a packshot + pick a strategy → Generate.</div>`; }
 
@@ -459,9 +504,15 @@ function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
     <img src="${_editSrc}" style="width:90px;height:112px;object-fit:contain;border:1px solid #ddd;border-radius:8px;background:#fafafa">
     <div><div style="font-size:12px;color:#666;margin-bottom:5px">Image being edited</div>
     <button class="btn" style="font-size:12px;padding:5px 10px" onclick="pickEditSrc()">🔄 Load a different image</button></div></div>`;
-  } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image to edit</div>`; }
+  } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image — or drag &amp; drop / paste it here</div>`; }
 }
 function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; renderEditSrc(); }); }
+function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; renderEditSrc(); }; r.readAsDataURL(file); }
+function editDragOver(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline='2px solid #6d5efc'; }
+function editDragLeave(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; }
+function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; const f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) _fileToEditSrc(f); }
+// paste-to-load: works whenever the edit dialog is open
+document.addEventListener('paste', e=>{ if(!editDlg.open) return; const items=(e.clipboardData&&e.clipboardData.items)||[]; for(const it of items){ if(it.type && it.type.indexOf('image')===0){ const f=it.getAsFile(); if(f){ _fileToEditSrc(f); e.preventDefault(); break; } } } });
 function presetUpright(){
   $('editInstruction').value = 'Re-pose this toothpaste tube so it stands fully UPRIGHT and VERTICAL, with the cap at the top, as if standing on a surface. Keep the label design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background. Product only — no text overlays, no badges.';
   $('editInstruction').focus();

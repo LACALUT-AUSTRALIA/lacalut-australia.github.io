@@ -50,7 +50,8 @@
   const MODES = {
     'social':  { label:'Feed 4:5',      dims:'1080×1350', ar:'4:5 portrait' },
     'ad':      { label:'Reels / Story', dims:'1080×1920', ar:'9:16 vertical' },
-    'listing': { label:'Square 1:1',    dims:'1080×1080', ar:'1:1 square' }
+    'listing': { label:'Square 1:1',    dims:'1080×1080', ar:'1:1 square' },
+    'pmax':    { label:'PMax Landscape',dims:'1200×628',  ar:'16:9 landscape' }
   };
 
   /* ═══ EDITABLE BRAND GUIDES (per-SKU pools) ═══ */
@@ -266,7 +267,7 @@
       +`Never add any of these words/claims: ${bans.join(', ')}.`;
     const gcfg={responseModalities:['TEXT','IMAGE']};
     if(opts.aspectRatio && /gemini-3/.test(model)){ gcfg.imageConfig={aspectRatio:opts.aspectRatio};
-      text+=` Output the final image in a ${opts.aspectRatio} portrait aspect ratio (fill the frame; add clean matching background around the product if needed — never squash or stretch it).`; }
+      text+=` Output the final image in a ${opts.aspectRatio} aspect ratio (fill the frame; add clean matching background around the product if needed — never squash or stretch it).`; }
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
       { method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({ contents:[{role:'user',parts:[{text}, part, ...refs]}], generationConfig:gcfg }) });
