@@ -1865,6 +1865,31 @@ async function markyUploadImage(dataUrl, altText) {
   return data.id;
 }
 
+/* ═══ AUTO-QUEUE: 2 best-practice slots/day (10:00 + 19:00 Brisbane, UTC+10 fixed) ═══
+   Each pushed post takes the NEXT free slot after the last-queued one (or after now).
+   Empty slots never fire — only real posts are scheduled. */
+const MARKY_SLOT_HOURS_BNE = [10, 19];
+function _briSlotUTCms(y, m, d, hourBne){ return Date.UTC(y, m, d, hourBne - 10, 0, 0); } // Bne 10:00→00:00Z, 19:00→09:00Z (same UTC date)
+function nextMarkySlotMs(){
+  let latest = 0;
+  STATE.posts.forEach(p => { if (p.markyScheduledMs && p.markyScheduledMs > latest) latest = p.markyScheduledMs; });
+  const now = Date.now();
+  const after = latest ? latest + 1 : now;               // strictly after the last queued slot, else after now
+  const briStart = new Date(after + 10*3600000);         // Brisbane wall-clock of the start point
+  let y = briStart.getUTCFullYear(), m = briStart.getUTCMonth(), d = briStart.getUTCDate();
+  for (let off = 0; off < 60; off++){
+    for (const h of MARKY_SLOT_HOURS_BNE){
+      const s = _briSlotUTCms(y, m, d + off, h);
+      if (s > after && s > now + 60000) return s;
+    }
+  }
+  return now + 3600000;
+}
+function fmtBneSlot(ms){
+  try { return new Date(ms).toLocaleString('en-AU',{ timeZone:'Australia/Brisbane', weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit', hour12:true }); }
+  catch(e){ return new Date(ms).toISOString(); }
+}
+
 async function pushPostToMarky(idx) {
   if (!KEYS.marky) { alert('Add your Marky API key in ⚙️ Settings first.'); openSettings(); return false; }
   const post = STATE.posts[idx];
@@ -1883,10 +1908,12 @@ async function pushPostToMarky(idx) {
     const mediaId = await markyUploadImage(dataUrl, pinTitle);
     if (btn) btn.innerHTML = '<span class="spinner"></span>Pushing…';
 
+    const slotMs = nextMarkySlotMs();
     const body = {
       caption: fullCaption,
       media_ids: [mediaId],
-      status: 'NEW'
+      status: 'SCHEDULED',
+      scheduled_publish_time: new Date(slotMs).toISOString()   // UTC Z — auto-publishes at this time, no manual step
     };
 
     const res = await fetch(MARKY_BASE + '/api/businesses/' + MARKY_BUSINESS_ID + '/posts', {
@@ -1903,9 +1930,11 @@ async function pushPostToMarky(idx) {
 
     STATE.posts[idx].pushedToMarky = true;
     STATE.posts[idx].markyPostId = data.id || null;
+    STATE.posts[idx].markyScheduledMs = slotMs;
     saveState();
     renderPost(idx);
     initCharCounters(idx);
+    calToast('📆 Scheduled to auto-publish → ' + fmtBneSlot(slotMs));
     return true;
   } catch (err) {
     if (btn) { btn.disabled = false; btn.innerHTML = '🚀 Push to All Platforms'; }
@@ -1918,7 +1947,7 @@ async function pushAllToMarky() {
   if (!KEYS.marky) { alert('Add your Marky API key in ⚙️ Settings first.'); openSettings(); return; }
   const todo = STATE.posts.map((p,i)=>({p,i})).filter(x => x.p.fb.imageDataUrl && !x.p.pushedToMarky);
   if (!todo.length) { alert('Nothing to push — generate + approve images first (or all posts already pushed).'); return; }
-  if (!confirm('Push ' + todo.length + ' post(s) to Marky as ready-to-publish drafts across all connected platforms?')) return;
+  if (!confirm('Auto-schedule ' + todo.length + ' post(s) to ALL platforms?\n\nThey will PUBLISH AUTOMATICALLY at the next free 10am / 7pm AEST slots — no further approval. Continue?')) return;
 
   const btn = document.getElementById('btn-push-all');
   const orig = btn ? btn.innerHTML : '';
