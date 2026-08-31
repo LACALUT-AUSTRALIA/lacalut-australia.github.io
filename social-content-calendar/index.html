@@ -354,6 +354,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <p class="generate-hint">1: generate 7 ideas → 2: approve + generate all images → 3: push all to every platform via Marky.</p>
 </div>
 
+<!-- INBOX FROM DESIGN ENGINE -->
+<div id="inbox-tray" style="max-width:1200px;margin:0 auto;padding:0 20px"></div>
+
 <!-- POST CARDS -->
 <main id="posts-container"></main>
 
@@ -504,7 +507,8 @@ const COMPLIANCE_RULES = `CRITICAL COMPLIANCE RULES — these are legal requirem
 2. SYMPTOMS, NOT DIAGNOSES. You may reference everyday symptoms in a general educational way (e.g. "gums that bleed when brushing", "bad breath") but must NOT position the product as a treatment for a named disease.
 3. NEVER FABRICATE TESTIMONIALS OR QUOTES. Do NOT invent a customer, a name, a review, or a personal success story. If a post format calls for a testimonial, instead write a caption inviting real customers to share their experience, OR insert the literal placeholder text "[PASTE REAL CUSTOMER REVIEW HERE]" where a genuine review would go. Never make up a person or an outcome.
 4. NEVER FABRICATE STATISTICS OR NUMBERS. Do NOT invent percentages, "1 in X" figures, study results, or clinical data. Use general phrasing ("many Australians", "a common problem") instead of specific unsourced numbers. If a real cited statistic is not provided to you, do not state one.
-5. No TGA/therapeutic-good implications, no "clinically proven" unless generically about the brand's German research heritage, no comparisons to specific competitor brands by name.`;
+5. No TGA/therapeutic-good implications, no "clinically proven" unless generically about the brand's German research heritage, no comparisons to specific competitor brands by name.
+6. EXACT PRODUCT NAME. Always refer to the product by its EXACT full name exactly as given to you (e.g. "LACALUT White & Repair", "LACALUT Aktiv Herbal", "LACALUT Aktiv", "LACALUT Flora", "LACALUT Sensitive"). NEVER shorten it, drop words, abbreviate or invent a variant — e.g. never write "LACALUT repair" or "LACALUT white" when the product is "LACALUT White & Repair". Use the complete name every time you name the product.`;
 
 /* ═══════════════════════════════════════════
    POST TYPE BRIEFS
@@ -734,16 +738,26 @@ function getStateKey() {
   return 'lc_social_state_' + y + '-' + m + '-' + day;
 }
 
-function saveState() {
-  try { localStorage.setItem(getStateKey(), JSON.stringify(STATE)); } catch(e){}
+// Persist the weekly posts in IndexedDB (large quota) instead of localStorage
+// (~5MB cap) — a single embedded image used to blow the cap and the save failed
+// silently, wiping the week on refresh. Falls back to localStorage only if IDB errors.
+async function saveState() {
+  try { await idbSet(getStateKey(), STATE); }
+  catch(e){ try { localStorage.setItem(getStateKey(), JSON.stringify(STATE)); } catch(_){} }
 }
-function loadState() {
+async function loadState() {
   try {
-    const saved = localStorage.getItem(getStateKey());
-    if (!saved) return;
-    const parsed = JSON.parse(saved);
-    if (parsed && Array.isArray(parsed.posts) && parsed.posts.length === 7) {
-      STATE = parsed;
+    let saved = await idbGet(getStateKey());
+    if (!saved) {
+      // one-time migration: move any legacy localStorage week into IndexedDB
+      const ls = localStorage.getItem(getStateKey());
+      if (ls) {
+        saved = JSON.parse(ls);
+        try { await idbSet(getStateKey(), saved); localStorage.removeItem(getStateKey()); } catch(_){}
+      }
+    }
+    if (saved && Array.isArray(saved.posts) && saved.posts.length === 7) {
+      STATE = saved;
     }
   } catch(e){}
 }
@@ -2151,15 +2165,159 @@ function escHtml(str) {
 }
 
 /* ═══════════════════════════════════════════
+   INBOX — images sent from the Design Engine (shared lc_social IndexedDB)
+═══════════════════════════════════════════ */
+let INBOX = [];
+async function loadInbox() {
+  try { INBOX = (await idbGet('lc_social_inbox')) || []; } catch(e) { INBOX = []; }
+  renderInbox();
+}
+function renderInbox() {
+  const el = document.getElementById('inbox-tray'); if (!el) return;
+  if (!INBOX.length) { el.innerHTML = ''; el.style.display = 'none'; return; }
+  el.style.display = '';
+  el.innerHTML = `<div style="background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:0 0 4px">
+    <div style="font-weight:700;font-size:15px;margin-bottom:10px">📥 From Design Engine — ${INBOX.length} image${INBOX.length>1?'s':''} to schedule</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">`
+    + INBOX.map((it,i)=>`<div style="width:150px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fafafa">
+        <img src="${it.imageDataUrl}" style="width:100%;display:block">
+        <div style="padding:6px">
+          <div style="font-size:11px;color:#666;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${String(it.label||'').replace(/</g,'&lt;')}</div>
+          <button id="inbox-auto-${i}" onclick="autoPostInboxItem(${i})" style="width:100%;font-size:13px;font-weight:700;padding:8px;border:none;background:#7b2fff;color:#fff;border-radius:6px;cursor:pointer">✨ Auto-Post</button>
+          <button onclick="removeInboxItem(${i})" style="width:100%;margin-top:4px;font-size:11px;border:none;background:#f2f2f2;border-radius:6px;padding:4px;cursor:pointer">✕ Remove</button>
+        </div>
+      </div>`).join('')
+    + `</div></div>`;
+}
+async function placeInboxItem(i, dayVal) {
+  const dayIdx = parseInt(dayVal); if (isNaN(dayIdx)) return;
+  const it = INBOX[i]; if (!it) return;
+  const p = STATE.posts[dayIdx];
+  p.fb.imageDataUrl = it.imageDataUrl;
+  p.ig.imageDataUrl = it.imageDataUrl;
+  if (it.sku) p.sku = it.sku;
+  if (p.status === 'empty' || p.status === 'concept') p.status = 'image_generated';
+  saveState();
+  INBOX.splice(i,1); try { await idbSet('lc_social_inbox', INBOX); } catch(e){}
+  renderCalendarStrip(); renderAllPosts();
+  STATE.posts.forEach((pp,ii)=>{ if (pp.status!=='empty' && pp.status!=='concept') initCharCounters(ii); });
+  renderInbox();
+  scrollToPost(dayIdx);
+}
+async function removeInboxItem(i) {
+  INBOX.splice(i,1); try { await idbSet('lc_social_inbox', INBOX); } catch(e){}
+  renderInbox();
+}
+/* lightweight toast */
+function calToast(msg){
+  let t=document.getElementById('lc_cal_toast');
+  if(!t){ t=document.createElement('div'); t.id='lc_cal_toast';
+    t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:11px 18px;border-radius:8px;font-size:14px;font-weight:700;z-index:99999;opacity:0;transition:opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.28)';
+    document.body.appendChild(t); }
+  t.textContent=msg; t.style.opacity='1'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity='0',2800);
+}
+/* read the image (Gemini vision) → punchy on-brand caption + hashtags */
+async function geminiCaptionFromImage(dataUrl, sku){
+  const part = dataUrlToInlinePart(dataUrl); if(!part) throw new Error('bad image');
+  const skuName = (E.SKUS && E.SKUS[sku] && E.SKUS[sku].name) || 'LACALUT';
+  const prompt = `You are a social media copywriter for LACALUT® Australia, a premium German clinical oral-care brand. Australian spelling. Never use em dashes.\n\n${COMPLIANCE_RULES}\n\nLook CAREFULLY at this LACALUT social image (product: LACALUT ${skuName} — always use this exact full name, never shorten it). Write a punchy, high-converting caption that MATCHES exactly what the image shows and says (same hook, claims and message). Strong and confident, emoji-rich, 2-3 short paragraphs, Australian spelling, ending with a soft call to action. Then 6-8 relevant hashtags (no # symbol, lowercase, no spaces).\n\nReturn ONLY valid JSON: {"caption":"...","hashtags":["tag1","tag2"]}`;
+  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}, part]}], generationConfig:{responseMimeType:'application/json'} }) });
+  const data = await res.json(); if(!res.ok) throw new Error(data.error?.message||'caption HTTP '+res.status);
+  let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+  let obj; try{ obj=JSON.parse(txt); }catch(e){ obj={caption:txt,hashtags:[]}; }
+  return obj;
+}
+/* SELF-GOVERNING: place → write copy → push to Marky (staged), all in one click */
+async function autoPostInboxItem(i){
+  const it = INBOX[i]; if(!it) return;
+  if(!KEYS.gemini){ alert('Add your Gemini key in ⚙️ Settings first.'); openSettings(); return; }
+  if(!KEYS.marky){ alert('Add your Marky key in ⚙️ Settings first.'); openSettings(); return; }
+  let idx = STATE.posts.findIndex(p=>p.status==='empty');
+  if(idx<0) idx = STATE.posts.findIndex(p=>!(p.fb && p.fb.imageDataUrl));
+  if(idx<0){ calToast('This week is full — start a New Week first'); return; }
+  const btn = document.getElementById('inbox-auto-'+i);
+  if(btn){ btn.disabled=true; btn.textContent='✍️ Writing copy…'; }
+  try{
+    const cap = await geminiCaptionFromImage(it.imageDataUrl, it.sku);
+    const caption = E.sanitizeCopy((cap.caption||'').trim());
+    let tagArr = Array.isArray(cap.hashtags) ? cap.hashtags : String(cap.hashtags||'').split(/[\s,]+/);
+    const cleaned = E.sanitizeHashtags(tagArr);
+    const tags = (Array.isArray(cleaned) ? cleaned : String(cleaned||'').split(/\s+/))
+      .filter(Boolean).map(t => '#' + String(t).replace(/^#/,'')).join(' ');
+    const p = STATE.posts[idx];
+    if(it.sku) p.sku = it.sku;
+    p.fb.imageDataUrl = it.imageDataUrl; p.ig.imageDataUrl = it.imageDataUrl;
+    p.fb.caption = caption; p.fb.hashtags = tags;
+    p.ig.caption = caption; p.ig.hashtags = tags;
+    p.concept = { day: DAYS[idx].day, post_type: DAYS[idx].type, hook: (caption.split('\n')[0]||''), draft_caption: caption, hashtags: tags, brief: '' };
+    p.conceptApproved = true; p.approved = true; p.status = 'approved';
+    saveState();
+    renderCalendarStrip(); renderAllPosts();
+    STATE.posts.forEach((pp,ii)=>{ if(pp.status!=='empty' && pp.status!=='concept') initCharCounters(ii); });
+    if(btn) btn.textContent='🚀 Pushing…';
+    const ok = await pushPostToMarky(idx);   // status:'NEW' = staged draft in Marky
+    INBOX.splice(i,1); try{ await idbSet('lc_social_inbox', INBOX); }catch(e){}
+    renderInbox();
+    calToast(ok ? '✅ Auto-posted → '+DAYS[idx].short+' → staged in Marky' : '⚠️ Placed on '+DAYS[idx].short+' — Marky push failed, retry from the card');
+    scrollToPost(idx);
+  }catch(e){
+    if(btn){ btn.disabled=false; btn.textContent='✨ Auto-Post'; }
+    alert('Auto-post failed: '+e.message);
+  }
+}
+
+/* AUTO-COPY-ON-OPEN: when the calendar loads, any images waiting in the inbox get
+   their FB+IG copy written and placed as full readable cards automatically — so you
+   open the calendar and just read. Does NOT push to Marky (you review, then hit
+   "Push All to All Platforms"). Silently skips if there's no Gemini key. */
+async function autoProcessInboxOnOpen(){
+  if(!KEYS.gemini || !INBOX.length) return;
+  const items = INBOX.slice();
+  calToast('✍️ Writing copy for '+items.length+' new image'+(items.length>1?'s':'')+'…');
+  for(const it of items){
+    let idx = STATE.posts.findIndex(p=>p.status==='empty');
+    if(idx<0) idx = STATE.posts.findIndex(p=>!(p.fb && p.fb.imageDataUrl));
+    if(idx<0) break;   // week full — leave remaining items in the inbox
+    try{
+      const cap = await geminiCaptionFromImage(it.imageDataUrl, it.sku);
+      const caption = E.sanitizeCopy((cap.caption||'').trim());
+      let tagArr = Array.isArray(cap.hashtags) ? cap.hashtags : String(cap.hashtags||'').split(/[\s,]+/);
+      const cleaned = E.sanitizeHashtags(tagArr);
+      const tags = (Array.isArray(cleaned) ? cleaned : String(cleaned||'').split(/\s+/))
+        .filter(Boolean).map(t => '#' + String(t).replace(/^#/,'')).join(' ');
+      const p = STATE.posts[idx];
+      if(it.sku) p.sku = it.sku;
+      p.fb.imageDataUrl = it.imageDataUrl; p.ig.imageDataUrl = it.imageDataUrl;
+      p.fb.caption = caption; p.fb.hashtags = tags;
+      p.ig.caption = caption; p.ig.hashtags = tags;
+      p.concept = { day: DAYS[idx].day, post_type: DAYS[idx].type, hook:(caption.split('\n')[0]||''), draft_caption:caption, hashtags:tags, brief:'' };
+      p.conceptApproved = true; p.approved = true; p.status = 'approved';
+      const pos = INBOX.findIndex(x => x===it || (it.id && x.id===it.id));
+      if(pos>=0) INBOX.splice(pos,1);
+      await saveState();
+      try{ await idbSet('lc_social_inbox', INBOX); }catch(e){}
+    }catch(e){ /* leave this item in the inbox so the manual button can retry */ }
+  }
+  renderCalendarStrip(); renderAllPosts();
+  STATE.posts.forEach((pp,ii)=>{ if(pp.status!=='empty' && pp.status!=='concept') initCharCounters(ii); });
+  renderInbox();
+  calToast('✅ Copy ready to read — review, then Push All when happy');
+}
+
+/* ═══════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════ */
-function initApp() {
+async function initApp() {
   loadImageLibs();
-  loadState();
+  await loadState();
   document.getElementById('week-label').textContent = STATE.weekOf;
   renderCalendarStrip();
   renderAllPosts();
   setPlatform(STATE.platform);
+  await loadInbox();
+  autoProcessInboxOnOpen();   // auto-write copy for any waiting images so they're readable on open
 
   // Init char counters for any full-state posts
   STATE.posts.forEach((p, i) => {
