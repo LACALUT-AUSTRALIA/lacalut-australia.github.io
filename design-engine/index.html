@@ -429,14 +429,26 @@ async function idbPut(rec){ const db=await idb(); return new Promise((res,rej)=>
 async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
-function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); return `<div class="card" id="${rec.id}" data-sku="${rec.sku}"><img src="${rec.url}">
+function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><img src="${rec.url}" draggable="false">
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dl(this.closest('.card').querySelector('img').src,'${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU tab" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku)}</select></div>
-   <button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button></div>`; }
+   ${rec.sentToCalendar
+     ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Already Sent</button>`
+     : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}</div>`; }
+
+// ── Drag-to-reorder gallery cards (pull any two side-by-side for comparison) ──
+let _dragCard=null;
+function initCardDnD(){
+  const out=$('output'); if(!out || out._dndWired) return; out._dndWired=true;
+  out.addEventListener('dragstart', e=>{ const c=e.target.closest('.card'); if(!c){return;} _dragCard=c; c.style.opacity='0.4'; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain', c.id||'');}catch(_){} });
+  out.addEventListener('dragend', ()=>{ if(_dragCard) _dragCard.style.opacity=''; _dragCard=null; });
+  out.addEventListener('dragover', e=>{ if(!_dragCard){return;} e.preventDefault(); const t=e.target.closest('.card'); if(!t||t===_dragCard){return;} const r=t.getBoundingClientRect(); const before=(e.clientX < r.left + r.width/2); out.insertBefore(_dragCard, before ? t : t.nextSibling); });
+  out.addEventListener('drop', e=>{ if(_dragCard) e.preventDefault(); });
+}
 
 async function toggleFav(id,btn){ const db=await idb(); const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
   rq.onsuccess=()=>{ const r=rq.result; if(!r)return; r.fav=!r.fav; st.put(r); btn.textContent=r.fav?'❤️':'🤍'; }; }
@@ -471,14 +483,17 @@ async function socialIdbGet(k){ const db=await socialIdbOpen(); return new Promi
 async function socialIdbSet(k,v){ const db=await socialIdbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
 async function sendToCalendar(cardId){
   const card=$(cardId); const img=card?.querySelector('img')?.src; if(!img){ alert('No image on this card.'); return; }
+  const btn=$('marky-'+cardId);
+  if(btn && (btn.disabled || btn.classList.contains('pushed'))){ toast('✅ Already sent to Calendar'); return; }   // guard: no double-send
   const sku=card.getAttribute('data-sku')||curSku;
   const label=(card.querySelector('.t')?.textContent||'').trim();
-  const btn=$('marky-'+cardId);
   try{
     const inbox=(await socialIdbGet('lc_social_inbox'))||[];
     inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId });
     await socialIdbSet('lc_social_inbox', inbox);
-    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Calendar'; }
+    // persist sent state so it survives re-render / refresh
+    try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToCalendar=true; st.put(r); } }; }catch(_){}
+    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Already Sent'; btn.disabled=true; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.cursor='default'; btn.style.borderColor='#16a34a'; btn.onclick=null; }
     toast('📅 Sent to Calendar — open the Social Content Calendar to schedule it');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to calendar: '+e.message); }
 }
@@ -514,7 +529,7 @@ function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editS
 // paste-to-load: works whenever the edit dialog is open
 document.addEventListener('paste', e=>{ if(!editDlg.open) return; const items=(e.clipboardData&&e.clipboardData.items)||[]; for(const it of items){ if(it.type && it.type.indexOf('image')===0){ const f=it.getAsFile(); if(f){ _fileToEditSrc(f); e.preventDefault(); break; } } } });
 function presetUpright(){
-  $('editInstruction').value = 'Re-pose this toothpaste tube so it stands fully UPRIGHT and VERTICAL, with the cap at the top, as if standing on a surface. Keep the label design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background. Product only — no text overlays, no badges.';
+  $('editInstruction').value = 'Re-pose this toothpaste tube so it stands fully UPRIGHT and VERTICAL, resting on its CAP at the BOTTOM with the flat crimped/sealed end at the TOP — the normal way a toothpaste tube stands (cap down, seal up). Keep the label design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background. Product only — no text overlays, no badges.';
   $('editInstruction').focus();
 }
 function presetBoxUpright(){
@@ -526,17 +541,53 @@ function editUpload(){
   _editRefs=[]; renderEditSrc(); renderRefLibGrid();
   editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
+function callGeminiEditRefs(imgDataUrl, instruction, refKeys){
+  const refImgs=refKeys.map(k=>_refLib[k]).filter(Boolean);
+  const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
+  const sku=(refKeys[0]&&refKeys[0].split('_')[0])||curSku;
+  return E.editImage({ imgDataUrl, instruction, refImgs, sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio });
+}
+// Save + display a finished edit robustly — survives SKU-tab switches (never lost)
+async function finishEditCard(id, rec){
+  await idbPut(rec);                                   // always persisted first
+  const el=$(id);
+  if(el){ el.outerHTML=cardHTML(rec); return; }        // placeholder still on screen
+  if(rec.sku===curSku && !$(rec.id)){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }  // back on its tab
+  else { toast('✅ '+((SKUS[rec.sku]&&SKUS[rec.sku].name)||rec.sku)+' image ready — see its SKU tab'); }
+}
 async function applyEdit(){
   const instruction=$('editInstruction').value.trim(); if(!instruction){ editDlg.close(); return; }
-  editDlg.close(); const src=_editSrc; if(!src) return;
+  const src=_editSrc; if(!src){ editDlg.close(); return; }
+  const refs=_editRefs.slice();
+  editDlg.close();
+  // BATCH: 2+ references ticked → fire one independent render per reference (same prompt), each tagged to its own SKU
+  if(refs.length>=2){
+    toast('✨ Rendering '+refs.length+' images — no need to wait');
+    refs.forEach((key,i)=>{
+      const sku=(key.split('_')[0])||curSku;
+      const nm=(SKUS[sku]&&SKUS[sku].name)||sku;
+      const id='eb'+Date.now()+'_'+i;
+      $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ ${nm}…</span></div></div>`);
+      (async ()=>{
+        try{
+          const url=await callGeminiEditRefs(src, instruction, [key]);
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, label:'edited', ts:Date.now(), url, fav:false};
+          await finishEditCard(id, rec);
+        }catch(e){ const el=$(id); if(el){ const t=el.querySelector('.t'); if(t) t.textContent='⚠ '+e.message; } }
+      })();
+    });
+    return;
+  }
+  // SINGLE — lock SKU + mode at FIRE time (not completion) so switching tabs mid-render can't mis-tag it
+  const fireSku=(refs[0]&&refs[0].split('_')[0])||curSku;
+  const fireMode=curMode;
   const id='e'+Date.now();
   $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…</span></div></div>`);
   try{
     const url=await callGeminiEdit(src, instruction);
-    const rec={id:'g'+Date.now()+'_edit', sku:curSku, mode:curMode, label:'edited', ts:Date.now(), url, fav:false};
-    await idbPut(rec);
-    $(id).outerHTML=cardHTML(rec);
-  }catch(e){ $(id).querySelector('.t').textContent='⚠ '+e.message; }
+    const rec={id:'g'+Date.now()+'_edit', sku:fireSku, mode:fireMode, label:'edited', ts:Date.now(), url, fav:false};
+    await finishEditCard(id, rec);
+  }catch(e){ const el=$(id); if(el){ const t=el.querySelector('.t'); if(t) t.textContent='⚠ '+e.message; } }
 }
 
 /* ═══ PUSH TO ALL SOCIAL PLATFORMS via MARKY (auto-caption from the image) ═══ */
@@ -598,7 +649,7 @@ async function pushCardToMarky(cardId){
 }
 
 /* ═══ INIT ═══ */
-renderTabs(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); renderGallery(curSku);
+renderTabs(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); renderGallery(curSku); initCardDnD();
 loadRefLib();
 $('advNeg').addEventListener('change',renderNeg);
 </script>
