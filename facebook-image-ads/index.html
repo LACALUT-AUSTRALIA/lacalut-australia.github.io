@@ -621,7 +621,10 @@ loadBriefPanel(activeSku);
 renderProductBar(activeSku);
 refreshHeaderTagline();
 var _initLbl=document.getElementById('gen-sku-lbl');if(_initLbl)_initLbl.textContent=SKUS[activeSku].tab;
-setTimeout(function(){ try{ importFacyInbox(true); }catch(_){} }, 500);   // auto-pull anything sent from the Design Engine's "Send to Facy"
+setTimeout(function(){ try{ importFacyInbox(true); }catch(_){} }, 500);   // auto-pull on load
+setInterval(function(){ try{ importFacyInbox(true); }catch(_){} }, 3500);  // background poll — no button click needed
+window.addEventListener('focus', function(){ try{ importFacyInbox(true); }catch(_){} });          // instant pull when you switch back to this tab
+document.addEventListener('visibilitychange', function(){ if(!document.hidden){ try{ importFacyInbox(true); }catch(_){} } });
 var sl=localStorage.getItem('lac_logo');
 if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
 // Live-doc safety net: never lose work on refresh/close.
@@ -959,12 +962,18 @@ function facyIdbSet(k,v){ return facyIdbOpen().then(function(db){ return new Pro
 function mapFacySku(s){ if(!s) return activeSku; var k=String(s).replace(/-/g,'_');
   if(SKUS[k]) return k; var alias={white:'white_repair',herbal:'aktiv_herbal',aktivherbal:'aktiv_herbal'};
   if(alias[k]&&SKUS[alias[k]]) return alias[k]; return SKUS[k]?k:activeSku; }
+var _facyBusy=false;
 async function importFacyInbox(silent){
+  if(_facyBusy) return;   // lock: stop the poll + focus + button racing on the same inbox
+  _facyBusy=true;
+  try{ await _importFacyInbox(silent); } finally { _facyBusy=false; }
+}
+async function _importFacyInbox(silent){
   var inbox;
   try{ inbox=(await facyIdbGet('lc_facy_inbox'))||[]; }catch(e){ if(!silent)alert('Could not read Facy inbox: '+e.message); return; }
   if(!inbox.length){ if(!silent)alert('No new images from the Design Engine. Click "🚀 Send to Facy" on an image there first.'); return; }
   var targetSku=mapFacySku(inbox[0].sku);
-  if(targetSku!==activeSku) switchSku(targetSku);   // proper switch: updates activeSku + saves state (loadSku did NOT, which mis-filed cards under the wrong SKU)
+  if(!silent && targetSku!==activeSku) switchSku(targetSku);   // manual pull switches tabs; silent auto-pull never yanks the tab you're working in
   var n=0, other=0;
   inbox.forEach(function(it){
     if(!it||!it.imageDataUrl) return;
@@ -983,6 +992,7 @@ async function importFacyInbox(silent){
   updateCounts(); buildTabBar(); saveSession();
   try{ await facyIdbSet('lc_facy_inbox', []); }catch(_){}
   if(!silent){ var tab=(SKUS[targetSku]&&SKUS[targetSku].tab)||targetSku; var extra=other?(' — plus '+other+' routed to their own SKU tab(s)'):''; alert('🚀 '+n+' image(s) received into the '+tab+' tab — copy is auto-writing now'+extra+'.'); }
+  else if((n+other)>0){ learnToast('🚀 '+(n+other)+' new image(s) auto-imported from the Design Engine'+(other?' — see the coloured tabs':'')); }
 }
 
 /* ── CONCEPT EDIT ── */
