@@ -167,6 +167,8 @@
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
   <div id="editSrcSlot" style="margin:0 0 10px" ondragover="editDragOver(event)" ondragenter="editDragOver(event)" ondragleave="editDragLeave(event)" ondrop="editDrop(event)"></div>
+  <label class="row" style="margin:0 0 4px;font-size:12px">📐 Output size <span style="color:#999;font-weight:600">— the edit renders at this size (same as the main page)</span></label>
+  <div class="modes" id="editModes" style="margin:0 0 10px"></div>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
   <div style="margin-top:6px">
@@ -176,7 +178,15 @@
   <label class="row" style="margin-top:12px">📎 Product reference library <span style="color:#999;font-weight:600">— upload once, then click to select for this edit</span></label>
   <div id="refLibGrid" style="margin-top:6px"></div>
   <p style="font-size:11px;color:#888;margin:6px 0 0">Empty slot = upload once (saved forever in this browser). Click a photo to select it as a reference (highlighted ✓ = selected). Selected products are what the edit will insert.</p>
-  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+  <label class="row" style="margin-top:10px;font-size:12px;background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;padding:8px 10px;gap:8px;align-items:flex-start">
+    <input type="checkbox" id="batchPerRef" style="margin-top:2px">
+    <span><b>Batch mode</b> — render a <b>separate image per selected reference</b> (uses more credits). <b>Leave OFF</b> to make <b>ONE image using all the references together</b> (e.g. swap 4 products into one composite).</span></label>
+  <div style="display:flex;gap:8px;align-items:center;margin-top:12px">
+    <label style="font-size:12px;font-weight:600">Qty
+      <select id="editQty" style="margin-left:5px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+    <span style="font-size:11px;color:#888">variations of this one edit</span>
+    <span style="flex:1"></span>
     <button class="btn" onclick="editDlg.close()">Cancel</button>
     <button class="btn primary" onclick="applyEdit()">Apply edit</button>
   </div>
@@ -285,7 +295,10 @@ function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes(
 
 /* ═══ ACTIONS ═══ */
 function pickSku(k){ curSku=k; if(k!=='multi') productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
-function pickMode(m){ curMode=m; renderModes(); renderTitle(); }
+function pickMode(m){ curMode=m; renderModes(); renderEditModes(); renderTitle(); }
+function renderEditModes(){ const el=$('editModes'); if(!el) return;
+  el.innerHTML = Object.entries(MODES).map(([k,v])=>
+    `<button class="mode ${k===curMode?'active':''}" onclick="pickMode('${k}')">${v.label}<br><small style="opacity:.7">${v.dims}</small></button>`).join(''); }
 function resolveBrain(){ if(curBrain==='mixed') return BRAINS[Math.floor(Math.random()*BRAINS.length)]; return BRAINS.find(b=>b.id===curBrain)||null; }
 function saveProduct(){ localStorage.setItem('de_product_'+curSku, JSON.stringify(productImgs)); }
 
@@ -375,7 +388,7 @@ async function runGenerate(){
       const rec={id:'g'+Date.now()+'_'+i, sku:isMulti?'multi':curSku, mode:curMode, label, ts:Date.now(), url, fav:false};
       await idbPut(rec);
       $(id).outerHTML=cardHTML(rec);
-    }catch(e){ $(id).querySelector('.t').textContent='⚠ '+e.message; }
+    }catch(e){ markCardFailed(id, e.message); }
   }
   btn.disabled=false; btn.textContent='✨ Generate';
 }
@@ -436,16 +449,21 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    <button class="iconbtn" title="download" onclick="dl(this.closest('.card').querySelector('img').src,'${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU tab" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku)}</select></div>
+   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
    ${rec.sentToCalendar
-     ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Already Sent</button>`
-     : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}</div>`; }
+     ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
+     : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}
+   ${rec.sentToFacy
+     ? `<button class="markybtn pushed" id="facy-${rec.id}" disabled title="Already sent to Facy (Facebook ads queue)" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Facy</button>`
+     : `<button class="markybtn" id="facy-${rec.id}" title="Send this image straight to Facy — queues it as a Facebook ad (no download needed)" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Send to Facy</button>`}
+   </div></div>`; }
 
 // ── Drag-to-reorder gallery cards (pull any two side-by-side for comparison) ──
 let _dragCard=null;
 function initCardDnD(){
   const out=$('output'); if(!out || out._dndWired) return; out._dndWired=true;
   out.addEventListener('dragstart', e=>{ const c=e.target.closest('.card'); if(!c){return;} _dragCard=c; c.style.opacity='0.4'; e.dataTransfer.effectAllowed='move'; try{e.dataTransfer.setData('text/plain', c.id||'');}catch(_){} });
-  out.addEventListener('dragend', ()=>{ if(_dragCard) _dragCard.style.opacity=''; _dragCard=null; });
+  out.addEventListener('dragend', ()=>{ if(_dragCard){ _dragCard.style.opacity=''; saveGalleryOrder(curSku); } _dragCard=null; });
   out.addEventListener('dragover', e=>{ if(!_dragCard){return;} e.preventDefault(); const t=e.target.closest('.card'); if(!t||t===_dragCard){return;} const r=t.getBoundingClientRect(); const before=(e.clientX < r.left + r.width/2); out.insertBefore(_dragCard, before ? t : t.nextSibling); });
   out.addEventListener('drop', e=>{ if(_dragCard) e.preventDefault(); });
 }
@@ -497,7 +515,35 @@ async function sendToCalendar(cardId){
     toast('📅 Sent to Calendar — open the Social Content Calendar to schedule it');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to calendar: '+e.message); }
 }
-async function renderGallery(sku){ const recs=(await idbBySku(sku)).sort((a,b)=>b.ts-a.ts);
+/* ═══ SEND TO FACY (Facebook ads queue — shared IndexedDB inbox, same origin) ═══ */
+function facyIdbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('lc_facy',1);
+  r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv'); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function facyIdbGet(k){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{ const t=db.transaction('kv','readonly').objectStore('kv').get(k); t.onsuccess=()=>res(t.result); t.onerror=()=>rej(t.error); })); }
+function facyIdbSet(k,v){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
+async function sendToFacy(cardId){
+  const card=$(cardId); const img=card?.querySelector('img')?.src; if(!img){ alert('No image on this card.'); return; }
+  const btn=$('facy-'+cardId);
+  if(btn && (btn.disabled || btn.classList.contains('pushed'))){ toast('✅ Already sent to Facy'); return; }
+  const sku=card.getAttribute('data-sku')||curSku;
+  const label=(card.querySelector('.t')?.textContent||'').trim();
+  try{
+    const inbox=(await facyIdbGet('lc_facy_inbox'))||[];
+    inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId });
+    await facyIdbSet('lc_facy_inbox', inbox);
+    try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; }catch(_){}
+    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.disabled=true; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.cursor='default'; btn.style.borderColor='#16a34a'; btn.onclick=null; }
+    toast('🚀 Sent to Facy — open the Facebook Image Ads page to build the ad');
+  }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
+}
+function galleryOrderKey(sku){ return 'de_order_'+sku; }
+function saveGalleryOrder(sku){ const ids=[...$('output').querySelectorAll('.card')].map(c=>c.id); localStorage.setItem(galleryOrderKey(sku), JSON.stringify(ids)); }
+async function renderGallery(sku){ const recs=await idbBySku(sku);
+  const saved=JSON.parse(localStorage.getItem(galleryOrderKey(sku))||'null');
+  if(saved && saved.length){ const pos=new Map(saved.map((id,i)=>[id,i]));
+    // known cards keep the saved drag order; new (unsaved) cards float to the top, newest first
+    recs.sort((a,b)=>{ const pa=pos.has(a.id)?pos.get(a.id):-1, pb=pos.has(b.id)?pos.get(b.id):-1; return pa!==pb ? pa-pb : b.ts-a.ts; });
+  } else { recs.sort((a,b)=>b.ts-a.ts); }
   $('output').innerHTML = recs.length ? recs.map(cardHTML).join('') : `<div class="empty">No saved images for ${SKUS[sku]?.name||sku} yet. Upload a packshot + pick a strategy → Generate.</div>`; }
 
 /* ═══ DESCRIBE AN EDIT (image-to-image via Gemini) ═══ */
@@ -512,7 +558,7 @@ function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
   _editSrc=src; _editRefs=[]; renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
-  editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   if(_editSrc){ w.innerHTML=`<div style="display:flex;gap:10px;align-items:center">
@@ -539,7 +585,7 @@ function presetBoxUpright(){
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
   _editRefs=[]; renderEditSrc(); renderRefLibGrid();
-  editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function callGeminiEditRefs(imgDataUrl, instruction, refKeys){
   const refImgs=refKeys.map(k=>_refLib[k]).filter(Boolean);
@@ -555,13 +601,18 @@ async function finishEditCard(id, rec){
   if(rec.sku===curSku && !$(rec.id)){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }  // back on its tab
   else { toast('✅ '+((SKUS[rec.sku]&&SKUS[rec.sku].name)||rec.sku)+' image ready — see its SKU tab'); }
 }
+function dismissCard(id){ const el=$(id); if(el) el.remove(); }
+function markCardFailed(id, msg){ const el=$(id); if(!el) return;
+  el.innerHTML=`<div style="aspect-ratio:4/5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#fafafa;color:#999;font-size:13px;padding:16px;text-align:center">
+    <div>⚠ ${msg||'No image returned'}</div>
+    <button class="btn" style="font-size:12px;padding:6px 14px" onclick="dismissCard('${id}')">✕ Dismiss</button></div>`; }
 async function applyEdit(){
   const instruction=$('editInstruction').value.trim(); if(!instruction){ editDlg.close(); return; }
   const src=_editSrc; if(!src){ editDlg.close(); return; }
   const refs=_editRefs.slice();
   editDlg.close();
-  // BATCH: 2+ references ticked → fire one independent render per reference (same prompt), each tagged to its own SKU
-  if(refs.length>=2){
+  // BATCH: only when explicitly opted-in → fire one independent render per reference, each tagged to its own SKU
+  if(refs.length>=2 && $('batchPerRef') && $('batchPerRef').checked){
     toast('✨ Rendering '+refs.length+' images — no need to wait');
     refs.forEach((key,i)=>{
       const sku=(key.split('_')[0])||curSku;
@@ -573,21 +624,28 @@ async function applyEdit(){
           const url=await callGeminiEditRefs(src, instruction, [key]);
           const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, label:'edited', ts:Date.now(), url, fav:false};
           await finishEditCard(id, rec);
-        }catch(e){ const el=$(id); if(el){ const t=el.querySelector('.t'); if(t) t.textContent='⚠ '+e.message; } }
+        }catch(e){ markCardFailed(id, e.message); }
       })();
     });
     return;
   }
-  // SINGLE — lock SKU + mode at FIRE time (not completion) so switching tabs mid-render can't mis-tag it
+  // SINGLE — one image using ALL selected refs together. Qty>1 fires that same edit N times in parallel.
   const fireSku=(refs[0]&&refs[0].split('_')[0])||curSku;
   const fireMode=curMode;
-  const id='e'+Date.now();
-  $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…</span></div></div>`);
-  try{
-    const url=await callGeminiEdit(src, instruction);
-    const rec={id:'g'+Date.now()+'_edit', sku:fireSku, mode:fireMode, label:'edited', ts:Date.now(), url, fav:false};
-    await finishEditCard(id, rec);
-  }catch(e){ const el=$(id); if(el){ const t=el.querySelector('.t'); if(t) t.textContent='⚠ '+e.message; } }
+  const qty=Math.max(1,Math.min(4,parseInt(($('editQty')&&$('editQty').value)||'1',10)||1));
+  const refKeys=refs.slice();
+  if(qty>1) toast('✨ Rendering '+qty+' variations — no need to wait');
+  for(let i=0;i<qty;i++){
+    const id='e'+Date.now()+'_'+i;
+    $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…${qty>1?' ('+(i+1)+'/'+qty+')':''}</span></div></div>`);
+    (async()=>{
+      try{
+        const url=await callGeminiEditRefs(src, instruction, refKeys);
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, label:'edited', ts:Date.now(), url, fav:false};
+        await finishEditCard(id, rec);
+      }catch(e){ markCardFailed(id, e.message); }
+    })();
+  }
 }
 
 /* ═══ PUSH TO ALL SOCIAL PLATFORMS via MARKY (auto-caption from the image) ═══ */
