@@ -454,7 +454,7 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
      ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
      : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}
    ${rec.sentToFacy
-     ? `<button class="markybtn pushed" id="facy-${rec.id}" disabled title="Already sent to Facy (Facebook ads queue)" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Facy</button>`
+     ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Sent to Facy — click to send again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Sent to Facy</button>`
      : `<button class="markybtn" id="facy-${rec.id}" title="Send this image straight to Facy — queues it as a Facebook ad (no download needed)" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Send to Facy</button>`}
    </div></div>`; }
 
@@ -524,7 +524,7 @@ function facyIdbSet(k,v){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{
 async function sendToFacy(cardId){
   const card=$(cardId); const img=card?.querySelector('img')?.src; if(!img){ alert('No image on this card.'); return; }
   const btn=$('facy-'+cardId);
-  if(btn && (btn.disabled || btn.classList.contains('pushed'))){ toast('✅ Already sent to Facy'); return; }
+  // re-sendable: a green/"sent" button can be clicked again to re-queue the image
   const sku=card.getAttribute('data-sku')||curSku;
   const label=(card.querySelector('.t')?.textContent||'').trim();
   try{
@@ -532,7 +532,7 @@ async function sendToFacy(cardId){
     inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId });
     await facyIdbSet('lc_facy_inbox', inbox);
     try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; }catch(_){}
-    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.disabled=true; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.cursor='default'; btn.style.borderColor='#16a34a'; btn.onclick=null; }
+    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.title='Sent to Facy — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
     toast('🚀 Sent to Facy — open the Facebook Image Ads page to build the ad');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
 }
