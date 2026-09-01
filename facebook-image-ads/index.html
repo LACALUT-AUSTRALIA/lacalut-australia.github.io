@@ -332,7 +332,8 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   var ck=localStorage.getItem('lc_claude_key'),gk=localStorage.getItem('lc_gem_key');
   if(ck)document.getElementById('gate-claude').value=ck;
   if(gk)document.getElementById('gate-gemini').value=gk;
-  if(localStorage.getItem('lac_auth')===H)document.getElementById('gate').style.display='none';
+  var _isLocal=(location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='');
+  if(_isLocal||localStorage.getItem('lac_auth')===H)document.getElementById('gate').style.display='none';   // localhost = frictionless; public GitHub page stays password-gated
   window.doGate=async function(){
     var v=document.getElementById('gate-pw').value,h=await sha(v);
     var ck2=document.getElementById('gate-claude').value.trim();
@@ -406,6 +407,7 @@ header{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid
   <input type="text" id="manual-idea-input" placeholder="Describe your own idea… e.g. Person on a date, green breath cloud only visible to the audience">
   <button id="btn-add-idea" onclick="addManualIdea()">+ Add My Idea</button>
   <button id="btn-import-img" onclick="importFromImage()" style="background:#0a7d3c;color:#fff;border:2px solid #0a7d3c;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Import Image → Auto-Copy</button>
+  <button id="btn-facy-inbox" onclick="importFacyInbox(false)" title="Pull images sent from the Design Engine's 🚀 Send to Facy button" style="background:#7c3aed;color:#fff;border:2px solid #7c3aed;border-radius:8px;padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;">🚀 Check Facy Inbox</button>
   <button id="btn-brain" onclick="toggleBrain()">⚙️ Edit Brain</button>
   <div class="gen-hint">💡 Creative-first: pick an angle → Approve → add your creative (Higgsfield/Gemini) → copy auto-writes FROM the image. Or 📥 Import Image to start from a creative you already have.</div>
 </div>
@@ -608,6 +610,7 @@ loadBriefPanel(activeSku);
 renderProductBar(activeSku);
 refreshHeaderTagline();
 var _initLbl=document.getElementById('gen-sku-lbl');if(_initLbl)_initLbl.textContent=SKUS[activeSku].tab;
+setTimeout(function(){ try{ importFacyInbox(true); }catch(_){} }, 500);   // auto-pull anything sent from the Design Engine's "Send to Facy"
 var sl=localStorage.getItem('lac_logo');
 if(sl){logoData=sl;document.getElementById('logo-thumb').src=sl;document.getElementById('logo-thumb').style.display='';document.getElementById('logo-status').textContent='Logo loaded';}
 // Live-doc safety net: never lose work on refresh/close.
@@ -934,6 +937,34 @@ async function importFromImage(){
   renderCard(id,false);updateCounts();saveSession();
   // Copy is written FROM the creative — same vision writer used everywhere.
   autoGenCopyFromImage(id);
+}
+
+/* ═══ FACY INBOX — receive images from the Design Engine's "Send to Facy" button ═══ */
+function facyIdbOpen(){ return new Promise((res,rej)=>{ var r=indexedDB.open('lc_facy',1);
+  r.onupgradeneeded=function(){ if(!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv'); };
+  r.onsuccess=function(){res(r.result);}; r.onerror=function(){rej(r.error);}; }); }
+function facyIdbGet(k){ return facyIdbOpen().then(function(db){ return new Promise(function(res,rej){ var t=db.transaction('kv','readonly').objectStore('kv').get(k); t.onsuccess=function(){res(t.result);}; t.onerror=function(){rej(t.error);}; }); }); }
+function facyIdbSet(k,v){ return facyIdbOpen().then(function(db){ return new Promise(function(res,rej){ var tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=function(){res();}; tx.onerror=function(){rej(tx.error);}; }); }); }
+function mapFacySku(s){ if(!s) return activeSku; var k=String(s).replace(/-/g,'_');
+  if(SKUS[k]) return k; var alias={white:'white_repair',herbal:'aktiv_herbal',aktivherbal:'aktiv_herbal'};
+  if(alias[k]&&SKUS[alias[k]]) return alias[k]; return SKUS[k]?k:activeSku; }
+async function importFacyInbox(silent){
+  var inbox;
+  try{ inbox=(await facyIdbGet('lc_facy_inbox'))||[]; }catch(e){ if(!silent)alert('Could not read Facy inbox: '+e.message); return; }
+  if(!inbox.length){ if(!silent)alert('No new images from the Design Engine. Click "🚀 Send to Facy" on an image there first.'); return; }
+  var targetSku=mapFacySku(inbox[0].sku);
+  if(targetSku!==activeSku) loadSku(targetSku);
+  var n=0;
+  inbox.forEach(function(it){
+    if(!it||!it.imageDataUrl) return;
+    var id='idea-'+(++cardIdx);
+    cards[id]={phase:'image',title:'📥 From Design Engine',angle:'From your creative',hook:'',story:'',status:'none',sku:mapFacySku(it.sku),imagePrompt:'',img:it.imageDataUrl};
+    var es=document.getElementById('empty-state'); if(es)es.remove();
+    renderCard(id,false); autoGenCopyFromImage(id); n++;
+  });
+  updateCounts(); saveSession();
+  try{ await facyIdbSet('lc_facy_inbox', []); }catch(_){}
+  if(!silent){ var tab=(SKUS[targetSku]&&SKUS[targetSku].tab)||targetSku; alert('🚀 '+n+' image(s) received from the Design Engine into the '+tab+' tab — copy is auto-writing now.'); }
 }
 
 /* ── CONCEPT EDIT ── */
@@ -1689,8 +1720,6 @@ function updateKeyStatus(){
 function updateKeys(){
   var c=prompt('🔑 Paste your CLAUDE (Anthropic) API key.\n\nThis powers everything you use: Generate Ideas, copy writing, and the Higgsfield prompt. Leave blank to keep the current key.', localStorage.getItem('lc_claude_key')||'');
   if(c!==null){c=c.trim();if(c){localStorage.setItem('lc_claude_key',c);CLAUDE_KEY=c;}}
-  var g=prompt('🔑 (Optional) Gemini API key — only for the retired built-in Gemini drafts. You use Higgsfield for images, so you can leave this blank.', localStorage.getItem('lc_gem_key')||'');
-  if(g!==null){g=g.trim();if(g){localStorage.setItem('lc_gem_key',g);GEM_KEY=g;}}
   updateKeyStatus();
   alert('✅ Keys updated.');
 }
