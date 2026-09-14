@@ -18,7 +18,7 @@
       palette:'brand red #CF102D + navy #004A88 + soft light-blue #DDEBF7 backgrounds and #4C97C9 icon circles (use all three)',
       props:'white hydroxyapatite mineral, salt-mineral rock clusters, clean water splash, subtle navy molecular hex pattern',
       voice:'clinical, German pharmacy-grade, trustworthy',
-      say:'gum care, firms and tightens the gum line, "Bleeding Stops. Gums Feel Firm Again."',
+      say:'intensive gum care, firms and cares for the gum line, "Gums That Feel Firm & Cared-For"',
       ban:['gingivitis','periodontitis','gum disease'] },
     'aktiv-herbal': { name:'Aktiv Herbal', dot:'#2E7D46', accent:'#2E7D46',
       palette:'herbal green #2E7D46 / #7CB342 dominant, brand red #CF102D on logo + result pill only, navy #004A88 headers',
@@ -36,7 +36,7 @@
       palette:'teal #008490 / #0E6C7D dominant, red #CF102D on logo/pill only, navy #004A88 headers',
       props:'feather (gentleness), cold water and ice, white minerals, calm blue-teal light',
       voice:'gentle, calm, clinical',
-      say:'for sensitive teeth, soothes sensitivity, calms cold twinges',
+      say:'for sensitive teeth, gentle everyday comfort, for cold & hot twinges',
       ban:['pain relief','pain-free cure','therapeutic'] },
     'white-repair': { name:'White & Repair', dot:'#8a8f98', accent:'#CF102D',
       palette:'TOOTHPASTE = bright white + red headline pill #CF102D; MOUTHWASH = silver/platinum grey; navy #004A88 headers',
@@ -45,7 +45,10 @@
       say:'removes surface stains, supports natural whiteness, protects and repairs enamel',
       ban:['peroxide','bleach'] }
   };
-  const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up'];
+  const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up',
+    'bleeding','reduces bleeding','stops bleeding','stops gum bleeding','gum bleeding',
+    'soothes','soothes irritation','irritation','inflammation','reduces inflammation','anti-inflammatory',
+    'heals','calms','closes gum pockets','kills bacteria','kills the bacteria'];
 
   const MODES = {
     'social':  { label:'Feed 4:5',      dims:'1080×1350', ar:'4:5 portrait' },
@@ -57,40 +60,40 @@
   /* ═══ EDITABLE BRAND GUIDES (per-SKU pools) ═══ */
   const DEFAULT_GUIDES = {
    'aktiv':{ colours:'Dominant brand red #CF102D + navy #004A88 + soft light-blue #DDEBF7 backgrounds with #4C97C9 icon circles',
-     backgrounds:['clean bright white studio background, soft shadow, minimal premium look','deep navy-blue gradient with subtle molecular hex pattern and soft glow','bold LACALUT red gradient fading to dark maroon, faint hex texture, premium','soft light-blue clinical backdrop, water splash, white hydroxyapatite/mineral rocks','dark maroon-to-red radial gradient, dramatic clinical mood, particle sparkle','airy white-to-pale-blue gradient, fresh clinical feel, reflective floor'],
-     usps:['Firms & tightens the gum line','Kills the bacteria behind gum problems','12h long-lasting protection'],
-     headlines:['Bleeding Stops. Gums Feel Firm Again.','Stops Gum Bleeding Fast','Firm, Healthy Gums'],
-     subheadlines:['Clinical Formula for Tight & Strong Gums','Notice Results From Day One','The German Standard of Gum Care'],
-     benefits:['Tightens Gum Tissue','Strengthens Gums','Closes Gum Pockets','Reduces Irritating Plaque','12h Protection'],
-     trust:['Made in Germany','Pharmacy Grade','100+ Years Expertise','Clinically Tested','Dermatologically Tested'] },
+     backgrounds:['clean bright white studio background, soft shadow, minimal premium look','deep navy-blue gradient with subtle molecular hex pattern and soft glow','bold LACALUT red gradient fading to dark maroon, faint hex texture, premium','soft light-blue backdrop, water splash, white mineral rocks','dark maroon-to-red radial gradient, dramatic mood, particle sparkle','airy white-to-pale-blue gradient, fresh feel, reflective floor','premium charcoal-to-navy gradient with red rim-light and floating mineral particles','pharmacy-white scene with a soft blue gel swirl and clean reflections','geometric navy-and-red split background with bold diagonal blocks','macro water-droplet surface catching red and blue light, hero product emerging','frosted glass panel with soft studio glow and a subtle brand-red accent line','dark cinematic spotlight on a red-velvet surface, luxe pharmacy mood'],
+     usps:['Firms & cares for the gum line','Intensive anti-plaque German formula','12h long-lasting protection','Astringent firm-gum feel','Removes plaque for a deep-clean feel','Daily intensive gum care','The German standard in gum care','Trusted German pharmacy heritage'],
+     headlines:['Gums That Feel Firm & Cared-For','Intensive German Gum Care','Firm, Fresh, Cared-For Gums','The German Standard in Gum Care','Give Your Gums the German Treatment','Strong-Feeling Gums, Every Day','Your Gums Deserve German Care','Firm-Gum Feel, Day After Day','Serious About Your Gum Line','The Daily Upgrade for Your Gums','German Gum Care Since 1925','Care for Your Gums the German Way'],
+     subheadlines:['Intensive Formula for a Firm Gum Feel','Notice the Difference From Day One','The German Standard of Gum Care','Astringent Care for a Cared-For Gumline','Daily Intensive Gum Care','Firm, Fresh and Cared-For','German Pharmacy Heritage Since 1925','For Gums That Feel Strong','The Intensive Gum-Care Ritual','Premium German Oral Care'],
+     benefits:['Firm Gumline Feel','Cared-For Gums','Astringent Firm Feel','Removes Plaque','Fresh for 12 Hours','German Gum-Care Formula','Deep-Clean Feel','Daily Intensive Care','Strong-Feeling Gumline','Fresh Confident Mouth','Pharmacy-Grade Care','Trusted German Formula'],
+     trust:['Made in Germany','Pharmacy Grade','100+ Years Expertise','Dermatologically Tested','Trusted in 60+ Countries','German Pharmacy Heritage','Since 1925','Loved by Millions'] },
    'aktiv-herbal':{ colours:'Herbal green #2E7D46 / #7CB342 dominant, red #CF102D on logo & result pill only, navy #004A88 headers',
-     backgrounds:['clean white studio background, soft natural shadow','deep forest-green gradient with botanical silhouettes and soft light','lush botanical scene, fresh herbs and green leaves, natural daylight','soft sage-green gradient with dew and leaf accents','dark green-to-emerald gradient, premium herbal mood'],
-     usps:['9 valuable natural herbs','Natural gum care with clinical results'],
-     headlines:['Nature’s Answer to Firm, Healthy Gums','Stops Gum Bleeding — Naturally'],
-     subheadlines:['9 Medicinal Herbs · German Formula','Aromatherapy Brushing Experience'],
-     benefits:['Soothes Irritation','Reduces Bleeding','Tightens Gums','9 Herb Extracts'],
-     trust:['9 Natural Herbs','Made in Germany','Pharmacy Grade','Dermatologically Tested'] },
+     backgrounds:['clean white studio background, soft natural shadow','deep forest-green gradient with botanical silhouettes and soft light','lush botanical scene, fresh herbs and green leaves, natural daylight','soft sage-green gradient with dew and leaf accents','dark green-to-emerald gradient, premium herbal mood','sunlit herb-garden flat-lay with sage, chamomile and mint','deep emerald studio with glowing botanical particles and dew','fresh eucalyptus-and-mint arrangement on a pale stone surface','moody enchanted-forest backdrop with god-rays and floating leaves','bright botanical white scene with scattered fresh herbs and water dew','green marble surface with herbal sprigs and soft daylight','macro dewy leaf texture with the product emerging, natural glow'],
+     usps:['9 valuable natural herbs','Natural gum care, German formula','Astringent herbal firm-gum feel','Herbal freshness, German quality','Botanical daily gum care','Nature meets German pharmacy care','Fresh herbal clean feel'],
+     headlines:['Nature’s Answer to Firm, Fresh Gums','9 Herbs · German Gum Care','Natural Gum Care, German Made','Firm-Feeling Gums, Naturally','The Herbal Way to German Gum Care','Where Nature Meets German Care','9 Herbs for a Firmer Gum Feel','Botanical Care, German Precision','Naturally Firm, Naturally Fresh','Your Gums, the Natural Way','German Herbal Gum Care','Fresh From Nature, Made in Germany'],
+     subheadlines:['9 Medicinal Herbs · German Formula','Aromatherapy Brushing Experience','Nature Meets German Gum Care','A Botanical Firm-Gum Ritual','Herbal Freshness, German Quality','9 Herbs, One German Formula','Naturally Fresh, Daily','The Herbal Gum-Care Ritual','Botanical Care Since 1925'],
+     benefits:['Fresh Herbal Comfort','Firm Gumline Feel','Astringent Firm Feel','9 Herb Extracts','Natural German Gum Care','Fresh Botanical Clean','Herbal Fresh Feel','Cared-For Gums, Naturally','Daily Botanical Care','Gentle Herbal Formula','9 Powerful Herbs','Naturally Fresh Breath'],
+     trust:['9 Natural Herbs','Made in Germany','Pharmacy Grade','Dermatologically Tested','Trusted in 60+ Countries','German Pharmacy Heritage','Since 1925','Naturally Derived Herbs'] },
    'flora':{ colours:'TOOTHPASTE navy #004A88 + citrus-yellow; MOUTHWASH fresh green #2E9E5B; red #CF102D on logo/pill only',
-     backgrounds:['clean white studio background, minimal fresh look','deep navy-blue gradient with water ripples and hex pattern','fresh green gradient (mouthwash) with mint leaves and splash','bright citrus-fresh scene, lemon and ice accents, airy','cool blue-to-teal gradient, crisp hygienic mood'],
-     usps:['Eliminates bad breath at the source','Balances the oral microbiome','Works within 48 hours'],
-     headlines:['Fresh Breath That Lasts','Clean Breath in Just 3 Days'],
-     subheadlines:['Eliminates Odour at the Source','Probiotic Fresh-Breath Formula'],
-     benefits:['Fights Bad Breath','Balances Oral Flora','Long-Lasting Freshness','Gentle Daily Care'],
-     trust:['Made in Germany','Pharmacy Grade','12h Long-Lasting','Clinically Tested'] },
+     backgrounds:['clean white studio background, minimal fresh look','deep navy-blue gradient with water ripples and hex pattern','fresh green gradient (mouthwash) with mint leaves and splash','bright citrus-fresh scene, lemon and ice accents, airy','cool blue-to-teal gradient, crisp hygienic mood','splashing water crown with mint leaves frozen mid-air','icy blue backdrop with frost crystals and cold vapour','sunlit citrus flat-lay with lemon, lime and fresh mint','dark teal studio with a single bright mint-green light beam','fresh dewy mint leaves macro with the product emerging','clean spa-blue gradient with soft bubbles and reflections'],
+     usps:['Tackles bad breath at the source','For lasting fresh breath','Supports a fresh, balanced mouth feel','All-day breath confidence','Clean, fresh mouth feel','Gentle daily freshness','German fresh-breath formula'],
+     headlines:['Fresh Breath That Lasts','All-Day Fresh Breath','Say Goodbye to Bad Breath','Confidence in Every Breath','German Freshness, All Day','Breath So Fresh You’ll Notice','Fresh From the First Rinse','Own the Room With Fresh Breath','The Fresh-Breath Upgrade','Fresh Mouth, Full Confidence','Kiss Bad Breath Goodbye'],
+     subheadlines:['Freshness at the Source','Fresh-Breath Formula','A Fresher Mouth Feel, Daily','German Freshness Since 1925','Clean, Confident, Fresh','For Breath That Lasts','The Daily Fresh-Breath Ritual','Premium German Fresh Care'],
+     benefits:['Fights Bad Breath','Fresh, Balanced Mouth Feel','Long-Lasting Freshness','Gentle Daily Care','Clean, Confident Breath','All-Day Fresh Feel','Fresh From First Use','Cool Mint Freshness','German Fresh-Breath Care','Everyday Breath Confidence','Fresh Clean Finish'],
+     trust:['Made in Germany','Pharmacy Grade','12h Fresh Feel','Dermatologically Tested','Trusted in 60+ Countries','German Pharmacy Heritage','Since 1925'] },
    'sensitive':{ colours:'Teal #008490 / #0E6C7D dominant, red #CF102D on logo/pill only, navy #004A88 headers',
-     backgrounds:['clean white studio background, soft calm shadow','soft teal-to-white gradient, gentle calm mood','deep teal gradient with subtle enamel/mineral texture','airy pale-blue and teal scene with ice and feather accents','dark teal radial gradient, premium clinical calm'],
-     usps:['For sensitive teeth','Soothes cold & hot twinges','Gentle daily care'],
-     headlines:['Enjoy Cold & Hot Again','From Sensitivity to Comfort'],
-     subheadlines:['Gentle Care for Sensitive Teeth','Calms Everyday Sensitivity'],
-     benefits:['Soothes Sensitivity','Builds a Protective Barrier','Extra-Gentle Cleaning','Long-Lasting Comfort'],
-     trust:['Made in Germany','Pharmacy Grade','Dermatologically Tested','Gentle Formula'] },
+     backgrounds:['clean white studio background, soft gentle shadow','soft teal-to-white gradient, gentle mood','deep teal gradient with subtle enamel/mineral texture','airy pale-blue and teal scene with ice and feather accents','dark teal radial gradient, premium serene feel','soft-focus feather resting on still water, gentle light','frosted teal glass with cold vapour and soft glow','pale mint-and-white minimalist scene with a single ice crystal','serene spa-teal backdrop with smooth pebbles and water','macro enamel-white mineral surface with soft teal light','gentle gradient from icy blue to warm cream, comforting mood'],
+     usps:['For sensitive teeth','Comfort for cold & hot twinges','Gentle daily care','Extra-gentle everyday cleaning','Builds a protective feel','German gentle-care formula','Comfort you can feel'],
+     headlines:['Enjoy Cold & Hot Again','Comfort for Sensitive Teeth','Everyday Comfort, German Made','Gentle Care, Real Comfort','From Twinges to Comfort','Say Yes to Cold Drinks Again','Gentle on Teeth, Serious on Care','Comfort in Every Brush','The Gentle German Choice','Enjoy Every Bite Again','Sensitive Teeth, Meet Comfort'],
+     subheadlines:['Gentle Care for Sensitive Teeth','Gentle Everyday Comfort','A Protective Everyday Feel','German Gentle-Care Formula','Comfort That Lasts','For Teeth That Need Extra Care','The Gentle Daily Ritual','Premium German Comfort Care'],
+     benefits:['Comfort for Sensitive Teeth','Builds a Protective Barrier','Extra-Gentle Cleaning','Long-Lasting Comfort','Gentle Daily Care','Kind to Sensitive Teeth','Everyday Comfort Feel','Protective Everyday Care','Gentle German Formula','Comfort From First Use','Cold & Hot Comfort'],
+     trust:['Made in Germany','Pharmacy Grade','Dermatologically Tested','Gentle Formula','Trusted in 60+ Countries','German Pharmacy Heritage','Since 1925'] },
    'white-repair':{ colours:'TOOTHPASTE bright white + red headline pill #CF102D; MOUTHWASH silver/platinum grey; navy #004A88 headers',
-     backgrounds:['clean bright white studio background, sparkle highlights','silver/platinum gradient, clinical premium sheen','deep navy gradient with diamond sparkle and enamel stones','soft white-to-silver gradient, bright airy whitening feel','cool grey studio with reflective floor and light burst'],
-     usps:['Removes surface stains','Protects & repairs enamel','No peroxide'],
-     headlines:['Whiter, Stronger Teeth','Your Journey to White, Healthy Teeth'],
-     subheadlines:['Gentle Whitening & Enamel Protection','Visible Results in 6 Months'],
-     benefits:['Removes Surface Stains','Supports Natural Whiteness','Repairs & Protects Enamel','No Peroxide'],
-     trust:['Made in Germany','Pharmacy Grade','Enamel-Safe','No Peroxide','Clinically Tested'] }
+     backgrounds:['clean bright white studio background, sparkle highlights','silver/platinum gradient, premium sheen','deep navy gradient with diamond sparkle and enamel stones','soft white-to-silver gradient, bright airy whitening feel','cool grey studio with reflective floor and light burst','bright white surface with a single dazzling light flare','crystal-and-diamond arrangement catching bright light','polished marble surface with soft sparkle and clean reflections','dark charcoal studio with a bright white beam on the product','macro enamel-white mineral texture with sparkle particles','frosted silver gradient with subtle shimmer and clean shadow'],
+     usps:['Removes surface stains','Protects & strengthens enamel','No peroxide','Gentle daily whitening','Reveals natural whiteness','Enamel-safe whitening','German whitening care'],
+     headlines:['Whiter, Stronger-Feeling Teeth','A Brighter, Whiter Smile','Gentle Whitening, German Made','Remove Stains, Reveal White','Your Whiter Smile Starts Here','Brighten Without the Bleach','Say Goodbye to Surface Stains','The Gentle Road to White','Whiter Teeth, Happy Enamel','Reveal Your Natural White','Bright Smile, German Care'],
+     subheadlines:['Gentle Whitening & Enamel Protection','Whiter Smile, Enamel-Safe','Brighten Without Bleach','No-Peroxide Whitening Care','For a Naturally Whiter Smile','Gentle Daily Whitening','The Enamel-Safe Whitening Ritual','Premium German Whitening'],
+     benefits:['Removes Surface Stains','Supports Natural Whiteness','Enamel-Protecting Care','No Peroxide','Gentle Daily Whitening','Brighter Smile Feel','Strengthens Enamel Feel','Whiter From First Use','Enamel-Safe Formula','Bright Confident Smile','German Whitening Care'],
+     trust:['Made in Germany','Pharmacy Grade','Enamel-Safe','No Peroxide','Dermatologically Tested','Trusted in 60+ Countries','Since 1925'] }
   };
   const GUIDE_SECTIONS = [['backgrounds','Background Styles (colour + scene — engine varies these)'],['usps','USPs'],['headlines','Main Headlines'],['subheadlines','Subheadlines'],['benefits','Benefits'],['trust','Trust Elements']];
 
@@ -129,6 +132,34 @@
     return pool[Math.floor(Math.random()*pool.length)];
   }
 
+  /* ═══ VARIATION ENGINE — forces every render (even same strategy) to look distinct ═══
+     A random composition/camera "lens" + colour mood is injected each generation so the
+     engine (and the One-Up Loop) can't converge on one obvious hero shot. */
+  const VARIATION_LENSES = [
+    'extreme macro close-up filling the frame with product detail and texture, shallow depth of field',
+    'wide cinematic environmental shot with the product smaller inside a vast dramatic scene',
+    'top-down flat-lay composition seen from directly above',
+    'dramatic low hero angle looking up so the product towers heroically',
+    'off-centre editorial layout with the product to one side and bold negative space for the headline',
+    'surreal floating / levitating product with elements orbiting around it',
+    'split / diptych composition of two contrasting halves',
+    'forced-perspective shot with the product bursting toward the camera, strong motion energy',
+    'symmetrical centred hero on a plinth or pedestal under a luxe spotlight',
+    'diagonal dutch-angle dynamic composition',
+    'poster / collage layout with several framed panels',
+    'product emerging from a splash or burst in the lower third with huge type filling the top',
+    'three-quarter turntable studio angle with a long soft reflection',
+    'over-the-shoulder in-scene framing as if caught in a real moment'
+  ];
+  const VARIATION_MOODS = [
+    'bright high-key airy lighting','dark moody low-key with a single dramatic light',
+    'bold saturated punchy colour grade','soft pastel premium palette',
+    'high-contrast graphic poster style','warm golden natural light',
+    'cool clean clinical light','cinematic teal-and-warm colour grade'
+  ];
+  function pickVariationLens(){ return VARIATION_LENSES[Math.floor(Math.random()*VARIATION_LENSES.length)]; }
+  function pickVariationMood(){ return VARIATION_MOODS[Math.floor(Math.random()*VARIATION_MOODS.length)]; }
+
   /* ═══ PROMPT BUILD (DOM-free) ═══ */
   function buildPrompt(opts){
     const sku = opts.sku, mode = opts.mode || 'social', brain = opts.brain;
@@ -138,6 +169,7 @@
     const s = SKUS[sku], m = MODES[mode], g = getGuide(sku);
     const bans = [...GLOBAL_BAN, ...s.ban];
     const salesLike = brain && ['Sales','Social Proof','Story'].includes(brain.cat);
+    const isUGC = brain && brain.cat === 'UGC';
 
     let p = `Professional graphic-designed ${m.label} for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
     p += `STRICT brand colours — ${g.colours||s.palette}. `;
@@ -155,12 +187,23 @@
     if(opts.headline) p += `TOPIC LOCK (highest priority): the MAIN on-image headline and all overlay text must convey THIS exact message/topic — "${opts.headline}". Do NOT substitute a different tip, fact or headline; everything written on the image must be consistent with it. `;
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
     p += `ALL overlay/design text — headline, labels, badges, captions — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (The product's own printed packaging text stays unchanged.) Keep it clean and uncluttered — no extra call-to-action stickers or badges unless specified. `;
-    if(useProd){
-      p += `Product packaging LARGE and dominant — lower ~55% as the clear hero. Prefer "Clinical Formula", never "Mineral Formula". `;
+    p += `COPY RELEVANCE: every headline, caption and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste, fresh breath, or the whitening/repair benefit — never a vague generic line like "German pharmacy care" on its own; always tie it to the actual product (e.g. "German pharmacy-grade gum care"). `;
+    if(isUGC){
+      p += `UGC PHOTO — a real, believable everyday PERSON (matching the Art-director note) is the CLEAR SUBJECT, authentically holding or using the LACALUT product in a genuine phone-camera photo: natural imperfect lighting, a real home or bathroom setting, candid unposed feel. The PERSON MUST be clearly visible and prominent — NEVER a product-only, hand-only or studio-hero shot. The product is held or placed naturally in the scene (not a big floating hero), its real packaging accurate and the CAP ALWAYS WHITE (never red, navy or coloured). CRITICAL SCALE: the tube is its TRUE real-world size — a normal ~75ml toothpaste tube (about the length of a hand), correctly proportioned to the person's hand, fingers and face; NEVER enlarged, oversized or giant. Any on-image caption stays in a casual, native, lowercase style (like a viral social-post caption), NOT a formal studio ad headline — BUT it is rendered LARGE, bold and instantly readable on a mobile screen, never tiny. `;
+      const ugcLens = ["a front-camera selfie held at arm's length","a candid over-the-shoulder phone shot","a natural bathroom-mirror selfie","a relaxed waist-up handheld shot"][Math.floor(Math.random()*4)];
+      p += `VARIATION: frame it as ${ugcLens}; ${pickVariationMood()}. Keep it authentically UGC — never a studio product composition. `;
+      p += `TYPOGRAPHY SIZE (mandatory): the caption text is LARGE and bold — big enough to read instantly on a small mobile screen — just in a casual native style rather than a formal headline. Text sells the creative as much as the image. `;
     } else {
-      p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
+      if(useProd){
+        p += `Product packaging LARGE and dominant — lower ~55% as the clear hero. Prefer "Clinical Formula", never "Mineral Formula". `;
+        p += `CRITICAL PRODUCT FIDELITY: the tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white cap included. `;
+      } else {
+        p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
+      }
+      p += `VARIATION (make THIS render visually DISTINCT from other ads of the same concept): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected composition — do NOT default to the obvious centred-hero-on-a-glowing-backdrop look. `;
+      p += `TYPOGRAPHY SIZE (mandatory): render the MAIN HEADLINE as the single biggest element on the canvas — huge, bold and dominant — and the SUBHEADLINE clearly extra-large too, so both read instantly on a small mobile screen. Prioritise large, legible headline/subheadline type over decorative detail. `;
     }
-    p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
+    p += `PACKAGING FINE-PRINT: keep any small printed body or claims text on the product packaging in the product\u0027s ORIGINAL GERMAN and render it small and softly out of focus so it is NOT legible; never reproduce the pack fine print as legible English health, disease or treatment claims (e.g. never show readable words like bleeding, gingivitis, periodontitis in English). `; p += `TEXT CONTRAST (mandatory): all overlay text must be high-contrast and instantly legible - NEVER put navy, dark or saturated-colour text on a red or dark background; on any red or dark background the text MUST be white, and navy text is used only on white or light backgrounds. `; p += `PLAIN LANGUAGE: keep copy simple and everyday (this is a Facebook ad, not a science paper) - avoid medical or scientific jargon and never print obscure or scary-sounding ingredient names such as "aluminium lactate"; reference any formula plainly, e.g. "a special German gum-care formula". `; p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
     return p;
   }
 
@@ -184,7 +227,11 @@
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
     p += `ALL overlay/design text — headline, labels, badges — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (Each product's own printed packaging text stays unchanged.) `;
     p += `The products are LARGE and dominant as the clear hero of the composition. Prefer "Clinical Formula", never "Mineral Formula". `;
-    p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
+    p += `CRITICAL PRODUCT FIDELITY: every tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white caps included. `;
+    p += `COPY RELEVANCE: every headline and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste or fresh breath — never a vague generic line like "German pharmacy care" on its own; tie it to the actual products (e.g. "German pharmacy-grade oral care"). `;
+    p += `VARIATION (make THIS render visually DISTINCT from other range shots): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected arrangement — do NOT default to a flat line-up on a plain backdrop. `;
+    p += `TYPOGRAPHY SIZE (mandatory): render the MAIN HEADLINE as the single biggest element on the canvas — huge, bold and dominant — and the SUBHEADLINE clearly extra-large too, so both read instantly on a small mobile screen. Prioritise large, legible headline/subheadline type over decorative detail. `;
+    p += `PACKAGING FINE-PRINT: keep any small printed body or claims text on the product packaging in the product\u0027s ORIGINAL GERMAN and render it small and softly out of focus so it is NOT legible; never reproduce the pack fine print as legible English health, disease or treatment claims (e.g. never show readable words like bleeding, gingivitis, periodontitis in English). `; p += `TEXT CONTRAST (mandatory): all overlay text must be high-contrast and instantly legible - NEVER put navy, dark or saturated-colour text on a red or dark background; on any red or dark background the text MUST be white, and navy text is used only on white or light backgrounds. `; p += `PLAIN LANGUAGE: keep copy simple and everyday (this is a Facebook ad, not a science paper) - avoid medical or scientific jargon and never print obscure or scary-sounding ingredient names such as "aluminium lactate"; reference any formula plainly, e.g. "a special German gum-care formula". `; p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
     return p;
   }
 
@@ -235,7 +282,7 @@
     if(render==='mixed') render = Math.random()<0.5 ? 'photoreal' : 'graphical';
 
     const brain = opts.brain || resolveBrain(opts.brainId);
-    const useProd = (typeof opts.useProd==='boolean') ? opts.useProd : brainUsesProduct(brain);
+    const wantsProduct = /\b(box|tube|pack|packshot|packaging|product|bottle)\b/i.test(opts.brief||''); const useProd = (typeof opts.useProd==='boolean') ? opts.useProd : ((brain && brain.product==='none') ? false : true);
     const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, headline:opts.headline, advNeg:opts.advNeg, useProd });
     const aspectRatio = ((MODES[mode] && MODES[mode].ar) || '4:5').split(' ')[0];
 
@@ -266,6 +313,10 @@
     text+=`Keep the ENTIRE rest of the image pixel-identical — same layout, background, other elements and all overlay text. Do not restyle or regenerate anything else. `
       +`Never add any of these words/claims: ${bans.join(', ')}.`;
     const gcfg={responseModalities:['TEXT','IMAGE']};
+    // Variation: a distinct seed (+ temperature) per call makes Qty>1 return DIFFERENT rolls
+    // instead of identical clones. Without these the edit is near-deterministic.
+    if(opts.seed!=null) gcfg.seed=opts.seed;
+    if(opts.temperature!=null) gcfg.temperature=opts.temperature;
     if(opts.aspectRatio && /gemini-3/.test(model)){ gcfg.imageConfig={aspectRatio:opts.aspectRatio};
       text+=` Output the final image in a ${opts.aspectRatio} aspect ratio (fill the frame; add clean matching background around the product if needed — never squash or stretch it).`; }
     const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
@@ -335,11 +386,71 @@
     return /gingivitis|periodontitis|periodontal disease|gum disease|halitosis/.test(t);
   }
 
+  /* ═══ ONE-UP LOOP (image prompt) — the "Copy Brain" one-up rule, applied to the IMAGE PROMPT ═══
+     Takes the assembled base prompt and runs an internal draft → one-up → one-up → … → pinnacle
+     refinement through a Gemini TEXT model, so EVERY strategy toggle ships a genuinely
+     scroll-stopping, over-the-top brief instead of a plain one. Never throws — on any failure it
+     returns the original base prompt unchanged, so an image is always produced. */
+  async function oneUpImagePrompt(opts){
+    const basePrompt = (opts.basePrompt||'').trim();
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model  = opts.textModel || 'gemini-2.5-flash';
+    const rounds = opts.rounds || 4;
+    if(!apiKey || !basePrompt) return basePrompt;
+    const meta =
+`You are the single best Meta / Facebook / Instagram ADS ART DIRECTOR and image-prompt engineer alive, working for LACALUT — a premium 100-year German pharmacy oral-care brand. Your one job: turn a competent image brief into a THUMB-STOPPING, scroll-stopping, over-the-top HERO visual that no one can scroll past. Boring, plain, safe or generic = total failure.
+
+Follow this ONE-UP LOOP internally before you answer:
+1. Write draft v1 from the base brief.
+2. Then one-up it: v2 must be MORE scroll-stopping than v1. Then v3 > v2. Then v4 > v3. Do at least ${rounds} rounds.
+3. Each round, ask yourself: "Can I make this more visually arresting, more cinematic, more premium, more surprising, more emotionally charged, higher production value?" Push composition, scale, lighting, drama, colour, contrast, depth, implied motion, and the hero moment harder every time.
+4. Only stop at the ZENITH / PINNACLE — when it genuinely cannot get better without breaking a hard rule.
+5. Output ONLY that final pinnacle brief. Never show the drafts or your reasoning.
+
+DIVERGENCE (critical): this is ONE of many ads for this strategy — it MUST look clearly DIFFERENT from the others. Build the pinnacle AROUND the specific composition/camera lens and colour mood named in the base brief's VARIATION directive; do not override them with the obvious centred-hero look. A distinct, unexpected execution beats a generic "perfect" one — never collapse every render to the same single best idea.
+
+HARD RULES — the final brief MUST keep every one of these from the base brief, never trade them away for drama:
+- The REAL product packaging: exact shape, label layout, brand colours, logo and exact printed wording. Never invent, garble, translate or alter product text. Keep which product(s) appear. The product CAP is ALWAYS WHITE — never red, navy, blue or any coloured cap.
+- COPY RELEVANCE: every headline, caption and overlay line must be specifically about oral care — gums, teeth, toothpaste, fresh breath or the whitening/repair benefit. Never a vague generic line like "German pharmacy care" on its own; always tie it to the actual product.
+- If the base brief is a UGC PHOTO, keep a real, clearly-visible everyday PERSON as the subject holding or using the product at its true real-world size — never collapse it to a product-only, hand-only or studio-hero shot, and never oversize the product. Keep any on-image text a LARGE, bold, casual native caption (big enough to read on mobile) — casual in style, not a formal studio headline, but never tiny.
+- ALL compliance / banned-word constraints. LACALUT is a COSMETIC, not a medicine. Cosmetic benefits ONLY (fresh breath, clean feel, firm/cared-for gum FEEL, removes plaque, removes stains, German quality, whiter smile). NEVER add, keep, imply or amplify any therapeutic / disease / gum-condition claim — specifically NEVER write "reduces/stops bleeding", "soothes", "soothes irritation", "reduces inflammation", "heals", "calms", "closes gum pockets", "kills bacteria/gum disease", "gingivitis", "periodontitis", "clinically proven", any statistic or percentage, any fake review/testimonial, or any competitor name. If the base brief contains such a claim, REMOVE it or rewrite it as a cosmetic feel-benefit — do not carry it into the final brief.
+- Every overlay/design text word in Australian English ONLY, minimal and correctly spelled.
+- The exact aspect ratio and the product-hero / logo instruction from the base brief.
+- Keep the MAIN HEADLINE the single biggest element on the canvas and the SUBHEADLINE extra-large — both must read instantly on a small mobile screen. Never shrink the headline for the sake of a dramatic scene.
+- Unmistakably LACALUT and on-brand: over-the-top in CRAFT and art direction, never off-brand chaos.
+
+Return ONLY valid JSON: {"prompt":"<the final pinnacle image prompt, fully self-contained>"}.
+
+BASE BRIEF:
+"""
+${basePrompt}
+"""`;
+    try{
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:1.0 } }) });
+      const data = await res.json();
+      if(!res.ok) return basePrompt;
+      let txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+      let obj; try{ obj = JSON.parse(txt); }catch(e){ return basePrompt; }
+      let refined = (obj && obj.prompt) ? String(obj.prompt).trim() : '';
+      if(!refined || refined.length < 40) return basePrompt;
+      // Safety belt — guarantee the non-negotiables survived the rewrite, re-append any that got dropped.
+      const bans = (opts.bans && opts.bans.length) ? opts.bans.join(', ') : '';
+      let tail = '';
+      if(bans && !/never show or write|compliance/i.test(refined)) tail += ` STRICT COMPLIANCE — never show or write any of these words/claims: ${bans}.`;
+      if(!/australian english|english only|english \(/i.test(refined)) tail += ` ALL overlay/design text in ENGLISH (Australian English) ONLY; minimal and correctly spelled.`;
+      if(opts.aspectRatio && refined.indexOf(opts.aspectRatio)===-1) tail += ` ${opts.aspectRatio} aspect ratio.`;
+      return refined + tail;
+    }catch(e){ return basePrompt; }
+  }
+
   global.LacalutEngine = {
     BRAINS, SKUS, MODES, GLOBAL_BAN, DEFAULT_GUIDES, GUIDE_SECTIONS,
     getGuide, pickStr, pickRand,
     resolveBrain, brainUsesProduct, pickBrainForCategories,
     buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
+    oneUpImagePrompt,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm
   };
 

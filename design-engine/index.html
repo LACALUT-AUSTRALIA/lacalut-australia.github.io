@@ -98,15 +98,17 @@
     <div class="guide">Best Scalable/designed outputs to emulate layout — never their product/text.</div>
     <div class="slots" id="styleSlots"></div>
 
-    <h3 style="margin-top:12px">Strategy <span id="stratCount" style="color:#999;font-weight:600;">0/8</span></h3>
+    <h3 style="margin-top:12px">Format <span id="stratCount" style="color:#999;font-weight:600;">0/8</span></h3>
     <div class="chips" id="chips"></div>
 
     <h3 style="margin-top:12px">Brief</h3>
-    <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Bleeding Stops, Gums Feel Firm', trust chips along the bottom"></textarea>
+    <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
 
     <div class="adv">
       <label class="row"><input type="checkbox" id="advNeg" checked> Compliance negative-prompt (auto-block disease claims)</label>
       <div class="guide" id="negPreview"></div>
+      <label class="row"><input type="checkbox" id="oneUp"> 🚀 One-Up Loop — refine the prompt to its pinnacle (max scroll-stopper)</label>
+      <div class="guide">Drafts the brief, then one-ups it again and again until it can't get better — only then generates. Applies to every strategy.</div>
     </div>
 
     <div class="fmt">
@@ -122,7 +124,7 @@
       <span>Format:</span> <b id="fmtLabel"></b>
       <span class="spacer" style="flex:1"></span>
       <span>Qty:</span>
-      <select id="qty"><option>1</option><option>2</option><option selected>3</option></select>
+      <select id="qty"><option selected>1</option><option>2</option><option>3</option></select>
     </div>
 
     <button class="btn primary" id="genBtn" style="width:100%;padding:12px" onclick="runGenerate()">✨ Generate</button>
@@ -377,11 +379,20 @@ async function runGenerate(){
         label = (brain?brain.name:'Range')+' · '+multiLabels.length+' SKUs';
       } else {
         const brain=resolveBrain();
-        const useProd = brainUsesProduct(brain);
+        const useProd = (brain && brain.product==='none') ? false : true; // always attach real packshot refs so the product is never invented
         prompt=buildPrompt(brain, useProd);
         refImgs = useProd?productImgs.filter(Boolean):[];
         const finish = rmode==='graphical'?'CGI':rmode==='exact'?'flat':'photoreal';
         label=(brain?brain.name:'Hero')+(useProd?' · '+finish:' · logo-only');
+      }
+      // 🚀 ONE-UP LOOP — refine the assembled brief to its pinnacle before generating (every strategy)
+      if($('oneUp') && $('oneUp').checked){
+        const _t=$(id)?.querySelector('.t'); if(_t) _t.textContent='🚀 one-upping the prompt…';
+        const _bans = isMulti
+          ? [...new Set([...GLOBAL_BAN, ...multiSel.flatMap(k=>SKUS[k]?.ban||[])])]
+          : [...GLOBAL_BAN, ...SKUS[curSku].ban];
+        prompt = await E.oneUpImagePrompt({ basePrompt:prompt, bans:$('advNeg').checked?_bans:[], aspectRatio, apiKey:KEYS.gemini });
+        if(_t) _t.textContent='⏳ rendering…';
       }
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
         render:rmode, model:curModel, apiKey:KEYS.gemini, aspectRatio, productLabels:refLabels });
@@ -442,11 +453,12 @@ async function idbPut(rec){ const db=await idb(); return new Promise((res,rej)=>
 async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
-function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><img src="${rec.url}" draggable="false">
+function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><div class="imgwrap"><img src="${rec.url}" draggable="false"><div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
+   <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
-   <button class="iconbtn" title="download" onclick="dl(this.closest('.card').querySelector('img').src,'${rec.sku}-${rec.mode}')">⬇</button>
+   <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU tab" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku)}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
@@ -457,6 +469,73 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
      ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Sent to Facy — click to send again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Sent to Facy</button>`
      : `<button class="markybtn" id="facy-${rec.id}" title="Send this image straight to Facy — queues it as a Facebook ad (no download needed)" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Send to Facy</button>`}
    </div></div>`; }
+
+/* ═══ TEXT-OVERLAY LAYER — real editable headline + sub on top of the AI image ═══
+   AI renders imagery only; text lives here as controllable layers that always obey
+   and composite crisply into the exported/sent PNG. */
+(function(){const css=`
+.imgwrap{position:relative;line-height:0}
+.txtov{position:absolute;top:0;left:0;width:100%;container-type:inline-size;pointer-events:none;overflow:hidden}
+.ovtext{position:absolute;line-height:1.02;letter-spacing:-.01em;font-family:'Archivo','Arial Black',Arial,sans-serif;text-shadow:0 2px 14px rgba(0,0,0,.35);white-space:pre-wrap;max-width:62%}
+.ovtext.sub{max-width:80%}
+.ovp-tl{top:4.5%;left:5%;text-align:left}.ovp-tc{top:4.5%;left:50%;transform:translateX(-50%);text-align:center}.ovp-tr{top:4.5%;right:5%;text-align:right}
+.ovp-ml{top:50%;left:5%;transform:translateY(-50%);text-align:left}.ovp-mc{top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}.ovp-mr{top:50%;right:5%;transform:translateY(-50%);text-align:right}
+.ovp-bl{bottom:5%;left:5%;text-align:left}.ovp-br{bottom:5%;right:5%;text-align:right}
+.ovp-bc{left:0;bottom:0;width:100%;max-width:100%;text-align:center;padding:5% 6%;box-sizing:border-box;background:linear-gradient(to top,rgba(0,0,0,.55),transparent)}
+`;const s=document.createElement('style');s.textContent=css;document.head.appendChild(s);})();
+const OV_SIZE={s:0.045,m:0.065,l:0.092,xl:0.125}; // font px as fraction of image width
+function overlayPreviewHTML(rec){
+  const o=rec&&rec.overlay; if(!o) return '';
+  function blk(t,isSub){ if(!t||!t.text)return '';
+    const esc=t.text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+    return `<div class="ovtext${isSub?' sub':''} ovp-${t.pos||'tl'}" style="font-size:calc(${OV_SIZE[t.size||'l']}*100cqw);color:${t.color||'#ffffff'};font-weight:${t.weight||900}">${esc.replace(/\n/g,'<br>')}</div>`;
+  }
+  return blk(o.h,false)+blk(o.s,true);
+}
+async function getRec(id){const db=await idb();const t=db.transaction('gens','readonly');const st=t.objectStore('gens');const rq=st.get(id);return new Promise(r=>{rq.onsuccess=()=>r(rq.result);rq.onerror=()=>r(null);});}
+async function saveOverlayRec(id,ov){const db=await idb();const t=db.transaction('gens','readwrite');const st=t.objectStore('gens');const rq=st.get(id);return new Promise(r=>{rq.onsuccess=()=>{const x=rq.result;if(x){x.overlay=ov;st.put(x);}r();};});}
+function openOverlay(id){getRec(id).then(rec=>{if(!rec)return;const o=rec.overlay||{h:{text:'',pos:'tl',size:'xl',color:'#ffffff',weight:900},s:{text:'',pos:'bc',size:'m',color:'#ffffff',weight:800}};
+  const pos=sel=>['tl','tc','tr','ml','mc','mr','bl','bc','br'].map(p=>`<option value="${p}"${sel===p?' selected':''}>${p.toUpperCase()}${p==='bc'?' band':''}</option>`).join('');
+  const sz=sel=>['s','m','l','xl'].map(z=>`<option value="${z}"${sel===z?' selected':''}>${z.toUpperCase()}</option>`).join('');
+  const col=sel=>[['#ffffff','White'],['#111111','Black'],['#c8102e','Red']].map(c=>`<option value="${c[0]}"${sel===c[0]?' selected':''}>${c[1]}</option>`).join('');
+  const dlg=document.createElement('div');dlg.id='ovdlg';dlg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  dlg.innerHTML=`<div style="background:#fff;border-radius:14px;padding:22px;max-width:540px;width:92%;font-family:system-ui;max-height:90vh;overflow:auto">
+    <h3 style="margin:0 0 12px;color:#c8102e">🅣 Text overlay — editable layers (always obey)</h3>
+    <label style="font-weight:700;font-size:13px">HEADLINE</label>
+    <textarea id="ovh" rows="2" style="width:100%;margin:4px 0 6px;padding:8px;border:1px solid #ddd;border-radius:8px;font:inherit">${(o.h.text||'').replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:13px">Pos <select id="ovhp">${pos(o.h.pos)}</select> Size <select id="ovhz">${sz(o.h.size)}</select> Colour <select id="ovhc">${col(o.h.color)}</select></div>
+    <label style="font-weight:700;font-size:13px">SUB-HEADER</label>
+    <textarea id="ovs" rows="2" style="width:100%;margin:4px 0 6px;padding:8px;border:1px solid #ddd;border-radius:8px;font:inherit">${(o.s.text||'').replace(/</g,'&lt;')}</textarea>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:18px;font-size:13px">Pos <select id="ovsp">${pos(o.s.pos)}</select> Size <select id="ovsz">${sz(o.s.size)}</select> Colour <select id="ovsc">${col(o.s.color)}</select></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('ovdlg').remove()" style="padding:9px 16px;border:1px solid #ccc;background:#fff;border-radius:8px;cursor:pointer">Cancel</button>
+      <button onclick="saveOverlay('${id}')" style="padding:9px 18px;border:0;background:#c8102e;color:#fff;border-radius:8px;font-weight:700;cursor:pointer">Apply</button>
+    </div></div>`;
+  document.body.appendChild(dlg);
+});}
+async function saveOverlay(id){const g=x=>document.getElementById(x);
+  const ov={h:{text:g('ovh').value.trim(),pos:g('ovhp').value,size:g('ovhz').value,color:g('ovhc').value,weight:900},
+            s:{text:g('ovs').value.trim(),pos:g('ovsp').value,size:g('ovsz').value,color:g('ovsc').value,weight:800}};
+  await saveOverlayRec(id,ov);const rec=await getRec(id);const el=document.getElementById('ov-'+id);if(el)el.innerHTML=overlayPreviewHTML(rec);
+  const d=document.getElementById('ovdlg');if(d)d.remove();try{toast('🅣 Text layer applied');}catch(_){}}
+function compositeCard(id){return getRec(id).then(rec=>new Promise((resolve,reject)=>{
+  const src=rec&&rec.url;if(!src)return reject(new Error('no image'));
+  if(!rec.overlay||(!rec.overlay.h.text&&!rec.overlay.s.text))return resolve(src);
+  const img=new Image();img.crossOrigin='anonymous';
+  img.onload=()=>{const W=img.naturalWidth,H=img.naturalHeight;const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.drawImage(img,0,0,W,H);
+    const draw=t=>{if(!t||!t.text)return;const fpx=OV_SIZE[t.size||'l']*W;x.font=`${t.weight||800} ${fpx}px Archivo,'Arial Black',Arial,sans-serif`;x.textBaseline='top';
+      const pad=W*0.05,p=t.pos||'tl',maxW=(p==='bc'?W*0.88:W*0.62);let cur='';const lines=[];
+      t.text.split('\n').forEach((seg,si)=>{if(si>0){if(cur)lines.push(cur);cur='';}seg.split(/\s+/).forEach(w=>{if(!w)return;const tl=cur?cur+' '+w:w;if(x.measureText(tl).width>maxW&&cur){lines.push(cur);cur=w;}else cur=tl;});});if(cur)lines.push(cur);
+      const lh=fpx*1.05,bh=lines.length*lh;let ay=p[0]==='t'?H*0.045:(p[0]==='m'?(H-bh)/2:(p==='bc'?H-bh-H*0.06:H-bh-H*0.05));
+      if(p==='bc'){const g=x.createLinearGradient(0,H,0,H-bh-H*0.14);g.addColorStop(0,'rgba(0,0,0,.55)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,H-bh-H*0.14,W,bh+H*0.14);}
+      x.fillStyle=t.color||'#fff';
+      lines.forEach((ln,i)=>{const lw=x.measureText(ln).width,cx=p[1];let ax=cx==='l'?pad:(cx==='r'?W-pad-lw:(W-lw)/2);
+        x.save();x.shadowColor='rgba(0,0,0,.4)';x.shadowBlur=fpx*0.18;x.shadowOffsetY=fpx*0.04;x.fillText(ln,ax,ay+i*lh);x.restore();});
+    };
+    draw(rec.overlay.h);draw(rec.overlay.s);resolve(c.toDataURL('image/png'));
+  };img.onerror=()=>resolve(src);img.src=src;
+}));}
+async function dlCard(id,name){try{const url=await compositeCard(id);dl(url,name);}catch(e){alert('Export failed: '+e.message);}}
 
 // ── Drag-to-reorder gallery cards (pull any two side-by-side for comparison) ──
 let _dragCard=null;
@@ -473,9 +552,11 @@ async function toggleFav(id,btn){ const db=await idb(); const t=db.transaction('
 async function delGen(id){ if(!confirm('Delete this image?'))return; await idbDel(id); const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku); }
 /* ═══ MOVE IMAGE TO ANOTHER SKU TAB ═══ */
 function moveOptions(cur){
+  // Always list ALL 5 SKUs + Multi-SKU (6 options), regardless of the card's current tab.
+  // Moving a card to the tab it's already on is a harmless no-op (handled in moveGen).
   const o=['<option value="" selected>↗</option>'];
-  for(const [k,v] of Object.entries(SKUS)){ if(k===cur) continue; o.push(`<option value="${k}">→ ${v.name}</option>`); }
-  if(cur!=='multi') o.push('<option value="multi">→ 🎁 Multi-SKU</option>');
+  for(const [k,v] of Object.entries(SKUS)){ o.push(`<option value="${k}">→ ${v.name}</option>`); }
+  o.push('<option value="multi">→ 🎁 Multi-SKU</option>');
   return o.join('');
 }
 function toast(msg){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'); t.id='lc_toast';
@@ -484,6 +565,7 @@ function toast(msg){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'
   t.textContent=msg; t.style.opacity='1'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity='0',2200); }
 async function moveGen(id,target){
   if(!target) return;
+  const cardEl=$(id); if(cardEl && cardEl.getAttribute('data-sku')===target) return; // already on this tab — no-op
   const db=await idb();
   await new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
     rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sku=target; st.put(r); } };
@@ -521,19 +603,52 @@ function facyIdbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('
   r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
 function facyIdbGet(k){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{ const t=db.transaction('kv','readonly').objectStore('kv').get(k); t.onsuccess=()=>res(t.result); t.onerror=()=>rej(t.error); })); }
 function facyIdbSet(k,v){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
+/* ═══ DIRECT-TO-FACY PIPELINE (Supabase) — bypasses the manual FB Ads Generator tab ═══
+   Uploads the image to the ad-images bucket, then queues a row in ad_approvals as
+   `ready_to_push` with EMPTY copy. Facy (build engine) writes One-Up-Loop copy from
+   the image, runs the compliance gate, assigns the ad set, and builds to Meta per SOP. */
+const FACY_SUPA_URL='https://bfzvxxcsfxvgeblnkqne.supabase.co';
+const FACY_SUPA_KEY='sb_publishable_3Do5mWxJcwfj7Cr_U43CgA_T3sx8n3M';
+async function facyUploadImage(dataUrl,id){
+  if(!dataUrl||dataUrl.indexOf('data:')!==0) return dataUrl||'';           // http URL → use as-is
+  const parts=dataUrl.split(','); const mime=(parts[0].match(/:([^;]+);/)||[])[1]||'image/png';
+  const ext=mime==='image/jpeg'?'jpg':'png';
+  const bin=atob(parts[1]); const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  const fn='lacalut-'+id+'-'+Date.now()+'.'+ext;
+  const up=await fetch(FACY_SUPA_URL+'/storage/v1/object/ad-images/'+fn,{method:'POST',
+    headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':mime,'x-upsert':'true'},
+    body:new Blob([arr],{type:mime})});
+  if(!up.ok){const e=await up.json().catch(()=>({}));throw new Error('image upload failed: '+(e.message||up.status));}
+  return FACY_SUPA_URL+'/storage/v1/object/public/ad-images/'+fn;
+}
+async function pushToFacyPipeline(img,sku,label,cardId){
+  const url=await facyUploadImage(img,cardId);
+  const row=[{sku:sku||'multi',creative_name:label||cardId,creative_type:'image',
+    image_url:url,image_url_vertical:url,
+    adset_id:'',adset_name:'(Facy assigns)',campaign_id:'',template_ad_id:'',
+    primary_text:'',headline:'',description:'',status:'ready_to_push'}];
+  const res=await fetch(FACY_SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
+    headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(row)});
+  if(!res.ok)throw new Error('pipeline queue failed: HTTP '+res.status);
+}
 async function sendToFacy(cardId){
-  const card=$(cardId); const img=card?.querySelector('img')?.src; if(!img){ alert('No image on this card.'); return; }
+  const card=$(cardId); if(!card){ alert('No card.'); return; }
+  let img; try{ img=await compositeCard(cardId); }catch(_){ img=card.querySelector('img')?.src; }   // send text-overlay-composited PNG
+  if(!img){ alert('No image on this card.'); return; }
   const btn=$('facy-'+cardId);
   // re-sendable: a green/"sent" button can be clicked again to re-queue the image
   const sku=card.getAttribute('data-sku')||curSku;
   const label=(card.querySelector('.t')?.textContent||'').trim();
   try{
-    const inbox=(await facyIdbGet('lc_facy_inbox'))||[];
-    inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId });
-    await facyIdbSet('lc_facy_inbox', inbox);
+    // primary path: straight into the Supabase pipeline (Facy builds it end-to-end)
+    await pushToFacyPipeline(img, sku, label, cardId);
+    // fallback path: keep the same-origin IndexedDB inbox in sync (belt-and-braces)
+    try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
     try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; }catch(_){}
-    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.title='Sent to Facy — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
-    toast('🚀 Sent to Facy — open the Facebook Image Ads page to build the ad');
+    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.title='Queued to the Facy pipeline — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
+    toast('🚀 Sent straight to Facy — building automatically, no other tab needed');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
 }
 function galleryOrderKey(sku){ return 'de_order_'+sku; }
@@ -587,11 +702,13 @@ function editUpload(){
   _editRefs=[]; renderEditSrc(); renderRefLibGrid();
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
-function callGeminiEditRefs(imgDataUrl, instruction, refKeys){
+function callGeminiEditRefs(imgDataUrl, instruction, refKeys, seed){
   const refImgs=refKeys.map(k=>_refLib[k]).filter(Boolean);
   const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
   const sku=(refKeys[0]&&refKeys[0].split('_')[0])||curSku;
-  return E.editImage({ imgDataUrl, instruction, refImgs, sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio });
+  // distinct random seed per call (+ temperature) so Qty>1 gives real variety, not clones
+  const useSeed=(seed!=null)?seed:Math.floor(Math.random()*2000000000);
+  return E.editImage({ imgDataUrl, instruction, refImgs, sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio, seed:useSeed, temperature:1 });
 }
 // Save + display a finished edit robustly — survives SKU-tab switches (never lost)
 async function finishEditCard(id, rec){
@@ -634,13 +751,23 @@ async function applyEdit(){
   const fireMode=curMode;
   const qty=Math.max(1,Math.min(4,parseInt(($('editQty')&&$('editQty').value)||'1',10)||1));
   const refKeys=refs.slice();
+  // Qty>1 must produce DIFFERENT rolls. Gemini's image edit is near-deterministic for an identical
+  // prompt, so it returned 4 clones. Nudge each variation to vary the PRODUCT's lighting/angle/3D
+  // look while keeping the scene, text and badge locked. Variation 1 stays the clean interpretation.
+  const VARY=[
+    '',
+    ' [VARIATION 2 — render the product with a slightly different grip angle, lighting direction and 3D perspective. Keep the scene, hand positions, headline and badge identical.]',
+    ' [VARIATION 3 — render the product with different highlights, reflections and a subtly different tilt. Keep the scene, headline and badge identical.]',
+    ' [VARIATION 4 — render the product with a different shadow direction, stronger contrast and shallower depth of field. Keep the scene, headline and badge identical.]'
+  ];
   if(qty>1) toast('✨ Rendering '+qty+' variations — no need to wait');
   for(let i=0;i<qty;i++){
+    const instr=instruction+(qty>1?(VARY[i]||(' [VARIATION '+(i+1)+' — vary the product lighting, angle and 3D look; keep the scene, headline and badge identical.]')):'');
     const id='e'+Date.now()+'_'+i;
     $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…${qty>1?' ('+(i+1)+'/'+qty+')':''}</span></div></div>`);
     (async()=>{
       try{
-        const url=await callGeminiEditRefs(src, instruction, refKeys);
+        const url=await callGeminiEditRefs(src, instr, refKeys);
         const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, label:'edited', ts:Date.now(), url, fav:false};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
