@@ -127,6 +127,14 @@
       <select id="qty"><option selected>1</option><option>2</option><option>3</option></select>
     </div>
 
+    <div class="fmt" style="gap:6px">
+      <select id="presetSel" onchange="loadPreset(this.value)" style="flex:1;min-width:0" title="Load a saved recipe (SKU + strategy + form + brief + settings)">
+        <option value="">⭐ Presets — load a saved recipe…</option>
+      </select>
+      <button class="btn" style="font-size:12px;padding:6px 8px" onclick="savePreset()" title="Save current SKU + strategy + form + brief + settings as a reusable recipe">💾 Save</button>
+      <button class="iconbtn" style="padding:6px 8px" onclick="deletePreset()" title="Delete the selected preset">🗑</button>
+    </div>
+
     <button class="btn primary" id="genBtn" style="width:100%;padding:12px" onclick="runGenerate()">✨ Generate</button>
   </div>
 
@@ -311,6 +319,43 @@ function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes(
 /* ═══ ACTIONS ═══ */
 function pickSku(k){ curSku=k; if(k!=='multi') productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
 function pickMode(m){ curMode=m; renderModes(); renderEditModes(); renderTitle(); }
+
+/* ═══ PRESETS — save the current recipe (SKU + strategy + form + brief + settings) and reload it in one click ═══ */
+function renderPresets(sel){
+  const s=$('presetSel'); if(!s) return;
+  const list=JSON.parse(localStorage.getItem('de_presets')||'[]');
+  s.innerHTML='<option value="">⭐ Presets — load a saved recipe…</option>'+list.map(p=>`<option value="${(p.name||'').replace(/"/g,'&quot;')}"${sel===p.name?' selected':''}>${p.name}</option>`).join('');
+}
+function savePreset(){
+  const name=(prompt('Name this preset (e.g. "5-box hero · Benefit First"):')||'').trim();
+  if(!name) return;
+  const list=JSON.parse(localStorage.getItem('de_presets')||'[]').filter(x=>x.name!==name);
+  list.push({name, sku:curSku, brain:curBrain, mode:curMode, form:(typeof multiForm!=='undefined'?multiForm:'tp_box'), brief:$('brief')?$('brief').value:'', render:$('render')?$('render').value:'', oneUp:$('oneUp')?$('oneUp').checked:false, qty:$('qty')?$('qty').value:'1', multiSel:(typeof multiSel!=='undefined'&&Array.isArray(multiSel))?multiSel.slice():[]});
+  localStorage.setItem('de_presets',JSON.stringify(list));
+  renderPresets(name);
+}
+function loadPreset(name){
+  if(!name) return;
+  const p=(JSON.parse(localStorage.getItem('de_presets')||'[]')).find(x=>x.name===name);
+  if(!p) return;
+  if(Array.isArray(p.multiSel)){ multiSel=p.multiSel.slice(); localStorage.setItem('de_multi_sel',JSON.stringify(multiSel)); }
+  if(p.form){ multiForm=p.form; localStorage.setItem('de_multi_form',p.form); }
+  pickSku(p.sku||'aktiv');
+  if(p.mode) pickMode(p.mode);
+  curBrain=p.brain||null; renderBrains();
+  if($('brief')) $('brief').value=p.brief||'';
+  if(p.render && $('render')) $('render').value=p.render;
+  if($('oneUp')) $('oneUp').checked=!!p.oneUp;
+  if(p.qty && $('qty')) $('qty').value=p.qty;
+  renderSlots();
+}
+function deletePreset(){
+  const s=$('presetSel'); if(!s||!s.value){ alert('Pick a preset from the list to delete first.'); return; }
+  const name=s.value;
+  const list=JSON.parse(localStorage.getItem('de_presets')||'[]').filter(x=>x.name!==name);
+  localStorage.setItem('de_presets',JSON.stringify(list));
+  renderPresets('');
+}
 function renderEditModes(){ const el=$('editModes'); if(!el) return;
   el.innerHTML = Object.entries(MODES).map(([k,v])=>
     `<button class="mode ${k===curMode?'active':''}" onclick="pickMode('${k}')">${v.label}<br><small style="opacity:.7">${v.dims}</small></button>`).join(''); }
@@ -847,7 +892,7 @@ async function pushCardToMarky(cardId){
 }
 
 /* ═══ INIT ═══ */
-renderTabs(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); renderGallery(curSku); initCardDnD();
+renderTabs(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); renderGallery(curSku); initCardDnD(); renderPresets('');
 loadRefLib();
 $('advNeg').addEventListener('change',renderNeg);
 </script>
