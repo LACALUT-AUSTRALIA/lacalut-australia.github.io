@@ -103,9 +103,9 @@
   const GUIDE_SECTIONS = [['backgrounds','Background Styles (colour + scene — engine varies these)'],['formula','Formula Elements (signature ingredients — ALWAYS applied, EXCLUSIVE to this SKU: never another formula’s elements)'],['usps','USPs'],['headlines','Main Headlines'],['subheadlines','Subheadlines'],['benefits','Benefits'],['trust','Trust Elements']];
 
   function getGuide(sku){
-    try { const saved = global.localStorage && localStorage.getItem('de_guide_'+sku); if(saved){ return JSON.parse(saved); } } catch(e){}
     const d = DEFAULT_GUIDES[sku] || {};
     const toObj = a => (a||[]).map(t=>({text:t,on:true}));
+    try { const saved = global.localStorage && localStorage.getItem('de_guide_'+sku); if(saved){ const g=JSON.parse(saved); if(!g.formula || !g.formula.length){ g.formula = toObj(d.formula); } return g; } } catch(e){}
     return { colours:d.colours||'', backgrounds:toObj(d.backgrounds), formula:toObj(d.formula), usps:toObj(d.usps), headlines:toObj(d.headlines), subheadlines:toObj(d.subheadlines), benefits:toObj(d.benefits), trust:toObj(d.trust) };
   }
 
