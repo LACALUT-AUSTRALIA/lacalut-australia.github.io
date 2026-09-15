@@ -11,8 +11,8 @@
   // ── Symptom intake chips ─────────────────────────────────────────────────────
   // Each maps to a Lacalut range + the Klaviyo oral_concern tag used for segmentation.
   var SYMPTOMS = [
-    { icon: '🦷', label: 'Everyday\ngum care',       concern: 'Gum Care',             range: 'AKTIV',          url: STORE + '/products/lacalut-aktiv-toothpaste-75ml',   message: 'I want firmer-feeling, healthy-looking gums — what do you recommend?' },
-    { icon: '🌬️', label: 'Bad breath',                concern: 'Bad Breath',           range: 'FLORA',          url: STORE + '/products/lacalut-flora-toothpaste-75ml',      message: 'I want long-lasting fresh breath — what do you recommend?' },
+    { icon: '🦷', label: 'Intensive\ngum care',      concern: 'Gum Care',             range: 'AKTIV',          url: STORE + '/products/lacalut-aktiv-toothpaste-75ml',   message: 'I want firmer-feeling, healthy-looking gums — what do you recommend?' },
+    { icon: '🤢', label: 'Bad breath',                concern: 'Bad Breath',           range: 'FLORA',          url: STORE + '/products/lacalut-flora-toothpaste-75ml',      message: 'I want long-lasting fresh breath — what do you recommend?' },
     { icon: '😣', label: 'Sensitive\nteeth',          concern: 'Sensitive Teeth',      range: 'SENSITIVE',      url: STORE + '/products/lacalut-sensitive-toothpaste-75ml',                                 message: 'I have sensitive teeth — what product do you recommend?' },
     { icon: '✨', label: 'Weak or\nStained Teeth',    concern: 'Weak or Stained Teeth', range: 'WHITE & REPAIR', url: STORE + '/products/lacalut-white-repair-toothpaste-75ml',                              message: 'I have weak or stained teeth — what product do you recommend?' },
   ];
