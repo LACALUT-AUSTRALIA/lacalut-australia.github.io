@@ -11,8 +11,8 @@
   // ── Symptom intake chips ─────────────────────────────────────────────────────
   // Each maps to a Lacalut range + the Klaviyo oral_concern tag used for segmentation.
   var SYMPTOMS = [
-    { icon: '🩸', label: 'Bleeding or\nsore gums',   concern: 'Bleeding Gums',        range: 'AKTIV',          url: STORE + '/products/lacalut%C2%AE-aktiv-anti-gingivitis-toothpaste-for-gum-disease',   message: 'I have bleeding or sore gums — what do you recommend?' },
-    { icon: '🤢', label: 'Bad breath',                concern: 'Bad Breath',           range: 'FLORA',          url: STORE + '/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',      message: 'I have bad breath and want to treat it at the source — what do you recommend?' },
+    { icon: '🦷', label: 'Everyday\ngum care',       concern: 'Gum Care',             range: 'AKTIV',          url: STORE + '/products/lacalut-aktiv-toothpaste-75ml',   message: 'I want firmer-feeling, healthy-looking gums — what do you recommend?' },
+    { icon: '🌬️', label: 'Bad breath',                concern: 'Bad Breath',           range: 'FLORA',          url: STORE + '/products/lacalut-flora-toothpaste-75ml',      message: 'I want long-lasting fresh breath — what do you recommend?' },
     { icon: '😣', label: 'Sensitive\nteeth',          concern: 'Sensitive Teeth',      range: 'SENSITIVE',      url: STORE + '/products/lacalut-sensitive-toothpaste-75ml',                                 message: 'I have sensitive teeth — what product do you recommend?' },
     { icon: '✨', label: 'Weak or\nStained Teeth',    concern: 'Weak or Stained Teeth', range: 'WHITE & REPAIR', url: STORE + '/products/lacalut-white-repair-toothpaste-75ml',                              message: 'I have weak or stained teeth — what product do you recommend?' },
   ];
@@ -27,37 +27,37 @@
     {
       name: 'LACALUT Aktiv Herbal Toothpaste',
       keywords: ['aktiv herbal', 'herbal toothpaste', 'herbal formula'],
-      url: STORE + '/products/lacalut%C2%AE-herbal-anti-gingivitis-toothpaste-for-gum-disease',
+      url: STORE + '/products/lacalut-herbal-toothpaste-75ml',
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/11_Herbal_Images_14.png?v=1764801592',
     },
     {
       name: 'LACALUT Aktiv Toothpaste',
-      keywords: ['aktiv', 'aktiv toothpaste', 'gingivitis toothpaste', 'bleeding gum', 'gum disease toothpaste'],
-      url: STORE + '/products/lacalut%C2%AE-aktiv-anti-gingivitis-toothpaste-for-gum-disease',
+      keywords: ['aktiv', 'aktiv toothpaste', 'gum care toothpaste', 'advanced gum care', 'firm gums'],
+      url: STORE + '/products/lacalut-aktiv-toothpaste-75ml',
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/11_Aktiv_Toothpaste_Images_2.png?v=1764814195',
     },
     {
       name: 'LACALUT Flora Toothpaste',
-      keywords: ['flora', 'bad breath toothpaste', 'halitosis toothpaste', 'bad breath', 'halitosis'],
-      url: STORE + '/products/lacalut%C2%AE-flora-anti-halitosis-toothpaste-for-bad-breath',
+      keywords: ['flora', 'bad breath toothpaste', 'bad breath'],
+      url: STORE + '/products/lacalut-flora-toothpaste-75ml',
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/Copy_of_11_Flora_Images_4.png?v=1769556440',
     },
     {
       name: 'LACALUT Aktiv Mouthwash',
-      keywords: ['mouthwash', 'aktiv mouthwash', 'gingivitis mouthwash', 'gum mouthwash'],
-      url: STORE + '/products/300ml-lacalut%C2%AE-aktiv-anti-gingivitis-gum-repair-mouthwash',
+      keywords: ['mouthwash', 'aktiv mouthwash', 'gum care mouthwash', 'gum mouthwash'],
+      url: STORE + '/products/lacalut-aktiv-mouthwash-300ml',
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/11_Mouthwash_Images_3.png?v=1775528910',
     },
     {
       name: 'LACALUT Aktiv Toothbrush',
       keywords: ['toothbrush', 'aktiv toothbrush'],
-      url: STORE + '/products/lacalut%C2%AE-8x-micro-fine-bristle-gum-repair-toothbrush-for-gingivitis',
+      url: STORE + '/products/lacalut-aktiv-toothbrush',
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/11_Toothbrush_Images_5.png?v=1769558290',
     },
     {
       name: 'LACALUT Sample Pack',
       keywords: ['sample pack', 'sample', 'try first', 'starter pack'],
-      url: STORE + '/products/lacalut%C2%AE-aktiv-gingivitis-toothpaste-mouthwash-dental-floss-sample-pack-for-gum-disease',
+      url: STORE + '/products/lacalut-aktiv-toothpaste-75ml',
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/11_Bundle_Images_9c7a3968-1d3a-4e64-ab89-0135240ce861.png?v=1776211855',
     },
   ];
@@ -77,7 +77,7 @@
   var unreadCount = 0;
   var config = {
     greeting: 'Hi! Ask me anything about our products, shipping, or orders.',
-    suggested_questions: '["Which product is best for bleeding gums?","How long does shipping take?","What is your return policy?","Do you offer free shipping?","Where can I buy LACALUT in store?"]',
+    suggested_questions: '["Which product is best for everyday gum care?","How long does shipping take?","What is your return policy?","Do you offer free shipping?","Where can I buy LACALUT in store?"]',
     brand_colour: BRAND,
     proactive_delay: '4500',
     teaser_enabled: 'true',
@@ -88,10 +88,10 @@
 
   // Default rotating teaser questions — used only if the admin hasn't set any.
   var TEASER_QUESTIONS = [
-    'Will it stop my gums bleeding?',
+    'Good for everyday gum care?',
     'Is it safe for sensitive teeth?',
     'Does it fight bad breath at the source?',
-    'Clinically proven to work?',
+    'Trusted in 60+ countries?',
     'Made in Germany?',
     'Trusted by dentists?',
     'Free shipping over $99?',
@@ -518,7 +518,7 @@
     function has() { for (var i = 0; i < arguments.length; i++) { if (p.indexOf(arguments[i]) > -1) return true; } return false; }
     if (has('dentist', 'for-professional', 'professionals', 'wholesale', 'clinic'))
       return { q: 'Want ongoing free samples for your clinic? 🦷', a: 'Yes please 👍', cta: 'Count me in ›' };
-    if (has('flora', 'bad-breath', 'halitosis', 'breath'))
+    if (has('flora', 'bad-breath', 'breath'))
       return { q: 'Want 10% off our bad-breath range? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
     if (has('sensitive'))
       return { q: 'Want 10% off for sensitive teeth? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
@@ -526,7 +526,7 @@
       return { q: 'Want 10% off our whitening range? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
     if (has('mouthwash', 'rinse'))
       return { q: 'Want 10% off our mouthwash? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
-    if (has('aktiv', 'herbal', 'gingivitis', 'gum', 'bleeding', 'periodont'))
+    if (has('aktiv', 'herbal', 'gum', 'bleeding'))
       return { q: 'Want 10% off our gum-care range? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
     return { q: 'Want a 10% off code? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
   }
