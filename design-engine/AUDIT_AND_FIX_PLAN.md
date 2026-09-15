@@ -43,6 +43,16 @@ Action: delete/regenerate these specific old cards (code now prevents new ones).
 ### P5 🟡 Product reference angles (data)
 Several SKUs show "Only 1 angle — fidelity may drop". Upload 2–3 packshot angles per SKU (Main/Angle/Detail) for better product fidelity.
 
+### P-FEATURE ⭐ "Train the Brain" from favourites (Quan's idea, 15/09/2026 — build after resume)
+Turn the ❤️ favourite button into a one-click learning loop. Often we iterate 2-3 times to get the best image; the winner should teach the brain "this is the quality to hit EVERY time".
+Spec:
+- Clicking ❤️ on a card = mark it a **training exemplar** (not just a favourite).
+- On favourite, pop a small note field where Quan can **voice-type WHY it's better** than the previous versions (e.g. "cleaner contrast, tighter headline, product bigger").
+- Store per exemplar: the full winning PROMPT/recipe (sku, brain, form, brief, settings) + Quan's note + the image.
+- Feed exemplars into the brain: the One-Up Loop (and buildPrompt) reference recent favourited exemplars + their notes as "gold-standard targets" so new gens aim at that bar. Optionally distil recurring notes into permanent brain rules (like we've been doing manually).
+- One-click "train" = favourite + note + auto-append the lesson to the SKU's guide / a learned-rules store.
+Why: converts Quan's taste (expressed once, by voice) into a compounding, automatic quality floor — the manual "each bad image → a brain fix" loop, automated.
+
 ### P6 🟢 Low priority
 - Garbled tube fine-print / doubled wordmark — accepted for FB feed, skip.
 - Text-overlay architecture: engine currently BAKES headline text; Quan's stated direction is AI-imagery + editable text overlay layer (Facy building). Bigger architectural decision — revisit later.
