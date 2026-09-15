@@ -187,6 +187,7 @@
       if(opts.headline) cp += `The conversation should naturally get across THIS message/topic — "${opts.headline}" — woven into the texts, never as an overlay headline. `;
       cp += `Include exactly ONE inline PHOTO-MESSAGE bubble showing the real LACALUT ${s.name} product (from the reference image) — like a friend texted a pic. Keep this photo SMALL — no more than about a quarter to a third of the screen height — so it never dominates or shrinks the text; the text bubbles are the hero, not the photo. White cap, real German packaging accurate; NOT a big studio hero. `;
       cp += `NO external headline, NO title banner, NO benefit badges, NO trust chips, NO logo watermark, NO call-to-action sticker — the whole message lives INSIDE the chat bubbles. `;
+      cp += `CLAIM LOCK (mandatory): the benefits mentioned in the chat must be ONLY about ${s.name}'s real job — ${s.say}. Do NOT borrow another LACALUT product's benefit — never mention whitening, "stain lift" or brightening unless this IS White & Repair; never "fresh breath" or bad-breath unless this IS Flora; never herbal/botanical unless this IS Aktiv Herbal. `;
       if(advNeg) cp += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
       cp += `All chat text in ENGLISH (Australian English), casual and natural like real friends texting. Keep the product's own printed packaging text unchanged. `;
       cp += `${m.ar} aspect ratio, clean flat messaging-app UI, crisp legible typography, no spelling errors on any text.`;
