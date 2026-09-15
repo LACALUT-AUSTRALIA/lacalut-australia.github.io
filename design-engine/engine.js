@@ -170,6 +170,28 @@
     const bans = [...GLOBAL_BAN, ...s.ban];
     const salesLike = brain && ['Sales','Social Proof','Story'].includes(brain.cat);
     const isUGC = brain && brain.cat === 'UGC';
+    const isChat = brain && /chat|text message/i.test(brain.name);
+
+    // ═══ CHAT / TEXT MESSAGE — dedicated FLAT full-bleed messaging-screen screenshot ═══
+    // Bypasses ALL the generic headline/variation/photoreal/badge scaffolding, which was
+    // turning this into a photoreal phone-on-a-podium in a studio scene with a headline banner.
+    if(isChat){
+      let cp = `Create a FLAT 2D SCREENSHOT of a mobile phone MESSAGING app (iMessage / WhatsApp style) for LACALUT ${s.name} (German pharmacy oral-care brand) — exactly as if someone took a screenshot ON their phone and posted it to Facebook. `;
+      cp += `THE ENTIRE 4:5 IMAGE IS THE PHONE SCREEN ITSELF, full-bleed edge to edge. It is a flat on-screen UI screenshot, NOT a photograph of a phone. ABSOLUTELY NO physical phone device, NO phone body, bezel or frame, NO hand holding a phone, NO desk, table, podium or pedestal, NO 3D scene, NO studio background, NO teal/coloured backdrop, NO drop shadow around a device — the chat interface fills 100% of the canvas. `;
+      cp += `LAYOUT, top to bottom: (1) a slim phone STATUS BAR — time at top-left, signal/wifi/battery icons at top-right; (2) a chat HEADER BAR with a back chevron on the left, a small round contact avatar and a first-name contact label (e.g. "Alex", "Sam", "Jess") centred — this is what signals it is a phone screen; (3) the CONVERSATION as a vertical stack of rounded chat bubbles filling the rest of the screen — GREY received bubbles aligned LEFT, BLUE sent bubbles aligned RIGHT, small timestamps; (4) a slim message-input bar at the very bottom. `;
+      cp += `TYPOGRAPHY (most important rule): the chat bubble text must be VERY LARGE — like a phone with the accessibility "Larger Text" setting turned right up — big, bold and effortless to read even in a small Facebook feed thumbnail on a mobile. Err on the side of TOO big. `;
+      cp += `Keep the conversation SHORT — only about 4 to 6 bubbles total — and each bubble to one short line or two, so every bubble can be rendered large; do NOT cram in many small messages. The bubbles and their text should fill most of the screen width. `;
+      cp += `Text is high-contrast: dark text on grey received bubbles, white text on blue sent bubbles. `;
+      if(brain) brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) cp += `${d} — ${v}. `; });
+      if(brief) cp += `Art-director note (priority): ${brief}. `;
+      if(opts.headline) cp += `The conversation should naturally get across THIS message/topic — "${opts.headline}" — woven into the texts, never as an overlay headline. `;
+      cp += `Include exactly ONE inline PHOTO-MESSAGE bubble showing the real LACALUT ${s.name} product (from the reference image) — like a friend texted a pic. Keep this photo SMALL — no more than about a quarter to a third of the screen height — so it never dominates or shrinks the text; the text bubbles are the hero, not the photo. White cap, real German packaging accurate; NOT a big studio hero. `;
+      cp += `NO external headline, NO title banner, NO benefit badges, NO trust chips, NO logo watermark, NO call-to-action sticker — the whole message lives INSIDE the chat bubbles. `;
+      if(advNeg) cp += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
+      cp += `All chat text in ENGLISH (Australian English), casual and natural like real friends texting. Keep the product's own printed packaging text unchanged. `;
+      cp += `${m.ar} aspect ratio, clean flat messaging-app UI, crisp legible typography, no spelling errors on any text.`;
+      return cp;
+    }
 
     let p = `Professional graphic-designed ${m.label} for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
     p += `STRICT brand colours — ${g.colours||s.palette}. `;
@@ -188,6 +210,7 @@
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
     p += `ALL overlay/design text — headline, labels, badges, captions — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (The product's own printed packaging text stays unchanged.) Keep it clean and uncluttered — no extra call-to-action stickers or badges unless specified. `;
     p += `COPY RELEVANCE: every headline, caption and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste, fresh breath, or the whitening/repair benefit — never a vague generic line like "German pharmacy care" on its own; always tie it to the actual product (e.g. "German pharmacy-grade gum care"). `;
+    p += `SKU ANGLE LOCK (mandatory — the foundation rule): this creative is EXCLUSIVELY for LACALUT ${s.name}. Every headline, sub-headline, benefit, transformation, badge and visual MUST be about THIS product's own benefit only — ${s.say}. NEVER borrow another LACALUT product's angle or claim: do NOT show or write teeth-whitening, "whiter smile", stain-removal or before/after whitening UNLESS this is the White & Repair whitening product; do NOT show gum-firmness or plaque unless this is a gum-care product; do NOT show sensitivity/cold-twinge comfort unless this is the Sensitive product; do NOT show fresh-breath messaging unless this is the Flora fresh-breath product. Match the angle to ${s.name} and nothing else. `;
     if(isUGC){
       p += `UGC PHOTO — a real, believable everyday PERSON (matching the Art-director note) is the CLEAR SUBJECT, authentically holding or using the LACALUT product in a genuine phone-camera photo: natural imperfect lighting, a real home or bathroom setting, candid unposed feel. The PERSON MUST be clearly visible and prominent — NEVER a product-only, hand-only or studio-hero shot. The product is held or placed naturally in the scene (not a big floating hero), its real packaging accurate and the CAP ALWAYS WHITE (never red, navy or coloured). CRITICAL SCALE: the tube is its TRUE real-world size — a normal ~75ml toothpaste tube (about the length of a hand), correctly proportioned to the person's hand, fingers and face; NEVER enlarged, oversized or giant. Any on-image caption stays in a casual, native, lowercase style (like a viral social-post caption), NOT a formal studio ad headline — BUT it is rendered LARGE, bold and instantly readable on a mobile screen, never tiny. `;
       const ugcLens = ["a front-camera selfie held at arm's length","a candid over-the-shoulder phone shot","a natural bathroom-mirror selfie","a relaxed waist-up handheld shot"][Math.floor(Math.random()*4)];
@@ -254,10 +277,14 @@
       const base=(pLabels && pLabels.length>1)
         ? `The FIRST ${pRefs.length} reference images are ${pRefs.length} DIFFERENT LACALUT products, in this exact left-to-right order: ${pLabels.slice(0,pRefs.length).map((n,i)=>`${i+1}) ${n}`).join(', ')}. Treat each image ONLY as the source of truth for THAT product's real packaging shape, label layout, colours, logo and exact wording. Keep every product visually DISTINCT and every label word and logo accurate and legible; never invent, garble, mistranslate, merge or swap the products' text. `
         : `The FIRST ${pRefs.length} reference image(s) show the EXACT LACALUT product — treat them ONLY as the source of truth for the product's branding: real packaging shape, label layout, colours, logo and exact wording. Keep every label word and logo accurate and legible; never invent, garble, mistranslate or alter the product text. `;
-      const angle=`You have creative freedom over the product's ANGLE and composition — choose a fresh, dynamic, flattering hero angle (standing upright, three-quarter turn, tilted, or lying on a surface); it need NOT match the reference photo's angle. `;
-      if(render==='exact') instr+=base+`Reproduce the product exactly as photographed — flat and unchanged. `;
-      else if(render==='graphical') instr+=base+angle+`Render the product as a clean, glossy premium 3D CGI product render — dimensional form, studio lighting, crisp reflections, graphic-design ad aesthetic. `;
-      else instr+=base+angle+`Render the product as a hyper-realistic photographic 3D studio product shot — realistic lighting, soft shadows, gentle reflections, depth and dimension, sitting believably in the scene. `;
+      if(opts.chatShot){
+        instr+=base+`Place the product ONLY as a small, flat, slightly-compressed PHOTO inside a chat message bubble — exactly like a JPEG a friend texted you (an MMS). Keep the packaging, label, logo and wording accurate and legible, white cap. Do NOT render it as a large 3D studio hero, do NOT give it a new background, scene, podium or dramatic lighting — it is just a small inline photo within a flat messaging-screen screenshot. `;
+      } else {
+        const angle=`You have creative freedom over the product's ANGLE and composition — choose a fresh, dynamic, flattering hero angle (standing upright, three-quarter turn, tilted, or lying on a surface); it need NOT match the reference photo's angle. `;
+        if(render==='exact') instr+=base+`Reproduce the product exactly as photographed — flat and unchanged. `;
+        else if(render==='graphical') instr+=base+angle+`Render the product as a clean, glossy premium 3D CGI product render — dimensional form, studio lighting, crisp reflections, graphic-design ad aesthetic. `;
+        else instr+=base+angle+`Render the product as a hyper-realistic photographic 3D studio product shot — realistic lighting, soft shadows, gentle reflections, depth and dimension, sitting believably in the scene. `;
+      }
     }
     if(sRefs.length) instr+=`The NEXT ${sRefs.length} reference image(s) show the DESIGN STYLE to emulate — match their layout, typography, colour-blocking and composition, but do NOT copy their product, logos or wording. `;
     const parts=[{text:(instr?instr+'Now create the following: ':'')+prompt}, ...pRefs, ...sRefs];
@@ -283,7 +310,8 @@
     if(render==='mixed') render = Math.random()<0.5 ? 'photoreal' : 'graphical';
 
     const brain = opts.brain || resolveBrain(opts.brainId);
-    const wantsProduct = /\b(box|tube|pack|packshot|packaging|product|bottle)\b/i.test(opts.brief||''); const useProd = (typeof opts.useProd==='boolean') ? opts.useProd : ((brain && brain.product==='none') ? false : true);
+    const isChat = brain && /chat|text message/i.test(brain.name);
+    const wantsProduct = /\b(box|tube|pack|packshot|packaging|product|bottle)\b/i.test(opts.brief||''); const useProd = isChat ? true : ((typeof opts.useProd==='boolean') ? opts.useProd : ((brain && brain.product==='none') ? false : true));
     const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, headline:opts.headline, advNeg:opts.advNeg, useProd });
     const aspectRatio = ((MODES[mode] && MODES[mode].ar) || '4:5').split(' ')[0];
 
@@ -291,7 +319,7 @@
       prompt,
       productImgs: useProd ? (opts.productImgs||[]).filter(Boolean) : [],
       styleImgs:   useProd ? (opts.styleImgs||[]).filter(Boolean) : [],
-      render, model: opts.model, apiKey: opts.apiKey, aspectRatio
+      render, model: opts.model, apiKey: opts.apiKey, aspectRatio, chatShot: isChat
     });
     const finish = render==='graphical'?'CGI':render==='exact'?'flat':'photoreal';
     const label = (brain?brain.name:'Hero') + (useProd?' · '+finish:' · logo-only');
