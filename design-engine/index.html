@@ -22,6 +22,9 @@
   .tab{ border:2px solid var(--line); background:#fff; border-radius:999px; padding:7px 16px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:7px; }
   .tab .dot{ width:9px; height:9px; border-radius:50%; }
   .tab.active{ border-color:var(--accent); background:#fff5f6; }
+  /* product-type sub-pills (second filter level under the formula tabs) */
+  .tab.ptab{ font-size:12px; padding:5px 13px; border-width:1.5px; color:#555; }
+  .tab.ptab.active{ color:var(--ink); }
   /* layout */
   .wrap{ display:grid; grid-template-columns:340px 1fr; gap:18px; padding:18px; align-items:start; }
   @media(max-width:900px){ .wrap{ grid-template-columns:1fr; } }
@@ -82,7 +85,8 @@
   <button class="btn" onclick="openKeys()">🔑 Keys</button>
 </header>
 
-<div class="tabs" id="tabs"></div>
+<div class="tabs" id="tabs" style="border-bottom:none;padding-bottom:4px"></div>
+<div class="tabs" id="ptypes" style="padding-top:0"></div>
 
 <div class="wrap">
   <!-- LEFT: generation settings -->
@@ -222,6 +226,27 @@ let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","se
 let curBrain = null;
 const $ = id => document.getElementById(id);
 
+/* ═══ PRODUCT-TYPE SUB-FILTER (second filter level under the formula tabs) ═══
+   Tag-and-filter ONLY — never deletes/moves saved outputs. Stored items with no
+   ptype are treated as toothpaste (legacy = all toothpaste), never hidden. */
+const PTYPES=[['toothpaste','🦷 Toothpaste'],['mouthwash','💧 Mouthwash'],['toothbrush','🪥 Toothbrush']];
+const PTYPE_LABEL={toothpaste:'🦷 Toothpaste', mouthwash:'💧 Mouthwash', toothbrush:'🪥 Toothbrush'};
+// Reference-library row → product type: Box/Tube/Box+Tube = toothpaste · Bottle/Bottle+Box = mouthwash · Brush = toothbrush
+const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mouthwash'], toothbrush:['toothbrush'] };
+function getPtype(sku){ return localStorage.getItem('de_ptype_'+(sku||curSku)) || 'toothpaste'; }
+let curPtype = getPtype(curSku);
+function ptypeOf(rec){ return (rec && rec.ptype) || 'toothpaste'; }   // missing tag = toothpaste, never hidden
+function renderPtypes(){ const el=$('ptypes'); if(!el) return;
+  el.innerHTML = PTYPES.map(([k,l])=>`<button class="tab ptab ${k===curPtype?'active':''}" onclick="pickPtype('${k}')">${l}</button>`).join(''); }
+function pickPtype(p){ curPtype=p; localStorage.setItem('de_ptype_'+curSku,p);   // persisted per formula tab
+  renderPtypes(); renderTitle(); renderGallery(curSku); renderRefLibGrid(); }
+// one-off migration: tag every legacy saved generation as toothpaste (tag only — nothing deleted/re-rendered)
+async function migratePtype(){ try{ const db=await idb();
+  await new Promise(res=>{ const t=db.transaction('gens','readwrite'); const rq=t.objectStore('gens').openCursor();
+    rq.onsuccess=()=>{ const c=rq.result; if(!c) return; const r=c.value; if(!r.ptype){ r.ptype='toothpaste'; c.update(r); } c.continue(); };
+    t.oncomplete=res; t.onerror=res; });
+}catch(e){} }
+
 /* ═══ RENDER ═══ */
 function renderTabs(){
   $('tabs').innerHTML = Object.entries(SKUS).map(([k,v])=>
@@ -312,12 +337,12 @@ function renderNeg(){
     : [...GLOBAL_BAN, ...SKUS[curSku].ban];
   $('negPreview').textContent = $('advNeg').checked ? 'Blocking: '+bans.join(', ') : 'Off — no compliance guard.';
 }
-function renderTitle(){ const nm = curSku==='multi'?'Multi-SKU':SKUS[curSku].name; $('skuTitle').textContent = `${nm} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
+function renderTitle(){ const nm = curSku==='multi'?'Multi-SKU':SKUS[curSku].name; $('skuTitle').textContent = `${nm} · ${PTYPE_LABEL[curPtype]||curPtype} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
 function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes('3-pro')?'Pro 🍌':'Nano 🍌';
   if(KEYS.gemini){ b.className='kbadge ok'; b.textContent='✓ '+mdl; } else { b.className='kbadge no'; b.textContent='⚠ No Gemini key'; } }
 
 /* ═══ ACTIONS ═══ */
-function pickSku(k){ curSku=k; if(k!=='multi') productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
+function pickSku(k){ curSku=k; if(k!=='multi') productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); curPtype=getPtype(k); renderPtypes(); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
 function pickMode(m){ curMode=m; renderModes(); renderEditModes(); renderTitle(); }
 
 /* ═══ PRESETS — save the current recipe (SKU + strategy + form + brief + settings) and reload it in one click ═══ */
@@ -419,6 +444,7 @@ async function runGenerate(){
     if(selBrain && selBrain.product==='required' && !productImgs.filter(Boolean).length){ alert('This strategy needs a product photo — upload one in the Main slot.'); return; }
   }
   const qty=parseInt($('qty').value); const btn=$('genBtn');
+  const genPtype=curPtype;   // tag every new generation with the active product type at generate time
   btn.disabled=true; btn.textContent='✨ Generating…';
   if($('output').querySelector('.empty')) $('output').innerHTML='';
   for(let i=0;i<qty;i++){
@@ -454,7 +480,7 @@ async function runGenerate(){
       }
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
         render:rmode, model:curModel, apiKey:KEYS.gemini, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:isMulti?'multi':curSku, mode:curMode, label, ts:Date.now(), url, fav:false};
+      const rec={id:'g'+Date.now()+'_'+i, sku:isMulti?'multi':curSku, mode:curMode, ptype:genPtype, label, ts:Date.now(), url, fav:false};
       await idbPut(rec);
       $(id).outerHTML=cardHTML(rec);
     }catch(e){ markCardFailed(id, e.message); }
@@ -493,9 +519,11 @@ function compressRef(url,max){ return new Promise(res=>{ const img=new Image(); 
 function renderRefLibGrid(){
   const wrap=$('refLibGrid'); if(!wrap) return;
   const skus=Object.entries(SKUS);
-  let h=`<div class="reflib" style="grid-template-columns:78px repeat(${skus.length},1fr)">`;
+  const rows=REF_TYPES.filter(([t])=>(PTYPE_REF_ROWS[curPtype]||[]).includes(t));   // only rows for the active product type
+  let h=`<div style="font-size:11px;font-weight:700;color:var(--navy);margin:0 0 4px">${PTYPE_LABEL[curPtype]||curPtype} references — switch the product-type pill to see others</div>`;
+  h+=`<div class="reflib" style="grid-template-columns:78px repeat(${skus.length},1fr)">`;
   h+=`<div></div>`+skus.map(([k,v])=>`<div class="refhdr">${v.name}</div>`).join('');
-  for(const [type,tlabel] of REF_TYPES){
+  for(const [type,tlabel] of rows){
     h+=`<div class="reftype">${tlabel}</div>`;
     h+=skus.map(([k])=>{ const key=k+'_'+type; const url=_refLib[key]; const sel=_editRefs.includes(key);
       if(url) return `<div class="refslot${sel?' on':''}" onclick="toggleRefSelect('${key}')" title="click to ${sel?'deselect':'select'}"><img src="${url}"><button class="rm" onclick="event.stopPropagation();removeRef('${key}')">×</button>${sel?'<span class="tick">✓</span>':''}</div>`;
@@ -709,15 +737,17 @@ async function sendToFacy(cardId){
     toast('🚀 Sent straight to Facy — building automatically, no other tab needed');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
 }
-function galleryOrderKey(sku){ return 'de_order_'+sku; }
+function galleryOrderKey(sku){ return 'de_order_'+sku+'_'+curPtype; }   // drag order scoped per formula tab + product type
 function saveGalleryOrder(sku){ const ids=[...$('output').querySelectorAll('.card')].map(c=>c.id); localStorage.setItem(galleryOrderKey(sku), JSON.stringify(ids)); }
-async function renderGallery(sku){ const recs=await idbBySku(sku);
-  const saved=JSON.parse(localStorage.getItem(galleryOrderKey(sku))||'null');
+async function renderGallery(sku){ const all=await idbBySku(sku);
+  const recs=all.filter(r=>ptypeOf(r)===curPtype);   // untagged legacy = toothpaste, never hidden
+  const saved=JSON.parse(localStorage.getItem(galleryOrderKey(sku)) || localStorage.getItem('de_order_'+sku) || 'null');   // legacy order fallback
   if(saved && saved.length){ const pos=new Map(saved.map((id,i)=>[id,i]));
     // known cards keep the saved drag order; new (unsaved) cards float to the top, newest first
     recs.sort((a,b)=>{ const pa=pos.has(a.id)?pos.get(a.id):-1, pb=pos.has(b.id)?pos.get(b.id):-1; return pa!==pb ? pa-pb : b.ts-a.ts; });
   } else { recs.sort((a,b)=>b.ts-a.ts); }
-  $('output').innerHTML = recs.length ? recs.map(cardHTML).join('') : `<div class="empty">No saved images for ${SKUS[sku]?.name||sku} yet. Upload a packshot + pick a strategy → Generate.</div>`; }
+  const nm=curSku==='multi'&&sku==='multi'?'Multi-SKU':(SKUS[sku]?.name||sku);
+  $('output').innerHTML = recs.length ? recs.map(cardHTML).join('') : `<div class="empty">No ${PTYPE_LABEL[curPtype]||curPtype} images for ${nm} yet${all.length?` — ${all.length} on other product-type pills`:''}. Upload a packshot + pick a strategy → Generate.</div>`; }
 
 /* ═══ DESCRIBE AN EDIT (image-to-image via Gemini) ═══ */
 function callGeminiEdit(imgDataUrl, instruction){
@@ -773,7 +803,7 @@ async function finishEditCard(id, rec){
   await idbPut(rec);                                   // always persisted first
   const el=$(id);
   if(el){ el.outerHTML=cardHTML(rec); return; }        // placeholder still on screen
-  if(rec.sku===curSku && !$(rec.id)){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }  // back on its tab
+  if(rec.sku===curSku && ptypeOf(rec)===curPtype && !$(rec.id)){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }  // back on its tab+pill
   else { toast('✅ '+((SKUS[rec.sku]&&SKUS[rec.sku].name)||rec.sku)+' image ready — see its SKU tab'); }
 }
 function dismissCard(id){ const el=$(id); if(el) el.remove(); }
@@ -785,6 +815,7 @@ async function applyEdit(){
   const instruction=$('editInstruction').value.trim(); if(!instruction){ editDlg.close(); return; }
   const src=_editSrc; if(!src){ editDlg.close(); return; }
   const refs=_editRefs.slice();
+  const firePtype=curPtype;   // tag edit outputs with the active product type at fire time
   editDlg.close();
   // BATCH: only when explicitly opted-in → fire one independent render per reference, each tagged to its own SKU
   if(refs.length>=2 && $('batchPerRef') && $('batchPerRef').checked){
@@ -797,7 +828,7 @@ async function applyEdit(){
       (async ()=>{
         try{
           const url=await callGeminiEditRefs(src, instruction, [key]);
-          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, label:'edited', ts:Date.now(), url, fav:false};
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:'edited', ts:Date.now(), url, fav:false};
           await finishEditCard(id, rec);
         }catch(e){ markCardFailed(id, e.message); }
       })();
@@ -826,7 +857,7 @@ async function applyEdit(){
     (async()=>{
       try{
         const url=await callGeminiEditRefs(src, instr, refKeys);
-        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, label:'edited', ts:Date.now(), url, fav:false};
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:'edited', ts:Date.now(), url, fav:false};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
@@ -892,7 +923,8 @@ async function pushCardToMarky(cardId){
 }
 
 /* ═══ INIT ═══ */
-renderTabs(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); renderGallery(curSku); initCardDnD(); renderPresets('');
+renderTabs(); renderPtypes(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets('');
+migratePtype().then(()=>renderGallery(curSku));   // tag legacy gens as toothpaste first, then paint the gallery
 loadRefLib();
 $('advNeg').addEventListener('change',renderNeg);
 </script>
