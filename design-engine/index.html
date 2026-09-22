@@ -232,7 +232,7 @@ const $ = id => document.getElementById(id);
 const PTYPES=[['toothpaste','🦷 Toothpaste'],['mouthwash','💧 Mouthwash'],['toothbrush','🪥 Toothbrush']];
 const PTYPE_LABEL={toothpaste:'🦷 Toothpaste', mouthwash:'💧 Mouthwash', toothbrush:'🪥 Toothbrush'};
 // Reference-library row → product type: Box/Tube/Box+Tube = toothpaste · Bottle/Bottle+Box = mouthwash · Brush = toothbrush
-const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mouthwash'], toothbrush:['toothbrush'] };
+const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mw_box','mouthwash'], toothbrush:['toothbrush'] };
 function getPtype(sku){ return localStorage.getItem('de_ptype_'+(sku||curSku)) || 'toothpaste'; }
 let curPtype = getPtype(curSku);
 function ptypeOf(rec){ return (rec && rec.ptype) || 'toothpaste'; }   // missing tag = toothpaste, never hidden
@@ -507,6 +507,7 @@ const REF_TYPES=[
   ['toothpaste','🦷 Tube'],
   ['tp_boxtube','🦷 Box+Tube'],
   ['mw_bottle','💧 Bottle'],
+  ['mw_box','💧 Box'],
   ['mouthwash','💧 Bottle+Box'],
   ['toothbrush','🪥 Brush'],
 ];
@@ -546,7 +547,7 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
-   <select class="iconbtn moveSel" title="Move this image to another SKU tab" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku)}</select></div>
+   <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
    ${rec.sentToCalendar
      ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
@@ -637,12 +638,20 @@ async function toggleFav(id,btn){ const db=await idb(); const t=db.transaction('
   rq.onsuccess=()=>{ const r=rq.result; if(!r)return; r.fav=!r.fav; st.put(r); btn.textContent=r.fav?'❤️':'🤍'; }; }
 async function delGen(id){ if(!confirm('Delete this image?'))return; await idbDel(id); const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku); }
 /* ═══ MOVE IMAGE TO ANOTHER SKU TAB ═══ */
-function moveOptions(cur){
-  // Always list ALL 5 SKUs + Multi-SKU (6 options), regardless of the card's current tab.
-  // Moving a card to the tab it's already on is a harmless no-op (handled in moveGen).
+function moveOptions(curSkuOfCard, curPtypeOfCard){
+  // Each SKU is an <optgroup> with its 3 forms (Toothpaste / Mouthwash / Toothbrush) as a submenu.
+  // value = "<sku>|<ptype>". The card's current spot is disabled + ticked so you can't no-op onto it.
+  const here = curPtypeOfCard || 'toothpaste';
   const o=['<option value="" selected>↗</option>'];
-  for(const [k,v] of Object.entries(SKUS)){ o.push(`<option value="${k}">→ ${v.name}</option>`); }
-  o.push('<option value="multi">→ 🎁 Multi-SKU</option>');
+  for(const [k,v] of Object.entries(SKUS)){
+    o.push(`<optgroup label="${v.name}">`);
+    for(const [p,pl] of PTYPES){
+      const isHere = (k===curSkuOfCard && p===here);
+      o.push(`<option value="${k}|${p}"${isHere?' disabled':''}>${pl}${isHere?' ✓ here':''}</option>`);
+    }
+    o.push('</optgroup>');
+  }
+  o.push('<option value="multi|">🎁 Multi-SKU</option>');
   return o.join('');
 }
 function toast(msg){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'); t.id='lc_toast';
@@ -651,15 +660,17 @@ function toast(msg){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'
   t.textContent=msg; t.style.opacity='1'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity='0',2200); }
 async function moveGen(id,target){
   if(!target) return;
-  const cardEl=$(id); if(cardEl && cardEl.getAttribute('data-sku')===target) return; // already on this tab — no-op
+  const [tsku, tptype] = target.split('|');   // "aktiv|mouthwash"  ·  "multi|" (form unchanged)
   const db=await idb();
   await new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
-    rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sku=target; st.put(r); } };
+    rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sku=tsku; if(tptype) r.ptype=tptype; st.put(r); } };
     t.oncomplete=res; t.onerror=()=>rej(t.error); });
+  // The card no longer belongs on the current SKU+form view → drop it from the grid.
   const el=$(id); if(el) el.remove();
   if(!$('output').children.length) renderGallery(curSku);
-  const nm = target==='multi'?'Multi-SKU':(SKUS[target]?.name||target);
-  toast('✅ Moved to '+nm); }
+  const nm = tsku==='multi'?'Multi-SKU':(SKUS[tsku]?.name||tsku);
+  const fm = tptype?(' · '+(PTYPE_LABEL[tptype]||tptype)):'';
+  toast('✅ Moved to '+nm+fm); }
 
 /* ═══ SEND TO SOCIAL CONTENT CALENDAR (shared IndexedDB inbox, same origin) ═══ */
 function socialIdbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('lc_social',1);
