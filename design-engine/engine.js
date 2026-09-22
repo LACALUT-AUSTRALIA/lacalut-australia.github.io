@@ -491,13 +491,259 @@ ${basePrompt}
     }catch(e){ return basePrompt; }
   }
 
+  /* ═══════════════════════════════════════════════════════════════════
+     VIDEO MODULE — animate a static (or the SKU packshot) into a 5–8s
+     marketing clip. IMAGE-TO-VIDEO. Default engine: Veo 3 Fast on the
+     SAME Gemini key the image engine already uses. Swap to fal.ai
+     (Seedance / Kling) by changing VIDEO_MODEL — every brand + compliance
+     lock from buildPrompt() is mirrored into buildVideoPrompt() below.
+     ═══════════════════════════════════════════════════════════════════ */
+  // Each model earns its place with ONE job the others can't do (no overlap):
+  //  • VEO3_FAST — native AUDIO + UGC/talking, same Gemini key, fast → the default workhorse
+  //  • FAL_SEEDANCE — CHEAPEST: throwaway tests + volume B-roll
+  //  • FAL_KLING — best real physical MOTION: hyper-motion, splash, levitation
+  //  • VEO3 — TOP hero quality for the final cinematic ad
+  const VIDEO_MODELS = {
+    VEO3_FAST:    { route:'gemini', id:'veo-3.0-fast-generate-001', label:'Veo 3 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],       job:'Default workhorse — native audio + UGC, same Gemini key, fast' },
+    FAL_SEEDANCE: { route:'fal',    id:'fal-ai/bytedance/seedance/v1/lite/image-to-video', label:'Seedance 1.0 (fal.ai)', usdPerSec:0.06, audio:false, aspects:['1:1','16:9','9:16'], job:'Cheapest — quick tests + volume B-roll' },
+    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v2/master/image-to-video',      label:'Kling 2.x (fal.ai)',   usdPerSec:0.18, audio:false, aspects:['1:1','16:9','9:16'], job:'Best physical motion — hyper-motion, splash, levitation' },
+    VEO3:         { route:'gemini', id:'veo-3.0-generate-001',      label:'Veo 3',      usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
+  };
+  // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──
+  let VIDEO_MODEL = 'VEO3_FAST';
+  const VIDEO_ASPECTS   = { '1:1':'Feed 1:1 (square)', '9:16':'Reels / Stories 9:16', '16:9':'YouTube 16:9' };
+  const VIDEO_DURATIONS = [6, 8];   // seconds — Veo 3 Fast supports 4/6/8; default 8
+
+  /* ═══ VIDEO STYLE PRESETS — the "Higgsfield Motion" variety pack ═══
+     Each preset = a distinct look/feel + the BEST engine for it + a motion
+     brief that overrides the generic MOTION DIRECTION line in buildVideoPrompt.
+     'model' is the recommended engine key (user can still override in the UI). */
+  const VIDEO_STYLES = {
+    product_motion: { label:'✨ Product Motion (Premium)', model:'VEO3_FAST', emoji:'✨',
+      desc:'Smooth luxe camera on the hero — the safe premium default.',
+      motion:'MOTION: a slow, luxurious cinematic camera move on the product hero — a gentle push-in or slow three-quarter orbit, soft studio light shimmer sliding across the pack, a delicate depth-of-field rack focus, subtle floating dust/particles. Elegant, controlled, high-end — never fast or chaotic.' },
+    hyper_motion:   { label:'⚡ Hyper Motion', model:'FAL_KLING', emoji:'⚡',
+      desc:'Fast, punchy, energetic — Higgsfield-style hype cut.',
+      motion:'MOTION: high-energy hyper-motion — a fast dynamic camera whip toward the product, snap zoom and speed-ramp, the product bursting forward with motion trails and kinetic energy, punchy accents. Bold and thumb-stopping, but the pack itself stays sharp and un-warped throughout.' },
+    slow_reveal:    { label:'🎬 Slow Cinematic Reveal', model:'VEO3_FAST', emoji:'🎬',
+      desc:'Elegant slow build — light blooms, product emerges.',
+      motion:'MOTION: a slow cinematic reveal — the product emerges from soft shadow or light bloom, a gentle dolly-in with drifting light rays and a shallow depth of field pulling focus onto the pack. Calm, premium, aspirational pacing.' },
+    liquid_splash:  { label:'💧 Liquid / Splash', model:'FAL_KLING', emoji:'💧',
+      desc:'Water, gel and ingredient splash around the pack.',
+      motion:'MOTION: dynamic liquid and splash motion — water, gel or the signature formula elements swirl, drip and splash around the product in slow-motion, droplets suspended mid-air catching the light, a fresh clean burst. The pack stays dry, crisp and central.' },
+    float_levitate: { label:'🪐 Float / Levitation', model:'FAL_KLING', emoji:'🪐',
+      desc:'Surreal floating product with orbiting elements.',
+      motion:'MOTION: surreal levitation — the product floats and slowly rotates in mid-air while formula elements and soft geometric accents orbit around it, weightless dreamlike motion, gentle parallax on the background. Premium and hypnotic.' },
+    kinetic_type:   { label:'🔤 Kinetic Typography', model:'VEO3_FAST', emoji:'🔤',
+      desc:'Bold animated headline text, graphic ad feel.',
+      motion:'MOTION: bold kinetic typography — the on-image English headline and sub animate in with punchy, graphic-design timing (slide, scale, snap) synced to a subtle product move; clean colour-blocked motion-graphics feel. Text stays perfectly legible, correctly spelled and never garbled.' },
+    retro_nostalgia:{ label:'📼 Retro / Nostalgia', model:'FAL_SEEDANCE', emoji:'📼',
+      desc:'90s / VHS throwback grade and motion.',
+      motion:'MOTION: a retro nostalgic feel — soft VHS/film grain, gentle light leaks and a warm vintage colour grade, slow analogue camera drift on the product. Stylised and characterful, but the pack and any text stay clean and readable.' },
+    ugc_handheld:   { label:'🤳 UGC / Handheld', model:'VEO3_FAST', emoji:'🤳',
+      desc:'Natural phone-camera feel (native audio on Veo).',
+      motion:'MOTION: authentic UGC handheld motion — natural imperfect phone-camera movement, a real everyday feel as if filmed by hand, casual and believable. If a person is present keep them the clear subject holding the product at true real-world size.' },
+    cinematic_ad:   { label:'🎥 Cinematic Ad', model:'VEO3', emoji:'🎥',
+      desc:'Dramatic story-grade hero moment (top quality).',
+      motion:'MOTION: a dramatic cinematic ad moment — moody directional lighting, a smooth crafted camera move (crane, slow track or dolly), rich colour grade and a strong hero beat on the product. Film-grade, premium and emotive; motion smooth and deliberate.' },
+    draft_test:     { label:'🧪 Quick Test (cheapest)', model:'FAL_SEEDANCE', emoji:'🧪',
+      desc:'Cheapest rough clip to validate an idea before a hero render.',
+      motion:'MOTION: a simple clean product move — a gentle push-in or slow rotation with light shimmer. Keep it straightforward; this is a fast, low-cost test to check the concept before committing to a premium render.' }
+  };
+  function videoStyle(id){ return VIDEO_STYLES[id] || null; }
+
+  function videoModel(key){ return VIDEO_MODELS[key||VIDEO_MODEL] || VIDEO_MODELS.VEO3_FAST; }
+  function getVideoModel(){ return VIDEO_MODEL; }
+  function setVideoModel(key){ if(VIDEO_MODELS[key]) VIDEO_MODEL = key; return VIDEO_MODEL; }
+
+  // Credit / spend estimate — shown BEFORE any API call (hard spend gate).
+  function videoCostEstimate(opts){
+    const m = videoModel(opts && opts.model);
+    const seconds = Math.max(1, (opts && opts.seconds) || 8);
+    const usd = +(m.usdPerSec * seconds).toFixed(2);
+    return { model:m.label, modelKey:(opts&&opts.model)||VIDEO_MODEL, seconds, usdPerSec:m.usdPerSec, usd, audio:m.audio };
+  }
+
+  // QC checklist — the auto-flag list the UI ticks off after a clip returns.
+  function videoQCChecklist(){
+    return [
+      'Pack stays crisp & sharp — real German tube, no blur, no English therapeutic text',
+      'No mirror / reflection bug (inverted readable text)',
+      'No banned ingredient or ion label on screen (only fluoride / hydroxyapatite)',
+      'On-screen text is not garbled',
+      'Product form stays consistent with the SKU'
+    ];
+  }
+
+  function blobToDataUrl(blob){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
+
+  /* ═══ VIDEO PROMPT BUILD (DOM-free) — mirrors buildPrompt's brand + compliance locks ═══ */
+  function buildVideoPrompt(opts){
+    const sku = opts.sku, brain = opts.brain;
+    const brief = (opts.brief||'').trim();
+    const advNeg = opts.advNeg !== false;
+    const seconds = opts.seconds || 8;
+    const ar = opts.aspectRatio || '9:16';
+    const s = SKUS[sku] || SKUS['aktiv'];
+    const g = getGuide(sku);
+    const bans = [...GLOBAL_BAN, ...s.ban];
+    const fx = (g.formula||[]).filter(x=>x.on!==false).map(x=>x.text);
+
+    let p = `Animate the SUPPLIED still image into a ${seconds}-second premium social-media MARKETING VIDEO for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
+    p += `IMAGE-TO-VIDEO — the supplied frame is the hero: keep its exact composition, product, packaging, colours, logo and any on-image text as the anchor. Add tasteful MOTION only; do NOT redraw, restyle, relabel or reinvent anything already in the frame. `;
+    const st = videoStyle(opts.style);
+    p += (st ? st.motion : 'MOTION: a subtle premium camera move (slow push-in / gentle parallax / smooth orbit or dolly), soft light shimmer, delicate floating formula particles or a slow water/ingredient drift, and a gentle product hero reveal. Keep motion smooth and controlled — no fast whip pans, no chaotic morphing, no warping of the product or text.') + ' ';
+    p += `STRICT brand colours — ${g.colours||s.palette}. `;
+    if(brain) p += `CREATIVE STRATEGY — "${brain.name}". `;
+    if(brief) p += `Art-director motion note (priority): ${brief}. `;
+    p += `PRODUCT FIDELITY (mandatory, every frame): the real GERMAN packaging stays razor-sharp and identical throughout — exact tube/box shape, label layout, logo and printed wording; the CAP is ALWAYS WHITE. NEVER blur, melt, warp, duplicate or re-letter the pack; NEVER fabricate an English tube or English health text; NEVER flip the pack so any text becomes a mirrored/reversed reflection. `;
+    p += `SKU ANGLE LOCK: this clip is EXCLUSIVELY for LACALUT ${s.name}; every visual and any on-screen word is about THIS product's own benefit only — ${s.say}. Never borrow another LACALUT product's angle (no whitening unless White & Repair, no gum-firmness unless a gum product, no cold-twinge comfort unless Sensitive, no fresh-breath unless Flora). `;
+    if(fx.length) p += `SIGNATURE FORMULA ELEMENTS (only if formula/ingredient props move in-frame): use ONLY ${fx.join(', ')} for ${s.name}; never another formula's elements (no herbs unless Aktiv Herbal, no silver zinc granules unless Flora, no blue soothing crystals unless Sensitive, no diamond/pearl minerals unless White & Repair). `;
+    p += `COSMETIC-ONLY COMPLIANCE (non-negotiable): LACALUT is a cosmetic, not a medicine. NO therapeutic or disease claims, NO "treat", "cure" or "clinically proven", NO statistics or percentages on screen. The ONLY active ingredients that may ever be named are "fluoride" and "hydroxyapatite" — NEVER strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc, or any ion label (e.g. Sr2+, K+). `;
+    if(advNeg) p += `NEVER show or write any of these words/claims anywhere in the video: ${bans.join(', ')}. `;
+    p += `Any on-screen text is ENGLISH (Australian English) only, minimal, correctly spelled and never garbled; keep the product's own printed German packaging text unchanged and softly out of focus. German heritage descriptors (Crème Paste / Mund-Elixier) are allowed, but "toothpaste" / "mouthwash" stay the plain English words. `;
+    p += `${ar} aspect ratio, ${seconds} seconds, high-end premium finish, smooth natural motion, no flicker, no artefacts.`;
+    return p;
+  }
+
+  /* ═══ VEO 3 CALL (Gemini predictLongRunning + poll) — image-to-video ═══ */
+  async function callVeoVideo(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const m = videoModel(opts.model);
+    const seconds = opts.seconds || 8;
+    const ar = opts.aspectRatio || '9:16';
+    const onProg = opts.onProgress || function(){};
+    const imgPart = dataUrlToInlinePart(opts.imgDataUrl);
+    if(!imgPart) throw new Error('No source image to animate');
+    const instance = { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } };
+    const parameters = { aspectRatio: ar, durationSeconds: seconds, personGeneration:'allow_adult', sampleCount:1 };
+    const base = 'https://generativelanguage.googleapis.com/v1beta/';
+    const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ instances:[instance], parameters }) });
+    const sd = await start.json();
+    if(!start.ok) throw new Error(sd.error?.message || ('HTTP '+start.status));
+    const opName = sd.name; if(!opName) throw new Error('Veo did not return an operation id');
+    let done=null, tries=0;
+    while(tries < 60){
+      await new Promise(r=>setTimeout(r, 10000)); tries++;
+      onProg('⏳ rendering video… '+(tries*10)+'s');
+      const pr = await fetch(base+opName+'?key='+apiKey);
+      const pj = await pr.json();
+      if(!pr.ok) throw new Error(pj.error?.message || ('poll HTTP '+pr.status));
+      if(pj.done){ done=pj; break; }
+    }
+    if(!done) throw new Error('Video timed out (still rendering after 10 min).');
+    if(done.error) throw new Error(done.error.message || 'Video generation failed');
+    const resp = done.response || {};
+    const samples = resp.generateVideoResponse?.generatedSamples
+                 || resp.generateVideoResponse?.generatedVideos
+                 || resp.generatedVideos || [];
+    const first = samples[0] || {};
+    const inline = first.video?.bytesBase64Encoded || first.bytesBase64Encoded;
+    if(inline) return 'data:video/mp4;base64,'+inline;
+    const uri = first.video?.uri || first.video?.videoUri || first.uri;
+    if(!uri) throw new Error('No video returned by Veo');
+    const dl = await fetch(uri + (uri.indexOf('?')>=0?'&':'?') + 'key=' + apiKey);
+    if(!dl.ok) throw new Error('Could not download the rendered video (HTTP '+dl.status+')');
+    return await blobToDataUrl(await dl.blob());
+  }
+
+  /* ═══ FAL.AI CALL (Seedance / Kling) — swappable alt engine ═══ */
+  async function callFalVideo(opts){
+    const key = opts.falKey || (global.localStorage && localStorage.getItem('lc_fal_key')) || '';
+    if(!key) throw new Error('No fal.ai API key — add one to use Seedance / Kling');
+    const m = videoModel(opts.model);
+    const onProg = opts.onProgress || function(){};
+    const body = { prompt: opts.prompt, image_url: opts.imgDataUrl, aspect_ratio: opts.aspectRatio||'9:16', duration: String(opts.seconds||8) };
+    const submit = await fetch('https://queue.fal.run/'+m.id,
+      { method:'POST', headers:{'Authorization':'Key '+key,'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const sj = await submit.json();
+    if(!submit.ok) throw new Error(sj.detail||sj.error||('fal HTTP '+submit.status));
+    const statusUrl = sj.status_url, respUrl = sj.response_url;
+    let tries=0, out=null;
+    while(tries < 60){
+      await new Promise(r=>setTimeout(r, 8000)); tries++;
+      onProg('⏳ rendering video… '+(tries*8)+'s');
+      const st = await fetch(statusUrl, { headers:{'Authorization':'Key '+key} });
+      const stj = await st.json();
+      if(stj.status==='COMPLETED'){ const rr = await fetch(respUrl, { headers:{'Authorization':'Key '+key} }); out = await rr.json(); break; }
+      if(stj.status==='FAILED') throw new Error('fal generation failed');
+    }
+    if(!out) throw new Error('Video timed out.');
+    const url = out.video?.url || out.video_url || out.videos?.[0]?.url;
+    if(!url) throw new Error('No video URL from fal');
+    return await blobToDataUrl(await (await fetch(url)).blob());
+  }
+
+  /* ═══ ONE-UP LOOP (video motion brief) ═══ */
+  async function oneUpVideoPrompt(opts){
+    const basePrompt = (opts.basePrompt||'').trim();
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model = opts.textModel || 'gemini-2.5-flash';
+    const rounds = opts.rounds || 3;
+    if(!apiKey || !basePrompt) return basePrompt;
+    const meta =
+`You are the best performance-video ART DIRECTOR alive for LACALUT, a premium 100-year German pharmacy oral-care brand. Turn this image-to-video motion brief into a THUMB-STOPPING ${opts.seconds||8}s social clip brief. Run an internal one-up loop (at least ${rounds} rounds), each round more cinematic, premium and scroll-stopping than the last, then output ONLY the pinnacle.
+
+HARD RULES you must keep from the base brief, never trade away for drama:
+- IMAGE-TO-VIDEO: the supplied still is the anchor — keep its exact product, packaging, colours, logo and on-image text; add MOTION only, never redraw or relabel. The pack stays razor-sharp every frame, real GERMAN packaging, white cap; never blur/warp/mirror the pack or its text, never fabricate an English tube or English health text.
+- Motion stays smooth and controlled — no chaotic morphing, no warping product or type.
+- COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
+- Keep the SKU angle lock and any banned-word constraints from the base brief.
+- Any on-screen text: Australian English only, minimal, correctly spelled, never garbled.
+- Keep the exact aspect ratio and duration.
+
+Return ONLY valid JSON: {"prompt":"<final pinnacle motion brief, fully self-contained>"}.
+
+BASE BRIEF:
+"""
+${basePrompt}
+"""`;
+    try{
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:1.0 } }) });
+      const data = await res.json();
+      if(!res.ok) return basePrompt;
+      let txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+      let obj; try{ obj = JSON.parse(txt); }catch(e){ return basePrompt; }
+      let refined = (obj && obj.prompt) ? String(obj.prompt).trim() : '';
+      if(!refined || refined.length < 40) return basePrompt;
+      const bans = (opts.bans && opts.bans.length) ? opts.bans.join(', ') : '';
+      let tail = '';
+      if(bans && !/never show or write|compliance/i.test(refined)) tail += ` NEVER show or write any of these words/claims: ${bans}.`;
+      if(opts.aspectRatio && refined.indexOf(opts.aspectRatio)===-1) tail += ` ${opts.aspectRatio} aspect ratio, ${opts.seconds||8} seconds.`;
+      return refined + tail;
+    }catch(e){ return basePrompt; }
+  }
+
+  /* ═══ HIGH-LEVEL: one marketing clip from a card image (or packshot) ═══ */
+  async function generateVideo(opts){
+    // Model resolution order: explicit opts.model → the style's recommended model → global default.
+    const st = videoStyle(opts.style);
+    const modelKey = opts.model || (st && st.model) || VIDEO_MODEL;
+    const m = videoModel(modelKey);
+    let prompt = buildVideoPrompt({ sku:opts.sku, brain:opts.brain, brief:opts.brief, advNeg:opts.advNeg, seconds:opts.seconds, aspectRatio:opts.aspectRatio, style:opts.style });
+    if(opts.oneUp){
+      const bans = opts.advNeg!==false ? [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])] : [];
+      prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:opts.seconds, apiKey:opts.apiKey });
+    }
+    const call = m.route==='fal' ? callFalVideo : callVeoVideo;
+    const video = await call({ prompt, imgDataUrl:opts.imgDataUrl, model:modelKey, seconds:opts.seconds, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey, onProgress:opts.onProgress });
+    return { video, prompt, model:m.label, modelKey, style:opts.style||null, seconds:opts.seconds||8, aspectRatio:opts.aspectRatio||'9:16', cost:videoCostEstimate({model:modelKey,seconds:opts.seconds}), qc:videoQCChecklist() };
+  }
+
   global.LacalutEngine = {
     BRAINS, SKUS, MODES, GLOBAL_BAN, DEFAULT_GUIDES, GUIDE_SECTIONS,
     getGuide, pickStr, pickRand,
     resolveBrain, brainUsesProduct, pickBrainForCategories,
     buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
     oneUpImagePrompt,
-    sanitizeCopy, sanitizeHashtags, hasBannedTerm
+    sanitizeCopy, sanitizeHashtags, hasBannedTerm,
+    VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES,
+    videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
+    buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = global.LacalutEngine;

@@ -52,6 +52,8 @@
   .card .meta{ display:flex; gap:6px; padding:8px; align-items:center; }
   .card .meta .t{ font-size:11px; font-weight:700; color:#666; flex:1; }
   .iconbtn{ border:none; background:#f2f2f2; border-radius:6px; padding:5px 8px; font-size:13px; }
+  .vstyle:hover{ border-color:#7c3aed !important; }
+  .vstyle.on{ border-color:#7c3aed !important; background:#f3edff !important; color:#7c3aed; box-shadow:0 0 0 1px #7c3aed inset; }
   .markybtn{ display:block; width:calc(100% - 16px); margin:0 8px 8px; border:none; background:#6b3fc4; color:#fff; font-weight:700; border-radius:8px; padding:8px; font-size:12px; cursor:pointer; }
   .markybtn:hover{ background:#5a33a8; }
   .markybtn:disabled{ background:#b9a8dd; cursor:not-allowed; }
@@ -546,6 +548,7 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
+   <button class="iconbtn" title="Generate video — animate this into a 5–8s clip" onclick="openVideo('${rec.id}')">🎬</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
@@ -555,7 +558,20 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    ${rec.sentToFacy
      ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Sent to Facy — click to send again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Sent to Facy</button>`
      : `<button class="markybtn" id="facy-${rec.id}" title="Send this image straight to Facy — queues it as a Facebook ad (no download needed)" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Send to Facy</button>`}
-   </div></div>`; }
+   </div>
+   <div id="vidwrap-${rec.id}">${videoBlockHTML(rec)}</div></div>`; }
+
+/* ═══ VIDEO BLOCK — rendered on the card once a clip exists ═══ */
+function videoBlockHTML(rec){ if(!rec||!rec.video) return '';
+  const meta = rec.videoMeta||{};
+  return `<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
+    <video src="${rec.video}" controls loop muted playsinline style="width:100%;border-radius:8px;background:#000"></video>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px">
+      <span class="t" style="flex:1;font-size:10px">🎬 ${meta.style||'video'} · ${meta.model||''} · ${meta.seconds||8}s ${meta.aspectRatio||''}</span>
+      <button class="iconbtn" title="download MP4" onclick="dlVideo('${rec.id}','${rec.sku}-${rec.mode}')">⬇ MP4</button>
+      <button class="iconbtn" title="QC checklist" onclick="showVideoQC('${rec.id}')">✅ QC</button>
+      <button class="iconbtn" title="Regenerate / try another look" onclick="openVideo('${rec.id}')">🔄</button>
+    </div></div>`; }
 
 /* ═══ TEXT-OVERLAY LAYER — real editable headline + sub on top of the AI image ═══
    AI renders imagery only; text lives here as controllable layers that always obey
@@ -623,6 +639,141 @@ function compositeCard(id){return getRec(id).then(rec=>new Promise((resolve,reje
   };img.onerror=()=>resolve(src);img.src=src;
 }));}
 async function dlCard(id,name){try{const url=await compositeCard(id);dl(url,name);}catch(e){alert('Export failed: '+e.message);}}
+
+/* ═══════════════════════════════════════════════════════════════════
+   VIDEO — animate a card (or the SKU packshot) into a 5–8s clip.
+   Style presets + best-model-per-style + a HARD spend gate (confirm the
+   exact cost before any API call, per the rules). engine.js does the work.
+   ═══════════════════════════════════════════════════════════════════ */
+function packshotFor(sku){
+  // Best available reference photo for a SKU from the saved reference library, then the Main slot.
+  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','toothbrush'];
+  for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) return u; }
+  const pm=productImgs.filter(Boolean); return pm[0]||null;
+}
+function _vidCostLine(){
+  const g=x=>document.getElementById(x); if(!g('vidModel')) return;
+  const model=g('vidModel').value, seconds=parseInt(g('vidDur').value)||8;
+  const est=E.videoCostEstimate({model,seconds});
+  const m=E.VIDEO_MODELS[model]||{};
+  g('vidCost').innerHTML=`💸 Est. spend: <b>~US$${est.usd.toFixed(2)}</b> (${est.model}, ${seconds}s @ US$${est.usdPerSec}/s${m.audio?' · audio':''}) — <span style="color:#888">${m.job||''}</span>`;
+  const needFal=(m.route==='fal'); g('vidFalRow').style.display=needFal?'block':'none';
+}
+function _vidStylePick(id){ const g=x=>document.getElementById(x);
+  const st=E.VIDEO_STYLES[id]; if(!st) return;
+  document.querySelectorAll('.vstyle').forEach(b=>b.classList.toggle('on', b.dataset.k===id));
+  g('vidStyle').value=id;
+  g('vidModel').value=st.model;              // auto-pick the best model for this look (user can override below)
+  g('vidStyleDesc').textContent=st.desc;
+  _vidCostLine();
+}
+function openVideo(cardId){ getRec(cardId).then(rec=>{ if(!rec){alert('No card.');return;}
+  const sku=rec.sku==='multi'?'aktiv':rec.sku;
+  const styles=Object.entries(E.VIDEO_STYLES);
+  const aspects=Object.entries(E.VIDEO_ASPECTS);
+  const models=Object.entries(E.VIDEO_MODELS);
+  const durs=E.VIDEO_DURATIONS;
+  const falKey=localStorage.getItem('lc_fal_key')||'';
+  const dlg=document.createElement('div'); dlg.id='viddlg';
+  dlg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  dlg.innerHTML=`<div style="background:#fff;border-radius:14px;padding:22px;max-width:600px;width:94%;font-family:system-ui;max-height:92vh;overflow:auto">
+    <h3 style="margin:0 0 4px;color:#7c3aed">🎬 Generate Video — animate this creative</h3>
+    <div style="font-size:12px;color:#666;margin-bottom:12px">Image-to-video. Pick a look → we auto-choose the best engine. Confirm the cost before it renders.</div>
+
+    <label style="font-weight:700;font-size:13px">1 · Pick a look</label>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:6px 0 4px">
+      ${styles.map(([k,s])=>`<button class="vstyle" data-k="${k}" onclick="_vidStylePick('${k}')" style="text-align:left;padding:8px 10px;border:1px solid #ddd;border-radius:9px;background:#fafafa;cursor:pointer;font-size:12px;font-weight:700">${s.label}</button>`).join('')}
+    </div>
+    <div id="vidStyleDesc" style="font-size:11px;color:#888;min-height:15px;margin-bottom:12px"></div>
+    <input type="hidden" id="vidStyle" value="">
+
+    <label style="font-weight:700;font-size:13px">2 · Source</label>
+    <select id="vidSrc" style="width:100%;margin:4px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px">
+      <option value="card">This card image (with any text overlay baked in)</option>
+      <option value="packshot">The ${SKUS[sku]?.name||sku} packshot reference</option>
+    </select>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="flex:1;min-width:150px"><label style="font-weight:700;font-size:13px">3 · Aspect ratio</label>
+        <select id="vidAr" onchange="_vidCostLine()" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px">
+          ${aspects.map(([k,v])=>`<option value="${k}"${k==='9:16'?' selected':''}>${v}</option>`).join('')}</select></div>
+      <div style="flex:1;min-width:120px"><label style="font-weight:700;font-size:13px">Duration</label>
+        <select id="vidDur" onchange="_vidCostLine()" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:8px">
+          ${durs.map(d=>`<option value="${d}"${d===8?' selected':''}>${d} seconds</option>`).join('')}</select></div>
+    </div>
+
+    <label style="font-weight:700;font-size:13px">4 · Engine <span style="font-weight:400;color:#888">(auto-set by the look — override only if you know why)</span></label>
+    <select id="vidModel" onchange="_vidCostLine()" style="width:100%;margin:4px 0 6px;padding:8px;border:1px solid #ddd;border-radius:8px">
+      ${models.map(([k,m])=>`<option value="${k}">${m.label} — ${m.job}</option>`).join('')}</select>
+    <div id="vidFalRow" style="display:none;margin-bottom:8px"><input type="password" id="vidFalKey" placeholder="fal.ai API key (needed for Seedance / Kling)" value="${falKey.replace(/"/g,'&quot;')}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-size:12px"></div>
+
+    <label style="font-weight:700;font-size:13px">5 · Motion note <span style="font-weight:400;color:#888">(optional)</span></label>
+    <textarea id="vidBrief" rows="2" placeholder="e.g. slow push-in on the cap, gentle sparkle" style="width:100%;margin:4px 0 8px;padding:8px;border:1px solid #ddd;border-radius:8px;font:inherit"></textarea>
+    <label class="row" style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:12px"><input type="checkbox" id="vidOneUp"> 🚀 One-Up Loop — refine the motion brief to its pinnacle</label>
+
+    <div id="vidCost" style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin-bottom:6px"></div>
+    <div id="vidStatus" style="font-size:12px;color:#7c3aed;min-height:16px;margin-bottom:8px"></div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('viddlg').remove()" style="padding:9px 16px;border:1px solid #ccc;background:#fff;border-radius:8px;cursor:pointer">Cancel</button>
+      <button id="vidGoBtn" onclick="runVideo('${cardId}')" style="padding:9px 18px;border:0;background:#7c3aed;color:#fff;border-radius:8px;font-weight:700;cursor:pointer">🎬 Generate Video</button>
+    </div></div>`;
+  document.body.appendChild(dlg);
+  _vidStylePick('product_motion');   // sensible premium default
+}); }
+
+async function runVideo(cardId){
+  const g=x=>document.getElementById(x);
+  if(!KEYS.gemini){ alert('Add your Gemini API key first (top-right Keys).'); return; }
+  const rec=await getRec(cardId); if(!rec){ alert('No card.'); return; }
+  const sku=rec.sku==='multi'?'aktiv':rec.sku;
+  const style=g('vidStyle').value||'product_motion';
+  const model=g('vidModel').value;
+  const seconds=parseInt(g('vidDur').value)||8;
+  const aspectRatio=g('vidAr').value;
+  const brief=g('vidBrief').value.trim();
+  const oneUp=g('vidOneUp').checked;
+  const mdef=E.VIDEO_MODELS[model]||{};
+
+  // Aspect-ratio guard — Veo does not do 1:1.
+  if(!(mdef.aspects||[]).includes(aspectRatio)){ alert(`${mdef.label} can't do ${aspectRatio}. Use ${(mdef.aspects||[]).join(' or ')}, or switch engine (Seedance / Kling support 1:1).`); return; }
+
+  // fal key capture + persist.
+  let falKey='';
+  if(mdef.route==='fal'){ falKey=(g('vidFalKey').value||'').trim(); if(!falKey){ alert('Paste your fal.ai API key to use '+mdef.label+'.'); return; } localStorage.setItem('lc_fal_key',falKey); }
+
+  // Source image.
+  let img;
+  if(g('vidSrc').value==='packshot'){ img=packshotFor(sku); if(!img){ alert('No packshot saved for '+(SKUS[sku]?.name||sku)+'. Upload one to the reference library first.'); return; } }
+  else { try{ img=await compositeCard(cardId); }catch(_){ img=rec.url; } }
+
+  // 🔴 HARD SPEND GATE — confirm the exact cost before any API call.
+  const est=E.videoCostEstimate({model,seconds});
+  if(!confirm(`This will spend ~US$${est.usd.toFixed(2)} on ${est.model} (${seconds}s ${aspectRatio}).\n\nGenerate the video now?`)) return;
+
+  const btn=g('vidGoBtn'); if(btn){ btn.disabled=true; btn.textContent='🎬 Rendering…'; }
+  const setStatus=t=>{ const s=g('vidStatus'); if(s) s.textContent=t; };
+  setStatus('⏳ starting… (Veo/Kling take ~1–3 min)');
+  try{
+    const out=await E.generateVideo({ sku, style, model, seconds, aspectRatio, brief, oneUp,
+      imgDataUrl:img, advNeg:$('advNeg')?$('advNeg').checked:true,
+      apiKey:KEYS.gemini, falKey, onProgress:setStatus });
+    const fresh=await getRec(cardId)||rec;
+    fresh.video=out.video;
+    fresh.videoMeta={ style:(E.VIDEO_STYLES[style]?.label)||style, model:out.model, seconds:out.seconds, aspectRatio:out.aspectRatio };
+    fresh.videoQC=out.qc; fresh.videoPrompt=out.prompt;
+    await idbPut(fresh);
+    const w=$('vidwrap-'+cardId); if(w) w.innerHTML=videoBlockHTML(fresh);
+    const d=g('viddlg'); if(d) d.remove();
+    try{ toast('🎬 Video ready — check the card'); }catch(_){}
+  }catch(e){ setStatus('⚠️ '+e.message); if(btn){ btn.disabled=false; btn.textContent='🎬 Generate Video'; } }
+}
+
+async function dlVideo(id,name){ const rec=await getRec(id); if(!rec||!rec.video){ alert('No video on this card.'); return; }
+  const a=document.createElement('a'); a.href=rec.video; a.download='lacalut-'+name+'.mp4'; a.click(); }
+
+async function showVideoQC(id){ const rec=await getRec(id); const qc=(rec&&rec.videoQC)||E.videoQCChecklist();
+  alert('🎬 VIDEO QC — eyeball the clip against each:\n\n'+qc.map(q=>'☐ '+q).join('\n')); }
 
 // ── Drag-to-reorder gallery cards (pull any two side-by-side for comparison) ──
 let _dragCard=null;
