@@ -632,7 +632,8 @@ ${basePrompt}
     const instance = imgPart
       ? { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } }
       : { prompt: opts.prompt };
-    const parameters = { aspectRatio: ar, durationSeconds: seconds, personGeneration:'allow_adult', sampleCount:1 };
+    const parameters = { aspectRatio: ar, durationSeconds: seconds, sampleCount:1 };
+    if(imgPart) parameters.personGeneration='allow_adult';   // t2v rejects allow_adult — only valid for image-to-video
     const base = 'https://generativelanguage.googleapis.com/v1beta/';
     const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
       { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ instances:[instance], parameters }) });
