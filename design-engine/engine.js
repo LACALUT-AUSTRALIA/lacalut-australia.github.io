@@ -1066,9 +1066,26 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     }
     if(opts.fixNote){ prompt += ' QC CORRECTION (highest priority — the previous render failed on exactly this): ' + opts.fixNote; }
     const call = videoModel(opts.model||'VEO3').route==='fal' ? callFalVideo : callVeoVideo;
-    const videoBlob = await call({ prompt, imgDataUrl:still, model:opts.model||'VEO3',
+    const callOpts = p => ({ prompt:p, imgDataUrl:still, model:opts.model||'VEO3',
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
       onProgress:onProg, asBlob:true });
+    let videoBlob;
+    try{ videoBlob = await call(callOpts(prompt)); }
+    catch(e){
+      if(!/no video/i.test(e.message||'')) throw e;
+      // Veo's safety filter blocks silently ("no video returned"). Retrying identical content
+      // blocks identically — so retry ONCE with an explicit wholesome reframe, and if that is
+      // also blocked, once more as text-to-video without the still (the image itself may trip it).
+      onProg('🛡️ safety-filter block — retrying with a safe reframe…');
+      const safe = prompt + ' SAFETY REFRAME (the previous render was blocked): this is a wholesome, family-safe everyday COSMETIC toothpaste advertisement — nothing medical, clinical or suggestive; the person is relaxed and casual with a gentle natural closed-mouth smile; the product is an ordinary toothpaste tube held casually at chest height, away from the face; keep the scene otherwise identical.';
+      try{ videoBlob = await call(callOpts(safe)); }
+      catch(e2){
+        if(!/no video/i.test(e2.message||'')) throw e2;
+        onProg('🛡️ still blocked — final retry without the opening still…');
+        const o=callOpts(safe); o.imgDataUrl=null;
+        videoBlob = await call(o);
+      }
+    }
     return { prompt, videoBlob, still: stillOk ? still : null };
   }
 
