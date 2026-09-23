@@ -504,10 +504,10 @@ ${basePrompt}
   //  • FAL_KLING — best real physical MOTION: hyper-motion, splash, levitation
   //  • VEO3 — TOP hero quality for the final cinematic ad
   const VIDEO_MODELS = {
-    VEO3_FAST:    { route:'gemini', id:'veo-3.0-fast-generate-001', label:'Veo 3 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],       job:'Default workhorse — native audio + UGC, same Gemini key, fast' },
+    VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'Default workhorse — native audio + UGC, same Gemini key, fast' },
     FAL_SEEDANCE: { route:'fal',    id:'fal-ai/bytedance/seedance/v1/lite/image-to-video', label:'Seedance 1.0 (fal.ai)', usdPerSec:0.06, audio:false, aspects:['1:1','16:9','9:16'], job:'Cheapest — quick tests + volume B-roll' },
     FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v2/master/image-to-video',      label:'Kling 2.x (fal.ai)',   usdPerSec:0.18, audio:false, aspects:['1:1','16:9','9:16'], job:'Best physical motion — hyper-motion, splash, levitation' },
-    VEO3:         { route:'gemini', id:'veo-3.0-generate-001',      label:'Veo 3',      usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
+    VEO3:         { route:'gemini', id:'veo-3.1-generate-preview',  label:'Veo 3.1',    usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
   };
   // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──
   let VIDEO_MODEL = 'VEO3_FAST';
