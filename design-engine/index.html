@@ -1052,7 +1052,7 @@ function openStoryboardApproval(sb, ctx){
     ${scenes.map((sc,i)=>`
     <div style="border:1px solid ${sc.flagged?'#b3261e':'#e3d9ff'};border-radius:10px;padding:10px 12px;margin-bottom:10px;background:${sc.flagged?'#fdf3f3':'#fbfaff'}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="color:#7c3aed">Scene ${i+1}</b><span style="font-size:11px;color:#888">8s</span><span style="flex:1"></span>
-        <button onclick="rewriteSbScene(${i})" title="Rewrite just this scene" style="border:1px solid #ddd;background:#fff;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer">♻️ Rewrite</button></div>
+        <button onclick="rewriteSbScene(${i},this)" title="Rewrite just this scene" style="border:1px solid #ddd;background:#fff;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer">♻️ Rewrite</button></div>
       <label style="font-size:11px;font-weight:700;color:#555">WE SEE</label>
       <textarea id="sbV${i}" rows="2" oninput="sbFieldFlag(this);autoGrowTA(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px;overflow:hidden;resize:none">${escv(sc.visual)}</textarea>
       <label style="font-size:11px;font-weight:700;color:#555">MOTION</label>
@@ -1074,14 +1074,17 @@ function openStoryboardApproval(sb, ctx){
 }
 // Auto-grow a textarea to fit its content exactly.
 function autoGrowTA(el){ if(!el) return; el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
-async function rewriteSbScene(i){ const dlg=$('sbdlg'); if(!dlg) return;
-  const b=dlg.querySelectorAll('button'); const ctx=dlg._ctx;
+async function rewriteSbScene(i,btn){ const dlg=$('sbdlg'); if(!dlg) return;
+  const ctx=dlg._ctx;
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Rewriting… (~60s)'; }
   try{
     const sb2=await E.generateStoryboard({ sku:ctx.sku, type:vType, style:vStyleId, seconds:vDurSec, brief:ctx.brief+' (rewrite scene '+(i+1)+' fresh)', apiKey:KEYS.gemini });
     const sc=sb2.scenes[i]||sb2.scenes[sb2.scenes.length-1];
     $('sbV'+i).value=sc.visual; $('sbM'+i).value=sc.motion; $('sbVO'+i).value=sc.vo; $('sbT'+i).value=sc.text;
+    ['sbV','sbM'].forEach(pre=>autoGrowTA($(pre+i)));
     sbFieldFlag($('sbVO'+i));
-  }catch(e){ alert('Rewrite failed: '+e.message); } }
+  }catch(e){ alert('Rewrite failed: '+e.message); }
+  finally{ if(btn){ btn.disabled=false; btn.textContent='♻️ Rewrite'; } } }
 function collectStoryboard(){ const dlg=$('sbdlg'); const sb=dlg._sb;
   sb.hook=$('sbHook').value.trim(); sb.cta=$('sbCta').value.trim(); sb.voice=$('sbVoice').value.trim(); sb.character=($('sbChar')?$('sbChar').value.trim():sb.character||''); sb.world=($('sbWorld')?$('sbWorld').value.trim():sb.world||''); sb.styleAnchor=$('sbAnchor').value;
   sb.scenes=sb.scenes.map((sc,i)=>({ ...sc, visual:$('sbV'+i).value.trim(), motion:$('sbM'+i).value.trim(), vo:$('sbVO'+i).value.trim(), text:$('sbT'+i).value.trim() }));
