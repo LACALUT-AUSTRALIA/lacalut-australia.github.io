@@ -546,9 +546,6 @@ ${basePrompt}
     retro_nostalgia:{ label:'📼 Retro / Nostalgia', model:'FAL_SEEDANCE', emoji:'📼',
       desc:'90s / VHS throwback grade and motion.',
       motion:'MOTION: a retro nostalgic feel — soft VHS/film grain, gentle light leaks and a warm vintage colour grade, slow analogue camera drift on the product. Stylised and characterful, but the pack and any text stay clean and readable.' },
-    ugc_handheld:   { label:'🤳 UGC / Handheld', model:'VEO3_FAST', emoji:'🤳',
-      desc:'Natural phone-camera feel (native audio on Veo).',
-      motion:'MOTION: authentic UGC handheld motion — natural imperfect phone-camera movement, a real everyday feel as if filmed by hand, casual and believable. If a person is present keep them the clear subject holding the product at true real-world size.' },
     cinematic_ad:   { label:'🎥 Cinematic Ad', model:'VEO3', emoji:'🎥',
       desc:'Dramatic story-grade hero moment (top quality).',
       motion:'MOTION: a dramatic cinematic ad moment — moody directional lighting, a smooth crafted camera move (crane, slow track or dolly), rich colour grade and a strong hero beat on the product. Film-grade, premium and emotive; motion smooth and deliberate.' },
@@ -762,11 +759,10 @@ ${basePrompt}
   const VIDEO_TYPES = {
     pas:       { label:'🎯 Problem→Solve',     style:'lofi_native',     narrative:'a PROBLEM-AGITATE-SOLVE cold-traffic ad (the proven DTC workhorse): open on the specific everyday pain so the viewer self-identifies (~60% of runtime on the problem, product appears only after), agitate the social/confidence cost (cosmetic framing only), then the product reveal with its mechanism in one plain sentence, a proof beat, and an offer/CTA close' },
     demo:      { label:'🔬 Demo / Anatomy',    style:'polished_hybrid', narrative:'a DEMO-MECHANISM ad (the #1 oral-care format — Hismile runs it at scale): open on an extreme product-in-action macro (tube squeeze, paste texture, foam, rinse swirl — never gross clinical imagery), SHOW what it does rather than say it, a mechanism beat with on-screen ingredient labels (fluoride / hydroxyapatite ONLY), the result state, then pack + CTA' },
-    ugc:       { label:'🤳 UGC Testimonial',   style:'lofi_native',     narrative:'an authentic UGC creator testimonial: a believable everyday Australian face filling the frame with eye contact and an immediate spoken claim in the first second, a relatable confession of their before-state, discovery with the real product in hand at true size, one specific outcome + one objection handled, then a personal recommendation + CTA — casual native language, never ad-speak' },
     vs:        { label:'⚖️ Old Way vs New',    style:'polished_hybrid', narrative:'an OLD-WAY-vs-NEW-WAY comparison: side-by-side or split-screen framing of "ordinary toothpaste" (NEVER a named competitor brand) against this product, 3 rapid comparison beats (texture, ingredient, feel), a clear winner beat with benefit overlays, social-proof line + CTA' },
     transform: { label:'✨ Transformation',    style:'lofi_native',     narrative:'a TRANSFORMATION story: open on the confident after-state as a pattern interrupt, hard cut to the relatable before (coffee cup, hiding a smile), a routine montage showing the switch, the how (product + mechanism line), honest cosmetic result framing (never a guaranteed-result claim) + CTA' },
     mashup:    { label:'🔥 Social-Proof Mashup', style:'lofi_native',   narrative:'a fast-cut SOCIAL-PROOF MASHUP: rapid multi-setting montage feel ("everyone is switching"), a chain of 2–4 second micro-moments each landing ONE captioned benefit, different settings/angles per beat, review-stars overlay + product hero, then CTA — high energy, one idea per cut' },
-    founder:   { label:'🎙️ Brand Story',       style:'lofi_native',     narrative:'a FOUNDER/BRAND STORY trust ad: direct-to-camera confession-style hook about why this product exists in Australia, ONE credible differentiator (German pharmacy heritage since 1925), product beat with demo insert cuts, a personal ask + CTA — sincere, no hype' }
+    founder:   { label:'🇩🇪 Brand Story',      style:'cinematic_ad',    narrative:'a BRAND STORY trust ad told through narration over cinematic product and heritage imagery (NO people on camera): why this German pharmacy formula exists, ONE credible differentiator (German pharmacy heritage since 1925), premium product beats and formula macro moments, closing on the pack + CTA — sincere, no hype' }
   };
 
   // VO-safe sanitise: replace DISEASE NOUNS only. Never blind-replace verbs like
