@@ -702,6 +702,7 @@ ${basePrompt}
 HARD RULES you must keep from the base brief, never trade away for drama:
 - IMAGE-TO-VIDEO: the supplied still is the anchor — keep its exact product, packaging, colours, logo and on-image text; add MOTION only, never redraw or relabel. The pack stays razor-sharp every frame, real GERMAN packaging, white cap; never blur/warp/mirror the pack or its text, never fabricate an English tube or English health text.
 - Motion stays smooth and controlled — no chaotic morphing, no warping product or type.
+- PACK MOTION LOCK: the pack NEVER flips, spins, turns over or rotates away from camera — the printed front label faces camera the entire clip (subtle tilt max); keep the pack's real tall slim proportions; move the camera or environment for dynamism, never the pack itself.
 - COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
 - Keep the SKU angle lock and any banned-word constraints from the base brief.
 - Any on-screen text: Australian English only, minimal, correctly spelled, never garbled.
