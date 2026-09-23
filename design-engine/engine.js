@@ -795,6 +795,12 @@ AD FORMAT: ${type.narrative}.
 VISUAL LOOK (every scene): ${st?st.motion:''}
 ${brief?`CLIENT BRIEF (highest priority): ${brief}.`:`ANGLE SEED (no client brief given — build the ad around this proven angle): "${pickRand(g.headlines,1)[0]||s.say}".`}
 
+BRAND GUIDE for ${s.name} (obey in every scene):
+- STRICT brand colours: ${g.colours||s.palette}. Every scene's environment, light and accents live inside this palette.
+- Scene backgrounds/settings draw from this approved pool (pick and adapt, stay premium): ${pickRand(g.backgrounds,3).join(' · ')||'clean premium studio'}.
+- Product truths you may voice or show (cosmetic USPs): ${pickRand(g.usps,3).join(' · ')||s.say}.
+- Trust cues allowed on screen: ${pickRand(g.trust,3).join(' · ')||'Made in Germany'}.
+
 COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
 - NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.
 - The ONLY ingredients that may ever be named are "fluoride" and "hydroxyapatite" — NEVER strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc, or any ion label (Sr2+, K+).
