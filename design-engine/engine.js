@@ -704,6 +704,7 @@ HARD RULES you must keep from the base brief, never trade away for drama:
 - Motion stays smooth and controlled — no chaotic morphing, no warping product or type.
 - PACK MOTION LOCK: the pack NEVER flips, spins, turns over or rotates away from camera — the printed front label faces camera the entire clip (subtle tilt max); keep the pack's real tall slim proportions; move the camera or environment for dynamism, never the pack itself.
 - CHARACTER LOCK: if the base brief describes a person, keep EXACTLY that person — never swap, restyle or introduce a different actor.
+- WORLD LOCK: if the base brief names the ad's single location/set, keep EXACTLY that location — same surfaces, lighting mood and palette; add drama through camera and action, never by moving the scene somewhere else.
 - AUDIO: ambient sound and music only — zero human vocal sounds of any kind (no speech, singing, whispering, humming, male or female voices, background chatter).
 - MIRROR LOCK: no mirrored, reversed or doubled lettering anywhere, including reflections.
 - COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
@@ -782,7 +783,7 @@ ${basePrompt}
   // still carries a banned disease/therapeutic term (UI blocks approval).
   function sanitizeStoryboard(sb){
     if(!sb) return sb;
-    sb.hook = sanitizeCopyVO(sb.hook||''); sb.cta = sanitizeCopyVO(sb.cta||'');
+    sb.hook = sanitizeCopyVO(sb.hook||''); sb.cta = sanitizeCopyVO(sb.cta||''); sb.world = sanitizeCopyVO(sb.world||'');
     (sb.scenes||[]).forEach(sc=>{
       sc.vo = sanitizeCopyVO(sc.vo||''); sc.text = sanitizeCopyVO(sc.text||'');
       sc.visual = sanitizeCopyVO(sc.visual||''); sc.motion = sc.motion||'';
@@ -815,7 +816,7 @@ ${brief?`CLIENT BRIEF (highest priority): ${brief}.`:`ANGLE SEED (no client brie
 
 BRAND GUIDE for ${s.name} — two layers:
 HARD LOCKS (never bend): brand colours ${g.colours||s.palette} own every scene's light, accents and grade; the real GERMAN pack with WHITE cap; only ${s.name}'s own formula elements and benefit angle.
-CREATIVE FREEDOM (video thrives on it): you are NOT limited to studio setups — invent cinematic worlds, bold scale, dramatic environments and unexpected moments, as long as they live inside the locked palette and stay premium. Use these as INSPIRATION, not a cage: settings like ${pickRand(g.backgrounds,3).join(' · ')||'clean premium studio'}; product truths like ${pickRand(g.usps,3).join(' · ')||s.say}; trust cues like ${pickRand(g.trust,2).join(' · ')||'Made in Germany'}.
+CREATIVE FREEDOM (video thrives on it): you are NOT limited to studio setups — invent ONE bold cinematic world for the WHOLE ad (dramatic scale and unexpected moments welcome), as long as it lives inside the locked palette and stays premium. Every scene is staged INSIDE that one world. Use these as INSPIRATION for that world, not a cage: settings like ${pickRand(g.backgrounds,3).join(' · ')||'clean premium studio'}; product truths like ${pickRand(g.usps,3).join(' · ')||s.say}; trust cues like ${pickRand(g.trust,2).join(' · ')||'Made in Germany'}.
 
 COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
 - NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.
@@ -827,7 +828,8 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - PRODUCT LOCK (hard rule): the ONLY product or object that may ever be a scene's subject is the LACALUT ${s.name} pack itself (the real GERMAN pack with its WHITE cap — a TOOTHPASTE TUBE/BOX unless the reference is a mouthwash bottle) or its SIGNATURE FORMULA ELEMENTS: ${fx.join(', ')||'clean water and minerals'}. NEVER build a scene around a toothbrush, a different product, generic props or stock objects. Every scene must be unmistakably about ${s.name} or its benefit.
 - PACK MOTION LOCK (hard rule): the pack NEVER flips, spins, turns over or rotates away from camera — its printed front label FACES CAMERA the entire time it is on screen (a subtle tilt of a few degrees is the maximum). If you want dynamism, move the CAMERA or the environment around the pack instead. NEVER write motion like "rotates to show the label", "spins into frame", "360-degree turn" — AI video mangles the logo the moment the pack rotates.
 - CHARACTER LOCK (hard rule): at most ONE person appears in the whole ad. Invent that ONE person once and describe them in rich detail in the "character" field (age, ethnicity, hair colour+style, outfit, distinguishing look). EVERY scene that shows a person shows EXACTLY that person — same face, same hair, same outfit, same age. A different actor appearing between scenes destroys the ad. Scenes may also show no person at all.
-- CONTINUITY: the three-to-five scenes must feel like ONE film, not stitched clips — carry the same colour palette, lighting mood and world across every scene boundary; each scene's opening beat should visually echo the previous scene's closing beat.
+- WORLD LOCK (hard rule — the #1 congruence rule): this ad happens in EXACTLY ONE location/set. Invent it once and describe it in rich concrete detail in the "world" field: the place, its surfaces and props, the lighting setup, colour palette and time of day. EVERY scene is staged inside THAT world — what changes between scenes is the CAMERA (angle, distance, macro vs wide) and the ACTION, never the location, lighting mood or palette. A background or setting change between scenes destroys the ad: the scenes must read as ONE continuous film shot on ONE set, never separate clips taped together. Each scene's "visual" must explicitly name where in the world the camera is. ONLY exception: an ad type whose format demands a contrast beat (Old Way vs New, Transformation before/after) may add ONE deliberate second setting — introduced once, reused for every one of its beats, both settings described in "world".
+- CONTINUITY: each scene's opening beat visually echoes the previous scene's closing beat — same palette, same light, same world.
 - AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley); keep hands minimal and simple — a hand may hold the pack steady but never perform fine finger actions; the product is lit naturally, never wrapped in a glow/halo effect.
 - HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
 - RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a sound effect, music-beat change or deliberate beat of silence — write it into "motion"), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds; a cut with no sound change breaks the rhythm.
@@ -836,12 +838,13 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene — always UPBEAT and smiling: warm, uplifting, energised delivery with dynamic intonation, never flat or monotone.
 - "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
+- "world" is 2–3 sentences describing the ONE location/set in concrete physical detail — reused verbatim by every scene (plus the single contrast setting if the format demands one).
 - "visual" describes what we see; "motion" the camera/subject movement — write motion with a visual change every 2–3 seconds, never a static hold over 4 seconds (pacing is where retention dies).
 - Final scene ends on the product + call to action. The real GERMAN pack with its WHITE cap is the only product ever shown.
 - SENSITIVITY GUARD: never claim to reduce/treat sensitivity or present remineralisation as therapy — always comfort/feel language.
 
 Return ONLY valid JSON:
-{"hook":"...","cta":"...","voice":"...","character":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
+{"hook":"...","cta":"...","voice":"...","character":"...","world":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
     let lastErr;
     for(let attempt=0; attempt<2; attempt++){
       try{
@@ -866,6 +869,7 @@ Return ONLY valid JSON:
     let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true,
       brief: sc.visual + '. ' + sc.motion });
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
+    p += sb.world ? `WORLD LOCK: the entire ad happens inside EXACTLY this one location (identical in every scene): ${sb.world} — same set, same surfaces, same lighting mood, same palette; only the camera and the action change between scenes; NEVER drift to a different location or background. ` : '';
     p += sb.character ? `CHARACTER LOCK: any person on screen is EXACTLY this person (identical in every scene): ${sb.character} — same face, hair, outfit; never a different actor. ` : '';
     p += `AUDIO (mandatory): ambient sound design and music ONLY — ABSOLUTELY NO human vocal sounds of ANY kind: no spoken words, no voiceover, no narration, no talking, no singing, no whispering, no humming, no male voice, no female voice, no background chatter or crowd murmur (one consistent narrator is recorded separately and mixed over the final ad in post). Open the scene on a fresh audio cue (a subtle sound effect or music-beat change) landing together with the visual change. `;
     p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
@@ -899,6 +903,8 @@ Return ONLY valid JSON:
       onProg('🖼️ composing scene still…');
       let sp = `Cinematic opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
       sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
+      sp += (sb && sb.world) ? `WORLD LOCK (the #1 rule of this ad): every scene of this ad is shot inside EXACTLY this one location — ${sb.world} — same set, same surfaces and props, same lighting setup, same colour palette, same time of day; compose THIS scene's brief within that world (change only the camera angle/distance and the action), NEVER a different or generic background. ` : '';
+      sp += opts.prevStill ? `CONTINUITY REFERENCE: the final style-reference image is the PREVIOUS scene's opening frame of this SAME ad — match its exact location, surfaces, lighting, colour grade and world so the two scenes cut together seamlessly as one film; do not copy its composition, stage this scene's own brief inside the identical world. ` : '';
       sp += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, clean sans-serif, high-contrast, instantly readable on a phone, EVERY word correctly spelled (render fewer words perfectly rather than more words garbled). ` : `No on-screen text. `;
       sp += `TEXT LOCK: besides that caption and the product's own real label, there is NO other text anywhere in the scene — no invented signage, posters, panels, banners or decorative words. MIRROR LOCK: every piece of text reads in correct left-to-right orientation — NEVER mirrored, reversed, doubled or reflected lettering (mirror and reflection shots must not flip any text). `;
       sp += (sb && sb.character) ? `CHARACTER LOCK: if a person appears, it is EXACTLY this person (identical in every scene of this ad): ${sb.character} — same face, hair, outfit and age; NEVER a different actor. ` : '';
@@ -907,7 +913,7 @@ Return ONLY valid JSON:
       sp += `If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text and layout, WHITE cap; keep the pack's REAL PROPORTIONS from the reference (a tall, slim toothpaste tube — never shortened, widened, squat or stubby); front label FACING CAMERA; never invent, garble, translate or re-letter pack text. GERMAN PACK LOCK (legal requirement): all small descriptive pack text stays in GERMAN exactly as the reference AND softly out of focus / too small to read — NEVER render legible ENGLISH words on the pack (especially health words like "protects", "bleeding", "gums", "periodontitis", "inflammation", "prevents"); only the LACALUT wordmark and variant name may read clearly. `;
       sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
       sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal premium finish, composed with headroom for motion.`;
-      still = await callGemini({ prompt:sp, productImgs:refs, styleImgs:[],
+      still = await callGemini({ prompt:sp, productImgs:refs, styleImgs: opts.prevStill?[opts.prevStill]:[],
         render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
       stillOk = true;
     }catch(e){ /* fall back to animating the raw packshot rather than failing the scene */ }
@@ -949,6 +955,7 @@ Return ONLY valid JSON:
 SCENE BRIEF: ${sc.visual||'(none)'}
 EXPECTED CAPTION: ${sc.text?('"'+sc.text+'"'):'(no on-screen text expected)'}
 ${sb.character?('CHARACTER LOCK: '+sb.character):''}
+${sb.world?('WORLD LOCK — the scene MUST take place inside exactly this location: '+sb.world):''}
 
 Score against every item:
 1. PACK — real GERMAN pack, WHITE cap, front label facing camera, razor-sharp, real tall-slim proportions; never warped, melted, re-lettered, duplicated, flipped or rotated away; NO legible English health words on the pack.
@@ -958,6 +965,7 @@ Score against every item:
 5. EFFECTS — fluids behave physically; NO glow/halo around the product.
 6. AUDIO — ambience and music ONLY; ANY human vocal sound (speech, singing, humming, chatter) is a fail.
 7. LEGAL — NO therapeutic or disease words visible or audible (treat, cure, clinically proven, gingivitis, periodontitis, plaque, statistics/percentages); only "fluoride" and "hydroxyapatite" may be named.
+8. WORLD — if a WORLD LOCK is given above, the scene visibly takes place inside THAT exact location (same set, surfaces, lighting mood, palette); a different or generic background is a major fail.
 
 Be harsh: a real premium brand would only run this at 8+/10.
 
@@ -1009,13 +1017,14 @@ Return ONLY valid JSON:
     const blob = opts.videoBlob;
     if(!blob || blob.size > QC_INLINE_LIMIT) return null;
     const sb = opts.storyboard||{};
-    return qcSceneClip({ ...opts, scene:{ visual:'FULL '+((opts.totalSeconds||24))+'s ad — all scenes stitched with the single TTS narrator mixed over the top. ALSO judge: is the narrator ONE consistent voice; do scene joins cut cleanly; does the ad work sound-off; does it end on pack + CTA ("'+(sb.cta||'')+'")', text:'' } });
+    return qcSceneClip({ ...opts, scene:{ visual:'FULL '+((opts.totalSeconds||24))+'s ad — all scenes stitched with the single TTS narrator mixed over the top. ALSO judge: CONGRUENCE (the #1 check — do ALL scenes share ONE location, ONE person and ONE lighting/grade so it reads as a single continuous film? If it feels like separate clips taped together, cap the score at 6 and say so); is the narrator ONE consistent voice; do scene joins cut cleanly; does the ad work sound-off; does it end on pack + CTA ("'+(sb.cta||'')+'")', text:'' } });
   }
 
   async function renderStoryboard(opts){
     const sb = opts.storyboard, total = sb.scenes.length;
     const onScene = opts.onScene || function(){};
     const out = { scenes:[], cost:storyboardCostEstimate({scenes:total, model:opts.model}), qc:videoQCChecklist(), failedAt:null };
+    let prevStill = null;   // each scene's finished still anchors the next — hard world continuity
     for(let i=0;i<total;i++){
       const sc = sb.scenes[i];
       try{
@@ -1024,10 +1033,11 @@ Return ONLY valid JSON:
         const fn = doQC ? renderSceneQC : renderScene;
         const r = await fn({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
           style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl,
-          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp,
+          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, prevStill,
           qcThreshold:opts.qcThreshold, qcMaxRerolls:opts.qcMaxRerolls,
           onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
-        out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob, qc:r.qc||null, attempts:r.attempts||1 });
+        out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 });
+        prevStill = r.still || prevStill;
       }catch(e){
         out.failedAt = i; out.error = e.message;
         return out;   // partial — paid scenes are never lost; UI offers a retry from scene i
