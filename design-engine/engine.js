@@ -795,11 +795,9 @@ AD FORMAT: ${type.narrative}.
 VISUAL LOOK (every scene): ${st?st.motion:''}
 ${brief?`CLIENT BRIEF (highest priority): ${brief}.`:`ANGLE SEED (no client brief given — build the ad around this proven angle): "${pickRand(g.headlines,1)[0]||s.say}".`}
 
-BRAND GUIDE for ${s.name} (obey in every scene):
-- STRICT brand colours: ${g.colours||s.palette}. Every scene's environment, light and accents live inside this palette.
-- Scene backgrounds/settings draw from this approved pool (pick and adapt, stay premium): ${pickRand(g.backgrounds,3).join(' · ')||'clean premium studio'}.
-- Product truths you may voice or show (cosmetic USPs): ${pickRand(g.usps,3).join(' · ')||s.say}.
-- Trust cues allowed on screen: ${pickRand(g.trust,3).join(' · ')||'Made in Germany'}.
+BRAND GUIDE for ${s.name} — two layers:
+HARD LOCKS (never bend): brand colours ${g.colours||s.palette} own every scene's light, accents and grade; the real GERMAN pack with WHITE cap; only ${s.name}'s own formula elements and benefit angle.
+CREATIVE FREEDOM (video thrives on it): you are NOT limited to studio setups — invent cinematic worlds, bold scale, dramatic environments and unexpected moments, as long as they live inside the locked palette and stay premium. Use these as INSPIRATION, not a cage: settings like ${pickRand(g.backgrounds,3).join(' · ')||'clean premium studio'}; product truths like ${pickRand(g.usps,3).join(' · ')||s.say}; trust cues like ${pickRand(g.trust,2).join(' · ')||'Made in Germany'}.
 
 COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
 - NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.
