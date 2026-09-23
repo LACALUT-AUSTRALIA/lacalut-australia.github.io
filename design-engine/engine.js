@@ -809,7 +809,14 @@ ${basePrompt}
     { re:/\b(powder|vial|syringe|dropper)\b/i, f:['visual','motion'], msg:'powder/vial imagery — the safety filter reads white powder + glassware as drugs; use settling crystal shards with no hands instead' },
     { re:/\b(around|orbit\w*|circle|circling|360)\b[^.]{0,40}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.]{0,40}\b(orbit\w*|360|circling)\b/i, f:['visual','motion'], msg:'camera circling the pack — exposes the German side/back text; use a front-facing push-in or lateral-free tilt instead' },
     { re:/\b(zoom|push)[^.]{0,25}\b(into|onto|toward)\b[^.]{0,20}\b(face|her face|his face|eyes|mouth)\b/i, f:['visual','motion'], msg:'camera pushing into the face — nothing tighter than a chest-up framing on a person' },
-    { re:/fade to black/i, f:['visual','motion'], msg:'fade-to-black — the final beat holds bright on the pack + CTA; never waste the close' }
+    { re:/fade to black/i, f:['visual','motion'], msg:'fade-to-black — the final beat holds bright on the pack + CTA; never waste the close' },
+    { re:/\bhands?\b[^.]{0,60}\b(mouth|lips|chin|jaw|cheeks?|gums?|face)\b|\b(mouth|lips|chin|jaw|cheeks?|gums?|face)\b[^.]{0,60}\bhands?\b/i, f:['visual','motion'], msg:'hand touching the mouth/face — hand-to-face contact renders badly; convey the feeling with expression only, hands may only steady the pack' },
+    { re:/\b(snap zoom|zoom|push)[^.]{0,30}\b(label|pack text|wording|logo)\b/i, f:['visual','motion'], msg:'camera zooming onto the label — mid-motion text zooms warp the lettering; keep camera moves on the pack slow and gentle, the still guarantees label fidelity' }
+  ];
+  const SB_WORLD_RULES = [
+    { re:/\bmirrors?\b|\bvanity\b/i, msg:'mirror/vanity in the WORLD — reflections mangle renders; frame the set so no mirror is ever in shot' },
+    { re:/\b(pearls?|beads?|pills?)\b/i, msg:'round white objects in the WORLD — Veo safety filter reads them as pills' },
+    { re:/\b(powder|vials?)\b/i, msg:'powder/vial in the WORLD — safety filter reads it as drug imagery' }
   ];
   function lintStoryboard(sb){
     const out=[];
@@ -825,6 +832,7 @@ ${basePrompt}
       const h=String(sb.hook||'').match(r.re); if(h) out.push('HOOK: "'+h[0]+'" — '+r.msg);
       const c=String(sb.cta||'').match(r.re);  if(c) out.push('CTA: "'+c[0]+'" — '+r.msg);
     }}
+    for(const r of SB_WORLD_RULES){ const m=String(sb.world||'').match(r.re); if(m) out.push('WORLD: "'+m[0]+'" — '+r.msg); }
     return out;
   }
 
@@ -877,7 +885,7 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - Each scene's "vo" is the EXACT spoken voiceover line — max 18 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene — always UPBEAT and smiling: warm, uplifting, energised delivery with dynamic intonation, never flat or monotone.
 - "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
-- "world" is 2–3 sentences describing the ONE location/set in concrete physical detail — reused verbatim by every scene (plus the single contrast setting if the format demands one).
+- "world" is 2–3 sentences describing the ONE location/set in concrete physical detail — reused verbatim by every scene (plus the single contrast setting if the format demands one). The world must NEVER contain a mirror, vanity mirror or large reflective glass (reflections mangle AI renders — a bathroom set is framed so no mirror is ever in shot), and never white round objects, powders or vials.
 - "visual" describes what we see; "motion" the camera/subject movement — write motion with a visual change every 2–3 seconds, never a static hold over 4 seconds (pacing is where retention dies).
 - Final scene ends on the product + call to action. The real GERMAN pack with its WHITE cap is the only product ever shown.
 - SENSITIVITY GUARD: never claim to reduce/treat sensitivity or present remineralisation as therapy — always comfort/feel language.
@@ -902,7 +910,7 @@ Return ONLY valid JSON:
           const issues = lintStoryboard(sb);
           if(!issues.length) break;
           try{
-            const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects (safety filter reads them as pills — use angular crystal shards or mineral streams); no mirrors; no finger actions or tongue shots; nothing tighter than a chest-up mid-shot on a person; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+            const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects and no powders/vials (safety filter reads them as pills/drugs — use angular crystal shards or mineral streams); no mirrors or vanities anywhere, including the world description (reframe the set so no mirror exists); no finger actions, tongue shots or hands touching the mouth/face; nothing tighter than a chest-up mid-shot on a person; the camera never zooms onto the label and never circles the pack; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); no fade-to-black (hold bright on pack + CTA); each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
             const fr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
               { method:'POST', headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({ contents:[{role:'user',parts:[{text:fixMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.4 } }) });
