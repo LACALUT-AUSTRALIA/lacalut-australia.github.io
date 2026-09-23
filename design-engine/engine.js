@@ -796,12 +796,12 @@ ${basePrompt}
      targeted free rewrite; whatever survives is shown in the approval modal. ═══ */
   const SB_LINT_RULES = [
     { re:/\b(pearls?|beads?|capsules?|tablets?|pills?)\b/i, f:['visual','motion','text'], msg:'white round objects — Veo safety filter reads them as pills and silently returns nothing; use angular crystal shards / mineral streams instead' },
-    { re:/\bmirrors?\b/i, f:['visual','motion'], msg:'mirror shot — reflections mangle the pack and the person; restage without a mirror' },
+    { re:/(?<!no )(?<!without a )mirrors?\b(?![- ]free)/i, f:['visual','motion'], msg:'mirror shot — reflections mangle the pack and the person; restage without a mirror' },
     { re:/\b(fingers?|fingertips?)\b/i, f:['visual','motion'], msg:'finger action — a hand may only steady the pack; fingers never touch mouth or gums' },
     { re:/\btongue\b/i, f:['visual','motion'], msg:'tongue shot — uncanny; use a facial expression instead' },
     { re:/(close-?up|CU|ECU|macro|tight shot|extreme)[^.]{0,50}\b(face|mouth|lips|teeth|gums?)\b|\b(face|mouth|lips|teeth|gums?)\b[^.]{0,50}(close-?up|CU|ECU|macro|tight shot)/i, f:['visual','motion'], msg:'facial/mouth close-up — nothing tighter than a chest-up mid-shot on a person' },
     { re:/\b(uhm|umm|hmm|mmm|sighs?|gasps?|whispers?|hums|humming|says|speaks|sings|singing|chatter|murmur)\b/i, f:['visual','motion'], msg:'human vocal sound written into a scene — scenes are voice-free (narrator is added in post)' },
-    { re:/\b(pack|tube|box)('s)? (side|back|rear)\b|\b(side|back|rear) (face |panel )?of the (pack|tube|box)\b|reveal\w*[^.]{0,35}\b(text|label|wording|printed)\b/i, f:['visual','motion'], msg:'side/back pack text reveal — side text is German and stays unreadable; front label only' },
+    { re:/\b(pack|tube|box)('s)? (side|back|rear)\b|\b(side|back|rear) (face |panel )?of the (pack|tube|box)\b|reveal\w*[^.]{0,30}\b(back|side|rear|german)\b[^.]{0,18}\b(text|label|wording|printed)\b/i, f:['visual','motion'], msg:'side/back pack text reveal — side text is German and stays unreadable; front label only' },
     { re:/\b(pack|tube|box|product)\b[^.]{0,60}\b(rotat\w+|spins?|spinning|flips?|flipping|turns? (over|around))\b|\b(rotat\w+|spins?|spinning|flips?|flipping)\b[^.]{0,60}\b(pack|tube|box|product)\b/i, f:['visual','motion'], msg:'pack rotation — the pack never rotates; move the camera instead' },
     { re:/\b(effective(ly)?|firms|firming|firmness|strengthens?|supports?|protect(s|ion|ive|ed)?|prevents?|fights?|combats?|repairs?|treat(s|ments?)?|cures?|heals?|regenerat\w*|clinical(ly)?|proven)\b/i, f:['vo','text'], msg:'efficacy/therapeutic wording — cosmetic feel-language only ("feels firm", "cared-for")' },
     { re:/\b(powder|vial|syringe|dropper)\b/i, f:['visual','motion'], msg:'powder/vial imagery — the safety filter reads white powder + glassware as drugs; use settling crystal shards with no hands instead' },
@@ -825,7 +825,7 @@ ${basePrompt}
     { re:/\b(pack|tube|box|product|it)\b[^.]{0,25}\btowards? the (camera|lens|viewer)\b/i, f:['visual','motion'], msg:'pack presented/thrust toward the camera — moving the pack at the lens warps the label; the pack stays where it is, the camera does the work' },
     { re:/\b(push(es|ing)?[- ]?in|zoom(s|ing)?[- ]?in)\b (on|at) [^.]{0,18}\b(face|gaze|eyes|expression|smile)\b/i, f:['visual','motion'], msg:'camera pushing in on the face/gaze — nothing tighter than a chest-up framing on a person' },
     { re:/\b(pulsing|pulsating|throbbing|gritty|granular|lumpy|grainy|speckle\w*)\b/i, f:['visual','motion'], msg:'unappetising/organic texture word — paste and product always look smooth, creamy and appealing; nothing pulses or throbs' },
-    { re:/\b(swish\w*|rins\w+|gargl\w+|spits?|spitting|mouthful)\b/i, f:['visual','motion'], msg:'rinsing/swishing/mouth-liquid action — liquid at or in the mouth renders horribly; show the fresh feeling with expression only' },
+    { re:/\b(rins\w+|gargl\w+|spits?|spitting|mouthful)\b|\bswish\w*[^.]{0,20}\b(mouth|water|liquid)\b|\bmouth[^.]{0,20}swish\w*\b/i, f:['visual','motion'], msg:'rinsing/swishing/mouth-liquid action — liquid at or in the mouth renders horribly; show the fresh feeling with expression only' },
     { re:/\b(dental|dentist(s|'s)?) (tray|trays|tool\w*|instrument\w*|chair|mirror|probe)\b|\bclinic(al)? (tray|table|bench)\b/i, f:['visual','motion'], msg:'clinical/dental prop — medical imagery breaches the cosmetic positioning; use everyday home objects only' },
     { re:/\b(sips?|sipping|drinks?(?! glass)|drinking(?! glass))\b|\b(brings?|raises?|lifts?)\b[^.]{0,35}\b(glass|cup|mug|bottle|tumbler)\b|\b(glass|cup|mug|tumbler)\b[^.]{0,25}\bto (her|his) (lips|mouth)\b/i, f:['visual','motion'], msg:'drinking / object raised to the face — objects merging with a face render badly; the glass stays on the counter or held at chest height, never at the lips' },
     { re:/\breach\w*[^.]{0,25}\boff-?(camera|screen|frame)\b|\breach\w* (for|toward|towards) something\b/i, f:['visual','motion'], msg:'a hand reaching for nothing/off-camera — ghost-hand actions render as mutated hands; every hand action targets a named visible object' },
@@ -842,7 +842,7 @@ ${basePrompt}
     { re:/\b(studio|architectural|matte (navy|black|dark) walls?|colour-?blocked|color-?blocked|seamless backdrop|minimalist shelv\w+|branded wall|set design)\b/i, f:['visual','motion'], msg:'designed-set wording in a LO-FI ad — the world must be a real everyday location (home bathroom, kitchen, bedroom) in natural light' }
   ];
   const SB_WORLD_RULES = [
-    { re:/\bmirrors?\b|\bvanity\b/i, msg:'mirror/vanity in the WORLD — reflections mangle renders; frame the set so no mirror is ever in shot' },
+    { re:/(?<!no )(?<!without a )mirrors?\b(?![- ]free)|\bvanity\b/i, msg:'mirror/vanity in the WORLD — reflections mangle renders; frame the set so no mirror is ever in shot' },
     { re:/\b(pearls?|beads?|pills?)\b/i, msg:'round white objects in the WORLD — Veo safety filter reads them as pills' },
     { re:/\b(powder|vials?)\b/i, msg:'powder/vial in the WORLD — safety filter reads it as drug imagery' },
     { re:/\b(waterfall|fountain|cascad\w+|water (feature|stream|wall)|hidden basin)\b|\bwater\b[^.]{0,45}\b(wall|rock|stone|panel)\b/i, msg:'decorative water feature in the WORLD — the rock-water fault; water exists only as a tap or a drinking glass' }
