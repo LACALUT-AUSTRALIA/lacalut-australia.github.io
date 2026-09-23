@@ -816,17 +816,31 @@ ${basePrompt}
     { re:/\b(snap zoom|zoom(s|ing)?|push(es|ing)?)\b[^.]{0,40}\b(face|eyes|mouth|lips|teeth)\b/i, f:['visual','motion'], msg:'camera zooming onto the face/eyes — nothing tighter than a chest-up framing on a person' },
     { re:/\b(gel|glow|mist|aura|energy|effect|particles?)\b[^.]{0,45}\b(face|skin|cheeks?)\b|\b(face|skin)\b[^.]{0,45}\b(gel|glow|mist|aura|energy|effect)\b/i, f:['visual','motion'], msg:'visual effect overlaying a person\'s face/skin — renders as smeared or melted skin; keep effects away from people' },
     { re:/\b(aura|energy|halo|glow(s|ing)?)\b[^.]{0,45}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.]{0,45}\b(aura|energy|halo)\b|\benvelop\w+/i, f:['visual','motion'], msg:'energy/aura/glow enveloping the pack — the banned halo effect; crystals may move NEAR the pack but never wrap or envelop it' },
-    { re:/\b(pack|tube|box|product)\b[^.]{0,50}\b(glides?|gliding|slides?|sliding|floats?|floating|drifts?|moves? (in|into|across)|bursts? (in|into)|pops? (in|into)|flies|flying)\b/i, f:['visual','motion'], msg:'the pack moving itself (glide/slide/float/fly-in) — the pack is ALWAYS static and already in place; the camera or environment moves, never the pack' }
+    { re:/\b(pack|tube|box|product)\b[^.]{0,50}\b(glides?|gliding|slides?|sliding|floats?|floating|drifts?|moves? (in|into|across)|bursts? (in|into)|pops? (in|into)|flies|flying)\b/i, f:['visual','motion'], msg:'the pack moving itself (glide/slide/float/fly-in) — the pack is ALWAYS static and already in place; the camera or environment moves, never the pack' },
+    { re:/\b(waterfall|cascad\w+)\b|\b(water|liquid|stream|droplets?|drips?)\b[^.]{0,55}\b(wall|rock|stone|panel|backdrop|basin|shelf|shelves)\b|\b(wall|rock|stone|panel)\b[^.]{0,40}\b(water|stream|drips?|trickl\w+)\b/i, f:['visual','motion'], msg:'sourceless/decorative water — water may ONLY appear from a running tap or in a clear drinking glass; scenic water (down walls/rocks, hidden basins) renders fake and auto-tanks QC' },
+    { re:/\b(music(al)?|melody|jingle|soundtrack|flourish|orchestral|crescendo|score swells?)\b/i, f:['visual','motion'], msg:'music written into a scene — scenes render MUSIC-FREE (one bed is added at stitch); diegetic SFX (click, tap running) are fine, musical sounds are not' }
+  ];
+  // Look-conditional traps — fantasy VFX elements are fine in polished/cinematic looks but
+  // scream "AI ad" inside a lo-fi handheld world (the navy-wall/shard-stream failure, 23/09).
+  const SB_LOFI_RULES = [
+    { re:/\b(crystals?|shards?|mineral (stream|ribbon|cluster)s?|ribbons? of light|particles?|shimmer\w*|glow(ing)? panels?|light panels?|levitat\w+|floating (minerals?|elements?))\b/i, f:['visual','motion'], msg:'fantasy VFX element in a LO-FI ad — lo-fi realism means real everyday objects only; formula VFX belongs to polished/cinematic looks' },
+    { re:/\b(studio|architectural|matte (navy|black|dark) walls?|colour-?blocked|color-?blocked|seamless backdrop|minimalist shelv\w+|branded wall|set design)\b/i, f:['visual','motion'], msg:'designed-set wording in a LO-FI ad — the world must be a real everyday location (home bathroom, kitchen, bedroom) in natural light' }
   ];
   const SB_WORLD_RULES = [
     { re:/\bmirrors?\b|\bvanity\b/i, msg:'mirror/vanity in the WORLD — reflections mangle renders; frame the set so no mirror is ever in shot' },
     { re:/\b(pearls?|beads?|pills?)\b/i, msg:'round white objects in the WORLD — Veo safety filter reads them as pills' },
-    { re:/\b(powder|vials?)\b/i, msg:'powder/vial in the WORLD — safety filter reads it as drug imagery' }
+    { re:/\b(powder|vials?)\b/i, msg:'powder/vial in the WORLD — safety filter reads it as drug imagery' },
+    { re:/\b(waterfall|fountain|cascad\w+|water (feature|stream|wall)|hidden basin)\b|\bwater\b[^.]{0,45}\b(wall|rock|stone|panel)\b/i, msg:'decorative water feature in the WORLD — the rock-water fault; water exists only as a tap or a drinking glass' }
   ];
-  function lintStoryboard(sb){
+  const SB_LOFI_WORLD_RULES = [
+    { re:/\b(studio|architectural|matte (navy|black|dark) walls?|glow(ing)? panels?|light panels?|seamless backdrop|minimalist shelv\w+|branded wall|colour-?blocked|color-?blocked|diagonal blocks?|set design|crystals?|shards?|mineral)\b/i, msg:'designed set / VFX prop in the WORLD of a LO-FI ad — must be a real everyday Australian location (home bathroom framed mirror-free, kitchen, bedroom) in natural light' }
+  ];
+  function lintStoryboard(sb, styleId){
     const out=[];
+    const lofi = String(styleId||'')==='lofi_native';
+    const rules = lofi ? [...SB_LINT_RULES, ...SB_LOFI_RULES] : SB_LINT_RULES;
     (sb.scenes||[]).forEach((sc,i)=>{
-      for(const r of SB_LINT_RULES) for(const f of r.f){
+      for(const r of rules) for(const f of r.f){
         const m=String(sc[f]||'').match(r.re);
         if(m) out.push('Scene '+(i+1)+' '+f.toUpperCase()+': "'+m[0]+'" — '+r.msg);
       }
@@ -837,7 +851,8 @@ ${basePrompt}
       const h=String(sb.hook||'').match(r.re); if(h) out.push('HOOK: "'+h[0]+'" — '+r.msg);
       const c=String(sb.cta||'').match(r.re);  if(c) out.push('CTA: "'+c[0]+'" — '+r.msg);
     }}
-    for(const r of SB_WORLD_RULES){ const m=String(sb.world||'').match(r.re); if(m) out.push('WORLD: "'+m[0]+'" — '+r.msg); }
+    const wRules = lofi ? [...SB_WORLD_RULES, ...SB_LOFI_WORLD_RULES] : SB_WORLD_RULES;
+    for(const r of wRules){ const m=String(sb.world||'').match(r.re); if(m) out.push('WORLD: "'+m[0]+'" — '+r.msg); }
     return out;
   }
 
@@ -864,7 +879,10 @@ ${brief?`CLIENT BRIEF (highest priority): ${brief}.`:`ANGLE SEED (no client brie
 
 BRAND GUIDE for ${s.name} — two layers:
 HARD LOCKS (never bend): brand colours ${g.colours||s.palette} own every scene's light, accents and grade; the real GERMAN pack with WHITE cap; only ${s.name}'s own formula elements and benefit angle.
-CREATIVE FREEDOM (video thrives on it): you are NOT limited to studio setups — invent ONE bold cinematic world for the WHOLE ad (dramatic scale and unexpected moments welcome), as long as it lives inside the locked palette and stays premium. Every scene is staged INSIDE that one world. Use these as INSPIRATION for that world, not a cage: settings like ${pickRand(g.backgrounds,3).join(' · ')||'clean premium studio'}; product truths like ${pickRand(g.usps,3).join(' · ')||s.say}; trust cues like ${pickRand(g.trust,2).join(' · ')||'Made in Germany'}.
+CREATIVE FREEDOM (video thrives on it): ${String(opts.style||type.style)==='lofi_native'
+  ? `the world MUST be a REAL everyday Australian location a phone video would actually be shot in — a home bathroom (framed so no mirror is ever in shot), kitchen or bedroom, natural daylight, lived-in and believable. NO designed sets, NO studio, NO branded/coloured feature walls, NO glowing panels, NO decorative props, NO fantasy elements — lo-fi realism is the whole point. Brand colours appear only naturally (the pack, a towel, a mug).`
+  : `you are NOT limited to studio setups — invent ONE bold cinematic world for the WHOLE ad (dramatic scale and unexpected moments welcome), as long as it lives inside the locked palette and stays premium.`} Every scene is staged INSIDE that one world. Use these as INSPIRATION, not a cage: product truths like ${pickRand(g.usps,3).join(' · ')||s.say}; trust cues like ${pickRand(g.trust,2).join(' · ')||'Made in Germany'}.
+- WATER LAW (hard rule): water may ONLY appear from a real everyday source — a running tap or a clear drinking glass. NEVER scenic/decorative water: streams down walls or rocks, waterfalls, fountains, hidden basins, floating water. Sourceless water renders fake and auto-fails QC.
 
 COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
 - NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.
@@ -879,7 +897,7 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - WORLD LOCK (hard rule — the #1 congruence rule): this ad happens in EXACTLY ONE location/set. Invent it once and describe it in rich concrete detail in the "world" field: the place, its surfaces and props, the lighting setup, colour palette and time of day. EVERY scene is staged inside THAT world — what changes between scenes is the CAMERA (angle, distance, macro vs wide) and the ACTION, never the location, lighting mood or palette. A background or setting change between scenes destroys the ad: the scenes must read as ONE continuous film shot on ONE set, never separate clips taped together. Each scene's "visual" must explicitly name where in the world the camera is. ONLY exception: an ad type whose format demands a contrast beat (Old Way vs New, Transformation before/after) may add ONE deliberate second setting — introduced once, reused for every one of its beats, both settings described in "world".
 - CONTINUITY: each scene's opening beat visually echoes the previous scene's closing beat — same palette, same light, same world.
 - AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley) — nothing tighter than a chest-up mid-shot on a person, no mouth-only or teeth-macro framing, NEVER a tongue; keep hands minimal and simple — a hand may hold the pack steady but never perform fine finger actions and never touches the mouth, jaw, chin, cheek or any part of the face; NEVER overlay visual effects (gels, mists, glows, particles) on a person's face or skin — effects live in the environment, away from people; the product is lit naturally, never wrapped, enveloped or surrounded by a glow/halo/energy effect — crystals and streams move NEAR the pack, never around or onto it.
-- VEO SAFETY FILTER (hard rule — breaching it silently kills the render and wastes the day's quota): NEVER write white pearls, spheres, beads, droplets-as-pearls or ANY small round white objects (the video engine's safety filter reads them as pills and returns nothing) — use angular mineral CRYSTAL SHARDS, flowing mineral streams or ribbons of light instead.
+- VEO SAFETY FILTER (hard rule — breaching it silently kills the render and wastes the day's quota): NEVER write white pearls, spheres, beads, droplets-as-pearls or ANY small round white objects (the video engine's safety filter reads them as pills and returns nothing). ${String(opts.style||type.style)==='lofi_native' ? 'In this LO-FI look there are NO substitute VFX either — no crystal shards, mineral streams, ribbons of light or particles; use real everyday objects and the pack itself only.' : 'Use angular mineral CRYSTAL SHARDS, flowing mineral streams or ribbons of light instead.'}
 - VOICE-FREE SCENES (hard rule): never write human vocal sounds into any scene's visual or motion ('uhm', sighs, gasps, humming, whispering, chatter) — scenes are voice-free; the narrator is recorded separately in post.
 - PACK TEXT: never reveal, read or glide to the pack's SIDE or BACK text (it is German and must stay unreadable) — the front label facing camera is the only pack face ever shown.
 - FEEL-LANGUAGE ONLY: every benefit is sensory ("feels firm", "feels clean", "cared-for") — never physiological verbs (firms, strengthens, repairs, protects) and never "effective" or "results".
@@ -921,6 +939,7 @@ CHOSEN VISUAL LOOK — every scene's visual/motion wording and the styleAnchor m
 Judge two things:
 1. TYPE: does each scene serve that narrative structure? (e.g. a Problem-Agitate-Solve ad spends ~60% of runtime on the problem, product appears only after; a demo ad SHOWS the mechanism; a comparison has clear old-vs-new beats.)
 2. LOOK: does the literal WORDING of every visual/motion line + the styleAnchor speak that look's language? A lo-fi handheld look must say handheld/candid/real-world-light/phone-shot in the scene text — words like "cinematic", "elegant", "premium studio", "dramatic lighting" mean the look has drifted.
+3. WORLD: does the WORLD itself belong to the look? A lo-fi look's world must be a REAL everyday location (home bathroom framed mirror-free, kitchen, bedroom, natural light) — a designed set, studio, branded/coloured feature walls, glowing panels, decorative water features or fantasy props (crystals, mineral streams) are a LOOK FAIL: rewrite the world to a real location and restage every scene inside it.
 
 If FULLY conformant, return the JSON unchanged. Otherwise return corrected JSON — rewrite only what breaks conformance; keep the world, character, VO meaning and schema identical. Never introduce: mirrors, pearls/beads/powder, finger/tongue/hand-to-face contact, pack motion or label zooms, framing tighter than chest-up, VO over 18 words, or non-cosmetic wording.
 
@@ -941,10 +960,10 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
         }catch(e){ /* audit is best-effort — lint repair still runs below */ }
         // SELF-REPAIR LOOP — text is free; fix lint violations BEFORE the human ever reads the script
         for(let round=0; round<2; round++){
-          const issues = lintStoryboard(sb);
+          const issues = lintStoryboard(sb, opts.style||type.style);
           if(!issues.length) break;
           try{
-            const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects and no powders/vials (safety filter reads them as pills/drugs — use angular crystal shards or mineral streams); no mirrors or vanities anywhere, including the world description (reframe the set so no mirror exists); no finger actions, tongue shots or hands touching the mouth/face; nothing tighter than a chest-up mid-shot on a person; the camera never zooms onto the label and never circles the pack; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); no fade-to-black (hold bright on pack + CTA); each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+            const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects and no powders/vials (safety filter reads them as pills/drugs — use angular crystal shards or mineral streams); no mirrors or vanities anywhere, including the world description (reframe the set so no mirror exists); no finger actions, tongue shots or hands touching the mouth/face; nothing tighter than a chest-up mid-shot on a person; the camera never zooms onto the label and never circles the pack; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); no fade-to-black (hold bright on pack + CTA); water ONLY from a tap or drinking glass, never scenic water down walls/rocks; no music words in scenes (music is added at stitch); in a LO-FI look no VFX elements (crystals/shards/streams/particles) and the world is a real everyday home location; each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
             const fr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
               { method:'POST', headers:{'Content-Type':'application/json'},
                 body:JSON.stringify({ contents:[{role:'user',parts:[{text:fixMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.4 } }) });
@@ -957,7 +976,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
             sb = sanitizeStoryboard(fx);
           }catch(e){ break; }
         }
-        sb.lint = lintStoryboard(sb);   // whatever survived repair — surfaced amber in the approval modal
+        sb.lint = lintStoryboard(sb, opts.style||type.style);   // whatever survived repair — surfaced amber in the approval modal
         return sb;
       }catch(e){ lastErr=e; }
     }
