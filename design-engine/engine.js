@@ -1028,9 +1028,12 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     const s = SKUS[opts.sku]||SKUS['aktiv'];
     const g = getGuide(opts.sku);
     const onProg = opts.onProgress||function(){};
-    // STEP 1 — scene still, pack-accurate (multiple packshot refs = tube AND box when saved)
-    const refs = (opts.refImgs && opts.refImgs.length ? opts.refImgs : [opts.refImgDataUrl]).filter(Boolean).slice(0,3);
-    let still = refs[0], stillOk = false;
+    // STEP 1 — scene still, pack-accurate (multiple packshot refs = tube AND box when saved).
+    // Packshot refs go ONLY to scenes whose script actually shows the pack — feeding them to a
+    // pack-free scene makes the image model paint the tube in uninvited (redrawn = garbled label).
+    const sceneWantsPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
+    const refs = sceneWantsPack ? (opts.refImgs && opts.refImgs.length ? opts.refImgs : [opts.refImgDataUrl]).filter(Boolean).slice(0,3) : [];
+    let still = refs[0]||null, stillOk = false;
     try{
       onProg('🖼️ composing scene still…');
       const vlook = videoStyle(opts.style);
@@ -1045,6 +1048,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
       sp += `HUMAN REALISM: any person must be indistinguishable from a real filmed human — natural skin with visible texture and pores, natural asymmetric expression, genuine relaxed smile, real eye depth; never plastic-smooth skin, never uncanny, never overly perfect teeth. `;
       sp += `EFFECTS REALISM: fluids and particles behave physically — water splashes with true liquid dynamics (never jelly-like or plastic), no generic glow halos around the product; light and reflections integrate naturally. `;
       sp += `PRODUCT FORM LOCK: one consistent form for the whole ad — show the TUBE (or the bottle for a mouthwash) as the on-screen product in every scene; the BOX may appear only if this scene's brief explicitly calls for it, and never replaces or alternates with the tube between scenes. If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text and layout, WHITE cap; keep the pack's REAL PROPORTIONS from the reference (a tall, slim toothpaste tube — never shortened, widened, squat or stubby); front label FACING CAMERA; never invent, garble, translate or re-letter pack text. GERMAN PACK LOCK (legal requirement): all small descriptive pack text stays in GERMAN exactly as the reference AND softly out of focus / too small to read — NEVER render legible ENGLISH words on the pack (especially health words like "protects", "bleeding", "gums", "periodontitis", "inflammation", "prevents"); only the LACALUT wordmark and variant name may read clearly. `;
+      sp += sceneWantsPack ? '' : `NO PRODUCT IN THIS SCENE (hard rule): this scene's script does NOT include the pack — the LACALUT tube/box must NOT appear anywhere in this frame; no toothpaste product at all, only the scene as described. `;
       sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
       sp += `PACK SCALE (hard rule — big packs garble): the pack occupies NO MORE than about 30% of the frame's height, standing upright with the label straight-on to camera (no tilt) — a modest, believable product presence, NEVER a label-filling macro; the smaller and straighter the pack, the sharper its text survives. `;
       sp += `WATER/LIQUID PHYSICS: any water or liquid must have a visible, natural source (a tap, a pour from above, a splash landing) and obey gravity — water NEVER emerges from rocks, crystals or objects. `;
