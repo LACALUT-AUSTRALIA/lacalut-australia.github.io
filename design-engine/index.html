@@ -54,6 +54,8 @@
   .iconbtn{ border:none; background:#f2f2f2; border-radius:6px; padding:5px 8px; font-size:13px; }
   .vstyle:hover{ border-color:#7c3aed !important; }
   .vstyle.on{ border-color:#7c3aed !important; background:#f3edff !important; color:#7c3aed; box-shadow:0 0 0 1px #7c3aed inset; }
+  /* edit-dialog output size: selected = bright yellow, impossible to miss */
+  .mode.ysel{ background:#FFD400 !important; color:#111 !important; border-color:#d9a600 !important; font-weight:800; box-shadow:0 0 0 2px #d9a600 inset; }
   .markybtn{ display:block; width:calc(100% - 16px); margin:0 8px 8px; border:none; background:#6b3fc4; color:#fff; font-weight:700; border-radius:8px; padding:8px; font-size:12px; cursor:pointer; }
   .markybtn:hover{ background:#5a33a8; }
   .markybtn:disabled{ background:#b9a8dd; cursor:not-allowed; }
@@ -85,6 +87,8 @@
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
   <button class="btn" onclick="openGuide()">📖 Brand Guide</button>
   <button class="btn" onclick="openKeys()">🔑 Keys</button>
+  <button class="btn" onclick="exportBackup()" title="Download EVERYTHING in this browser (images, videos, references, guides, keys) as one backup file — use it to move to another page or PC">💾 Backup</button>
+  <button class="btn" onclick="importBackup()" title="Load a backup file — adds its images/videos/references/settings into this browser">📥 Restore</button>
 </header>
 
 <div class="tabs" id="topMode" style="border-bottom:none;padding-bottom:0"></div>
@@ -233,12 +237,15 @@
   <label class="row" style="margin-top:10px;font-size:12px;background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;padding:8px 10px;gap:8px;align-items:flex-start">
     <input type="checkbox" id="batchPerRef" style="margin-top:2px">
     <span><b>Batch mode</b> — render a <b>separate image per selected reference</b> (uses more credits). <b>Leave OFF</b> to make <b>ONE image using all the references together</b> (e.g. swap 4 products into one composite).</span></label>
+  <label class="row" style="margin-top:14px;font-size:12px;font-weight:700">📐 Output size — final check before applying</label>
+  <div class="modes" id="editModes2" style="margin:4px 0 8px"></div>
   <div style="display:flex;gap:8px;align-items:center;margin-top:12px">
     <label style="font-size:12px;font-weight:600">Qty
       <select id="editQty" style="margin-left:5px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
         <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
     <span style="font-size:11px;color:#888">variations of this one edit</span>
     <span style="flex:1"></span>
+    <span id="editSizePreview"></span>
     <button class="btn" onclick="editDlg.close()">Cancel</button>
     <button class="btn primary" onclick="applyEdit()">Apply edit</button>
   </div>
@@ -422,9 +429,22 @@ function deletePreset(){
   localStorage.setItem('de_presets',JSON.stringify(list));
   renderPresets('');
 }
-function renderEditModes(){ const el=$('editModes'); if(!el) return;
-  el.innerHTML = Object.entries(MODES).map(([k,v])=>
-    `<button class="mode ${k===curMode?'active':''}" onclick="pickMode('${k}')">${v.label}<br><small style="opacity:.7">${v.dims}</small></button>`).join(''); }
+function renderEditModes(){
+  const html = Object.entries(MODES).map(([k,v])=>
+    `<button class="mode ${k===curMode?'ysel':''}" onclick="pickMode('${k}')">${v.label}<br><small style="opacity:.7">${v.dims}</small></button>`).join('');
+  const el=$('editModes'); if(el) el.innerHTML=html;
+  const el2=$('editModes2'); if(el2) el2.innerHTML=html;   // twin selector beside Apply edit — final check
+  renderEditSrc(); renderEditSizePreview();                // live-preview the crop at the chosen size
+}
+// Mini preview beside Apply edit — the actual image framed at the EXACT output shape + dims.
+function renderEditSizePreview(){ const el=$('editSizePreview'); if(!el) return;
+  const ar=(MODES[curMode].ar||'4:5').split(' ')[0].replace(':','/');
+  el.innerHTML=`<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-right:4px">
+    <span style="display:block;height:58px;aspect-ratio:${ar};border:2px solid #d9a600;border-radius:6px;overflow:hidden;background:#fffbe6">
+      ${typeof _editSrc==='string'&&_editSrc?`<img src="${_editSrc}" style="width:100%;height:100%;object-fit:cover;display:block">`:''}
+    </span>
+    <small style="font-size:10px;font-weight:800;color:#8a6d1a">${MODES[curMode].dims}</small></span>`;
+}
 function resolveBrain(){ if(curBrain==='mixed') return BRAINS[Math.floor(Math.random()*BRAINS.length)]; return BRAINS.find(b=>b.id===curBrain)||null; }
 function saveProduct(){ localStorage.setItem('de_product_'+curSku, JSON.stringify(productImgs)); }
 
@@ -1100,6 +1120,44 @@ async function showVidQC(id){ const rec=await getVid(id); const qc=(rec&&rec.qc)
   alert('🎬 VIDEO QC — eyeball the ad against each:\n\n'+qc.map(q=>'☐ '+q).join('\n')); }
 async function delVid(id){ if(!confirm('Delete this video ad (and all its scenes)?')) return; await vidDel(id); renderVideoGallery(curSku); }
 
+/* ═══════════════════════════════════════════════════════════════════
+   BACKUP / RESTORE — browser storage is per-URL (localhost vs the live
+   site are SEPARATE stores). One file carries everything across:
+   images, videos, reference library, brand guides, presets, keys.
+   ═══════════════════════════════════════════════════════════════════ */
+async function idbAllStore(name){ const db=await idb(); return new Promise((res,rej)=>{ try{ const t=db.transaction(name,'readonly'); const rq=t.objectStore(name).getAll(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }catch(e){ res([]); } }); }
+async function exportBackup(){
+  try{
+    const ls={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(/^(de_|lc_)/.test(k)) ls[k]=localStorage.getItem(k); }
+    const [gens,reflib,vidsRaw]=await Promise.all([idbAllStore('gens'),idbAllStore('reflib'),idbAllStore('vids')]);
+    const vids=await Promise.all(vidsRaw.map(async v=>({ ...v, enc:'b64',
+      scenes:await Promise.all((v.scenes||[]).map(async s=>s?{...s, videoBlob:(s.videoBlob instanceof Blob)?await blobToB64(s.videoBlob):s.videoBlob}:s)),
+      stitchedBlob:(v.stitchedBlob instanceof Blob)?await blobToB64(v.stitchedBlob):v.stitchedBlob })));
+    const payload={app:'lacalut-design-engine',ver:3,ts:Date.now(),ls,gens,reflib,vids};
+    const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='lacalut-design-engine-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+    try{ toast('💾 Backup downloaded — '+gens.length+' images, '+vids.length+' videos'); }catch(_){ alert('💾 Backup downloaded — '+gens.length+' images, '+vids.length+' videos'); }
+  }catch(e){ alert('Backup failed: '+e.message); }
+}
+function importBackup(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+  inp.onchange=async()=>{ const f=inp.files[0]; if(!f) return;
+    try{
+      const payload=JSON.parse(await f.text());
+      if(payload.app!=='lacalut-design-engine') throw new Error('Not a Design Engine backup file');
+      if(!confirm('Restore backup from '+new Date(payload.ts).toLocaleString()+'?\n\n'
+        +(payload.gens||[]).length+' images, '+(payload.vids||[]).length+' videos, '+(payload.reflib||[]).length+' reference photos + all settings will be ADDED to this browser.\nExisting items with the same id are overwritten; nothing else is deleted.')) return;
+      Object.entries(payload.ls||{}).forEach(([k,v])=>{ try{ localStorage.setItem(k,v); }catch(_){}});
+      const db=await idb();
+      await new Promise((res,rej)=>{ const t=db.transaction(['gens','reflib','vids'],'readwrite');
+        (payload.gens||[]).forEach(r=>t.objectStore('gens').put(r));
+        (payload.reflib||[]).forEach(r=>t.objectStore('reflib').put(r));
+        (payload.vids||[]).forEach(r=>t.objectStore('vids').put(r));
+        t.oncomplete=res; t.onerror=()=>rej(t.error); });
+      alert('✅ Restored. Reloading…'); location.reload();
+    }catch(e){ alert('Restore failed: '+e.message); } };
+  inp.click(); }
+
 // ── Drag-to-reorder gallery cards (pull any two side-by-side for comparison) ──
 let _dragCard=null;
 function initCardDnD(){
@@ -1253,11 +1311,16 @@ function editImage(cardId){
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
+  const arw=(MODES[curMode].ar||'4:5').split(' ')[0].replace(':','/');
   if(_editSrc){ w.innerHTML=`<div style="display:flex;gap:10px;align-items:center">
-    <img src="${_editSrc}" style="width:90px;height:112px;object-fit:contain;border:1px solid #ddd;border-radius:8px;background:#fafafa">
-    <div><div style="font-size:12px;color:#666;margin-bottom:5px">Image being edited</div>
+    <span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px">
+      <span style="display:block;height:112px;aspect-ratio:${arw};border:2px solid #d9a600;border-radius:8px;overflow:hidden;background:#fffbe6">
+        <img src="${_editSrc}" style="width:100%;height:100%;object-fit:cover;display:block"></span>
+      <small style="font-size:10px;font-weight:800;color:#8a6d1a">${MODES[curMode].label} · ${MODES[curMode].dims}</small></span>
+    <div><div style="font-size:12px;color:#666;margin-bottom:5px">Image being edited — framed at the selected output size</div>
     <button class="btn" style="font-size:12px;padding:5px 10px" onclick="pickEditSrc()">🔄 Load a different image</button></div></div>`;
   } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image — or drag &amp; drop / paste it here</div>`; }
+  renderEditSizePreview();   // keep the mini preview beside Apply edit in sync with the loaded image
 }
 function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; renderEditSrc(); }); }
 function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; renderEditSrc(); }; r.readAsDataURL(file); }
