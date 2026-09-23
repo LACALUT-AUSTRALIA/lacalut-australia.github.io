@@ -705,6 +705,7 @@ HARD RULES you must keep from the base brief, never trade away for drama:
 - PACK MOTION LOCK: the pack NEVER flips, spins, turns over or rotates away from camera — the printed front label faces camera the entire clip (subtle tilt max); keep the pack's real tall slim proportions; move the camera or environment for dynamism, never the pack itself.
 - CHARACTER LOCK: if the base brief describes a person, keep EXACTLY that person — never swap, restyle or introduce a different actor.
 - WORLD LOCK: if the base brief names the ad's single location/set, keep EXACTLY that location — same surfaces, lighting mood and palette; add drama through camera and action, never by moving the scene somewhere else.
+- STYLE LOCK: keep the base brief's VISUAL LOOK exactly — a lo-fi handheld phone-shot look STAYS lo-fi (your "one-up" makes it a better lo-fi shot, more authentic and scroll-native); never upgrade it to cinematic studio polish.
 - AUDIO: ambient sound and music only — zero human vocal sounds of any kind (no speech, singing, whispering, humming, male or female voices, background chatter).
 - MIRROR LOCK: no mirrored, reversed or doubled lettering anywhere, including reflections.
 - COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
@@ -888,7 +889,7 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
 - Each scene's "vo" is the EXACT spoken voiceover line — max 18 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene — always UPBEAT and smiling: warm, uplifting, energised delivery with dynamic intonation, never flat or monotone.
-- "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
+- "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim — it MUST embody the VISUAL LOOK given above (a lo-fi handheld look stays lo-fi in the anchor and every scene; never drift toward studio polish the look didn't ask for).
 - "world" is 2–3 sentences describing the ONE location/set in concrete physical detail — reused verbatim by every scene (plus the single contrast setting if the format demands one). The world must NEVER contain a mirror, vanity mirror or large reflective glass (reflections mangle AI renders — a bathroom set is framed so no mirror is ever in shot), and never white round objects, powders or vials.
 - "visual" describes what we see; "motion" the camera/subject movement — write motion with a visual change every 2–3 seconds, never a static hold over 4 seconds (pacing is where retention dies).
 - Final scene ends on the product + call to action. The real GERMAN pack with its WHITE cap is the only product ever shown.
@@ -909,6 +910,35 @@ Return ONLY valid JSON:
         if(!sb || !Array.isArray(sb.scenes) || sb.scenes.length<2) throw new Error('Storyboard came back malformed');
         sb.scenes = sb.scenes.slice(0,5).map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
         sb = sanitizeStoryboard(sb);
+        // TYPE + LOOK CONFORMANCE AUDIT — does the script actually read as the chosen ad type, in the chosen look?
+        try{
+          const auditMeta = `AUDIT this LACALUT video-ad storyboard for FORMAT CONFORMANCE.
+
+CHOSEN AD TYPE — the storyboard must follow this structure: ${type.narrative}
+
+CHOSEN VISUAL LOOK — every scene's visual/motion wording and the styleAnchor must read as: ${st?st.motion:'(no specific look)'}
+
+Judge two things:
+1. TYPE: does each scene serve that narrative structure? (e.g. a Problem-Agitate-Solve ad spends ~60% of runtime on the problem, product appears only after; a demo ad SHOWS the mechanism; a comparison has clear old-vs-new beats.)
+2. LOOK: does the literal WORDING of every visual/motion line + the styleAnchor speak that look's language? A lo-fi handheld look must say handheld/candid/real-world-light/phone-shot in the scene text — words like "cinematic", "elegant", "premium studio", "dramatic lighting" mean the look has drifted.
+
+If FULLY conformant, return the JSON unchanged. Otherwise return corrected JSON — rewrite only what breaks conformance; keep the world, character, VO meaning and schema identical. Never introduce: mirrors, pearls/beads/powder, finger/tongue/hand-to-face contact, pack motion or label zooms, framing tighter than chest-up, VO over 18 words, or non-cosmetic wording.
+
+Return ONLY valid JSON, exact same schema:
+${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+          const ar = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+            { method:'POST', headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({ contents:[{role:'user',parts:[{text:auditMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.3 } }) });
+          const ad = await ar.json();
+          if(ar.ok){
+            const at = (ad.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+            const ax = JSON.parse(at);
+            if(ax && Array.isArray(ax.scenes) && ax.scenes.length===sb.scenes.length){
+              ax.scenes = ax.scenes.map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+              sb = sanitizeStoryboard(ax);
+            }
+          }
+        }catch(e){ /* audit is best-effort — lint repair still runs below */ }
         // SELF-REPAIR LOOP — text is free; fix lint violations BEFORE the human ever reads the script
         for(let round=0; round<2; round++){
           const issues = lintStoryboard(sb);
@@ -973,7 +1003,9 @@ Return ONLY valid JSON:
     let still = refs[0], stillOk = false;
     try{
       onProg('🖼️ composing scene still…');
-      let sp = `Cinematic opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
+      const vlook = videoStyle(opts.style);
+      let sp = `Opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
+      sp += vlook ? `VISUAL LOOK (hard rule — this defines the entire frame and OVERRIDES any default polish): ${vlook.motion} If this look is lo-fi/handheld, the frame must read as a candid smartphone photo a real person took — natural imperfect framing, real-world light — NOT a glossy studio ad. ` : '';
       sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
       sp += (sb && sb.world) ? `WORLD LOCK (the #1 rule of this ad): every scene of this ad is shot inside EXACTLY this one location — ${sb.world} — same set, same surfaces and props, same lighting setup, same colour palette, same time of day; compose THIS scene's brief within that world (change only the camera angle/distance and the action), NEVER a different or generic background. ` : '';
       sp += opts.prevStill ? `CONTINUITY REFERENCE: the final style-reference image is the PREVIOUS scene's opening frame of this SAME ad — match its exact location, surfaces, lighting, colour grade and world so the two scenes cut together seamlessly as one film; do not copy its composition, stage this scene's own brief inside the identical world. ` : '';
@@ -986,7 +1018,7 @@ Return ONLY valid JSON:
       sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
       sp += `PACK SCALE (hard rule — big packs garble): the pack occupies NO MORE than about 30% of the frame's height, standing upright with the label straight-on to camera (no tilt) — a modest, believable product presence, NEVER a label-filling macro; the smaller and straighter the pack, the sharper its text survives. `;
       sp += `WATER/LIQUID PHYSICS: any water or liquid must have a visible, natural source (a tap, a pour from above, a splash landing) and obey gravity — water NEVER emerges from rocks, crystals or objects. `;
-      sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal premium finish, composed with headroom for motion.`;
+      sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal, faithful to the VISUAL LOOK above (candid phone-shot realism when the look is lo-fi; polished finish only when the look asks for it), composed with headroom for motion.`;
       still = await callGemini({ prompt:sp, productImgs:refs, styleImgs: opts.prevStill?[opts.prevStill]:[],
         render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
       stillOk = true;
