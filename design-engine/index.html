@@ -922,7 +922,7 @@ async function vidDel(id){ const db=await idb(); return new Promise((res,rej)=>{
 
 /* ── ffmpeg.wasm loader (single-threaded core — no COOP/COEP needed; lazy, ~31MB one-off) ── */
 const FF_BASE='https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd';
-const FF_CORE='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+const FF_CORE='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm'; // esm core — umd core can't be imported by the module worker (stitch silently failed)
 const FF_UTIL='https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js';
 let _ffmpeg=null;
 function injectScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Could not load '+src)); document.head.appendChild(s); }); }
