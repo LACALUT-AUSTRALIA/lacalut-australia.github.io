@@ -155,7 +155,7 @@
     <h3 style="margin-top:0">Video type</h3>
     <div class="modes" id="vTypes" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px"></div>
 
-    <h3 style="margin-top:12px">Look</h3>
+    <h3 style="margin-top:12px">Style</h3>
     <div class="guide">Each look auto-picks the best engine — override below only if you know why.</div>
     <div id="vStyles" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"></div>
     <div id="vStyleDesc" class="guide" style="min-height:14px"></div>
@@ -754,7 +754,7 @@ function openVideo(cardId){ getRec(cardId).then(rec=>{ if(!rec){alert('No card.'
     <h3 style="margin:0 0 4px;color:#7c3aed">🎬 Generate Video — animate this creative</h3>
     <div style="font-size:12px;color:#666;margin-bottom:12px">Image-to-video. Pick a look → we auto-choose the best engine. Confirm the cost before it renders.</div>
 
-    <label style="font-weight:700;font-size:13px">1 · Pick a look</label>
+    <label style="font-weight:700;font-size:13px">1 · Pick a style</label>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:6px 0 4px">
       ${styles.map(([k,s])=>`<button class="vstyle" data-k="${k}" onclick="_vidStylePick('${k}')" style="text-align:left;padding:8px 10px;border:1px solid #ddd;border-radius:9px;background:#fafafa;cursor:pointer;font-size:12px;font-weight:700">${s.label}</button>`).join('')}
     </div>
@@ -1033,7 +1033,7 @@ function openStoryboardApproval(sb, ctx){
   dlg.innerHTML=`<div style="background:#fff;border-radius:14px;padding:22px;max-width:760px;width:94%;font-family:system-ui;max-height:92vh;overflow:auto">
     <h3 style="margin:0 0 4px;color:#7c3aed">✍️ Approve the Script — ${scenes.length} scenes · ${scenes.length*8}s</h3>
     <div style="font-size:12px;color:#666;margin-bottom:12px">Edit anything below. Nothing renders (or spends) until you hit Approve.</div>
-    <div style="background:#eef4ff;border:1px solid #bcd0f5;border-radius:8px;padding:8px 11px;font-size:12.5px;margin-bottom:10px">🎬 <b>TYPE:</b> ${escv(E.VIDEO_TYPES[vType]?.label||vType)} &nbsp;·&nbsp; 🎨 <b>LOOK:</b> ${escv(E.VIDEO_STYLES[vStyleId]?.label||vStyleId)} <span style="color:#667">— ${escv(E.VIDEO_STYLES[vStyleId]?.desc||'')}</span></div>
+    <div style="background:#eef4ff;border:1px solid #bcd0f5;border-radius:8px;padding:8px 11px;font-size:12.5px;margin-bottom:10px">🎬 <b>TYPE:</b> ${escv(E.VIDEO_TYPES[vType]?.label||vType)} &nbsp;·&nbsp; 🎨 <b>STYLE:</b> ${escv(E.VIDEO_STYLES[vStyleId]?.label||vStyleId)} <span style="color:#667">— ${escv(E.VIDEO_STYLES[vStyleId]?.desc||'')}</span></div>
     <div id="sbWarn" style="display:none;background:#fdeaea;border:1px solid #e7b3b0;color:#b3261e;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">⚠️ A red field contains a blocked disease/therapeutic claim — reword it before approving.</div>
     ${(sb.lint&&sb.lint.length)?`<div style="background:#fff7e6;border:1px solid #e8c77b;color:#8a6100;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">🟡 <b>Auto-lint couldn't fully fix these — reword before approving:</b><br>${sb.lint.map(x=>'• '+String(x).replace(/</g,'&lt;')).join('<br>')}</div>`:''}
     <div style="display:flex;gap:10px;margin-bottom:8px">
