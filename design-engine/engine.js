@@ -48,7 +48,7 @@
   const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up',
     'bleeding','reduces bleeding','stops bleeding','stops gum bleeding','gum bleeding',
     'soothes','soothes irritation','irritation','inflammation','reduces inflammation','anti-inflammatory',
-    'heals','calms','closes gum pockets','kills bacteria','kills the bacteria'];
+    'heals','calms','closes gum pockets','kills bacteria','kills the bacteria','clinically proven','clinically tested','clinical trial','dentist approved','dentist recommended'];
 
   const MODES = {
     'social':  { label:'Feed 4:5',      dims:'1080×1350', ar:'4:5 portrait' },
@@ -251,7 +251,7 @@
     const m = MODES[mode];
     const bans = [...new Set([...GLOBAL_BAN, ...(opts.bans || [])])];
     let p = `Professional graphic-designed ${m.label} for LACALUT (premium German pharmacy oral-care brand) featuring MULTIPLE products together — ${names.length} products: ${names.join(', ')}. `;
-    p += `AD, NOT A POST (hard rule): this is a PAID Meta direct-response ad for cold traffic — it must stop the scroll AND sell: customer-first hook, one clear cosmetic feel-benefit payoff, and a clear CTA pill; NEVER an organic-social layout and NEVER 'save/share/follow/comment' language. `;
+    p += `AD, NOT A POST (hard rule): this is a PAID Meta direct-response ad for cold traffic — it must stop the scroll AND sell: customer-first hook, one clear cosmetic feel-benefit payoff, and a clear CTA pill; NEVER an organic-social layout and NEVER 'save/share/follow/comment' language. CTA PILL (mandatory): exactly ONE clear button-style CTA pill in a brand colour (e.g. 'Shop Now') always appears — never omit it, never more than one. `;
     p += `STRICT brand colours — dominant LACALUT red #CF102D + navy #004A88, clean premium palette (each product may keep its own accent). `;
     p += `Arrange all ${names.length} products together as ONE cohesive premium hero composition — a "range line-up" / family shot: every product clearly visible, evenly balanced and distinct, none obscured or merged. `;
     if(brain){
