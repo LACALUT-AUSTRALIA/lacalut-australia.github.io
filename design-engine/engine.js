@@ -522,7 +522,7 @@ ${basePrompt}
   const VIDEO_STYLES = {
     lofi_native:    { label:'📱 Lo-Fi Native (proven default)', model:'VEO3', emoji:'📱',
       desc:'Handheld phone-shot feel — 42% of top-spend ads look like this.',
-      motion:'MOTION & LOOK: authentic lo-fi smartphone footage — natural imperfect handheld movement, real-world lighting (bathroom, kitchen, daylight), native social-feed feel, NEVER glossy studio polish. A visual change or cut-feel every 2–3 seconds; a pattern interrupt (snap zoom, angle change, product pop-in) at least every 4 seconds. Looks like a real person filmed it, scroll-native, not an ad.' },
+      motion:'MOTION & LOOK: authentic lo-fi smartphone footage — natural imperfect handheld movement, real-world lighting (bathroom, kitchen, daylight), native social-feed feel, NEVER glossy studio polish. A visual change or cut-feel every 2–3 seconds; a pattern interrupt (snap zoom, angle change) at least every 4 seconds. Looks like a real person filmed it, scroll-native, not an ad.' },
     polished_hybrid:{ label:'💎 Polished Hybrid', model:'VEO3', emoji:'💎',
       desc:'Clean studio product beats + lo-fi inserts — the Hismile blend.',
       motion:'MOTION & LOOK: hybrid pacing — crisp clean studio product beats (macro texture, controlled light, premium grade) intercut with quick lo-fi real-world insert moments. A visual change every 2–3 seconds; never a static hold longer than 4 seconds. Polished where the product shines, human where trust is built.' },
@@ -599,15 +599,19 @@ ${basePrompt}
     const fx = (g.formula||[]).filter(x=>x.on!==false).map(x=>x.text);
 
     let p = `Animate the SUPPLIED still image into a ${seconds}-second premium social-media MARKETING VIDEO for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
-    p += `IMAGE-TO-VIDEO — the supplied frame is the hero: keep its exact composition, product, packaging, colours, logo and any on-image text as the anchor. Add tasteful MOTION only; do NOT redraw, restyle, relabel or reinvent anything already in the frame. `;
+    const packless = opts.hasPack===false;
+    p += packless
+      ? `IMAGE-TO-VIDEO — the supplied frame is the hero: keep its exact composition, setting, person and any on-image text as the anchor. Add tasteful MOTION only; do NOT redraw, restyle or reinvent anything already in the frame. `
+      : `IMAGE-TO-VIDEO — the supplied frame is the hero: keep its exact composition, product, packaging, colours, logo and any on-image text as the anchor. Add tasteful MOTION only; do NOT redraw, restyle, relabel or reinvent anything already in the frame. `;
     const st = videoStyle(opts.style);
     p += (st ? st.motion : 'MOTION: a subtle premium camera move (slow push-in / gentle parallax / smooth orbit or dolly), soft light shimmer, delicate floating formula particles or a slow water/ingredient drift, and a gentle product hero reveal. Keep motion smooth and controlled — no fast whip pans, no chaotic morphing, no warping of the product or text.') + ' ';
     p += `STRICT brand colours — ${g.colours||s.palette}. `;
     if(brain) p += `CREATIVE STRATEGY — "${brain.name}". `;
     if(brief) p += `Art-director motion note (priority): ${brief}. `;
-    p += `PRODUCT FIDELITY (mandatory, every frame): the real GERMAN packaging stays razor-sharp and identical throughout — exact tube/box shape, label layout, logo and printed wording; the CAP is ALWAYS WHITE. NEVER blur, melt, warp, duplicate or re-letter the pack; NEVER fabricate an English tube or English health text; NEVER flip the pack so any text becomes a mirrored/reversed reflection. `;
+    if(packless) p += `NO PRODUCT IN THIS SCENE (hard rule): this scene contains NO toothpaste tube, box, bottle or branded product — and NONE may appear, be revealed, held up or materialise at any point; the product lives in OTHER scenes of this ad only. `;
+    else p += `PRODUCT FIDELITY (mandatory, every frame): the real GERMAN packaging stays razor-sharp and identical throughout — exact tube/box shape, label layout, logo and printed wording; the CAP is ALWAYS WHITE. NEVER blur, melt, warp, duplicate or re-letter the pack; NEVER fabricate an English tube or English health text; NEVER flip the pack so any text becomes a mirrored/reversed reflection. `;
     p += `SKU ANGLE LOCK: this clip is EXCLUSIVELY for LACALUT ${s.name}; every visual and any on-screen word is about THIS product's own benefit only — ${s.say}. Never borrow another LACALUT product's angle (no whitening unless White & Repair, no gum-firmness unless a gum product, no cold-twinge comfort unless Sensitive, no fresh-breath unless Flora). `;
-    if(fx.length) p += `SIGNATURE FORMULA ELEMENTS (only if formula/ingredient props move in-frame): use ONLY ${fx.join(', ')} for ${s.name}; never another formula's elements (no herbs unless Aktiv Herbal, no silver zinc granules unless Flora, no blue soothing crystals unless Sensitive, no diamond/pearl minerals unless White & Repair). `;
+    if(fx.length && !packless) p += `SIGNATURE FORMULA ELEMENTS (only if formula/ingredient props move in-frame): use ONLY ${fx.join(', ')} for ${s.name}; never another formula's elements (no herbs unless Aktiv Herbal, no silver zinc granules unless Flora, no blue soothing crystals unless Sensitive, no diamond/pearl minerals unless White & Repair). `;
     p += `COSMETIC-ONLY COMPLIANCE (non-negotiable): LACALUT is a cosmetic, not a medicine. NO therapeutic or disease claims, NO "treat", "cure" or "clinically proven", NO statistics or percentages on screen. The ONLY active ingredients that may ever be named are "fluoride" and "hydroxyapatite" — NEVER strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc, or any ion label (e.g. Sr2+, K+). `;
     if(advNeg) p += `NEVER show or write any of these words/claims anywhere in the video: ${bans.join(', ')}. `;
     p += `Any on-screen text is ENGLISH (Australian English) only, minimal, correctly spelled and never garbled; keep the product's own printed German packaging text unchanged and softly out of focus. German heritage descriptors (Crème Paste / Mund-Elixier) are allowed, but "toothpaste" / "mouthwash" stay the plain English words. `;
@@ -1023,7 +1027,8 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
   /* ═══ SCENE PROMPT — buildVideoPrompt + continuity + exact VO lock ═══ */
   function buildScenePrompt(opts){
     const sb = opts.storyboard, sc = opts.scene, i = opts.index, total = opts.total;
-    let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true,
+    const hasPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
+    let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true, hasPack,
       brief: sc.visual + '. ' + sc.motion });
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
     p += sb.world ? `WORLD LOCK: the entire ad happens inside EXACTLY this one location (identical in every scene): ${sb.world} — same set, same surfaces, same lighting mood, same palette; only the camera and the action change between scenes; NEVER drift to a different location or background. ` : '';
@@ -1032,7 +1037,9 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
     p += `PACK MOTION LOCK: while the pack is on screen its printed front label stays FACING CAMERA, perfectly legible and pixel-stable — NEVER flip, spin, turn over or rotate the pack (a subtle tilt of a few degrees is the maximum); never warp, redraw, re-letter, mirror or reverse the label during motion; keep the pack's real tall slim proportions unchanged in every frame; the pack stays at its opening-frame SIZE — the camera never pushes so close that the label fills the frame. `;
     p += `LIQUID PHYSICS: any water or liquid has a visible natural source and obeys gravity — never emerging from rocks, crystals or objects; no small white beads, pearls or droplet-strings may form. `;
-    p += `The supplied reference image shows the REAL product — it anchors branding fidelity, but compose this scene to its own visual brief rather than copying the reference composition.`;
+    p += `BRIEF FIDELITY (hard rule): render ONLY what this scene's brief describes — NEVER invent extra shots, cutaways, inserts, new objects, props, products, people or locations the brief does not name; nothing may materialise out of thin air (no ice, cubes, crystals or objects appearing in hands); an object may only enter frame carried by a visible hand or revealed by the camera move. `;
+    p += `NO UI OVERLAYS: never render a phone camera interface, recording indicator, timestamp, watermark, subtitles or any UI chrome — the frame is clean footage. `;
+    p += `MIRROR LOCK: no mirrors and no reflective surface showing a readable reflection anywhere in the scene. `;
     return p;
   }
 
