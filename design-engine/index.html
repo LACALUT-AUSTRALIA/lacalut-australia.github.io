@@ -1033,6 +1033,7 @@ function openStoryboardApproval(sb, ctx){
   dlg.innerHTML=`<div style="background:#fff;border-radius:14px;padding:22px;max-width:760px;width:94%;font-family:system-ui;max-height:92vh;overflow:auto">
     <h3 style="margin:0 0 4px;color:#7c3aed">✍️ Approve the Script — ${scenes.length} scenes · ${scenes.length*8}s</h3>
     <div style="font-size:12px;color:#666;margin-bottom:12px">Edit anything below. Nothing renders (or spends) until you hit Approve.</div>
+    <div style="background:#eef4ff;border:1px solid #bcd0f5;border-radius:8px;padding:8px 11px;font-size:12.5px;margin-bottom:10px">🎬 <b>TYPE:</b> ${escv(E.VIDEO_TYPES[vType]?.label||vType)} &nbsp;·&nbsp; 🎨 <b>LOOK:</b> ${escv(E.VIDEO_STYLES[vStyleId]?.label||vStyleId)} <span style="color:#667">— ${escv(E.VIDEO_STYLES[vStyleId]?.desc||'')}</span></div>
     <div id="sbWarn" style="display:none;background:#fdeaea;border:1px solid #e7b3b0;color:#b3261e;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">⚠️ A red field contains a blocked disease/therapeutic claim — reword it before approving.</div>
     ${(sb.lint&&sb.lint.length)?`<div style="background:#fff7e6;border:1px solid #e8c77b;color:#8a6100;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">🟡 <b>Auto-lint couldn't fully fix these — reword before approving:</b><br>${sb.lint.map(x=>'• '+String(x).replace(/</g,'&lt;')).join('<br>')}</div>`:''}
     <div style="display:flex;gap:10px;margin-bottom:8px">
