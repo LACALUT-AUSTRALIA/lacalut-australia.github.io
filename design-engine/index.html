@@ -717,6 +717,13 @@ function packshotFor(sku){
   for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) return u; }
   const pm=productImgs.filter(Boolean); return pm[0]||null;
 }
+function packshotsFor(sku){
+  // Up to 3 refs (tube + box + combo) — more angles = tighter pack fidelity in scene stills.
+  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash'];
+  const out=[]; for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) out.push(u); }
+  if(!out.length){ const pm=productImgs.filter(Boolean); if(pm[0]) out.push(pm[0]); }
+  return out.slice(0,3);
+}
 function _vidCostLine(){
   const g=x=>document.getElementById(x); if(!g('vidModel')) return;
   const model=g('vidModel').value, seconds=parseInt(g('vidDur').value)||8;
@@ -1029,23 +1036,32 @@ async function approveStoryboard(){
 /* Sequential scene render with per-scene persistence — a crash/network-fail never loses paid scenes. */
 async function renderScenesInto(recId, startAt){
   const rec=await getVid(recId); if(!rec) return;
-  const total=rec.sbScenes.length; const ref=packshotFor(rec.refSku||rec.sku);
+  const total=rec.sbScenes.length; const refs=packshotsFor(rec.refSku||rec.sku); const ref=refs[0]||null;
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
   for(let i=startAt;i<total;i++){
     try{
       prog('🎬 scene '+(i+1)+'/'+total+' starting…');
       const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
-        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, apiKey:KEYS.gemini, oneUp:rec.oneUp,
+        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp,
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
       rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null };
       await vidPut(rec);   // bank every paid scene immediately
     }catch(e){ rec.status='partial'; rec.failedAt=i; rec.error=e.message; await vidPut(rec); renderVideoGallery(curSku); return; }
   }
-  // stitch
+  // 🎙️ ONE narrator for the whole ad (per-scene TTS, same voice — no more accent roulette)
+  for(let i=0;i<total;i++){
+    if(rec.scenes[i].voWav) continue;
+    try{ prog('🎙️ narrator line '+(i+1)+'/'+total+'…');
+      rec.scenes[i].voWav=await E.ttsLine({ text:rec.sbScenes[i].vo, voiceDesc:rec.storyboard.voice, apiKey:KEYS.gemini });
+      await vidPut(rec);
+    }catch(e){ rec.voFailed=e.message; break; }   // no narrator → still ship the visual ad
+  }
+  // stitch (+ narrator mix)
   try{
     prog('🧵 stitching '+total+' scenes…');
     const ff=await loadFFmpeg(prog);
-    rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)));
+    rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
+      { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8 });
     rec.status='done'; rec.failedAt=null;
   }catch(e){ rec.status='done'; rec.stitchFailed=e.message; }   // scenes still playable + downloadable
   await vidPut(rec); renderVideoGallery(curSku);
@@ -1057,7 +1073,8 @@ async function resumeVidRender(recId){ const rec=await getVid(recId); if(!rec) r
   if(!confirm(`Resume from scene ${(rec.failedAt||0)+1} — spends ~US$${(est.usd*remaining).toFixed(2)} for the remaining ${remaining} scene(s). Scenes already rendered are kept free.`)) return;
   rec.status='rendering'; await vidPut(rec); renderVideoGallery(curSku); renderScenesInto(recId, rec.failedAt||0); }
 async function retryStitch(recId){ const rec=await getVid(recId); if(!rec) return;
-  try{ const ff=await loadFFmpeg(); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob))); rec.stitchFailed=null; await vidPut(rec); renderVideoGallery(curSku); }
+  try{ const ff=await loadFFmpeg(); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
+      { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8 }); rec.stitchFailed=null; await vidPut(rec); renderVideoGallery(curSku); }
   catch(e){ alert('Stitch failed again: '+e.message); } }
 async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) return;
   const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
@@ -1065,11 +1082,14 @@ async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) 
   if(!confirm(`Re-roll scene ${i+1} only — spends ~US$${est.usd.toFixed(2)}.`)) return;
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
   try{
+    const refs=packshotsFor(rec.refSku||rec.sku);
+    const oldVo=rec.scenes[i]&&rec.scenes[i].voWav;   // VO line unchanged — keep the recorded narrator take
     const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
-      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:packshotFor(rec.refSku||rec.sku), apiKey:KEYS.gemini, oneUp:rec.oneUp, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
-    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null };
+      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:refs[0]||null, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
+    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, voWav:oldVo||null };
     rec.stitchedBlob=null; await vidPut(rec);
-    try{ const ff=await loadFFmpeg(prog); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob))); }catch(e){ rec.stitchFailed=e.message; }
+    try{ const ff=await loadFFmpeg(prog); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
+      { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8 }); }catch(e){ rec.stitchFailed=e.message; }
     await vidPut(rec); renderVideoGallery(curSku);
   }catch(e){ alert('Re-roll failed: '+e.message); } }
 

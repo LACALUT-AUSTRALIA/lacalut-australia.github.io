@@ -862,8 +862,7 @@ Return ONLY valid JSON:
     let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true,
       brief: sc.visual + '. ' + sc.motion });
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
-    p += `VOICEOVER (must be spoken aloud in this scene — these EXACT words and nothing else): "${sc.vo}" — voice: ${sb.voice}. Natural pacing, finishing within the scene. `;
-    p += `AUDIO RESET: open this scene on a fresh audio cue (a subtle sound effect, music-beat change or a deliberate beat of silence) landing together with the visual change — never carry the previous scene's audio bed in unchanged. `;
+    p += `AUDIO (mandatory): ambient sound design and music ONLY — ABSOLUTELY NO spoken words, no voiceover, no narration, no talking, no singing, no whispering (one consistent narrator is recorded separately and mixed over the final ad in post). Open the scene on a fresh audio cue (a subtle sound effect or music-beat change) landing together with the visual change. `;
     p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
     p += `The supplied reference image shows the REAL product — it anchors branding fidelity, but compose this scene to its own visual brief rather than copying the reference composition.`;
     return p;
@@ -887,17 +886,19 @@ Return ONLY valid JSON:
     const s = SKUS[opts.sku]||SKUS['aktiv'];
     const g = getGuide(opts.sku);
     const onProg = opts.onProgress||function(){};
-    // STEP 1 — scene still, pack-accurate
-    let still = opts.refImgDataUrl, stillOk = false;
+    // STEP 1 — scene still, pack-accurate (multiple packshot refs = tube AND box when saved)
+    const refs = (opts.refImgs && opts.refImgs.length ? opts.refImgs : [opts.refImgDataUrl]).filter(Boolean).slice(0,3);
+    let still = refs[0], stillOk = false;
     try{
       onProg('🖼️ composing scene still…');
       let sp = `Cinematic opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
       sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
-      sp += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, high-contrast, instantly readable on a phone, correctly spelled. ` : `No on-screen text. `;
-      sp += `If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text, WHITE cap; never invent, garble or translate pack text; keep pack fine-print softly out of focus. `;
+      sp += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, clean sans-serif, high-contrast, instantly readable on a phone, EVERY word correctly spelled (render fewer words perfectly rather than more words garbled). ` : `No on-screen text. `;
+      sp += `TEXT LOCK: besides that caption and the product's own real label, there is NO other text anywhere in the scene — no invented signage, posters, panels, banners or decorative words. `;
+      sp += `If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text and layout, WHITE cap; never invent, garble, translate or re-letter pack text; keep pack fine-print softly out of focus. `;
       sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
       sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal premium finish, composed with headroom for motion.`;
-      still = await callGemini({ prompt:sp, productImgs:[opts.refImgDataUrl].filter(Boolean), styleImgs:[],
+      still = await callGemini({ prompt:sp, productImgs:refs, styleImgs:[],
         render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
       stillOk = true;
     }catch(e){ /* fall back to animating the raw packshot rather than failing the scene */ }
@@ -935,9 +936,40 @@ Return ONLY valid JSON:
     return out;
   }
 
-  /* ═══ STITCH — concat N same-codec mp4s via an injected ffmpeg.wasm instance ═══ */
+  /* ═══ NARRATOR TTS — one consistent voice for the whole ad (Gemini TTS, same key).
+     Veo generates each scene's audio independently, so per-scene spoken VO drifts
+     between voices/accents. Scenes now render speech-free; ONE narrator reads every
+     line via TTS and is mixed over the stitched video. ═══ */
+  function pcmToWavBlob(b64, rate){ const bin=atob(b64); const n=bin.length;
+    const buf=new ArrayBuffer(44+n); const dv=new DataView(buf);
+    const ws=(o,str)=>{ for(let i=0;i<str.length;i++) dv.setUint8(o+i,str.charCodeAt(i)); };
+    ws(0,'RIFF'); dv.setUint32(4,36+n,true); ws(8,'WAVE'); ws(12,'fmt '); dv.setUint32(16,16,true);
+    dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,rate,true); dv.setUint32(28,rate*2,true);
+    dv.setUint16(32,2,true); dv.setUint16(34,16,true); ws(36,'data'); dv.setUint32(40,n,true);
+    for(let i=0;i<n;i++) dv.setUint8(44+i,bin.charCodeAt(i));
+    return new Blob([buf],{type:'audio/wav'}); }
+  async function ttsLine(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const model = opts.model || 'gemini-2.5-flash-preview-tts';
+    const desc = opts.voiceDesc || 'a warm Australian female voice, natural pace';
+    const voiceName = /(\bmale\b|\bman\b|\bbloke\b|\bguy\b)/i.test(desc) && !/female|woman/i.test(desc) ? 'Puck' : 'Kore';
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{parts:[{text:`Speak as ${desc}. Australian English pronunciation. Read this ad line naturally:\n${opts.text}`}]}],
+          generationConfig:{ responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName } } } } }) });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error?.message||('TTS HTTP '+res.status));
+    const part = data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+    if(!part) throw new Error('No audio returned');
+    const rate = parseInt((/rate=(\d+)/.exec(part.inlineData.mimeType||'')||[])[1]||'24000');
+    return pcmToWavBlob(part.inlineData.data, rate);
+  }
+
+  /* ═══ STITCH — concat N same-codec mp4s; optionally mix a per-scene narrator VO track ═══ */
   async function stitchScenes(ffmpeg, blobs, opts){
-    const reencodeOnFail = !opts || opts.reencodeOnFail !== false;
+    opts = opts||{};
+    const reencodeOnFail = opts.reencodeOnFail !== false;
     const names = [];
     for(let i=0;i<blobs.length;i++){ const n='s'+i+'.mp4'; names.push(n);
       await ffmpeg.writeFile(n, new Uint8Array(await blobs[i].arrayBuffer())); }
@@ -947,8 +979,25 @@ Return ONLY valid JSON:
       code = await ffmpeg.exec(['-f','concat','-safe','0','-i','list.txt','-c:v','libx264','-preset','ultrafast','-crf','23','-c:a','aac','-movflags','+faststart','out.mp4']);
     }
     if(code!==0) throw new Error('Stitch failed (ffmpeg exit '+code+')');
-    const data = await ffmpeg.readFile('out.mp4');
-    try{ for(const n of names) await ffmpeg.deleteFile(n); await ffmpeg.deleteFile('list.txt'); await ffmpeg.deleteFile('out.mp4'); }catch(e){}
+    let final='out.mp4';
+    const vo=(opts.voBlobs||[]).filter(Boolean);
+    if(vo.length===blobs.length){
+      try{
+        const secs=String(opts.secondsPerScene||8);
+        for(let i=0;i<vo.length;i++){
+          await ffmpeg.writeFile('v'+i+'.wav', new Uint8Array(await vo[i].arrayBuffer()));
+          await ffmpeg.exec(['-i','v'+i+'.wav','-af','apad','-t',secs,'p'+i+'.wav']);   // pad each line to its exact 8s scene slot
+        }
+        const ins=[]; vo.forEach((_,i)=>{ ins.push('-i','p'+i+'.wav'); });
+        await ffmpeg.exec([...ins,'-filter_complex', vo.map((_,i)=>'['+i+':a]').join('')+'concat=n='+vo.length+':v=0:a=1[vo]','-map','[vo]','vo.wav']);
+        // duck the scene ambience under the narrator
+        let mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-filter_complex','[0:a]volume=0.25[bg];[bg][1:a]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);
+        if(mc!==0) mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-map','0:v','-map','1:a','-c:v','copy','-c:a','aac','final.mp4']);   // no ambience track — VO only
+        if(mc===0) final='final.mp4';
+      }catch(e){ /* narrator mix failed — ship the plain stitch rather than nothing */ }
+    }
+    const data = await ffmpeg.readFile(final);
+    try{ for(const n of names) await ffmpeg.deleteFile(n); await ffmpeg.deleteFile('list.txt'); await ffmpeg.deleteFile('out.mp4'); if(final!=='out.mp4') await ffmpeg.deleteFile('final.mp4'); }catch(e){}
     return new Blob([data.buffer||data], {type:'video/mp4'});
   }
 
@@ -963,7 +1012,7 @@ Return ONLY valid JSON:
     videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
     buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
     sanitizeStoryboard, generateStoryboard, buildScenePrompt, storyboardCostEstimate,
-    renderScene, renderStoryboard, stitchScenes
+    renderScene, renderStoryboard, stitchScenes, ttsLine
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = global.LacalutEngine;
