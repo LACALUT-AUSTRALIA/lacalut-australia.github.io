@@ -1107,8 +1107,15 @@ async function approveStoryboard(){
   renderVideoGallery(curSku);
   renderScenesInto(rec.id, 0);
 }
-/* Sequential scene render with per-scene persistence — a crash/network-fail never loses paid scenes. */
+/* Sequential scene render with per-scene persistence — a crash/network-fail never loses paid scenes.
+   _liveRenders tracks loops running in THIS page load; several records can render in parallel. */
+const _liveRenders=new Set();
+window.addEventListener('beforeunload',e=>{ if(_liveRenders.size){ e.preventDefault(); e.returnValue='A video is still rendering — leaving pauses it (Resume recovers it, paid scenes are safe).'; } });
 async function renderScenesInto(recId, startAt){
+  _liveRenders.add(recId);
+  try{ await _renderScenesInto(recId, startAt); } finally{ _liveRenders.delete(recId); }
+}
+async function _renderScenesInto(recId, startAt){
   const rec=await getVid(recId); if(!rec) return;
   const total=rec.sbScenes.length; const refs=packshotsFor(rec.refSku||rec.sku); const ref=refs[0]||null;
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
@@ -1202,6 +1209,16 @@ async function renderVideoGallery(sku){
   if(curTop==='video') renderVRefBox();   // keep the packshot box in sync when the SKU tab changes
   _vidUrls.forEach(u=>{ try{URL.revokeObjectURL(u);}catch(_){}}); _vidUrls=[];
   const recs=(await vidsBySku(sku)).sort((a,b)=>b.ts-a.ts);
+  // Refresh-rescue: a record still marked 'rendering' with no live loop in this page load was
+  // interrupted (refresh/tab close). Flip it to 'partial' at the first unpaid scene so the
+  // ▶️ Resume button appears — every already-paid scene is banked and kept.
+  for(const rec of recs){
+    if(rec.status==='rendering' && !_liveRenders.has(rec.id)){
+      let i=0; while(i<rec.sbScenes.length && rec.scenes[i] && rec.scenes[i].videoBlob) i++;
+      rec.status='partial'; rec.failedAt=i; rec.error='interrupted — page was refreshed or closed';
+      await vidPut(rec);
+    }
+  }
   const nm=sku==='multi'?'Multi-SKU':(SKUS[sku]?.name||sku);
   $('output').innerHTML = recs.length ? recs.map(vidCardHTML).join('')
     : `<div class="empty">No video ads for ${nm} yet. Pick a video type + look, write the brief → ✍️ Write Script.</div>`;
