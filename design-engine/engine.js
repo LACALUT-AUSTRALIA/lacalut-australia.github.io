@@ -628,8 +628,10 @@ ${basePrompt}
     const ar = opts.aspectRatio || '9:16';
     const onProg = opts.onProgress || function(){};
     const imgPart = dataUrlToInlinePart(opts.imgDataUrl);
-    if(!imgPart) throw new Error('No source image to animate');
-    const instance = { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } };
+    // no image = text-to-video (used by the safety-retry ladder's final rung)
+    const instance = imgPart
+      ? { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } }
+      : { prompt: opts.prompt };
     const parameters = { aspectRatio: ar, durationSeconds: seconds, personGeneration:'allow_adult', sampleCount:1 };
     const base = 'https://generativelanguage.googleapis.com/v1beta/';
     const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
