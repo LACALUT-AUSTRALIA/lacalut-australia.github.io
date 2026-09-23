@@ -863,7 +863,7 @@ if(!E.VIDEO_STYLES[vStyleId]) vStyleId=E.VIDEO_TYPES[vType].style;
 let vAspect  = localStorage.getItem('de_vid_ar')   || '9:16';
 let vDurSec  = parseInt(localStorage.getItem('de_vid_dur') || '32');
 const V_DURS=[16,24,32,40];
-const V_MODELS=['VEO3_FAST','VEO3'];   // storyboards need native VO audio → Veo only (Seedance/Kling live on the card 🎬 button)
+const V_MODELS=['VEO3'];   // Quan 23/09: ONE engine — full Veo 3.1, best quality no matter the cost (Fast retired; Seedance/Kling live on the card 🎬 button)
 
 function renderTopMode(){ $('topMode').innerHTML =
   `<button class="tab ${curTop==='image'?'active':''}" onclick="pickTopMode('image')">🖼️ Image Generator</button>`+
@@ -901,7 +901,7 @@ function renderVRefBox(){ const sku=vRefSku(); const p=packshotFor(sku);
   $('vRefBox').innerHTML = p
     ? `<div style="display:flex;gap:8px;align-items:center"><img src="${p}" style="width:52px;height:52px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><span>Real ${SKUS[sku]?.name||sku} packshot anchors every scene — pack fidelity guaranteed.</span></div>`
     : `⚠️ No packshot saved for ${SKUS[sku]?.name||sku} — upload one in ✏️ Edit Image → reference library first.`; }
-function vCostLine(){ const scenes=vDurSec/8; const model=$('vModel')?$('vModel').value:'VEO3_FAST';
+function vCostLine(){ const scenes=vDurSec/8; const model=$('vModel')?$('vModel').value:'VEO3';
   const est=E.storyboardCostEstimate({scenes,model});
   $('vCost').innerHTML=`💸 <b>~US$${est.usd.toFixed(2)}</b> to render — ${scenes} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}.<br><span style="color:#888">Writing the script first is ~free; nothing renders until you approve it.</span>`; }
 

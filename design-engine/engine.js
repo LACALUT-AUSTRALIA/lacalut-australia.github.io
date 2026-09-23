@@ -499,18 +499,18 @@ ${basePrompt}
      lock from buildPrompt() is mirrored into buildVideoPrompt() below.
      ═══════════════════════════════════════════════════════════════════ */
   // Each model earns its place with ONE job the others can't do (no overlap):
-  //  • VEO3_FAST — native AUDIO + UGC/talking, same Gemini key, fast → the default workhorse
+  //  • VEO3 (full) — THE engine (Quan 23/09: best quality no matter the cost; Fast retired from the UI, entry kept only so old cards keep their label)
   //  • FAL_SEEDANCE — CHEAPEST: throwaway tests + volume B-roll
   //  • FAL_KLING — best real physical MOTION: hyper-motion, splash, levitation
   //  • VEO3 — TOP hero quality for the final cinematic ad
   const VIDEO_MODELS = {
-    VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'Default workhorse — native audio + UGC, same Gemini key, fast' },
+    VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'RETIRED 23/09 (kept only so old cards keep their label) — never offered in the UI', retired:true },
     FAL_SEEDANCE: { route:'fal',    id:'fal-ai/bytedance/seedance/v1/lite/image-to-video', label:'Seedance 1.0 (fal.ai)', usdPerSec:0.06, audio:false, aspects:['1:1','16:9','9:16'], job:'Cheapest — quick tests + volume B-roll' },
     FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v2/master/image-to-video',      label:'Kling 2.x (fal.ai)',   usdPerSec:0.18, audio:false, aspects:['1:1','16:9','9:16'], job:'Best physical motion — hyper-motion, splash, levitation' },
     VEO3:         { route:'gemini', id:'veo-3.1-generate-preview',  label:'Veo 3.1',    usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
   };
   // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──
-  let VIDEO_MODEL = 'VEO3_FAST';
+  let VIDEO_MODEL = 'VEO3';   // Quan 23/09: BEST engine always — Fast retired, quality over cost
   const VIDEO_ASPECTS   = { '1:1':'Feed 1:1 (square)', '9:16':'Reels / Stories 9:16', '16:9':'YouTube 16:9' };
   const VIDEO_DURATIONS = [6, 8];   // seconds — Veo 3 Fast supports 4/6/8; default 8
 
@@ -519,19 +519,19 @@ ${basePrompt}
      brief that overrides the generic MOTION DIRECTION line in buildVideoPrompt.
      'model' is the recommended engine key (user can still override in the UI). */
   const VIDEO_STYLES = {
-    lofi_native:    { label:'📱 Lo-Fi Native (proven default)', model:'VEO3_FAST', emoji:'📱',
+    lofi_native:    { label:'📱 Lo-Fi Native (proven default)', model:'VEO3', emoji:'📱',
       desc:'Handheld phone-shot feel — 42% of top-spend ads look like this.',
       motion:'MOTION & LOOK: authentic lo-fi smartphone footage — natural imperfect handheld movement, real-world lighting (bathroom, kitchen, daylight), native social-feed feel, NEVER glossy studio polish. A visual change or cut-feel every 2–3 seconds; a pattern interrupt (snap zoom, angle change, product pop-in) at least every 4 seconds. Looks like a real person filmed it, scroll-native, not an ad.' },
-    polished_hybrid:{ label:'💎 Polished Hybrid', model:'VEO3_FAST', emoji:'💎',
+    polished_hybrid:{ label:'💎 Polished Hybrid', model:'VEO3', emoji:'💎',
       desc:'Clean studio product beats + lo-fi inserts — the Hismile blend.',
       motion:'MOTION & LOOK: hybrid pacing — crisp clean studio product beats (macro texture, controlled light, premium grade) intercut with quick lo-fi real-world insert moments. A visual change every 2–3 seconds; never a static hold longer than 4 seconds. Polished where the product shines, human where trust is built.' },
-    product_motion: { label:'✨ Product Motion (Premium)', model:'VEO3_FAST', emoji:'✨',
+    product_motion: { label:'✨ Product Motion (Premium)', model:'VEO3', emoji:'✨',
       desc:'Smooth luxe camera on the hero — the safe premium default.',
       motion:'MOTION: a slow, luxurious cinematic camera move on the product hero — a gentle push-in or slow three-quarter orbit, soft studio light shimmer sliding across the pack, a delicate depth-of-field rack focus, subtle floating dust/particles. Elegant, controlled, high-end — never fast or chaotic.' },
     hyper_motion:   { label:'⚡ Hyper Motion', model:'FAL_KLING', emoji:'⚡',
       desc:'Fast, punchy, energetic — Higgsfield-style hype cut.',
       motion:'MOTION: high-energy hyper-motion — a fast dynamic camera whip toward the product, snap zoom and speed-ramp, the product bursting forward with motion trails and kinetic energy, punchy accents. Bold and thumb-stopping, but the pack itself stays sharp and un-warped throughout.' },
-    slow_reveal:    { label:'🎬 Slow Cinematic Reveal', model:'VEO3_FAST', emoji:'🎬',
+    slow_reveal:    { label:'🎬 Slow Cinematic Reveal', model:'VEO3', emoji:'🎬',
       desc:'Elegant slow build — light blooms, product emerges.',
       motion:'MOTION: a slow cinematic reveal — the product emerges from soft shadow or light bloom, a gentle dolly-in with drifting light rays and a shallow depth of field pulling focus onto the pack. Calm, premium, aspirational pacing.' },
     liquid_splash:  { label:'💧 Liquid / Splash', model:'FAL_KLING', emoji:'💧',
@@ -540,7 +540,7 @@ ${basePrompt}
     float_levitate: { label:'🪐 Float / Levitation', model:'FAL_KLING', emoji:'🪐',
       desc:'Surreal floating product with orbiting elements.',
       motion:'MOTION: surreal levitation — the product floats and slowly rotates in mid-air while formula elements and soft geometric accents orbit around it, weightless dreamlike motion, gentle parallax on the background. Premium and hypnotic.' },
-    kinetic_type:   { label:'🔤 Kinetic Typography', model:'VEO3_FAST', emoji:'🔤',
+    kinetic_type:   { label:'🔤 Kinetic Typography', model:'VEO3', emoji:'🔤',
       desc:'Bold animated headline text, graphic ad feel.',
       motion:'MOTION: bold kinetic typography — the on-image English headline and sub animate in with punchy, graphic-design timing (slide, scale, snap) synced to a subtle product move; clean colour-blocked motion-graphics feel. Text stays perfectly legible, correctly spelled and never garbled.' },
     retro_nostalgia:{ label:'📼 Retro / Nostalgia', model:'FAL_SEEDANCE', emoji:'📼',
@@ -555,7 +555,7 @@ ${basePrompt}
   };
   function videoStyle(id){ return VIDEO_STYLES[id] || null; }
 
-  function videoModel(key){ return VIDEO_MODELS[key||VIDEO_MODEL] || VIDEO_MODELS.VEO3_FAST; }
+  function videoModel(key){ return VIDEO_MODELS[key||VIDEO_MODEL] || VIDEO_MODELS.VEO3; }
   function getVideoModel(){ return VIDEO_MODEL; }
   function setVideoModel(key){ if(VIDEO_MODELS[key]) VIDEO_MODEL = key; return VIDEO_MODEL; }
 
@@ -875,10 +875,10 @@ Return ONLY valid JSON:
   }
 
   function storyboardCostEstimate(opts){
-    const m = videoModel(opts.model||'VEO3_FAST');
+    const m = videoModel(opts.model||'VEO3');
     const scenes = Math.max(1, opts.scenes||3);
     const perSceneUsd = +(m.usdPerSec*8).toFixed(2);
-    return { scenes, perSceneUsd, usd:+(perSceneUsd*scenes).toFixed(2), model:(opts.model||'VEO3_FAST'), label:m.label, usdPerSec:m.usdPerSec };
+    return { scenes, perSceneUsd, usd:+(perSceneUsd*scenes).toFixed(2), model:(opts.model||'VEO3'), label:m.label, usdPerSec:m.usdPerSec };
   }
 
   /* ═══ SEQUENTIAL RENDER — one scene, then the whole board ═══ */
@@ -919,8 +919,8 @@ Return ONLY valid JSON:
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
     }
     if(opts.fixNote){ prompt += ' QC CORRECTION (highest priority — the previous render failed on exactly this): ' + opts.fixNote; }
-    const call = videoModel(opts.model||'VEO3_FAST').route==='fal' ? callFalVideo : callVeoVideo;
-    const videoBlob = await call({ prompt, imgDataUrl:still, model:opts.model||'VEO3_FAST',
+    const call = videoModel(opts.model||'VEO3').route==='fal' ? callFalVideo : callVeoVideo;
+    const videoBlob = await call({ prompt, imgDataUrl:still, model:opts.model||'VEO3',
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
       onProgress:onProg, asBlob:true });
     return { prompt, videoBlob, still: stillOk ? still : null };
