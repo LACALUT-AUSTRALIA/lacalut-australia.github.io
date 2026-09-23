@@ -793,6 +793,37 @@ ${basePrompt}
     return sb;
   }
 
+  /* ═══ STORYBOARD LINT — deterministic scan for the known render-killers,
+     run BEFORE any money is spent. Violations loop back to Gemini for a
+     targeted free rewrite; whatever survives is shown in the approval modal. ═══ */
+  const SB_LINT_RULES = [
+    { re:/\b(pearls?|beads?|capsules?|tablets?|pills?)\b/i, f:['visual','motion','text'], msg:'white round objects — Veo safety filter reads them as pills and silently returns nothing; use angular crystal shards / mineral streams instead' },
+    { re:/\bmirrors?\b/i, f:['visual','motion'], msg:'mirror shot — reflections mangle the pack and the person; restage without a mirror' },
+    { re:/\b(fingers?|fingertips?)\b/i, f:['visual','motion'], msg:'finger action — a hand may only steady the pack; fingers never touch mouth or gums' },
+    { re:/\btongue\b/i, f:['visual','motion'], msg:'tongue shot — uncanny; use a facial expression instead' },
+    { re:/(close-?up|macro|tight shot|extreme)[^.]{0,50}\b(face|mouth|lips|teeth|gums?)\b|\b(face|mouth|lips|teeth|gums?)\b[^.]{0,50}(close-?up|macro|tight shot)/i, f:['visual','motion'], msg:'facial/mouth close-up — nothing tighter than a chest-up mid-shot on a person' },
+    { re:/\b(uhm|umm|hmm|mmm|sighs?|gasps?|whispers?|hums|humming|says|speaks|sings|singing|chatter|murmur)\b/i, f:['visual','motion'], msg:'human vocal sound written into a scene — scenes are voice-free (narrator is added in post)' },
+    { re:/\b(side|back)\b[^.]{0,25}\b(pack|tube|box)\b|reveal\w*[^.]{0,35}\b(text|label|wording|printed)\b/i, f:['visual','motion'], msg:'side/back pack text reveal — side text is German and stays unreadable; front label only' },
+    { re:/\b(pack|tube|box|product)\b[^.]{0,60}\b(rotat\w+|spins?|spinning|flips?|flipping|turns? (over|around))\b|\b(rotat\w+|spins?|spinning|flips?|flipping)\b[^.]{0,60}\b(pack|tube|box|product)\b/i, f:['visual','motion'], msg:'pack rotation — the pack never rotates; move the camera instead' },
+    { re:/\b(effective(ly)?|firms|strengthens?|repairs?|treats?|cures?|heals?|regenerat\w*|clinically|proven)\b/i, f:['vo','text'], msg:'efficacy/therapeutic wording — cosmetic feel-language only ("feels firm", "cared-for")' }
+  ];
+  function lintStoryboard(sb){
+    const out=[];
+    (sb.scenes||[]).forEach((sc,i)=>{
+      for(const r of SB_LINT_RULES) for(const f of r.f){
+        const m=String(sc[f]||'').match(r.re);
+        if(m) out.push('Scene '+(i+1)+' '+f.toUpperCase()+': "'+m[0]+'" — '+r.msg);
+      }
+      const w=String(sc.vo||'').trim().split(/\s+/).filter(Boolean).length;
+      if(w>20) out.push('Scene '+(i+1)+' VO: '+w+' words — max 18 for an 8s scene; trim it');
+    });
+    for(const r of SB_LINT_RULES){ if(r.f.indexOf('vo')>=0||r.f.indexOf('text')>=0){
+      const h=String(sb.hook||'').match(r.re); if(h) out.push('HOOK: "'+h[0]+'" — '+r.msg);
+      const c=String(sb.cta||'').match(r.re);  if(c) out.push('CTA: "'+c[0]+'" — '+r.msg);
+    }}
+    return out;
+  }
+
   async function generateStoryboard(opts){
     const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
     if(!apiKey) throw new Error('No Gemini API key');
@@ -830,12 +861,16 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - CHARACTER LOCK (hard rule): at most ONE person appears in the whole ad. Invent that ONE person once and describe them in rich detail in the "character" field (age, ethnicity, hair colour+style, outfit, distinguishing look). EVERY scene that shows a person shows EXACTLY that person — same face, same hair, same outfit, same age. A different actor appearing between scenes destroys the ad. Scenes may also show no person at all.
 - WORLD LOCK (hard rule — the #1 congruence rule): this ad happens in EXACTLY ONE location/set. Invent it once and describe it in rich concrete detail in the "world" field: the place, its surfaces and props, the lighting setup, colour palette and time of day. EVERY scene is staged inside THAT world — what changes between scenes is the CAMERA (angle, distance, macro vs wide) and the ACTION, never the location, lighting mood or palette. A background or setting change between scenes destroys the ad: the scenes must read as ONE continuous film shot on ONE set, never separate clips taped together. Each scene's "visual" must explicitly name where in the world the camera is. ONLY exception: an ad type whose format demands a contrast beat (Old Way vs New, Transformation before/after) may add ONE deliberate second setting — introduced once, reused for every one of its beats, both settings described in "world".
 - CONTINUITY: each scene's opening beat visually echoes the previous scene's closing beat — same palette, same light, same world.
-- AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley); keep hands minimal and simple — a hand may hold the pack steady but never perform fine finger actions; the product is lit naturally, never wrapped in a glow/halo effect.
+- AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley) — nothing tighter than a chest-up mid-shot on a person, no mouth-only or teeth-macro framing, NEVER a tongue; keep hands minimal and simple — a hand may hold the pack steady but never perform fine finger actions and never touches the mouth, gums or face near the mouth; the product is lit naturally, never wrapped in a glow/halo effect.
+- VEO SAFETY FILTER (hard rule — breaching it silently kills the render and wastes the day's quota): NEVER write white pearls, spheres, beads, droplets-as-pearls or ANY small round white objects (the video engine's safety filter reads them as pills and returns nothing) — use angular mineral CRYSTAL SHARDS, flowing mineral streams or ribbons of light instead.
+- VOICE-FREE SCENES (hard rule): never write human vocal sounds into any scene's visual or motion ('uhm', sighs, gasps, humming, whispering, chatter) — scenes are voice-free; the narrator is recorded separately in post.
+- PACK TEXT: never reveal, read or glide to the pack's SIDE or BACK text (it is German and must stay unreadable) — the front label facing camera is the only pack face ever shown.
+- FEEL-LANGUAGE ONLY: every benefit is sensory ("feels firm", "feels clean", "cared-for") — never physiological verbs (firms, strengthens, repairs, protects) and never "effective" or "results".
 - HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
 - RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a sound effect, music-beat change or deliberate beat of silence — write it into "motion"), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds; a cut with no sound change breaks the rhythm.
 - OPEN LOOP, CLOSE LATE: scene 1 opens a curiosity question ("how is that possible?") that is deliberately NOT answered until the PROOF beat in the second-to-last scene. Revealing the answer early kills the reason to keep watching. The FINAL scene closes with a clear direct CTA — never a loop-back ending (that is for organic, not paid).
 - SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
-- Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
+- Each scene's "vo" is the EXACT spoken voiceover line — max 18 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene — always UPBEAT and smiling: warm, uplifting, energised delivery with dynamic intonation, never flat or monotone.
 - "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
 - "world" is 2–3 sentences describing the ONE location/set in concrete physical detail — reused verbatim by every scene (plus the single contrast setting if the format demands one).
@@ -854,10 +889,30 @@ Return ONLY valid JSON:
         const data = await res.json();
         if(!res.ok) throw new Error(data.error?.message||('HTTP '+res.status));
         const txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
-        const sb = JSON.parse(txt);
+        let sb = JSON.parse(txt);
         if(!sb || !Array.isArray(sb.scenes) || sb.scenes.length<2) throw new Error('Storyboard came back malformed');
         sb.scenes = sb.scenes.slice(0,5).map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
-        return sanitizeStoryboard(sb);
+        sb = sanitizeStoryboard(sb);
+        // SELF-REPAIR LOOP — text is free; fix lint violations BEFORE the human ever reads the script
+        for(let round=0; round<2; round++){
+          const issues = lintStoryboard(sb);
+          if(!issues.length) break;
+          try{
+            const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects (safety filter reads them as pills — use angular crystal shards or mineral streams); no mirrors; no finger actions or tongue shots; nothing tighter than a chest-up mid-shot on a person; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+            const fr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+              { method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({ contents:[{role:'user',parts:[{text:fixMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.4 } }) });
+            const fd = await fr.json();
+            if(!fr.ok) break;
+            const ft = (fd.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+            const fx = JSON.parse(ft);
+            if(!fx || !Array.isArray(fx.scenes) || fx.scenes.length!==sb.scenes.length) break;
+            fx.scenes = fx.scenes.map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+            sb = sanitizeStoryboard(fx);
+          }catch(e){ break; }
+        }
+        sb.lint = lintStoryboard(sb);   // whatever survived repair — surfaced amber in the approval modal
+        return sb;
       }catch(e){ lastErr=e; }
     }
     throw new Error('Could not write the script: '+(lastErr?lastErr.message:'unknown'));
@@ -1121,7 +1176,7 @@ Return ONLY valid JSON:
     VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
     videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
     buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
-    sanitizeStoryboard, generateStoryboard, buildScenePrompt, storyboardCostEstimate,
+    sanitizeStoryboard, generateStoryboard, lintStoryboard, buildScenePrompt, storyboardCostEstimate,
     renderScene, renderStoryboard, stitchScenes, ttsLine,
     qcSceneClip, renderSceneQC, qcFinalVideo, QC_THRESHOLD, QC_MAX_REROLLS
   };
