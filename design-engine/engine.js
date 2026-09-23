@@ -519,6 +519,12 @@ ${basePrompt}
      brief that overrides the generic MOTION DIRECTION line in buildVideoPrompt.
      'model' is the recommended engine key (user can still override in the UI). */
   const VIDEO_STYLES = {
+    lofi_native:    { label:'📱 Lo-Fi Native (proven default)', model:'VEO3_FAST', emoji:'📱',
+      desc:'Handheld phone-shot feel — 42% of top-spend ads look like this.',
+      motion:'MOTION & LOOK: authentic lo-fi smartphone footage — natural imperfect handheld movement, real-world lighting (bathroom, kitchen, daylight), native social-feed feel, NEVER glossy studio polish. A visual change or cut-feel every 2–3 seconds; a pattern interrupt (snap zoom, angle change, product pop-in) at least every 4 seconds. Looks like a real person filmed it, scroll-native, not an ad.' },
+    polished_hybrid:{ label:'💎 Polished Hybrid', model:'VEO3_FAST', emoji:'💎',
+      desc:'Clean studio product beats + lo-fi inserts — the Hismile blend.',
+      motion:'MOTION & LOOK: hybrid pacing — crisp clean studio product beats (macro texture, controlled light, premium grade) intercut with quick lo-fi real-world insert moments. A visual change every 2–3 seconds; never a static hold longer than 4 seconds. Polished where the product shines, human where trust is built.' },
     product_motion: { label:'✨ Product Motion (Premium)', model:'VEO3_FAST', emoji:'✨',
       desc:'Smooth luxe camera on the hero — the safe premium default.',
       motion:'MOTION: a slow, luxurious cinematic camera move on the product hero — a gentle push-in or slow three-quarter orbit, soft studio light shimmer sliding across the pack, a delicate depth-of-field rack focus, subtle floating dust/particles. Elegant, controlled, high-end — never fast or chaotic.' },
@@ -743,12 +749,17 @@ ${basePrompt}
      gated, editable) → scenes render sequentially on Veo (native VO
      audio) → clips stitch client-side (ffmpeg injected by the UI).
      ═══════════════════════════════════════════════════════════════════ */
+  /* Archetypes rebuilt 23/09/2026 from conversion research (Motion Creative Benchmarks
+     2026 · Hismile teardown · TikTok Creative Codes · Meta lift studies). Ranked:
+     1–3 are the volume engines, 4–6 proven diversifiers, 7 trust rotation. */
   const VIDEO_TYPES = {
-    product_ad:{ label:'📦 Product Ad',        style:'product_motion', narrative:'a premium product-hero ad: hook on the everyday problem, product reveal, benefit beats, closing call to action' },
-    explainer: { label:'🦷 Anatomy Explainer', style:'slow_reveal',    narrative:'a stylised cosmetic explainer: clean premium 3D-style tooth/gum/formula visuals (NEVER clinical, graphic, medical-diagram or disease imagery), how the product FEELS and what it cosmetically does, ending on the product and a call to action' },
-    ugc:       { label:'🤳 UGC',               style:'ugc_handheld',   narrative:'an authentic UGC testimonial: a believable everyday Australian talking to camera, holding the real product at its true real-world size, casual home/bathroom setting, casual native language' },
-    hyper:     { label:'⚡ Hyper Motion',      style:'hyper_motion',   narrative:'a fast, punchy, high-energy hype cut around the product — kinetic camera, speed ramps, bold beats, thumb-stopping energy' },
-    range:     { label:'🎁 Range',             style:'cinematic_ad',   narrative:'a range line-up ad: the LACALUT family shown together as one cohesive premium set, each product distinct, one shared brand story' }
+    pas:       { label:'🎯 Problem→Solve',     style:'lofi_native',     narrative:'a PROBLEM-AGITATE-SOLVE cold-traffic ad (the proven DTC workhorse): open on the specific everyday pain so the viewer self-identifies (~60% of runtime on the problem, product appears only after), agitate the social/confidence cost (cosmetic framing only), then the product reveal with its mechanism in one plain sentence, a proof beat, and an offer/CTA close' },
+    demo:      { label:'🔬 Demo / Anatomy',    style:'polished_hybrid', narrative:'a DEMO-MECHANISM ad (the #1 oral-care format — Hismile runs it at scale): open on an extreme product-in-action macro (tube squeeze, paste texture, foam, rinse swirl — never gross clinical imagery), SHOW what it does rather than say it, a mechanism beat with on-screen ingredient labels (fluoride / hydroxyapatite ONLY), the result state, then pack + CTA' },
+    ugc:       { label:'🤳 UGC Testimonial',   style:'lofi_native',     narrative:'an authentic UGC creator testimonial: a believable everyday Australian face filling the frame with eye contact and an immediate spoken claim in the first second, a relatable confession of their before-state, discovery with the real product in hand at true size, one specific outcome + one objection handled, then a personal recommendation + CTA — casual native language, never ad-speak' },
+    vs:        { label:'⚖️ Old Way vs New',    style:'polished_hybrid', narrative:'an OLD-WAY-vs-NEW-WAY comparison: side-by-side or split-screen framing of "ordinary toothpaste" (NEVER a named competitor brand) against this product, 3 rapid comparison beats (texture, ingredient, feel), a clear winner beat with benefit overlays, social-proof line + CTA' },
+    transform: { label:'✨ Transformation',    style:'lofi_native',     narrative:'a TRANSFORMATION story: open on the confident after-state as a pattern interrupt, hard cut to the relatable before (coffee cup, hiding a smile), a routine montage showing the switch, the how (product + mechanism line), honest cosmetic result framing (never a guaranteed-result claim) + CTA' },
+    mashup:    { label:'🔥 Social-Proof Mashup', style:'lofi_native',   narrative:'a fast-cut SOCIAL-PROOF MASHUP: rapid multi-setting montage feel ("everyone is switching"), a chain of 2–4 second micro-moments each landing ONE captioned benefit, different settings/angles per beat, review-stars overlay + product hero, then CTA — high energy, one idea per cut' },
+    founder:   { label:'🎙️ Brand Story',       style:'lofi_native',     narrative:'a FOUNDER/BRAND STORY trust ad: direct-to-camera confession-style hook about why this product exists in Australia, ONE credible differentiator (German pharmacy heritage since 1925), product beat with demo insert cuts, a personal ask + CTA — sincere, no hype' }
   };
 
   // VO-safe sanitise: replace DISEASE NOUNS only. Never blind-replace verbs like
@@ -779,7 +790,7 @@ ${basePrompt}
     if(!apiKey) throw new Error('No Gemini API key');
     const model = opts.textModel || 'gemini-2.5-flash';
     const sku = opts.sku||'aktiv', s = SKUS[sku]||SKUS['aktiv'], g = getGuide(sku);
-    const type = VIDEO_TYPES[opts.type]||VIDEO_TYPES.product_ad;
+    const type = VIDEO_TYPES[opts.type]||VIDEO_TYPES.pas;
     const st = videoStyle(opts.style)||videoStyle(type.style);
     const nScenes = Math.max(2, Math.min(5, Math.round((opts.seconds||32)/8)));
     const bans = [...GLOBAL_BAN, ...s.ban];
@@ -805,14 +816,16 @@ COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medici
 - This product's ONLY allowed benefit angle: ${s.say}. Never borrow another LACALUT product's angle.
 - All copy in plain Australian English, everyday language, cosmetic feel-benefits only.
 
-CRAFT RULES:
+CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, TikTok Creative Codes, Meta lift studies):
 - PRODUCT LOCK (hard rule): the ONLY product or object that may ever be a scene's subject is the LACALUT ${s.name} pack itself (the real GERMAN pack with its WHITE cap — a TOOTHPASTE TUBE/BOX unless the reference is a mouthwash bottle) or its SIGNATURE FORMULA ELEMENTS: ${fx.join(', ')||'clean water and minerals'}. NEVER build a scene around a toothbrush, a different product, generic props or stock objects. Every scene must be unmistakably about ${s.name} or its benefit.
-- Scene 1 opens on a scroll-stopping HOOK built on ${s.name}'s own benefit (${s.say}) or the everyday problem it solves. Final scene ends on the product + call to action.
+- HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
+- SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
 - Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene.
 - "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
-- "visual" describes what we see; "motion" the camera/subject movement; "text" optional short on-screen text ("" if none).
-- The real GERMAN pack with its WHITE cap is the only product ever shown.
+- "visual" describes what we see; "motion" the camera/subject movement — write motion with a visual change every 2–3 seconds, never a static hold over 4 seconds (pacing is where retention dies).
+- Final scene ends on the product + call to action. The real GERMAN pack with its WHITE cap is the only product ever shown.
+- SENSITIVITY GUARD: never claim to reduce/treat sensitivity or present remineralisation as therapy — always comfort/feel language.
 
 Return ONLY valid JSON:
 {"hook":"...","cta":"...","voice":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
@@ -841,7 +854,7 @@ Return ONLY valid JSON:
       brief: sc.visual + '. ' + sc.motion });
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
     p += `VOICEOVER (must be spoken aloud in this scene — these EXACT words and nothing else): "${sc.vo}" — voice: ${sb.voice}. Natural pacing, finishing within the scene. `;
-    p += sc.text ? `ON-SCREEN TEXT (exact wording): "${sc.text}". ` : `NO on-screen text in this scene. `;
+    p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
     p += `The supplied reference image shows the REAL product — it anchors branding fidelity, but compose this scene to its own visual brief rather than copying the reference composition.`;
     return p;
   }
