@@ -541,7 +541,13 @@ function idb(){ return new Promise((res,rej)=>{ if(_db)return res(_db);
     if(!db.objectStoreNames.contains('gens')){ const s=db.createObjectStore('gens',{keyPath:'id'}); s.createIndex('sku','sku'); }
     if(!db.objectStoreNames.contains('reflib')){ db.createObjectStore('reflib',{keyPath:'key'}); }
     if(!db.objectStoreNames.contains('vids')){ const v=db.createObjectStore('vids',{keyPath:'id'}); v.createIndex('sku','sku'); } };
-  r.onsuccess=e=>{ _db=e.target.result; res(_db); }; r.onerror=()=>rej(r.error); }); }
+  // An older tab holding the previous DB version blocks this open forever and the gallery
+  // looks "wiped" (it isn't — nothing is deleted). Tell the user exactly what to do.
+  r.onblocked=()=>{ alert('⚠️ Another Design Engine tab is open on an older version and is blocking the gallery.\n\nClose ALL other Design Engine tabs, then refresh this one — your images are safe.'); };
+  r.onsuccess=e=>{ _db=e.target.result;
+    // If a NEWER tab opens later, release our hold so it never sees a blank gallery.
+    _db.onversionchange=()=>{ try{_db.close();}catch(_){} _db=null; };
+    res(_db); }; r.onerror=()=>rej(r.error); }); }
 
 /* ═══ PRODUCT REFERENCE LIBRARY (persistent, click-to-select) ═══ */
 const REF_TYPES=[
