@@ -48,7 +48,7 @@
   const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up',
     'bleeding','reduces bleeding','stops bleeding','stops gum bleeding','gum bleeding',
     'soothes','soothes irritation','irritation','inflammation','reduces inflammation','anti-inflammatory',
-    'heals','calms','closes gum pockets','kills bacteria','kills the bacteria','clinically proven','clinically tested','clinical trial','gum health','oral health','dental health','dentist approved','dentist recommended'];
+    'heals','calms','closes gum pockets','kills bacteria','kills the bacteria','clinically proven','clinically tested','clinical trial','gum health','oral health','dental health','healthy tissue','healthy gums','dentist approved','dentist recommended'];
 
   const MODES = {
     'social':  { label:'Feed 4:5',      dims:'1080×1350', ar:'4:5 portrait' },
