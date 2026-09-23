@@ -1024,7 +1024,7 @@ async function approveStoryboard(){
   const model=$('vModel').value;
   const est=E.storyboardCostEstimate({scenes:sb.scenes.length, model});
   // 🔴 HARD SPEND GATE
-  if(!confirm(`This will spend ~US$${est.usd.toFixed(2)} (${sb.scenes.length} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}).\n\nRender the ad now?`)) return;
+  if(!confirm(`This will spend ~US$${est.usd.toFixed(2)} (${sb.scenes.length} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}).\n\n🔍 AUTO-QC: Gemini watches every scene and auto-re-rolls a failed one ONCE (score <${E.QC_THRESHOLD}/10 or legal breach) — worst case ~US$${(est.usd*2).toFixed(2)} total if every scene re-rolls.\n\nRender the ad now?`)) return;
   dlg.remove();
   const sku=ctx.sku;
   const rec={ id:'v'+Date.now(), sku:curSku, refSku:sku, type:vType, style:vStyleId, modelKey:model, aspect:vAspect,
@@ -1044,10 +1044,10 @@ async function renderScenesInto(recId, startAt){
   for(let i=startAt;i<total;i++){
     try{
       prog('🎬 scene '+(i+1)+'/'+total+' starting…');
-      const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
+      const r=await E.renderSceneQC({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
         style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp,
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
-      rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null };
+      rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 };
       await vidPut(rec);   // bank every paid scene immediately
     }catch(e){ rec.status='partial'; rec.failedAt=i; rec.error=e.message; await vidPut(rec); renderVideoGallery(curSku); return; }
   }
@@ -1067,8 +1067,18 @@ async function renderScenesInto(recId, startAt){
       { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8 });
     rec.status='done'; rec.failedAt=null;
   }catch(e){ rec.status='done'; rec.stitchFailed=e.message; }   // scenes still playable + downloadable
+  // 🔍 FINAL QC — Gemini watches the stitched ad (narrator, joins, sound-off, CTA)
+  if(rec.stitchedBlob){
+    try{ prog('🔍 QC-watching the full ad…');
+      const fq=await E.qcFinalVideo({ videoBlob:vidBlob(rec.stitchedBlob), storyboard:rec.storyboard,
+        sku:rec.refSku||rec.sku, totalSeconds:rec.duration, apiKey:KEYS.gemini });
+      if(fq){ rec.qcFinal=fq; rec.qcScore100=Math.round(fq.score*10); }
+    }catch(e){}
+  }
+  if(rec.qcScore100==null){ const ss=(rec.scenes||[]).map(s=>s&&s.qc&&s.qc.score).filter(n=>typeof n==='number');
+    if(ss.length) rec.qcScore100=Math.round(ss.reduce((a,b)=>a+b,0)/ss.length*10); }
   await vidPut(rec); renderVideoGallery(curSku);
-  try{ toast('🎬 Video ad ready'); }catch(_){}
+  try{ toast('🎬 Video ad ready'+(rec.qcScore100!=null?' — QC '+rec.qcScore100+'/100':'')); }catch(_){}
 }
 async function resumeVidRender(recId){ const rec=await getVid(recId); if(!rec) return;
   const remaining=rec.sbScenes.length-(rec.failedAt||0);
@@ -1087,12 +1097,22 @@ async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) 
   try{
     const refs=packshotsFor(rec.refSku||rec.sku);
     const oldVo=rec.scenes[i]&&rec.scenes[i].voWav;   // VO line unchanged — keep the recorded narrator take
-    const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
-      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:refs[0]||null, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
-    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, voWav:oldVo||null };
+    const r=await E.renderSceneQC({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
+      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:refs[0]||null, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp,
+      qcMaxRerolls:0,   // manual re-roll = ONE paid render exactly as confirmed; QC watches + scores it, never respends
+      onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
+    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, voWav:oldVo||null, qc:r.qc||null, attempts:1 };
+    rec.qcFinal=null; rec.qcScore100=null;   // stale after a scene swap — final QC re-runs on next stitch
     rec.stitchedBlob=null; await vidPut(rec);
     try{ const ff=await loadFFmpeg(prog); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
       { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8 }); }catch(e){ rec.stitchFailed=e.message; }
+    if(rec.stitchedBlob){
+      try{ prog('🔍 QC-watching the full ad…');
+        const fq=await E.qcFinalVideo({ videoBlob:vidBlob(rec.stitchedBlob), storyboard:rec.storyboard,
+          sku:rec.refSku||rec.sku, totalSeconds:rec.duration, apiKey:KEYS.gemini });
+        if(fq){ rec.qcFinal=fq; rec.qcScore100=Math.round(fq.score*10); }
+      }catch(e){}
+    }
     await vidPut(rec); renderVideoGallery(curSku);
   }catch(e){ alert('Re-roll failed: '+e.message); } }
 
@@ -1122,13 +1142,19 @@ function vidCardHTML(rec){
     note=`<div class="warn" style="margin:6px 8px 0">🧵 Not stitched${rec.stitchFailed?' — '+String(rec.stitchFailed).replace(/</g,'&lt;').slice(0,120):''}. <button class="iconbtn" onclick="playVidPlaylist('${rec.id}')">▶️ Play all</button> <button class="iconbtn" onclick="retryStitch('${rec.id}')">🧵 Retry stitch</button></div>`;
   } else media=`<div style="aspect-ratio:${arCss};background:#f0f0f0"></div>`;
   if(rec.status==='partial') note=`<div class="warn" style="margin:6px 8px 0">⚠️ Stopped at scene ${(rec.failedAt||0)+1} (${rec.error||''}). Paid scenes are safe. <button class="iconbtn" onclick="resumeVidRender('${rec.id}')">▶️ Resume</button></div>`;
+  const qcChip=(q)=>{ if(!q||typeof q.score!=='number') return '';
+    const c=q.legalFail?'#c8102e':(q.score>=7.5?'#0a7d33':(q.score>=6?'#b8860b':'#c8102e'));
+    return `<b style="color:${c}" title="${(q.issues||[]).join(' · ').replace(/"/g,'&quot;')}">${q.legalFail?'⚖️':''}${q.score.toFixed(1)}</b>`; };
   const strip=(rec.scenes||[]).filter(Boolean).map((s,i)=>`<div style="display:flex;gap:6px;align-items:center;font-size:11px;border-top:1px dashed var(--line);padding:5px 0">
-      <b style="color:#7c3aed">S${i+1}</b><span style="flex:1;color:#666">${(s.vo||'').replace(/</g,'&lt;')}</span>
+      <b style="color:#7c3aed">S${i+1}</b><span style="flex:1;color:#666">${(s.vo||'').replace(/</g,'&lt;')}</span>${qcChip(s.qc)}${(s.attempts||1)>1?'<span title="auto-re-rolled by QC">♻️</span>':''}
       <button class="iconbtn" title="play just this scene in the player above" onclick="playVidScene('${rec.id}',${i})">▶</button>
       <button class="iconbtn" title="download this scene" onclick="dlVidScene('${rec.id}',${i})">⬇</button>
       <button class="iconbtn" title="re-roll this scene" onclick="rerollVidScene('${rec.id}',${i})">♻️</button></div>`).join('');
+  const scoreBadge = rec.qcScore100!=null
+    ? `<b style="color:${rec.qcScore100>=75?'#0a7d33':(rec.qcScore100>=60?'#b8860b':'#c8102e')}" title="Gemini auto-QC of the finished ad — target 75+">🔍 ${rec.qcScore100}/100</b> · `
+    : '';
   return `<div class="card" id="${rec.id}" data-sku="${rec.sku}">${media}${note}
-    <div class="meta"><span class="t">🎬 ${rec.duration}s · ${tLabel} · ${sLabel} · ${mLabel} · ~US$${(rec.cost?.usd||0).toFixed(2)}</span>
+    <div class="meta"><span class="t">${scoreBadge}🎬 ${rec.duration}s · ${tLabel} · ${sLabel} · ${mLabel} · ~US$${(rec.cost?.usd||0).toFixed(2)}</span>
       <button class="iconbtn" title="download MP4" onclick="dlVid('${rec.id}')">⬇</button>
       <button class="iconbtn" title="QC checklist" onclick="showVidQC('${rec.id}')">✅</button>
       <button class="iconbtn" title="delete" onclick="delVid('${rec.id}')">🗑</button></div>
@@ -1150,7 +1176,14 @@ async function dlVid(id){ const rec=await getVid(id); if(!rec) return;
 async function dlVidScene(id,i){ const rec=await getVid(id); const s=rec&&rec.scenes[i]; if(!s) return;
   const a=document.createElement('a'); a.href=vidUrl(s.videoBlob); a.download='lacalut-'+rec.sku+'-scene'+(i+1)+'.mp4'; a.click(); }
 async function showVidQC(id){ const rec=await getVid(id); const qc=(rec&&rec.qc)||E.videoQCChecklist();
-  alert('🎬 VIDEO QC — eyeball the ad against each:\n\n'+qc.map(q=>'☐ '+q).join('\n')); }
+  let ai='';
+  if(rec&&rec.qcScore100!=null){
+    ai='🔍 GEMINI AUTO-QC: '+rec.qcScore100+'/100 (target 75+)\n';
+    if(rec.qcFinal&&rec.qcFinal.issues&&rec.qcFinal.issues.length) ai+=rec.qcFinal.issues.map(x=>'  ⚠️ '+x).join('\n')+'\n';
+    (rec.scenes||[]).forEach((s,i)=>{ if(s&&s.qc) ai+='  S'+(i+1)+': '+s.qc.score.toFixed(1)+'/10'+(s.qc.legalFail?' ⚖️ LEGAL':'')+((s.attempts||1)>1?' ♻️ re-rolled':'')+(s.qc.issues&&s.qc.issues[0]?' — '+s.qc.issues[0]:'')+'\n'; });
+    ai+='\n';
+  }
+  alert('🎬 VIDEO QC\n\n'+ai+'Eyeball the ad against each:\n'+qc.map(q=>'☐ '+q).join('\n')); }
 async function delVid(id){ if(!confirm('Delete this video ad (and all its scenes)?')) return; await vidDel(id); renderVideoGallery(curSku); }
 
 /* ═══════════════════════════════════════════════════════════════════

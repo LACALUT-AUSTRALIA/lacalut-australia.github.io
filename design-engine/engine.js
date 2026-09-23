@@ -918,11 +918,98 @@ Return ONLY valid JSON:
       const bans = [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])];
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
     }
+    if(opts.fixNote){ prompt += ' QC CORRECTION (highest priority — the previous render failed on exactly this): ' + opts.fixNote; }
     const call = videoModel(opts.model||'VEO3_FAST').route==='fal' ? callFalVideo : callVeoVideo;
     const videoBlob = await call({ prompt, imgDataUrl:still, model:opts.model||'VEO3_FAST',
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
       onProgress:onProg, asBlob:true });
     return { prompt, videoBlob, still: stillOk ? still : null };
+  }
+
+  /* ═══ AUTO-QC — Gemini WATCHES every scene clip before it is accepted.
+     Mirrors ~/.claude/scripts/gemini_watch_video.py, but per-scene, in-engine,
+     and closed-loop: a fail feeds its fixNote straight back into the re-render.
+     8s clips are small enough to send inline (no Files API / CORS risk). ═══ */
+  const QC_THRESHOLD = 7.5;        // per-scene pass bar ≈ 75/100 overall target
+  const QC_MAX_REROLLS = 1;        // hard cost cap: worst case = 2× scene spend, disclosed at the approve gate
+  const QC_INLINE_LIMIT = 15*1024*1024;   // raw bytes; base64 ×1.33 stays under the 20MB inline request cap
+
+  function blobToBase64(blob){ return new Promise((res,rej)=>{ const fr=new FileReader();
+    fr.onload=()=>res(String(fr.result).split(',')[1]); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
+
+  async function qcSceneClip(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const blob = opts.videoBlob;
+    if(!apiKey || !blob || blob.size > QC_INLINE_LIMIT) return null;   // null = QC unavailable, never blocks the pipeline
+    const sc = opts.scene||{}, sb = opts.storyboard||{};
+    const s = SKUS[opts.sku]||SKUS['aktiv'];
+    const rubric =
+`You are a ruthless performance-video QC director for LACALUT ${s.name} (premium German oral-care brand, COSMETIC-ONLY regulatory regime, Australia). This is ONE 8-second AI-generated scene of a paid Facebook ad. Watch it fully, WITH AUDIO.
+
+SCENE BRIEF: ${sc.visual||'(none)'}
+EXPECTED CAPTION: ${sc.text?('"'+sc.text+'"'):'(no on-screen text expected)'}
+${sb.character?('CHARACTER LOCK: '+sb.character):''}
+
+Score against every item:
+1. PACK — real GERMAN pack, WHITE cap, front label facing camera, razor-sharp, real tall-slim proportions; never warped, melted, re-lettered, duplicated, flipped or rotated away; NO legible English health words on the pack.
+2. TEXT — caption matches the expected wording, correctly spelled, not garbled; NO mirrored/reversed/doubled lettering anywhere (including reflections); no invented signage.
+3. HUMANS — indistinguishable from a real filmed person: no uncanny faces, teeth or hands, no plastic skin, no morphing; if a character lock is given, it is EXACTLY that person.
+4. MOTION — smooth and controlled; no morphing, warping, flicker or artefacts.
+5. EFFECTS — fluids behave physically; NO glow/halo around the product.
+6. AUDIO — ambience and music ONLY; ANY human vocal sound (speech, singing, humming, chatter) is a fail.
+7. LEGAL — NO therapeutic or disease words visible or audible (treat, cure, clinically proven, gingivitis, periodontitis, plaque, statistics/percentages); only "fluoride" and "hydroxyapatite" may be named.
+
+Be harsh: a real premium brand would only run this at 8+/10.
+
+Return ONLY valid JSON:
+{"score": <0-10 overall, one decimal>, "legalFail": <true if ANY item-7 breach>, "issues": ["<max 5, most damaging first, each with a timestamp>"], "fixNote": "<ONE imperative sentence telling the video generator what to do differently on a re-render, targeting the single most damaging issue>"}`;
+    try{
+      const b64 = await blobToBase64(blob);
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+(opts.model||'gemini-2.5-flash')+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ contents:[{role:'user',parts:[{inlineData:{mimeType:'video/mp4',data:b64}},{text:rubric}]}],
+            generationConfig:{ responseMimeType:'application/json', temperature:0.2 } }) });
+      const data = await res.json();
+      if(!res.ok) return null;
+      const txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+      const q = JSON.parse(txt);
+      if(typeof q.score !== 'number') return null;
+      return { score:Math.max(0,Math.min(10,q.score)), legalFail:!!q.legalFail,
+               issues:Array.isArray(q.issues)?q.issues.slice(0,5).map(String):[], fixNote:String(q.fixNote||'') };
+    }catch(e){ return null; }
+  }
+
+  /* Render a scene, QC it, and auto-reroll on fail — the QC verdict's fixNote
+     is injected into the retry prompt so the second attempt targets the exact
+     failure instead of rolling the same dice twice. Keeps the BEST attempt. */
+  async function renderSceneQC(opts){
+    const onProg = opts.onProgress||function(){};
+    const threshold = opts.qcThreshold!=null ? opts.qcThreshold : QC_THRESHOLD;
+    const maxRerolls = opts.qcMaxRerolls!=null ? opts.qcMaxRerolls : QC_MAX_REROLLS;
+    let best = null, fixNote = null, attempts = 0;
+    for(let a=0; a<=maxRerolls; a++){
+      attempts++;
+      const r = await renderScene({ ...opts, fixNote });
+      onProg('🔍 QC-watching the clip…');
+      const qc = await qcSceneClip({ videoBlob:r.videoBlob, scene:opts.scene, storyboard:opts.storyboard,
+        sku:opts.sku, apiKey:opts.apiKey });
+      const cand = { ...r, qc, attempts };
+      if(!qc){ best = best||cand; break; }                    // QC unavailable — accept, never block
+      // non-legal beats legal; then higher score wins
+      if(!best || (best.qc && ((best.qc.legalFail && !qc.legalFail) || (best.qc.legalFail===qc.legalFail && qc.score>best.qc.score)))) best = cand;
+      if(!qc.legalFail && qc.score >= threshold) break;       // passed — done
+      if(a < maxRerolls){ fixNote = qc.fixNote || (qc.issues[0]||''); onProg('♻️ QC '+qc.score.toFixed(1)+'/10'+(qc.legalFail?' LEGAL FAIL':'')+' → auto re-roll…'); }
+    }
+    best.attempts = attempts;
+    return best;
+  }
+
+  /* Final-ad QC — the stitched video through the same watcher, full-ad rubric. */
+  async function qcFinalVideo(opts){
+    const blob = opts.videoBlob;
+    if(!blob || blob.size > QC_INLINE_LIMIT) return null;
+    const sb = opts.storyboard||{};
+    return qcSceneClip({ ...opts, scene:{ visual:'FULL '+((opts.totalSeconds||24))+'s ad — all scenes stitched with the single TTS narrator mixed over the top. ALSO judge: is the narrator ONE consistent voice; do scene joins cut cleanly; does the ad work sound-off; does it end on pack + CTA ("'+(sb.cta||'')+'")', text:'' } });
   }
 
   async function renderStoryboard(opts){
@@ -933,10 +1020,14 @@ Return ONLY valid JSON:
       const sc = sb.scenes[i];
       try{
         onScene(i, total, '🎬 scene '+(i+1)+'/'+total+' starting…');
-        const r = await renderScene({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
+        const doQC = opts.qc !== false;
+        const fn = doQC ? renderSceneQC : renderScene;
+        const r = await fn({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
           style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl,
-          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
-        out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob });
+          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp,
+          qcThreshold:opts.qcThreshold, qcMaxRerolls:opts.qcMaxRerolls,
+          onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
+        out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob, qc:r.qc||null, attempts:r.attempts||1 });
       }catch(e){
         out.failedAt = i; out.error = e.message;
         return out;   // partial — paid scenes are never lost; UI offers a retry from scene i
@@ -1021,7 +1112,8 @@ Return ONLY valid JSON:
     videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
     buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
     sanitizeStoryboard, generateStoryboard, buildScenePrompt, storyboardCostEstimate,
-    renderScene, renderStoryboard, stitchScenes, ttsLine
+    renderScene, renderStoryboard, stitchScenes, ttsLine,
+    qcSceneClip, renderSceneQC, qcFinalVideo, QC_THRESHOLD, QC_MAX_REROLLS
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = global.LacalutEngine;
