@@ -784,8 +784,12 @@ ${basePrompt}
     const nScenes = Math.max(2, Math.min(5, Math.round((opts.seconds||32)/8)));
     const bans = [...GLOBAL_BAN, ...s.ban];
     const brief = (opts.brief||'').trim();
+    const fx = (g.formula||[]).filter(x=>x.on!==false).map(x=>x.text);
     const meta =
 `You are a world-class performance-video creative director for LACALUT ${s.name} (premium 100-year German pharmacy oral-care brand, tone: ${s.voice}). Write a ${nScenes*8}-second Australian social-media video AD as EXACTLY ${nScenes} scenes of 8 seconds each.
+
+ONE-UP LOOP (run internally BEFORE you answer — never show the drafts):
+1. Write the full script v1. 2. One-up it: v2 must have a more thumb-stopping hook, more product-anchored scenes and a stronger build to the pack than v1. Then v3 > v2. Do at least 3 rounds. 3. Each round ask: "Is scene 1 impossible to scroll past? Is EVERY scene unmistakably about ${s.name}? Does the story climax on the pack?" 4. Output ONLY the pinnacle version.
 
 AD FORMAT: ${type.narrative}.
 VISUAL LOOK (every scene): ${st?st.motion:''}
@@ -798,7 +802,8 @@ COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medici
 - All copy in plain Australian English, everyday language, cosmetic feel-benefits only.
 
 CRAFT RULES:
-- Scene 1 opens on a scroll-stopping HOOK. Final scene ends on the product + call to action.
+- PRODUCT LOCK (hard rule): the ONLY product or object that may ever be a scene's subject is the LACALUT ${s.name} pack itself (the real GERMAN pack with its WHITE cap — a TOOTHPASTE TUBE/BOX unless the reference is a mouthwash bottle) or its SIGNATURE FORMULA ELEMENTS: ${fx.join(', ')||'clean water and minerals'}. NEVER build a scene around a toothbrush, a different product, generic props or stock objects. Every scene must be unmistakably about ${s.name} or its benefit.
+- Scene 1 opens on a scroll-stopping HOOK built on ${s.name}'s own benefit (${s.say}) or the everyday problem it solves. Final scene ends on the product + call to action.
 - Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene.
 - "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
@@ -846,7 +851,11 @@ Return ONLY valid JSON:
 
   /* ═══ SEQUENTIAL RENDER — one scene, then the whole board ═══ */
   async function renderScene(opts){
-    const prompt = buildScenePrompt(opts);
+    let prompt = buildScenePrompt(opts);
+    if(opts.oneUp){
+      const bans = [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])];
+      prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
+    }
     const call = videoModel(opts.model||'VEO3_FAST').route==='fal' ? callFalVideo : callVeoVideo;
     const videoBlob = await call({ prompt, imgDataUrl:opts.refImgDataUrl, model:opts.model||'VEO3_FAST',
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
@@ -864,7 +873,7 @@ Return ONLY valid JSON:
         onScene(i, total, '🎬 scene '+(i+1)+'/'+total+' starting…');
         const r = await renderScene({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
           style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl,
-          apiKey:opts.apiKey, falKey:opts.falKey, onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
+          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
         out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob });
       }catch(e){
         out.failedAt = i; out.error = e.message;

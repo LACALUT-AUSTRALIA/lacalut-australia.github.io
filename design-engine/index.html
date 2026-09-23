@@ -1033,7 +1033,7 @@ async function renderScenesInto(recId, startAt){
     try{
       prog('🎬 scene '+(i+1)+'/'+total+' starting…');
       const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
-        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, apiKey:KEYS.gemini,
+        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, apiKey:KEYS.gemini, oneUp:rec.oneUp,
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
       rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob };
       await vidPut(rec);   // bank every paid scene immediately
@@ -1064,7 +1064,7 @@ async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) 
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
   try{
     const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
-      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:packshotFor(rec.refSku||rec.sku), apiKey:KEYS.gemini, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
+      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:packshotFor(rec.refSku||rec.sku), apiKey:KEYS.gemini, oneUp:rec.oneUp, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
     rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob };
     rec.stitchedBlob=null; await vidPut(rec);
     try{ const ff=await loadFFmpeg(prog); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob))); }catch(e){ rec.stitchFailed=e.message; }
