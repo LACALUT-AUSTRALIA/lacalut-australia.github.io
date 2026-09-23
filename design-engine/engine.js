@@ -1069,8 +1069,19 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     // STEP 1 — scene still, pack-accurate (multiple packshot refs = tube AND box when saved).
     // Packshot refs go ONLY to scenes whose script actually shows the pack — feeding them to a
     // pack-free scene makes the image model paint the tube in uninvited (redrawn = garbled label).
+    // v2 PACKSHOT COMPOSITING (24/09/2026 — the S3-class drift fix): generating scene + pack in
+    // ONE pass makes the studio packshot refs fight the world/continuity refs — the world drifts
+    // toward generic studio and the person mutates. v2 splits the job: PASS A renders the scene
+    // as a product-free BASE PLATE anchored on the WORLD STILL (scene 1's frame) + the previous
+    // scene's still; PASS B inserts the EXACT packshot into that finished plate via editImage,
+    // which is ordered to keep every other pixel identical. Pack fidelity and world fidelity
+    // stop competing. Any PASS failure falls back to the proven v1 single-pass.
     const sceneWantsPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
-    const refs = sceneWantsPack ? (opts.refImgs && opts.refImgs.length ? opts.refImgs : [opts.refImgDataUrl]).filter(Boolean).slice(0,3) : [];
+    const packRefs = (opts.refImgs && opts.refImgs.length ? opts.refImgs : [opts.refImgDataUrl]).filter(Boolean).slice(0,3);
+    const refs = sceneWantsPack ? packRefs : [];
+    // World-anchor first, then previous still (deduped) — re-anchoring every scene to scene 1's
+    // frame stops drift accumulating down the chain.
+    const anchors = [opts.worldStill, opts.prevStill].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,2);
     let still = refs[0]||null, stillOk = false;
     try{
       onProg('🖼️ composing scene still…');
@@ -1079,7 +1090,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
       sp += vlook ? `VISUAL LOOK (hard rule — this defines the entire frame and OVERRIDES any default polish): ${vlook.motion} If this look is lo-fi/handheld, the frame must read as a candid smartphone photo a real person took — natural imperfect framing, real-world light — NOT a glossy studio ad. ` : '';
       sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
       sp += (sb && sb.world) ? `WORLD LOCK (the #1 rule of this ad): every scene of this ad is shot inside EXACTLY this one location — ${sb.world} — same set, same surfaces and props, same lighting setup, same colour palette, same time of day; compose THIS scene's brief within that world (change only the camera angle/distance and the action), NEVER a different or generic background. ` : '';
-      sp += opts.prevStill ? `CONTINUITY REFERENCE: the final style-reference image is the PREVIOUS scene's opening frame of this SAME ad — match its exact location, surfaces, lighting, colour grade and world so the two scenes cut together seamlessly as one film; do not copy its composition, stage this scene's own brief inside the identical world. ` : '';
+      sp += anchors.length ? `CONTINUITY REFERENCE (hard rule): the ${anchors.length===2?'TWO style-reference images are earlier frames':'style-reference image is an earlier frame'} of this SAME ad${anchors.length===2?' — the FIRST is scene 1 (the ad\'s world anchor), the SECOND is the previous scene':''} — match ${anchors.length===2?'their':'its'} exact location, surfaces, props, lighting, colour grade and world so every scene cuts together seamlessly as one continuous film; do not copy ${anchors.length===2?'their':'its'} composition, stage this scene's own brief inside the identical world. ` : '';
       sp += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, clean sans-serif, high-contrast, instantly readable on a phone, EVERY word correctly spelled (render fewer words perfectly rather than more words garbled). ` : `No on-screen text. `;
       sp += `TEXT LOCK: besides that caption and the product's own real label, there is NO other text anywhere in the scene — no invented signage, posters, panels, banners or decorative words. MIRROR LOCK: every piece of text reads in correct left-to-right orientation — NEVER mirrored, reversed, doubled or reflected lettering (mirror and reflection shots must not flip any text). `;
       sp += (sb && sb.character) ? `CHARACTER LOCK: if a person appears, it is EXACTLY this person (identical in every scene of this ad): ${sb.character} — same face, hair, outfit and age; NEVER a different actor. ` : '';
@@ -1091,8 +1102,26 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
       sp += `PACK SCALE (hard rule — big packs garble): the pack occupies NO MORE than about 30% of the frame's height, standing upright with the label straight-on to camera (no tilt) — a modest, believable product presence, NEVER a label-filling macro; the smaller and straighter the pack, the sharper its text survives. `;
       sp += `WATER/LIQUID PHYSICS: any water or liquid must have a visible, natural source (a tap, a pour from above, a splash landing) and obey gravity — water NEVER emerges from rocks, crystals or objects. `;
       sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal, faithful to the VISUAL LOOK above (candid phone-shot realism when the look is lo-fi; polished finish only when the look asks for it), composed with headroom for motion.`;
-      still = await callGemini({ prompt:sp, productImgs:refs, styleImgs: opts.prevStill?[opts.prevStill]:[],
-        render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+      if(sceneWantsPack && packRefs.length){
+        // PASS A — product-free base plate (world/person fidelity)
+        const spPlate = sp + `BASE PLATE (hard rule for THIS render): stage the scene exactly as described but WITHOUT the LACALUT pack or any toothpaste product anywhere in the frame — the real product photo is composited in afterwards; leave its resting spot clear, naturally lit and in focus.`;
+        const plate = await callGemini({ prompt:spPlate, productImgs:[], styleImgs:anchors,
+          render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+        try{
+          // PASS B — insert the EXACT packshot into the finished plate (pack fidelity)
+          onProg('📦 compositing the real packshot…');
+          still = await editImage({ imgDataUrl:plate, refImgs:packRefs, sku:opts.sku, apiKey:opts.apiKey,
+            model:'gemini-3-pro-image-preview', aspectRatio:opts.aspectRatio,
+            instruction:`INSERT the LACALUT ${s.name} product from the reference packshot into this scene — ${sc.visual}. It stands upright with its front label facing camera dead-on, keeping the reference pack's EXACT physical format and proportions (tube, box or bottle exactly as photographed — never morph one format into another), real GERMAN label, WHITE cap, occupying no more than 30% of the frame height, lit by the scene's existing light with a soft natural contact shadow grounding it on the surface. Place it fully CLEAR of any on-screen caption text — the pack and the caption must never overlap and the caption stays fully readable. Reproduce the reference label EXACTLY — never re-letter, translate, enlarge or garble it; small German pack text stays soft and unreadable` });
+        }catch(e2){
+          onProg('📦 compositing failed — v1 single-pass fallback…');
+          still = await callGemini({ prompt:sp, productImgs:packRefs, styleImgs:anchors,
+            render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+        }
+      } else {
+        still = await callGemini({ prompt:sp, productImgs:refs, styleImgs:anchors,
+          render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+      }
       stillOk = true;
     }catch(e){ /* fall back to animating the raw packshot rather than failing the scene */ }
     // STEP 2 — animate the still (motion only)
@@ -1221,6 +1250,8 @@ Return ONLY valid JSON:
     const onScene = opts.onScene || function(){};
     const out = { scenes:[], cost:storyboardCostEstimate({scenes:total, model:opts.model}), qc:videoQCChecklist(), failedAt:null };
     let prevStill = null;   // each scene's finished still anchors the next — hard world continuity
+    let worldStill = null;  // scene 1's still = the ad's WORLD ANCHOR; every later scene re-anchors
+                            // to it so drift never accumulates down the still chain
     for(let i=0;i<total;i++){
       const sc = sb.scenes[i];
       try{
@@ -1229,11 +1260,12 @@ Return ONLY valid JSON:
         const fn = doQC ? renderSceneQC : renderScene;
         const r = await fn({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
           style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl,
-          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, prevStill,
+          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, prevStill, worldStill,
           qcThreshold:opts.qcThreshold, qcMaxRerolls:opts.qcMaxRerolls,
           onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
         out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 });
         prevStill = r.still || prevStill;
+        if(!worldStill && r.still) worldStill = r.still;
       }catch(e){
         out.failedAt = i; out.error = e.message;
         return out;   // partial — paid scenes are never lost; UI offers a retry from scene i
