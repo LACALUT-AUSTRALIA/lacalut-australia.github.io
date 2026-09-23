@@ -24,7 +24,7 @@
       palette:'herbal green #2E7D46 / #7CB342 dominant, brand red #CF102D on logo + result pill only, navy #004A88 headers',
       props:'fresh herbs and botanicals (sage, chamomile, myrrh), green leaves, natural stems, soft daylight, water dew',
       voice:'natural yet clinical, botanical',
-      say:'natural gum care, 9 medicinal herbs, supports gum health',
+      say:'natural gum care, 9 medicinal herbs, gums that feel cared-for naturally',
       ban:['gingivitis','periodontitis','gum disease'] },
     'flora': { name:'Flora', dot:'#2E9E5B', accent:'#004A88',
       palette:'TOOTHPASTE = navy #004A88 + citrus-yellow; MOUTHWASH = fresh green #2E9E5B; red #CF102D on logo/pill only',
@@ -42,7 +42,7 @@
       palette:'TOOTHPASTE = bright white + red headline pill #CF102D; MOUTHWASH = silver/platinum grey; navy #004A88 headers',
       props:'white enamel stones, subtle diamond/sparkle, bright clean light, water splash',
       voice:'clinical whitening, never bleach-luxury',
-      say:'removes surface stains, supports natural whiteness, protects and repairs enamel',
+      say:'removes surface stains, supports natural whiteness, enamel-kind German formula',
       ban:['peroxide','bleach'] }
   };
   const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up',
@@ -61,7 +61,7 @@
   const DEFAULT_GUIDES = {
    'aktiv':{ colours:'Dominant brand red #CF102D + navy #004A88 + soft light-blue #DDEBF7 backgrounds with #4C97C9 icon circles',
      backgrounds:['clean bright white studio background, soft shadow, minimal premium look','deep navy-blue gradient with subtle molecular hex pattern and soft glow','bold LACALUT red gradient fading to dark maroon, faint hex texture, premium','soft light-blue backdrop, water splash, white mineral rocks','dark maroon-to-red radial gradient, dramatic mood, particle sparkle','airy white-to-pale-blue gradient, fresh feel, reflective floor','premium charcoal-to-navy gradient with red rim-light and floating mineral particles','pharmacy-white scene with a soft blue gel swirl and clean reflections','geometric navy-and-red split background with bold diagonal blocks','macro water-droplet surface catching red and blue light, hero product emerging','frosted glass panel with soft studio glow and a subtle brand-red accent line','dark cinematic spotlight on a red-velvet surface, luxe pharmacy mood'],
-     formula:['white salt-mineral rock clusters','white hydroxyapatite mineral pearls','clear enamel crystals','clean water splash (NO herbs — herbs belong to Aktiv Herbal only)'],
+     formula:['white salt-mineral rock clusters','angular hydroxyapatite crystal shards','clear enamel crystals','clean water splash (NO herbs — herbs belong to Aktiv Herbal only)'],
      usps:['Firms & cares for the gum line','Intensive anti-plaque German formula','12h long-lasting protection','Astringent firm-gum feel','Removes plaque for a deep-clean feel','Daily intensive gum care','The German standard in gum care','Trusted German pharmacy heritage'],
      headlines:['Gums That Feel Firm & Cared-For','Intensive German Gum Care','Firm, Fresh, Cared-For Gums','The German Standard in Gum Care','Give Your Gums the German Treatment','Strong-Feeling Gums, Every Day','Your Gums Deserve German Care','Firm-Gum Feel, Day After Day','Serious About Your Gum Line','The Daily Upgrade for Your Gums','German Gum Care Since 1925','Care for Your Gums the German Way'],
      subheadlines:['Intensive Formula for a Firm Gum Feel','Notice the Difference From Day One','The German Standard of Gum Care','Astringent Care for a Cared-For Gumline','Daily Intensive Gum Care','Firm, Fresh and Cared-For','German Pharmacy Heritage Since 1925','For Gums That Feel Strong','The Intensive Gum-Care Ritual','Premium German Oral Care'],
@@ -89,15 +89,15 @@
      usps:['For sensitive teeth','Comfort for cold & hot twinges','Gentle daily care','Extra-gentle everyday cleaning','Builds a protective feel','German gentle-care formula','Comfort you can feel'],
      headlines:['Enjoy Ice Cream Again','No More Cold-Drink Twinges','That Ice-Cream Zing? Gone','Hot Coffee, Cold Ice — No Wince','Cold Air, No Wince','Enjoy Cold & Hot Again','Comfort for Sensitive Teeth','Everyday Comfort, German Made','Gentle Care, Real Comfort','From Twinges to Comfort','Say Yes to Cold Drinks Again','Gentle on Teeth, Serious on Care','Comfort in Every Brush','The Gentle German Choice','Enjoy Every Bite Again','Sensitive Teeth, Meet Comfort'],
      subheadlines:['Gentle Care for Sensitive Teeth','Gentle Everyday Comfort','A Protective Everyday Feel','German Gentle-Care Formula','Comfort That Lasts','For Teeth That Need Extra Care','The Gentle Daily Ritual','Premium German Comfort Care'],
-     benefits:['Comfort for Sensitive Teeth','Builds a Protective Barrier','Extra-Gentle Cleaning','Long-Lasting Comfort','Gentle Daily Care','Kind to Sensitive Teeth','Everyday Comfort Feel','Protective Everyday Care','Gentle German Formula','Comfort From First Use','Cold & Hot Comfort'],
+     benefits:['Comfort for Sensitive Teeth','Protective Everyday Feel','Extra-Gentle Cleaning','Long-Lasting Comfort','Gentle Daily Care','Kind to Sensitive Teeth','Everyday Comfort Feel','Protective Everyday Care','Gentle German Formula','Comfort From First Use','Cold & Hot Comfort'],
      trust:['Made in Germany','Pharmacy Grade','Dermatologically Tested','Gentle Formula','Trusted in 60+ Countries','German Pharmacy Heritage','Since 1925'] },
    'white-repair':{ colours:'TOOTHPASTE bright white + red headline pill #CF102D; MOUTHWASH silver/platinum grey; navy #004A88 headers',
      backgrounds:['clean bright white studio background, sparkle highlights','silver/platinum gradient, premium sheen','deep navy gradient with diamond sparkle and enamel stones','soft white-to-silver gradient, bright airy whitening feel','cool grey studio with reflective floor and light burst','bright white surface with a single dazzling light flare','crystal-and-diamond arrangement catching bright light','polished marble surface with soft sparkle and clean reflections','dark charcoal studio with a bright white beam on the product','macro enamel-white mineral texture with sparkle particles','frosted silver gradient with subtle shimmer and clean shadow'],
      formula:['white hydroxyapatite pearls','clear ice / enamel cubes','subtle diamond sparkle','bright white mineral powder'],
-     usps:['Removes surface stains','Protects & strengthens enamel','No peroxide','Gentle daily whitening','Reveals natural whiteness','Enamel-safe whitening','German whitening care'],
+     usps:['Removes surface stains','Enamel-kind gentle whitening','No peroxide','Gentle daily whitening','Reveals natural whiteness','Enamel-safe whitening','German whitening care'],
      headlines:['Coffee, Tea & Wine Stains — Gone','Beat Coffee & Tea Stains','Wave Goodbye To Yellow Teeth','Your Coffee Habit, Erased','Undo Years Of Surface Stains','Stains From Coffee, Tea & Wine — Lifted','Whiter, Stronger-Feeling Teeth','A Brighter, Whiter Smile','Gentle Whitening, German Made','Remove Stains, Reveal White','Your Whiter Smile Starts Here','Brighten Without the Bleach','Say Goodbye to Surface Stains','The Gentle Road to White','Whiter Teeth, Happy Enamel','Reveal Your Natural White','Bright Smile, German Care'],
      subheadlines:['Gentle Whitening & Enamel Protection','Whiter Smile, Enamel-Safe','Brighten Without Bleach','No-Peroxide Whitening Care','For a Naturally Whiter Smile','Gentle Daily Whitening','The Enamel-Safe Whitening Ritual','Premium German Whitening'],
-     benefits:['Removes Surface Stains','Supports Natural Whiteness','Enamel-Protecting Care','No Peroxide','Gentle Daily Whitening','Brighter Smile Feel','Strengthens Enamel Feel','Whiter From First Use','Enamel-Safe Formula','Bright Confident Smile','German Whitening Care'],
+     benefits:['Removes Surface Stains','Supports Natural Whiteness','Enamel-Kind Care','No Peroxide','Gentle Daily Whitening','Brighter Smile Feel','Strong-Enamel Feel','Whiter From First Use','Enamel-Safe Formula','Bright Confident Smile','German Whitening Care'],
      trust:['Made in Germany','Pharmacy Grade','Enamel-Safe','No Peroxide','Dermatologically Tested','Trusted in 60+ Countries','Since 1925'] }
   };
   const GUIDE_SECTIONS = [['backgrounds','Background Styles (colour + scene — engine varies these)'],['formula','Formula Elements (signature ingredients — ALWAYS applied, EXCLUSIVE to this SKU: never another formula’s elements)'],['usps','USPs'],['headlines','Main Headlines'],['subheadlines','Subheadlines'],['benefits','Benefits'],['trust','Trust Elements']];
@@ -251,6 +251,7 @@
     const m = MODES[mode];
     const bans = [...new Set([...GLOBAL_BAN, ...(opts.bans || [])])];
     let p = `Professional graphic-designed ${m.label} for LACALUT (premium German pharmacy oral-care brand) featuring MULTIPLE products together — ${names.length} products: ${names.join(', ')}. `;
+    p += `AD, NOT A POST (hard rule): this is a PAID Meta direct-response ad for cold traffic — it must stop the scroll AND sell: customer-first hook, one clear cosmetic feel-benefit payoff, and a clear CTA pill; NEVER an organic-social layout and NEVER 'save/share/follow/comment' language. `;
     p += `STRICT brand colours — dominant LACALUT red #CF102D + navy #004A88, clean premium palette (each product may keep its own accent). `;
     p += `Arrange all ${names.length} products together as ONE cohesive premium hero composition — a "range line-up" / family shot: every product clearly visible, evenly balanced and distinct, none obscured or merged. `;
     if(brain){
