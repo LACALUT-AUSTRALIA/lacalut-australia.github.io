@@ -805,7 +805,11 @@ ${basePrompt}
     { re:/\b(uhm|umm|hmm|mmm|sighs?|gasps?|whispers?|hums|humming|says|speaks|sings|singing|chatter|murmur)\b/i, f:['visual','motion'], msg:'human vocal sound written into a scene — scenes are voice-free (narrator is added in post)' },
     { re:/\b(side|back)\b[^.]{0,25}\b(pack|tube|box)\b|reveal\w*[^.]{0,35}\b(text|label|wording|printed)\b/i, f:['visual','motion'], msg:'side/back pack text reveal — side text is German and stays unreadable; front label only' },
     { re:/\b(pack|tube|box|product)\b[^.]{0,60}\b(rotat\w+|spins?|spinning|flips?|flipping|turns? (over|around))\b|\b(rotat\w+|spins?|spinning|flips?|flipping)\b[^.]{0,60}\b(pack|tube|box|product)\b/i, f:['visual','motion'], msg:'pack rotation — the pack never rotates; move the camera instead' },
-    { re:/\b(effective(ly)?|firms|strengthens?|repairs?|treats?|cures?|heals?|regenerat\w*|clinically|proven)\b/i, f:['vo','text'], msg:'efficacy/therapeutic wording — cosmetic feel-language only ("feels firm", "cared-for")' }
+    { re:/\b(effective(ly)?|firms|strengthens?|repairs?|treats?|cures?|heals?|regenerat\w*|clinically|proven)\b/i, f:['vo','text'], msg:'efficacy/therapeutic wording — cosmetic feel-language only ("feels firm", "cared-for")' },
+    { re:/\b(powder|vial|syringe|dropper)\b/i, f:['visual','motion'], msg:'powder/vial imagery — the safety filter reads white powder + glassware as drugs; use settling crystal shards with no hands instead' },
+    { re:/\b(around|orbit\w*|circle|circling|360)\b[^.]{0,40}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.]{0,40}\b(orbit\w*|360|circling)\b/i, f:['visual','motion'], msg:'camera circling the pack — exposes the German side/back text; use a front-facing push-in or lateral-free tilt instead' },
+    { re:/\b(zoom|push)[^.]{0,25}\b(into|onto|toward)\b[^.]{0,20}\b(face|her face|his face|eyes|mouth)\b/i, f:['visual','motion'], msg:'camera pushing into the face — nothing tighter than a chest-up framing on a person' },
+    { re:/fade to black/i, f:['visual','motion'], msg:'fade-to-black — the final beat holds bright on the pack + CTA; never waste the close' }
   ];
   function lintStoryboard(sb){
     const out=[];
