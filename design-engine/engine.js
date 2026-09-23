@@ -703,6 +703,9 @@ HARD RULES you must keep from the base brief, never trade away for drama:
 - IMAGE-TO-VIDEO: the supplied still is the anchor — keep its exact product, packaging, colours, logo and on-image text; add MOTION only, never redraw or relabel. The pack stays razor-sharp every frame, real GERMAN packaging, white cap; never blur/warp/mirror the pack or its text, never fabricate an English tube or English health text.
 - Motion stays smooth and controlled — no chaotic morphing, no warping product or type.
 - PACK MOTION LOCK: the pack NEVER flips, spins, turns over or rotates away from camera — the printed front label faces camera the entire clip (subtle tilt max); keep the pack's real tall slim proportions; move the camera or environment for dynamism, never the pack itself.
+- CHARACTER LOCK: if the base brief describes a person, keep EXACTLY that person — never swap, restyle or introduce a different actor.
+- AUDIO: ambient sound and music only — zero human vocal sounds of any kind (no speech, singing, whispering, humming, male or female voices, background chatter).
+- MIRROR LOCK: no mirrored, reversed or doubled lettering anywhere, including reflections.
 - COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
 - Keep the SKU angle lock and any banned-word constraints from the base brief.
 - Any on-screen text: Australian English only, minimal, correctly spelled, never garbled.
@@ -823,19 +826,21 @@ COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medici
 CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, TikTok Creative Codes, Meta lift studies):
 - PRODUCT LOCK (hard rule): the ONLY product or object that may ever be a scene's subject is the LACALUT ${s.name} pack itself (the real GERMAN pack with its WHITE cap — a TOOTHPASTE TUBE/BOX unless the reference is a mouthwash bottle) or its SIGNATURE FORMULA ELEMENTS: ${fx.join(', ')||'clean water and minerals'}. NEVER build a scene around a toothbrush, a different product, generic props or stock objects. Every scene must be unmistakably about ${s.name} or its benefit.
 - PACK MOTION LOCK (hard rule): the pack NEVER flips, spins, turns over or rotates away from camera — its printed front label FACES CAMERA the entire time it is on screen (a subtle tilt of a few degrees is the maximum). If you want dynamism, move the CAMERA or the environment around the pack instead. NEVER write motion like "rotates to show the label", "spins into frame", "360-degree turn" — AI video mangles the logo the moment the pack rotates.
+- CHARACTER LOCK (hard rule): at most ONE person appears in the whole ad. Invent that ONE person once and describe them in rich detail in the "character" field (age, ethnicity, hair colour+style, outfit, distinguishing look). EVERY scene that shows a person shows EXACTLY that person — same face, same hair, same outfit, same age. A different actor appearing between scenes destroys the ad. Scenes may also show no person at all.
+- CONTINUITY: the three-to-five scenes must feel like ONE film, not stitched clips — carry the same colour palette, lighting mood and world across every scene boundary; each scene's opening beat should visually echo the previous scene's closing beat.
 - HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
 - RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a sound effect, music-beat change or deliberate beat of silence — write it into "motion"), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds; a cut with no sound change breaks the rhythm.
 - OPEN LOOP, CLOSE LATE: scene 1 opens a curiosity question ("how is that possible?") that is deliberately NOT answered until the PROOF beat in the second-to-last scene. Revealing the answer early kills the reason to keep watching. The FINAL scene closes with a clear direct CTA — never a loop-back ending (that is for organic, not paid).
 - SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
 - Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
-- "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene.
+- "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene — always UPBEAT and smiling: warm, uplifting, energised delivery with dynamic intonation, never flat or monotone.
 - "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
 - "visual" describes what we see; "motion" the camera/subject movement — write motion with a visual change every 2–3 seconds, never a static hold over 4 seconds (pacing is where retention dies).
 - Final scene ends on the product + call to action. The real GERMAN pack with its WHITE cap is the only product ever shown.
 - SENSITIVITY GUARD: never claim to reduce/treat sensitivity or present remineralisation as therapy — always comfort/feel language.
 
 Return ONLY valid JSON:
-{"hook":"...","cta":"...","voice":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
+{"hook":"...","cta":"...","voice":"...","character":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
     let lastErr;
     for(let attempt=0; attempt<2; attempt++){
       try{
@@ -860,9 +865,10 @@ Return ONLY valid JSON:
     let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true,
       brief: sc.visual + '. ' + sc.motion });
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
-    p += `AUDIO (mandatory): ambient sound design and music ONLY — ABSOLUTELY NO spoken words, no voiceover, no narration, no talking, no singing, no whispering (one consistent narrator is recorded separately and mixed over the final ad in post). Open the scene on a fresh audio cue (a subtle sound effect or music-beat change) landing together with the visual change. `;
+    p += sb.character ? `CHARACTER LOCK: any person on screen is EXACTLY this person (identical in every scene): ${sb.character} — same face, hair, outfit; never a different actor. ` : '';
+    p += `AUDIO (mandatory): ambient sound design and music ONLY — ABSOLUTELY NO human vocal sounds of ANY kind: no spoken words, no voiceover, no narration, no talking, no singing, no whispering, no humming, no male voice, no female voice, no background chatter or crowd murmur (one consistent narrator is recorded separately and mixed over the final ad in post). Open the scene on a fresh audio cue (a subtle sound effect or music-beat change) landing together with the visual change. `;
     p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
-    p += `PACK MOTION LOCK: while the pack is on screen its printed front label stays FACING CAMERA, perfectly legible and pixel-stable — NEVER flip, spin, turn over or rotate the pack (a subtle tilt of a few degrees is the maximum); never warp, redraw or re-letter the label during motion; keep the pack's real tall slim proportions unchanged in every frame. `;
+    p += `PACK MOTION LOCK: while the pack is on screen its printed front label stays FACING CAMERA, perfectly legible and pixel-stable — NEVER flip, spin, turn over or rotate the pack (a subtle tilt of a few degrees is the maximum); never warp, redraw, re-letter, mirror or reverse the label during motion; keep the pack's real tall slim proportions unchanged in every frame. `;
     p += `The supplied reference image shows the REAL product — it anchors branding fidelity, but compose this scene to its own visual brief rather than copying the reference composition.`;
     return p;
   }
@@ -893,7 +899,10 @@ Return ONLY valid JSON:
       let sp = `Cinematic opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
       sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
       sp += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, clean sans-serif, high-contrast, instantly readable on a phone, EVERY word correctly spelled (render fewer words perfectly rather than more words garbled). ` : `No on-screen text. `;
-      sp += `TEXT LOCK: besides that caption and the product's own real label, there is NO other text anywhere in the scene — no invented signage, posters, panels, banners or decorative words. `;
+      sp += `TEXT LOCK: besides that caption and the product's own real label, there is NO other text anywhere in the scene — no invented signage, posters, panels, banners or decorative words. MIRROR LOCK: every piece of text reads in correct left-to-right orientation — NEVER mirrored, reversed, doubled or reflected lettering (mirror and reflection shots must not flip any text). `;
+      sp += (sb && sb.character) ? `CHARACTER LOCK: if a person appears, it is EXACTLY this person (identical in every scene of this ad): ${sb.character} — same face, hair, outfit and age; NEVER a different actor. ` : '';
+      sp += `HUMAN REALISM: any person must be indistinguishable from a real filmed human — natural skin with visible texture and pores, natural asymmetric expression, genuine relaxed smile, real eye depth; never plastic-smooth skin, never uncanny, never overly perfect teeth. `;
+      sp += `EFFECTS REALISM: fluids and particles behave physically — water splashes with true liquid dynamics (never jelly-like or plastic), no generic glow halos around the product; light and reflections integrate naturally. `;
       sp += `If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text and layout, WHITE cap; keep the pack's REAL PROPORTIONS from the reference (a tall, slim toothpaste tube — never shortened, widened, squat or stubby); front label FACING CAMERA; never invent, garble, translate or re-letter pack text. GERMAN PACK LOCK (legal requirement): all small descriptive pack text stays in GERMAN exactly as the reference AND softly out of focus / too small to read — NEVER render legible ENGLISH words on the pack (especially health words like "protects", "bleeding", "gums", "periodontitis", "inflammation", "prevents"); only the LACALUT wordmark and variant name may read clearly. `;
       sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
       sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal premium finish, composed with headroom for motion.`;
@@ -955,7 +964,7 @@ Return ONLY valid JSON:
     const voiceName = /(\bmale\b|\bman\b|\bbloke\b|\bguy\b)/i.test(desc) && !/female|woman/i.test(desc) ? 'Puck' : 'Kore';
     const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
       { method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ contents:[{parts:[{text:`Speak as ${desc}. Australian English pronunciation. Read this ad line naturally:\n${opts.text}`}]}],
+        body:JSON.stringify({ contents:[{parts:[{text:`Speak as ${desc}. Australian English pronunciation. Delivery: bright, warm, UPLIFTING and smiling — energised with dynamic intonation, like sharing great news with a friend; never flat, never monotone. Read this ad line:\n${opts.text}`}]}],
           generationConfig:{ responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName } } } } }) });
     const data = await res.json();
     if(!res.ok) throw new Error(data.error?.message||('TTS HTTP '+res.status));
@@ -990,7 +999,7 @@ Return ONLY valid JSON:
         const ins=[]; vo.forEach((_,i)=>{ ins.push('-i','p'+i+'.wav'); });
         await ffmpeg.exec([...ins,'-filter_complex', vo.map((_,i)=>'['+i+':a]').join('')+'concat=n='+vo.length+':v=0:a=1[vo]','-map','[vo]','vo.wav']);
         // duck the scene ambience under the narrator
-        let mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-filter_complex','[0:a]volume=0.25[bg];[bg][1:a]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);
+        let mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-filter_complex','[0:a]volume=0.12[bg];[bg][1:a]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);   // bg ducked hard — stray Veo voices must never compete with the narrator
         if(mc!==0) mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-map','0:v','-map','1:a','-c:v','copy','-c:a','aac','final.mp4']);   // no ambience track — VO only
         if(mc===0) final='final.mp4';
       }catch(e){ /* narrator mix failed — ship the plain stitch rather than nothing */ }
