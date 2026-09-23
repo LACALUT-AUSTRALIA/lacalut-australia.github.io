@@ -571,13 +571,20 @@ ${basePrompt}
   }
 
   // QC checklist — the auto-flag list the UI ticks off after a clip returns.
+  // Items 6–11 = the NHB "Video Ads That Convert" six-point pass/fail (pacing beats production).
   function videoQCChecklist(){
     return [
       'Pack stays crisp & sharp — real German tube, no blur, no English therapeutic text',
       'No mirror / reflection bug (inverted readable text)',
       'No banned ingredient or ion label on screen (only fluoride / hydroxyapatite)',
       'On-screen text is not garbled',
-      'Product form stays consistent with the SKU'
+      'Product form stays consistent with the SKU',
+      'Hook survives the first frame — no logo open, no slow build',
+      'Attention resets every 4–8 seconds (visual + audio + curiosity together)',
+      'Visual, audio and written hooks all present in the opening moment',
+      'An open loop is set early and resolves at the proof beat',
+      'Ending does a job — clear direct CTA, not just a stop',
+      'CTA points to the right destination'
     ];
   }
 
@@ -819,6 +826,8 @@ COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medici
 CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, TikTok Creative Codes, Meta lift studies):
 - PRODUCT LOCK (hard rule): the ONLY product or object that may ever be a scene's subject is the LACALUT ${s.name} pack itself (the real GERMAN pack with its WHITE cap — a TOOTHPASTE TUBE/BOX unless the reference is a mouthwash bottle) or its SIGNATURE FORMULA ELEMENTS: ${fx.join(', ')||'clean water and minerals'}. NEVER build a scene around a toothbrush, a different product, generic props or stock objects. Every scene must be unmistakably about ${s.name} or its benefit.
 - HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
+- RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a sound effect, music-beat change or deliberate beat of silence — write it into "motion"), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds; a cut with no sound change breaks the rhythm.
+- OPEN LOOP, CLOSE LATE: scene 1 opens a curiosity question ("how is that possible?") that is deliberately NOT answered until the PROOF beat in the second-to-last scene. Revealing the answer early kills the reason to keep watching. The FINAL scene closes with a clear direct CTA — never a loop-back ending (that is for organic, not paid).
 - SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
 - Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
 - "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene.
@@ -854,6 +863,7 @@ Return ONLY valid JSON:
       brief: sc.visual + '. ' + sc.motion });
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
     p += `VOICEOVER (must be spoken aloud in this scene — these EXACT words and nothing else): "${sc.vo}" — voice: ${sb.voice}. Natural pacing, finishing within the scene. `;
+    p += `AUDIO RESET: open this scene on a fresh audio cue (a subtle sound effect, music-beat change or a deliberate beat of silence) landing together with the visual change — never carry the previous scene's audio bed in unchanged. `;
     p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
     p += `The supplied reference image shows the REAL product — it anchors branding fidelity, but compose this scene to its own visual brief rather than copying the reference composition.`;
     return p;
