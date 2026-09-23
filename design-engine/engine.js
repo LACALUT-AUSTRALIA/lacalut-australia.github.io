@@ -548,10 +548,7 @@ ${basePrompt}
       motion:'MOTION: a retro nostalgic feel — soft VHS/film grain, gentle light leaks and a warm vintage colour grade, slow analogue camera drift on the product. Stylised and characterful, but the pack and any text stay clean and readable.' },
     cinematic_ad:   { label:'🎥 Cinematic Ad', model:'VEO3', emoji:'🎥',
       desc:'Dramatic story-grade hero moment (top quality).',
-      motion:'MOTION: a dramatic cinematic ad moment — moody directional lighting, a smooth crafted camera move (crane, slow track or dolly), rich colour grade and a strong hero beat on the product. Film-grade, premium and emotive; motion smooth and deliberate.' },
-    draft_test:     { label:'🧪 Quick Test (cheapest)', model:'FAL_SEEDANCE', emoji:'🧪',
-      desc:'Cheapest rough clip to validate an idea before a hero render.',
-      motion:'MOTION: a simple clean product move — a gentle push-in or slow rotation with light shimmer. Keep it straightforward; this is a fast, low-cost test to check the concept before committing to a premium render.' }
+      motion:'MOTION: a dramatic cinematic ad moment — moody directional lighting, a smooth crafted camera move (crane, slow track or dolly), rich colour grade and a strong hero beat on the product. Film-grade, premium and emotive; motion smooth and deliberate.' }
   };
   function videoStyle(id){ return VIDEO_STYLES[id] || null; }
 
