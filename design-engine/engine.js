@@ -846,7 +846,7 @@ ${basePrompt}
   // Look-conditional traps — fantasy VFX elements are fine in polished/cinematic looks but
   // scream "AI ad" inside a lo-fi handheld world (the navy-wall/shard-stream failure, 23/09).
   const SB_LOFI_RULES = [
-    { re:/\b(crystals?|shards?|minerals?|salt[- ]?mineral\w*|rock clusters?|ribbons? of light|particles?|shimmer\w*|glow(ing)? panels?|light panels?|levitat\w+|floating elements?)\b/i, f:['visual','motion'], msg:'fantasy VFX element in a LO-FI ad — lo-fi realism means real everyday objects only; formula VFX belongs to polished/cinematic looks' },
+    { re:/\b(crystals?(?![- ]clear)|shards?|minerals?|salt[- ]?mineral\w*|rock clusters?|ribbons? of light|particles?|shimmer\w*|glow(ing)? panels?|light panels?|levitat\w+|floating elements?)\b/i, f:['visual','motion'], msg:'fantasy VFX element in a LO-FI ad — lo-fi realism means real everyday objects only; formula VFX belongs to polished/cinematic looks' },
     { re:/\b(studio|architectural|matte (navy|black|dark) walls?|colour-?blocked|color-?blocked|seamless backdrop|minimalist shelv\w+|branded wall|set design)\b/i, f:['visual','motion'], msg:'designed-set wording in a LO-FI ad — the world must be a real everyday location (home bathroom, kitchen, bedroom) in natural light' }
   ];
   const SB_WORLD_RULES = [
