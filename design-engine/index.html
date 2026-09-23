@@ -119,7 +119,7 @@
     <div class="adv">
       <label class="row"><input type="checkbox" id="advNeg" checked> Compliance negative-prompt (auto-block disease claims)</label>
       <div class="guide" id="negPreview"></div>
-      <label class="row"><input type="checkbox" id="oneUp"> 🚀 One-Up Loop — refine the prompt to its pinnacle (max scroll-stopper)</label>
+      <label class="row"><input type="checkbox" id="oneUp" checked> 🚀 One-Up Loop — refine the prompt to its pinnacle (max scroll-stopper)</label>
       <div class="guide">Drafts the brief, then one-ups it again and again until it can't get better — only then generates. Applies to every strategy.</div>
     </div>
 
@@ -178,7 +178,7 @@
     <div id="vRefBox" class="guide"></div>
 
     <div class="adv">
-      <label class="row"><input type="checkbox" id="vOneUp"> 🚀 One-Up Loop — refine each scene brief to its pinnacle</label>
+      <label class="row"><input type="checkbox" id="vOneUp" checked> 🚀 One-Up Loop — refine each scene brief to its pinnacle</label>
     </div>
 
     <div id="vCost" style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin:10px 0"></div>
@@ -419,7 +419,7 @@ function loadPreset(name){
   curBrain=p.brain||null; renderBrains();
   if($('brief')) $('brief').value=p.brief||'';
   if(p.render && $('render')) $('render').value=p.render;
-  if($('oneUp')) $('oneUp').checked=!!p.oneUp;
+  if($('oneUp')) $('oneUp').checked=true;   // Quan 23/09: One-Up ALWAYS ON — presets can never switch it off
   if(p.qty && $('qty')) $('qty').value=p.qty;
   renderSlots();
 }
@@ -783,7 +783,7 @@ function openVideo(cardId){ getRec(cardId).then(rec=>{ if(!rec){alert('No card.'
 
     <label style="font-weight:700;font-size:13px">5 · Motion note <span style="font-weight:400;color:#888">(optional)</span></label>
     <textarea id="vidBrief" rows="2" placeholder="e.g. slow push-in on the cap, gentle sparkle" style="width:100%;margin:4px 0 8px;padding:8px;border:1px solid #ddd;border-radius:8px;font:inherit"></textarea>
-    <label class="row" style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:12px"><input type="checkbox" id="vidOneUp"> 🚀 One-Up Loop — refine the motion brief to its pinnacle</label>
+    <label class="row" style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:12px"><input type="checkbox" id="vidOneUp" checked> 🚀 One-Up Loop — refine the motion brief to its pinnacle</label>
 
     <div id="vidCost" style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin-bottom:6px"></div>
     <div id="vidStatus" style="font-size:12px;color:#7c3aed;min-height:16px;margin-bottom:8px"></div>
