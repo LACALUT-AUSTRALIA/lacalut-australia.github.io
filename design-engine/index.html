@@ -978,6 +978,8 @@ function openStoryboardApproval(sb, ctx){
     </div>
     <label style="font-weight:700;font-size:12px">VOICE (kept identical in every scene)</label>
     <input type="text" id="sbVoice" value="${escv(sb.voice)}" style="width:100%;margin:3px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px">
+    <label style="font-weight:700;font-size:12px">CHARACTER (the ONE person allowed on screen — identical in every scene)</label>
+    <input type="text" id="sbChar" value="${escv(sb.character)}" style="width:100%;margin:3px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px">
     <input type="hidden" id="sbAnchor" value="${escv(sb.styleAnchor)}">
     ${scenes.map((sc,i)=>`
     <div style="border:1px solid ${sc.flagged?'#b3261e':'#e3d9ff'};border-radius:10px;padding:10px 12px;margin-bottom:10px;background:${sc.flagged?'#fdf3f3':'#fbfaff'}">
@@ -1013,7 +1015,7 @@ async function rewriteSbScene(i){ const dlg=$('sbdlg'); if(!dlg) return;
     sbFieldFlag($('sbVO'+i));
   }catch(e){ alert('Rewrite failed: '+e.message); } }
 function collectStoryboard(){ const dlg=$('sbdlg'); const sb=dlg._sb;
-  sb.hook=$('sbHook').value.trim(); sb.cta=$('sbCta').value.trim(); sb.voice=$('sbVoice').value.trim(); sb.styleAnchor=$('sbAnchor').value;
+  sb.hook=$('sbHook').value.trim(); sb.cta=$('sbCta').value.trim(); sb.voice=$('sbVoice').value.trim(); sb.character=($('sbChar')?$('sbChar').value.trim():sb.character||''); sb.styleAnchor=$('sbAnchor').value;
   sb.scenes=sb.scenes.map((sc,i)=>({ ...sc, visual:$('sbV'+i).value.trim(), motion:$('sbM'+i).value.trim(), vo:$('sbVO'+i).value.trim(), text:$('sbT'+i).value.trim() }));
   return E.sanitizeStoryboard(sb); }
 async function approveStoryboard(){
@@ -1026,7 +1028,7 @@ async function approveStoryboard(){
   dlg.remove();
   const sku=ctx.sku;
   const rec={ id:'v'+Date.now(), sku:curSku, refSku:sku, type:vType, style:vStyleId, modelKey:model, aspect:vAspect,
-    duration:sb.scenes.length*8, storyboard:{hook:sb.hook,cta:sb.cta,voice:sb.voice,styleAnchor:sb.styleAnchor},
+    duration:sb.scenes.length*8, storyboard:{hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',styleAnchor:sb.styleAnchor},
     sbScenes:sb.scenes, scenes:[], stitchedBlob:null, status:'rendering',
     cost:est, qc:[...E.videoQCChecklist(),'VO matches the approved script — no drifted claims','Voice consistent across scenes'],
     oneUp:$('vOneUp').checked, ts:Date.now() };
