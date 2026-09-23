@@ -713,6 +713,7 @@ HARD RULES you must keep from the base brief, never trade away for drama:
 - COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
 - Keep the SKU angle lock and any banned-word constraints from the base brief.
 - Any on-screen text: Australian English only, minimal, correctly spelled, never garbled.
+- CONTENT LOCK: NEVER add any action, object, prop, person or shot the base brief does not contain — no brushing, no drinking, no new products, no cutaways, nothing materialising; one-up the CRAFT (light, timing, camera feel), never the content.
 - Keep the exact aspect ratio and duration.
 
 Return ONLY valid JSON: {"prompt":"<final pinnacle motion brief, fully self-contained>"}.
@@ -1093,7 +1094,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     // STEP 2 — animate the still (motion only)
     let prompt = buildScenePrompt(opts);
     if(stillOk) prompt += ' The supplied image IS the finished opening frame of this scene — composition, product and caption are final; add MOTION only, never redraw or re-letter anything.';
-    if(opts.oneUp){
+    if(opts.oneUp && !opts.scene){   // one-up ONLY for single-image animate flow — an approved storyboard scene is already the locked creative
       const bans = [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])];
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
     }
