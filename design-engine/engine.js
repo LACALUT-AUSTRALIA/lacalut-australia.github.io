@@ -751,14 +751,22 @@ ${basePrompt}
     range:     { label:'🎁 Range',             style:'cinematic_ad',   narrative:'a range line-up ad: the LACALUT family shown together as one cohesive premium set, each product distinct, one shared brand story' }
   };
 
+  // VO-safe sanitise: replace DISEASE NOUNS only. Never blind-replace verbs like
+  // "treats" — spoken copy uses them innocently ("cold treats" = ice cream), and the
+  // generation prompt already bans therapeutic verbs. Survivors get flagged instead.
+  const VO_REPLACEMENTS = [
+    [/periodontal disease/gi,'gum health issues'],[/periodontitis/gi,'gum health issues'],
+    [/gingivitis/gi,'gum problems'],[/gum disease/gi,'gum problems'],[/halitosis/gi,'bad breath']
+  ];
+  function sanitizeCopyVO(t){ if(!t) return t; let out=String(t); for(const [re,rep] of VO_REPLACEMENTS) out=out.replace(re,rep); return out; }
   // Sanitise every written line of a storyboard; flag any scene whose copy
   // still carries a banned disease/therapeutic term (UI blocks approval).
   function sanitizeStoryboard(sb){
     if(!sb) return sb;
-    sb.hook = sanitizeCopy(sb.hook||''); sb.cta = sanitizeCopy(sb.cta||'');
+    sb.hook = sanitizeCopyVO(sb.hook||''); sb.cta = sanitizeCopyVO(sb.cta||'');
     (sb.scenes||[]).forEach(sc=>{
-      sc.vo = sanitizeCopy(sc.vo||''); sc.text = sanitizeCopy(sc.text||'');
-      sc.visual = sanitizeCopy(sc.visual||''); sc.motion = sc.motion||'';
+      sc.vo = sanitizeCopyVO(sc.vo||''); sc.text = sanitizeCopyVO(sc.text||'');
+      sc.visual = sanitizeCopyVO(sc.visual||''); sc.motion = sc.motion||'';
       sc.flagged = hasBannedTerm(sc.vo)||hasBannedTerm(sc.text)||hasBannedTerm(sc.visual);
     });
     sb.flagged = hasBannedTerm(sb.hook)||hasBannedTerm(sb.cta)||(sb.scenes||[]).some(s=>s.flagged);
@@ -780,7 +788,7 @@ ${basePrompt}
 
 AD FORMAT: ${type.narrative}.
 VISUAL LOOK (every scene): ${st?st.motion:''}
-${brief?`CLIENT BRIEF (highest priority): ${brief}.`:''}
+${brief?`CLIENT BRIEF (highest priority): ${brief}.`:`ANGLE SEED (no client brief given — build the ad around this proven angle): "${pickRand(g.headlines,1)[0]||s.say}".`}
 
 COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
 - NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.

@@ -170,8 +170,8 @@
     <div class="modes" id="vDurs" style="margin-top:6px"></div>
     <div class="guide">15s+ ads are written as 8-second scenes — you approve the full script before anything spends.</div>
 
-    <h3 style="margin-top:12px">Brief</h3>
-    <textarea id="vBrief" rows="3" placeholder="What is this ad about? e.g. The anatomy of Aktiv — how the German formula cares for your gum line, ending on the tube"></textarea>
+    <h3 style="margin-top:12px">Brief <span style="color:#999;font-weight:600">optional</span></h3>
+    <textarea id="vBrief" rows="2" placeholder="Optional — leave blank and the engine builds the ad on a proven angle for this SKU. Or steer it: e.g. The anatomy of Aktiv, ending on the tube"></textarea>
 
     <h3 style="margin-top:12px">Product reference</h3>
     <div id="vRefBox" class="guide"></div>
@@ -936,8 +936,7 @@ async function runVideoGenerate(){
   if(!KEYS.gemini){ openKeys(); return; }
   const sku=vRefSku();
   if(!packshotFor(sku)){ alert('Upload a '+(SKUS[sku]?.name||sku)+' packshot to the reference library first (✏️ Edit Image → library).'); return; }
-  const brief=$('vBrief').value.trim();
-  if(!brief){ alert('Add a Brief — what is this ad about?'); return; }
+  const brief=$('vBrief').value.trim();   // optional — empty = engine picks a proven angle for the SKU
   const btn=$('vGenBtn'); btn.disabled=true; btn.textContent='✍️ Writing script…';
   try{
     const sb=await E.generateStoryboard({ sku, type:vType, style:vStyleId, seconds:vDurSec, brief, apiKey:KEYS.gemini });
@@ -961,10 +960,12 @@ function openStoryboardApproval(sb, ctx){
     <h3 style="margin:0 0 4px;color:#7c3aed">✍️ Approve the Script — ${scenes.length} scenes · ${scenes.length*8}s</h3>
     <div style="font-size:12px;color:#666;margin-bottom:12px">Edit anything below. Nothing renders (or spends) until you hit Approve.</div>
     <div id="sbWarn" style="display:none;background:#fdeaea;border:1px solid #e7b3b0;color:#b3261e;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">⚠️ A red field contains a blocked disease/therapeutic claim — reword it before approving.</div>
-    <label style="font-weight:700;font-size:12px">HOOK</label>
-    <input type="text" id="sbHook" value="${escv(sb.hook)}" oninput="sbFieldFlag(this)" style="width:100%;margin:3px 0 8px;padding:8px;border:1px solid #ddd;border-radius:8px">
-    <label style="font-weight:700;font-size:12px">CALL TO ACTION</label>
-    <input type="text" id="sbCta" value="${escv(sb.cta)}" oninput="sbFieldFlag(this)" style="width:100%;margin:3px 0 8px;padding:8px;border:1px solid #ddd;border-radius:8px">
+    <div style="display:flex;gap:10px;margin-bottom:8px">
+      <div style="flex:1"><label style="font-weight:700;font-size:12px">HOOK</label>
+        <input type="text" id="sbHook" value="${escv(sb.hook)}" oninput="sbFieldFlag(this)" style="width:100%;margin-top:3px;padding:8px;border:1px solid #ddd;border-radius:8px"></div>
+      <div style="flex:1"><label style="font-weight:700;font-size:12px">CALL TO ACTION</label>
+        <input type="text" id="sbCta" value="${escv(sb.cta)}" oninput="sbFieldFlag(this)" style="width:100%;margin-top:3px;padding:8px;border:1px solid #ddd;border-radius:8px"></div>
+    </div>
     <label style="font-weight:700;font-size:12px">VOICE (kept identical in every scene)</label>
     <input type="text" id="sbVoice" value="${escv(sb.voice)}" style="width:100%;margin:3px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px">
     <input type="hidden" id="sbAnchor" value="${escv(sb.styleAnchor)}">
@@ -975,7 +976,7 @@ function openStoryboardApproval(sb, ctx){
       <label style="font-size:11px;font-weight:700;color:#555">WE SEE</label>
       <textarea id="sbV${i}" rows="2" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.visual)}</textarea>
       <label style="font-size:11px;font-weight:700;color:#555">MOTION</label>
-      <textarea id="sbM${i}" rows="1" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.motion)}</textarea>
+      <textarea id="sbM${i}" rows="3" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.motion)}</textarea>
       <label style="font-size:11px;font-weight:700;color:#555">VOICEOVER (spoken — max ~20 words)</label>
       <input type="text" id="sbVO${i}" value="${escv(sc.vo)}" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid ${sc.flagged?'#b3261e':'#ddd'};border-radius:7px;font-size:12px">
       <label style="font-size:11px;font-weight:700;color:#555">ON-SCREEN TEXT (optional)</label>
