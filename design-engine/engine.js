@@ -576,6 +576,7 @@ ${basePrompt}
   }
 
   function blobToDataUrl(blob){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
+  function base64ToBlob(b64,mime){ const bin=atob(b64); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return new Blob([u8],{type:mime||'video/mp4'}); }
 
   /* ═══ VIDEO PROMPT BUILD (DOM-free) — mirrors buildPrompt's brand + compliance locks ═══ */
   function buildVideoPrompt(opts){
@@ -641,12 +642,13 @@ ${basePrompt}
                  || resp.generatedVideos || [];
     const first = samples[0] || {};
     const inline = first.video?.bytesBase64Encoded || first.bytesBase64Encoded;
-    if(inline) return 'data:video/mp4;base64,'+inline;
+    if(inline) return opts.asBlob ? base64ToBlob(inline,'video/mp4') : 'data:video/mp4;base64,'+inline;
     const uri = first.video?.uri || first.video?.videoUri || first.uri;
     if(!uri) throw new Error('No video returned by Veo');
     const dl = await fetch(uri + (uri.indexOf('?')>=0?'&':'?') + 'key=' + apiKey);
     if(!dl.ok) throw new Error('Could not download the rendered video (HTTP '+dl.status+')');
-    return await blobToDataUrl(await dl.blob());
+    const blob = await dl.blob();
+    return opts.asBlob ? blob : await blobToDataUrl(blob);
   }
 
   /* ═══ FAL.AI CALL (Seedance / Kling) — swappable alt engine ═══ */
@@ -673,7 +675,8 @@ ${basePrompt}
     if(!out) throw new Error('Video timed out.');
     const url = out.video?.url || out.video_url || out.videos?.[0]?.url;
     if(!url) throw new Error('No video URL from fal');
-    return await blobToDataUrl(await (await fetch(url)).blob());
+    const blob = await (await fetch(url)).blob();
+    return opts.asBlob ? blob : await blobToDataUrl(blob);
   }
 
   /* ═══ ONE-UP LOOP (video motion brief) ═══ */
@@ -730,8 +733,153 @@ ${basePrompt}
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:opts.seconds, apiKey:opts.apiKey });
     }
     const call = m.route==='fal' ? callFalVideo : callVeoVideo;
-    const video = await call({ prompt, imgDataUrl:opts.imgDataUrl, model:modelKey, seconds:opts.seconds, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey, onProgress:opts.onProgress });
+    const video = await call({ prompt, imgDataUrl:opts.imgDataUrl, model:modelKey, seconds:opts.seconds, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey, onProgress:opts.onProgress, asBlob:opts.asBlob });
     return { video, prompt, model:m.label, modelKey, style:opts.style||null, seconds:opts.seconds||8, aspectRatio:opts.aspectRatio||'9:16', cost:videoCostEstimate({model:modelKey,seconds:opts.seconds}), qc:videoQCChecklist() };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     STORYBOARD PIPELINE — 15–32s ads from scratch (Video Generator mode).
+     Gemini text writes an N-scene script → user approves (compliance-
+     gated, editable) → scenes render sequentially on Veo (native VO
+     audio) → clips stitch client-side (ffmpeg injected by the UI).
+     ═══════════════════════════════════════════════════════════════════ */
+  const VIDEO_TYPES = {
+    product_ad:{ label:'📦 Product Ad',        style:'product_motion', narrative:'a premium product-hero ad: hook on the everyday problem, product reveal, benefit beats, closing call to action' },
+    explainer: { label:'🦷 Anatomy Explainer', style:'slow_reveal',    narrative:'a stylised cosmetic explainer: clean premium 3D-style tooth/gum/formula visuals (NEVER clinical, graphic, medical-diagram or disease imagery), how the product FEELS and what it cosmetically does, ending on the product and a call to action' },
+    ugc:       { label:'🤳 UGC',               style:'ugc_handheld',   narrative:'an authentic UGC testimonial: a believable everyday Australian talking to camera, holding the real product at its true real-world size, casual home/bathroom setting, casual native language' },
+    hyper:     { label:'⚡ Hyper Motion',      style:'hyper_motion',   narrative:'a fast, punchy, high-energy hype cut around the product — kinetic camera, speed ramps, bold beats, thumb-stopping energy' },
+    range:     { label:'🎁 Range',             style:'cinematic_ad',   narrative:'a range line-up ad: the LACALUT family shown together as one cohesive premium set, each product distinct, one shared brand story' }
+  };
+
+  // Sanitise every written line of a storyboard; flag any scene whose copy
+  // still carries a banned disease/therapeutic term (UI blocks approval).
+  function sanitizeStoryboard(sb){
+    if(!sb) return sb;
+    sb.hook = sanitizeCopy(sb.hook||''); sb.cta = sanitizeCopy(sb.cta||'');
+    (sb.scenes||[]).forEach(sc=>{
+      sc.vo = sanitizeCopy(sc.vo||''); sc.text = sanitizeCopy(sc.text||'');
+      sc.visual = sanitizeCopy(sc.visual||''); sc.motion = sc.motion||'';
+      sc.flagged = hasBannedTerm(sc.vo)||hasBannedTerm(sc.text)||hasBannedTerm(sc.visual);
+    });
+    sb.flagged = hasBannedTerm(sb.hook)||hasBannedTerm(sb.cta)||(sb.scenes||[]).some(s=>s.flagged);
+    return sb;
+  }
+
+  async function generateStoryboard(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const model = opts.textModel || 'gemini-2.5-flash';
+    const sku = opts.sku||'aktiv', s = SKUS[sku]||SKUS['aktiv'], g = getGuide(sku);
+    const type = VIDEO_TYPES[opts.type]||VIDEO_TYPES.product_ad;
+    const st = videoStyle(opts.style)||videoStyle(type.style);
+    const nScenes = Math.max(2, Math.min(5, Math.round((opts.seconds||32)/8)));
+    const bans = [...GLOBAL_BAN, ...s.ban];
+    const brief = (opts.brief||'').trim();
+    const meta =
+`You are a world-class performance-video creative director for LACALUT ${s.name} (premium 100-year German pharmacy oral-care brand, tone: ${s.voice}). Write a ${nScenes*8}-second Australian social-media video AD as EXACTLY ${nScenes} scenes of 8 seconds each.
+
+AD FORMAT: ${type.narrative}.
+VISUAL LOOK (every scene): ${st?st.motion:''}
+${brief?`CLIENT BRIEF (highest priority): ${brief}.`:''}
+
+COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
+- NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.
+- The ONLY ingredients that may ever be named are "fluoride" and "hydroxyapatite" — NEVER strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc, or any ion label (Sr2+, K+).
+- This product's ONLY allowed benefit angle: ${s.say}. Never borrow another LACALUT product's angle.
+- All copy in plain Australian English, everyday language, cosmetic feel-benefits only.
+
+CRAFT RULES:
+- Scene 1 opens on a scroll-stopping HOOK. Final scene ends on the product + call to action.
+- Each scene's "vo" is the EXACT spoken voiceover line — max 20 words, natural spoken Australian English, fits comfortably in 8 seconds.
+- "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene.
+- "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim.
+- "visual" describes what we see; "motion" the camera/subject movement; "text" optional short on-screen text ("" if none).
+- The real GERMAN pack with its WHITE cap is the only product ever shown.
+
+Return ONLY valid JSON:
+{"hook":"...","cta":"...","voice":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
+    let lastErr;
+    for(let attempt=0; attempt<2; attempt++){
+      try{
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+          { method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:1.0 } }) });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error?.message||('HTTP '+res.status));
+        const txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+        const sb = JSON.parse(txt);
+        if(!sb || !Array.isArray(sb.scenes) || sb.scenes.length<2) throw new Error('Storyboard came back malformed');
+        sb.scenes = sb.scenes.slice(0,5).map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+        return sanitizeStoryboard(sb);
+      }catch(e){ lastErr=e; }
+    }
+    throw new Error('Could not write the script: '+(lastErr?lastErr.message:'unknown'));
+  }
+
+  /* ═══ SCENE PROMPT — buildVideoPrompt + continuity + exact VO lock ═══ */
+  function buildScenePrompt(opts){
+    const sb = opts.storyboard, sc = opts.scene, i = opts.index, total = opts.total;
+    let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true,
+      brief: sc.visual + '. ' + sc.motion });
+    p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
+    p += `VOICEOVER (must be spoken aloud in this scene — these EXACT words and nothing else): "${sc.vo}" — voice: ${sb.voice}. Natural pacing, finishing within the scene. `;
+    p += sc.text ? `ON-SCREEN TEXT (exact wording): "${sc.text}". ` : `NO on-screen text in this scene. `;
+    p += `The supplied reference image shows the REAL product — it anchors branding fidelity, but compose this scene to its own visual brief rather than copying the reference composition.`;
+    return p;
+  }
+
+  function storyboardCostEstimate(opts){
+    const m = videoModel(opts.model||'VEO3_FAST');
+    const scenes = Math.max(1, opts.scenes||3);
+    const perSceneUsd = +(m.usdPerSec*8).toFixed(2);
+    return { scenes, perSceneUsd, usd:+(perSceneUsd*scenes).toFixed(2), model:(opts.model||'VEO3_FAST'), label:m.label, usdPerSec:m.usdPerSec };
+  }
+
+  /* ═══ SEQUENTIAL RENDER — one scene, then the whole board ═══ */
+  async function renderScene(opts){
+    const prompt = buildScenePrompt(opts);
+    const call = videoModel(opts.model||'VEO3_FAST').route==='fal' ? callFalVideo : callVeoVideo;
+    const videoBlob = await call({ prompt, imgDataUrl:opts.refImgDataUrl, model:opts.model||'VEO3_FAST',
+      seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
+      onProgress:opts.onProgress||function(){}, asBlob:true });
+    return { prompt, videoBlob };
+  }
+
+  async function renderStoryboard(opts){
+    const sb = opts.storyboard, total = sb.scenes.length;
+    const onScene = opts.onScene || function(){};
+    const out = { scenes:[], cost:storyboardCostEstimate({scenes:total, model:opts.model}), qc:videoQCChecklist(), failedAt:null };
+    for(let i=0;i<total;i++){
+      const sc = sb.scenes[i];
+      try{
+        onScene(i, total, '🎬 scene '+(i+1)+'/'+total+' starting…');
+        const r = await renderScene({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
+          style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl,
+          apiKey:opts.apiKey, falKey:opts.falKey, onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
+        out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob });
+      }catch(e){
+        out.failedAt = i; out.error = e.message;
+        return out;   // partial — paid scenes are never lost; UI offers a retry from scene i
+      }
+    }
+    return out;
+  }
+
+  /* ═══ STITCH — concat N same-codec mp4s via an injected ffmpeg.wasm instance ═══ */
+  async function stitchScenes(ffmpeg, blobs, opts){
+    const reencodeOnFail = !opts || opts.reencodeOnFail !== false;
+    const names = [];
+    for(let i=0;i<blobs.length;i++){ const n='s'+i+'.mp4'; names.push(n);
+      await ffmpeg.writeFile(n, new Uint8Array(await blobs[i].arrayBuffer())); }
+    await ffmpeg.writeFile('list.txt', new TextEncoder().encode(names.map(n=>"file '"+n+"'").join('\n')));
+    let code = await ffmpeg.exec(['-f','concat','-safe','0','-i','list.txt','-c','copy','out.mp4']);
+    if(code!==0 && reencodeOnFail){
+      code = await ffmpeg.exec(['-f','concat','-safe','0','-i','list.txt','-c:v','libx264','-preset','ultrafast','-crf','23','-c:a','aac','-movflags','+faststart','out.mp4']);
+    }
+    if(code!==0) throw new Error('Stitch failed (ffmpeg exit '+code+')');
+    const data = await ffmpeg.readFile('out.mp4');
+    try{ for(const n of names) await ffmpeg.deleteFile(n); await ffmpeg.deleteFile('list.txt'); await ffmpeg.deleteFile('out.mp4'); }catch(e){}
+    return new Blob([data.buffer||data], {type:'video/mp4'});
   }
 
   global.LacalutEngine = {
@@ -741,9 +889,11 @@ ${basePrompt}
     buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
     oneUpImagePrompt,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm,
-    VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES,
+    VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
     videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
-    buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo
+    buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
+    sanitizeStoryboard, generateStoryboard, buildScenePrompt, storyboardCostEstimate,
+    renderScene, renderStoryboard, stitchScenes
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = global.LacalutEngine;

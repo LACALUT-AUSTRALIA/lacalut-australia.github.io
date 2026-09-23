@@ -87,12 +87,13 @@
   <button class="btn" onclick="openKeys()">🔑 Keys</button>
 </header>
 
+<div class="tabs" id="topMode" style="border-bottom:none;padding-bottom:0"></div>
 <div class="tabs" id="tabs" style="border-bottom:none;padding-bottom:4px"></div>
 <div class="tabs" id="ptypes" style="padding-top:0"></div>
 
 <div class="wrap">
   <!-- LEFT: generation settings -->
-  <div class="panel">
+  <div class="panel" id="imgPanel">
     <div class="modes" id="modes"></div>
 
     <h3>Product photos <span id="slotCount" style="color:#999;font-weight:600;"></span></h3>
@@ -142,6 +143,41 @@
     </div>
 
     <button class="btn primary" id="genBtn" style="width:100%;padding:12px" onclick="runGenerate()">✨ Generate</button>
+  </div>
+
+  <!-- LEFT (video mode): Video Generator settings -->
+  <div class="panel" id="vidPanel" style="display:none">
+    <h3 style="margin-top:0">Video type</h3>
+    <div class="modes" id="vTypes"></div>
+
+    <h3 style="margin-top:12px">Look</h3>
+    <div class="guide">Each look auto-picks the best engine — override below only if you know why.</div>
+    <div id="vStyles" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"></div>
+    <div id="vStyleDesc" class="guide" style="min-height:14px"></div>
+
+    <div class="fmt" style="margin-top:10px">
+      <span>Engine:</span>
+      <select id="vModel" onchange="vCostLine()" style="flex:1;padding:7px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px"></select>
+    </div>
+    <div id="vFalRow" style="display:none;margin:4px 0"><input type="password" id="vFalKey" placeholder="fal.ai API key (Seedance / Kling only)" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px"></div>
+
+    <h3 style="margin-top:12px">Format</h3>
+    <div class="modes" id="vAspects"></div>
+    <div class="modes" id="vDurs" style="margin-top:6px"></div>
+    <div class="guide">15s+ ads are written as 8-second scenes — you approve the full script before anything spends.</div>
+
+    <h3 style="margin-top:12px">Brief</h3>
+    <textarea id="vBrief" rows="3" placeholder="What is this ad about? e.g. The anatomy of Aktiv — how the German formula cares for your gum line, ending on the tube"></textarea>
+
+    <h3 style="margin-top:12px">Product reference</h3>
+    <div id="vRefBox" class="guide"></div>
+
+    <div class="adv">
+      <label class="row"><input type="checkbox" id="vOneUp"> 🚀 One-Up Loop — refine each scene brief to its pinnacle</label>
+    </div>
+
+    <div id="vCost" style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin:10px 0"></div>
+    <button class="btn primary" id="vGenBtn" style="width:100%;padding:12px" onclick="runVideoGenerate()">✍️ Write Script</button>
   </div>
 
   <!-- RIGHT: output -->
@@ -339,7 +375,10 @@ function renderNeg(){
     : [...GLOBAL_BAN, ...SKUS[curSku].ban];
   $('negPreview').textContent = $('advNeg').checked ? 'Blocking: '+bans.join(', ') : 'Off — no compliance guard.';
 }
-function renderTitle(){ const nm = curSku==='multi'?'Multi-SKU':SKUS[curSku].name; $('skuTitle').textContent = `${nm} · ${PTYPE_LABEL[curPtype]||curPtype} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
+function renderTitle(){ const nm = curSku==='multi'?'Multi-SKU':SKUS[curSku].name;
+  $('skuTitle').textContent = (typeof curTop!=='undefined'&&curTop==='video')
+    ? `${nm} · 🎬 Video Ads`
+    : `${nm} · ${PTYPE_LABEL[curPtype]||curPtype} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
 function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes('3-pro')?'Pro 🍌':'Nano 🍌';
   if(KEYS.gemini){ b.className='kbadge ok'; b.textContent='✓ '+mdl; } else { b.className='kbadge no'; b.textContent='⚠ No Gemini key'; } }
 
@@ -497,10 +536,11 @@ async function dl(url,name){ if(/pmax/i.test(name) || curMode==='pmax'){ url=awa
 /* ═══ PERSISTENT GALLERY (IndexedDB — survives refresh) ═══ */
 let _db;
 function idb(){ return new Promise((res,rej)=>{ if(_db)return res(_db);
-  const r=indexedDB.open('lacalut_de',2);
+  const r=indexedDB.open('lacalut_de',3);
   r.onupgradeneeded=e=>{ const db=e.target.result;
     if(!db.objectStoreNames.contains('gens')){ const s=db.createObjectStore('gens',{keyPath:'id'}); s.createIndex('sku','sku'); }
-    if(!db.objectStoreNames.contains('reflib')){ db.createObjectStore('reflib',{keyPath:'key'}); } };
+    if(!db.objectStoreNames.contains('reflib')){ db.createObjectStore('reflib',{keyPath:'key'}); }
+    if(!db.objectStoreNames.contains('vids')){ const v=db.createObjectStore('vids',{keyPath:'id'}); v.createIndex('sku','sku'); } };
   r.onsuccess=e=>{ _db=e.target.result; res(_db); }; r.onerror=()=>rej(r.error); }); }
 
 /* ═══ PRODUCT REFERENCE LIBRARY (persistent, click-to-select) ═══ */
@@ -775,6 +815,285 @@ async function dlVideo(id,name){ const rec=await getRec(id); if(!rec||!rec.video
 async function showVideoQC(id){ const rec=await getRec(id); const qc=(rec&&rec.videoQC)||E.videoQCChecklist();
   alert('🎬 VIDEO QC — eyeball the clip against each:\n\n'+qc.map(q=>'☐ '+q).join('\n')); }
 
+/* ═══════════════════════════════════════════════════════════════════
+   VIDEO GENERATOR MODE — Higgsfield-style from-scratch 15–40s ads.
+   Toggle at the top swaps the left panel + gallery; the image flow is
+   untouched. Storyboard: script → approval (compliance-gated, editable)
+   → hard spend gate → sequential Veo scenes → ffmpeg.wasm stitch.
+   ═══════════════════════════════════════════════════════════════════ */
+let curTop = localStorage.getItem('de_top_mode') || 'image';   // 'image' | 'video'
+let vType  = localStorage.getItem('de_vid_type')  || 'product_ad';
+let vStyleId = localStorage.getItem('de_vid_style') || (E.VIDEO_TYPES[vType]?.style || 'product_motion');
+let vAspect  = localStorage.getItem('de_vid_ar')   || '9:16';
+let vDurSec  = parseInt(localStorage.getItem('de_vid_dur') || '32');
+const V_DURS=[16,24,32,40];
+const V_MODELS=['VEO3_FAST','VEO3'];   // storyboards need native VO audio → Veo only (Seedance/Kling live on the card 🎬 button)
+
+function renderTopMode(){ $('topMode').innerHTML =
+  `<button class="tab ${curTop==='image'?'active':''}" onclick="pickTopMode('image')">🖼️ Image Generator</button>`+
+  `<button class="tab ${curTop==='video'?'active':''}" onclick="pickTopMode('video')">🎬 Video Generator</button>`; }
+function pickTopMode(m){ curTop=m; localStorage.setItem('de_top_mode',m);
+  $('imgPanel').style.display = m==='image'?'':'none';
+  $('vidPanel').style.display = m==='video'?'':'none';
+  $('ptypes').style.display   = m==='image'?'':'none';
+  renderTopMode(); renderTitle();
+  if(m==='video'){ renderVidPanel(); renderVideoGallery(curSku); } else { renderGallery(curSku); } }
+
+function renderVidPanel(){
+  $('vTypes').innerHTML = Object.entries(E.VIDEO_TYPES).map(([k,t])=>
+    `<button class="mode ${k===vType?'active':''}" onclick="pickVType('${k}')">${t.label}</button>`).join('');
+  $('vStyles').innerHTML = Object.entries(E.VIDEO_STYLES).map(([k,s])=>
+    `<button class="vstyle ${k===vStyleId?'on':''}" data-k="${k}" onclick="pickVStyle('${k}')" style="text-align:left;padding:8px 10px;border:1px solid #ddd;border-radius:9px;background:#fafafa;cursor:pointer;font-size:12px;font-weight:700">${s.label}</button>`).join('');
+  $('vStyleDesc').textContent = E.VIDEO_STYLES[vStyleId]?.desc||'';
+  $('vModel').innerHTML = V_MODELS.map(k=>{ const mm=E.VIDEO_MODELS[k];
+    return `<option value="${k}">${mm.label} — ${mm.job}</option>`; }).join('');
+  $('vAspects').innerHTML = ['9:16','16:9'].map(a=>
+    `<button class="mode ${a===vAspect?'active':''}" onclick="pickVAspect('${a}')">${E.VIDEO_ASPECTS[a]}</button>`).join('')
+    + `<button class="mode" disabled title="Square isn't supported by Veo (needed for voiceover) — use 9:16 or 16:9" style="opacity:.4;cursor:not-allowed">${E.VIDEO_ASPECTS['1:1']}</button>`;
+  $('vDurs').innerHTML = V_DURS.map(d=>
+    `<button class="mode ${d===vDurSec?'active':''}" onclick="pickVDur(${d})">${d}s<br><small style="opacity:.7">${d/8} scenes</small></button>`).join('');
+  renderVRefBox(); vCostLine();
+}
+function pickVType(k){ vType=k; localStorage.setItem('de_vid_type',k);
+  const st=E.VIDEO_TYPES[k]; if(st&&st.style){ vStyleId=st.style; localStorage.setItem('de_vid_style',vStyleId); }
+  renderVidPanel(); }
+function pickVStyle(k){ vStyleId=k; localStorage.setItem('de_vid_style',k); renderVidPanel(); }
+function pickVAspect(a){ vAspect=a; localStorage.setItem('de_vid_ar',a); renderVidPanel(); }
+function pickVDur(d){ vDurSec=d; localStorage.setItem('de_vid_dur',String(d)); renderVidPanel(); }
+function vRefSku(){ return curSku==='multi' ? ((typeof multiSel!=='undefined'&&multiSel[0])||'aktiv') : curSku; }
+function renderVRefBox(){ const sku=vRefSku(); const p=packshotFor(sku);
+  $('vRefBox').innerHTML = p
+    ? `<div style="display:flex;gap:8px;align-items:center"><img src="${p}" style="width:52px;height:52px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><span>Real ${SKUS[sku]?.name||sku} packshot anchors every scene — pack fidelity guaranteed.</span></div>`
+    : `⚠️ No packshot saved for ${SKUS[sku]?.name||sku} — upload one in ✏️ Edit Image → reference library first.`; }
+function vCostLine(){ const scenes=vDurSec/8; const model=$('vModel')?$('vModel').value:'VEO3_FAST';
+  const est=E.storyboardCostEstimate({scenes,model});
+  $('vCost').innerHTML=`💸 <b>~US$${est.usd.toFixed(2)}</b> to render — ${scenes} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}.<br><span style="color:#888">Writing the script first is ~free; nothing renders until you approve it.</span>`; }
+
+/* ── vids store helpers (Blob-native; base64 fallback for Safari) ── */
+async function vidPut(rec){ const db=await idb(); return new Promise(async(res,rej)=>{
+  try{ const t=db.transaction('vids','readwrite'); t.objectStore('vids').put(rec); t.oncomplete=res; t.onerror=()=>rej(t.error); }
+  catch(e){ rej(e); } }).catch(async e=>{
+    // Safari Blob-in-IDB fallback: re-encode blobs as base64 strings once
+    const clone={...rec, enc:'b64', scenes:await Promise.all((rec.scenes||[]).map(async s=>({...s, videoBlob:s.videoBlob instanceof Blob? await blobToB64(s.videoBlob):s.videoBlob}))),
+      stitchedBlob: rec.stitchedBlob instanceof Blob? await blobToB64(rec.stitchedBlob):rec.stitchedBlob };
+    const db2=await idb(); return new Promise((res,rej)=>{ const t=db2.transaction('vids','readwrite'); t.objectStore('vids').put(clone); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }); }
+function blobToB64(b){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(b); }); }
+function b64ToBlobV(d){ const m=/^data:([^;]+);base64,(.*)$/.exec(d||''); if(!m) return null; const bin=atob(m[2]); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i); return new Blob([u8],{type:m[1]}); }
+function vidBlob(x){ return x instanceof Blob ? x : (typeof x==='string'? b64ToBlobV(x): null); }
+async function vidsBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('vids','readonly'); const rq=t.objectStore('vids').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
+async function getVid(id){ const db=await idb(); const t=db.transaction('vids','readonly'); const rq=t.objectStore('vids').get(id); return new Promise(r=>{ rq.onsuccess=()=>r(rq.result); rq.onerror=()=>r(null); }); }
+async function vidDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('vids','readwrite'); t.objectStore('vids').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
+
+/* ── ffmpeg.wasm loader (single-threaded core — no COOP/COEP needed; lazy, ~31MB one-off) ── */
+const FF_BASE='https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd';
+const FF_CORE='https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd';
+const FF_UTIL='https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js';
+let _ffmpeg=null;
+function injectScript(src){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=()=>rej(new Error('Could not load '+src)); document.head.appendChild(s); }); }
+async function loadFFmpeg(onProg){
+  if(_ffmpeg) return _ffmpeg;
+  onProg && onProg('🧵 loading stitcher (~31 MB, one-off)…');
+  await injectScript(FF_BASE+'/ffmpeg.js'); await injectScript(FF_UTIL);
+  const FF = window.FFmpegWASM, FU = window.FFmpegUtil;
+  const ff = new FF.FFmpeg();
+  const [coreURL, wasmURL, classWorkerURL] = await Promise.all([
+    FU.toBlobURL(FF_CORE+'/ffmpeg-core.js','text/javascript'),
+    FU.toBlobURL(FF_CORE+'/ffmpeg-core.wasm','application/wasm'),
+    FU.toBlobURL(FF_BASE+'/814.ffmpeg.js','text/javascript')
+  ]);
+  await ff.load({ coreURL, wasmURL, classWorkerURL });
+  return (_ffmpeg=ff);
+}
+
+/* ── generate flow: script → approval → render → stitch ── */
+async function runVideoGenerate(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  const sku=vRefSku();
+  if(!packshotFor(sku)){ alert('Upload a '+(SKUS[sku]?.name||sku)+' packshot to the reference library first (✏️ Edit Image → library).'); return; }
+  const brief=$('vBrief').value.trim();
+  if(!brief){ alert('Add a Brief — what is this ad about?'); return; }
+  const btn=$('vGenBtn'); btn.disabled=true; btn.textContent='✍️ Writing script…';
+  try{
+    const sb=await E.generateStoryboard({ sku, type:vType, style:vStyleId, seconds:vDurSec, brief, apiKey:KEYS.gemini });
+    openStoryboardApproval(sb, {sku, brief});
+  }catch(e){ alert('Script failed: '+e.message); }
+  btn.disabled=false; btn.textContent='✍️ Write Script';
+}
+
+function sbFieldFlag(el){ const bad=E.hasBannedTerm(el.value); el.style.borderColor=bad?'#b3261e':''; el.style.background=bad?'#fdeaea':'';
+  const dlg=$('sbdlg'); if(!dlg) return;
+  const anyBad=[...dlg.querySelectorAll('textarea,input[type=text]')].some(x=>E.hasBannedTerm(x.value));
+  const ab=$('sbApprove'); if(ab){ ab.disabled=anyBad; ab.title=anyBad?'A line still contains a blocked claim — edit the red field first':''; }
+  const w=$('sbWarn'); if(w) w.style.display=anyBad?'block':'none'; }
+function openStoryboardApproval(sb, ctx){
+  const scenes=sb.scenes, model=$('vModel').value;
+  const est=E.storyboardCostEstimate({scenes:scenes.length, model});
+  const escv=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const dlg=document.createElement('div'); dlg.id='sbdlg';
+  dlg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  dlg.innerHTML=`<div style="background:#fff;border-radius:14px;padding:22px;max-width:760px;width:94%;font-family:system-ui;max-height:92vh;overflow:auto">
+    <h3 style="margin:0 0 4px;color:#7c3aed">✍️ Approve the Script — ${scenes.length} scenes · ${scenes.length*8}s</h3>
+    <div style="font-size:12px;color:#666;margin-bottom:12px">Edit anything below. Nothing renders (or spends) until you hit Approve.</div>
+    <div id="sbWarn" style="display:none;background:#fdeaea;border:1px solid #e7b3b0;color:#b3261e;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">⚠️ A red field contains a blocked disease/therapeutic claim — reword it before approving.</div>
+    <label style="font-weight:700;font-size:12px">HOOK</label>
+    <input type="text" id="sbHook" value="${escv(sb.hook)}" oninput="sbFieldFlag(this)" style="width:100%;margin:3px 0 8px;padding:8px;border:1px solid #ddd;border-radius:8px">
+    <label style="font-weight:700;font-size:12px">CALL TO ACTION</label>
+    <input type="text" id="sbCta" value="${escv(sb.cta)}" oninput="sbFieldFlag(this)" style="width:100%;margin:3px 0 8px;padding:8px;border:1px solid #ddd;border-radius:8px">
+    <label style="font-weight:700;font-size:12px">VOICE (kept identical in every scene)</label>
+    <input type="text" id="sbVoice" value="${escv(sb.voice)}" style="width:100%;margin:3px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px">
+    <input type="hidden" id="sbAnchor" value="${escv(sb.styleAnchor)}">
+    ${scenes.map((sc,i)=>`
+    <div style="border:1px solid ${sc.flagged?'#b3261e':'#e3d9ff'};border-radius:10px;padding:10px 12px;margin-bottom:10px;background:${sc.flagged?'#fdf3f3':'#fbfaff'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="color:#7c3aed">Scene ${i+1}</b><span style="font-size:11px;color:#888">8s</span><span style="flex:1"></span>
+        <button onclick="rewriteSbScene(${i})" title="Rewrite just this scene" style="border:1px solid #ddd;background:#fff;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer">♻️ Rewrite</button></div>
+      <label style="font-size:11px;font-weight:700;color:#555">WE SEE</label>
+      <textarea id="sbV${i}" rows="2" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.visual)}</textarea>
+      <label style="font-size:11px;font-weight:700;color:#555">MOTION</label>
+      <textarea id="sbM${i}" rows="1" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.motion)}</textarea>
+      <label style="font-size:11px;font-weight:700;color:#555">VOICEOVER (spoken — max ~20 words)</label>
+      <input type="text" id="sbVO${i}" value="${escv(sc.vo)}" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid ${sc.flagged?'#b3261e':'#ddd'};border-radius:7px;font-size:12px">
+      <label style="font-size:11px;font-weight:700;color:#555">ON-SCREEN TEXT (optional)</label>
+      <input type="text" id="sbT${i}" value="${escv(sc.text)}" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 0;padding:7px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+    </div>`).join('')}
+    <div style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin:4px 0 12px">💸 Approving renders <b>${scenes.length} scenes × 8s = ~US$${est.usd.toFixed(2)}</b> on ${est.label}.</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('sbdlg').remove()" style="padding:9px 16px;border:1px solid #ccc;background:#fff;border-radius:8px;cursor:pointer">Cancel</button>
+      <button id="sbApprove" onclick="approveStoryboard()" style="padding:9px 18px;border:0;background:#c8102e;color:#fff;border-radius:8px;font-weight:700;cursor:pointer">🔴 Approve &amp; Render — ~US$${est.usd.toFixed(2)}</button>
+    </div></div>`;
+  document.body.appendChild(dlg);
+  dlg._sb=sb; dlg._ctx=ctx;
+  const firstBad=dlg.querySelector('textarea,input'); sbFieldFlag(firstBad);
+}
+async function rewriteSbScene(i){ const dlg=$('sbdlg'); if(!dlg) return;
+  const b=dlg.querySelectorAll('button'); const ctx=dlg._ctx;
+  try{
+    const sb2=await E.generateStoryboard({ sku:ctx.sku, type:vType, style:vStyleId, seconds:vDurSec, brief:ctx.brief+' (rewrite scene '+(i+1)+' fresh)', apiKey:KEYS.gemini });
+    const sc=sb2.scenes[i]||sb2.scenes[sb2.scenes.length-1];
+    $('sbV'+i).value=sc.visual; $('sbM'+i).value=sc.motion; $('sbVO'+i).value=sc.vo; $('sbT'+i).value=sc.text;
+    sbFieldFlag($('sbVO'+i));
+  }catch(e){ alert('Rewrite failed: '+e.message); } }
+function collectStoryboard(){ const dlg=$('sbdlg'); const sb=dlg._sb;
+  sb.hook=$('sbHook').value.trim(); sb.cta=$('sbCta').value.trim(); sb.voice=$('sbVoice').value.trim(); sb.styleAnchor=$('sbAnchor').value;
+  sb.scenes=sb.scenes.map((sc,i)=>({ ...sc, visual:$('sbV'+i).value.trim(), motion:$('sbM'+i).value.trim(), vo:$('sbVO'+i).value.trim(), text:$('sbT'+i).value.trim() }));
+  return E.sanitizeStoryboard(sb); }
+async function approveStoryboard(){
+  const dlg=$('sbdlg'); const ctx=dlg._ctx; const sb=collectStoryboard();
+  if(sb.flagged){ alert('A line still contains a blocked claim — fix the red field.'); sbFieldFlag(dlg.querySelector('input')); return; }
+  const model=$('vModel').value;
+  const est=E.storyboardCostEstimate({scenes:sb.scenes.length, model});
+  // 🔴 HARD SPEND GATE
+  if(!confirm(`This will spend ~US$${est.usd.toFixed(2)} (${sb.scenes.length} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}).\n\nRender the ad now?`)) return;
+  dlg.remove();
+  const sku=ctx.sku;
+  const rec={ id:'v'+Date.now(), sku:curSku, refSku:sku, type:vType, style:vStyleId, modelKey:model, aspect:vAspect,
+    duration:sb.scenes.length*8, storyboard:{hook:sb.hook,cta:sb.cta,voice:sb.voice,styleAnchor:sb.styleAnchor},
+    sbScenes:sb.scenes, scenes:[], stitchedBlob:null, status:'rendering',
+    cost:est, qc:[...E.videoQCChecklist(),'VO matches the approved script — no drifted claims','Voice consistent across scenes'],
+    oneUp:$('vOneUp').checked, ts:Date.now() };
+  await vidPut(rec);
+  renderVideoGallery(curSku);
+  renderScenesInto(rec.id, 0);
+}
+/* Sequential scene render with per-scene persistence — a crash/network-fail never loses paid scenes. */
+async function renderScenesInto(recId, startAt){
+  const rec=await getVid(recId); if(!rec) return;
+  const total=rec.sbScenes.length; const ref=packshotFor(rec.refSku||rec.sku);
+  const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
+  for(let i=startAt;i<total;i++){
+    try{
+      prog('🎬 scene '+(i+1)+'/'+total+' starting…');
+      const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
+        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, apiKey:KEYS.gemini,
+        onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
+      rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob };
+      await vidPut(rec);   // bank every paid scene immediately
+    }catch(e){ rec.status='partial'; rec.failedAt=i; rec.error=e.message; await vidPut(rec); renderVideoGallery(curSku); return; }
+  }
+  // stitch
+  try{
+    prog('🧵 stitching '+total+' scenes…');
+    const ff=await loadFFmpeg(prog);
+    rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)));
+    rec.status='done'; rec.failedAt=null;
+  }catch(e){ rec.status='done'; rec.stitchFailed=e.message; }   // scenes still playable + downloadable
+  await vidPut(rec); renderVideoGallery(curSku);
+  try{ toast('🎬 Video ad ready'); }catch(_){}
+}
+async function resumeVidRender(recId){ const rec=await getVid(recId); if(!rec) return;
+  const remaining=rec.sbScenes.length-(rec.failedAt||0);
+  const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
+  if(!confirm(`Resume from scene ${(rec.failedAt||0)+1} — spends ~US$${(est.usd*remaining).toFixed(2)} for the remaining ${remaining} scene(s). Scenes already rendered are kept free.`)) return;
+  rec.status='rendering'; await vidPut(rec); renderVideoGallery(curSku); renderScenesInto(recId, rec.failedAt||0); }
+async function retryStitch(recId){ const rec=await getVid(recId); if(!rec) return;
+  try{ const ff=await loadFFmpeg(); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob))); rec.stitchFailed=null; await vidPut(rec); renderVideoGallery(curSku); }
+  catch(e){ alert('Stitch failed again: '+e.message); } }
+async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) return;
+  const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
+  // 🔴 spend gate — single scene
+  if(!confirm(`Re-roll scene ${i+1} only — spends ~US$${est.usd.toFixed(2)}.`)) return;
+  const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
+  try{
+    const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
+      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:packshotFor(rec.refSku||rec.sku), apiKey:KEYS.gemini, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
+    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob };
+    rec.stitchedBlob=null; await vidPut(rec);
+    try{ const ff=await loadFFmpeg(prog); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob))); }catch(e){ rec.stitchFailed=e.message; }
+    await vidPut(rec); renderVideoGallery(curSku);
+  }catch(e){ alert('Re-roll failed: '+e.message); } }
+
+/* ── video gallery ── */
+let _vidUrls=[];
+function vidUrl(b){ const blob=vidBlob(b); if(!blob) return ''; const u=URL.createObjectURL(blob); _vidUrls.push(u); return u; }
+async function renderVideoGallery(sku){
+  if(curTop==='video') renderVRefBox();   // keep the packshot box in sync when the SKU tab changes
+  _vidUrls.forEach(u=>{ try{URL.revokeObjectURL(u);}catch(_){}}); _vidUrls=[];
+  const recs=(await vidsBySku(sku)).sort((a,b)=>b.ts-a.ts);
+  const nm=sku==='multi'?'Multi-SKU':(SKUS[sku]?.name||sku);
+  $('output').innerHTML = recs.length ? recs.map(vidCardHTML).join('')
+    : `<div class="empty">No video ads for ${nm} yet. Pick a video type + look, write the brief → ✍️ Write Script.</div>`;
+}
+function vidCardHTML(rec){
+  const tLabel=E.VIDEO_TYPES[rec.type]?.label||rec.type, sLabel=E.VIDEO_STYLES[rec.style]?.label||rec.style;
+  const mLabel=E.VIDEO_MODELS[rec.modelKey]?.label||rec.modelKey;
+  const arCss=(rec.aspect||'9:16').replace(':','/');
+  let media, note='';
+  if(rec.status==='rendering'){
+    media=`<div style="aspect-ratio:${arCss};background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;padding:12px;text-align:center" id="vprog-${rec.id}">⏳ rendering…</div>`;
+  } else if(rec.stitchedBlob){
+    media=`<video src="${vidUrl(rec.stitchedBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
+  } else if(rec.scenes&&rec.scenes.filter(Boolean).length){
+    const first=rec.scenes.find(Boolean);
+    media=`<video id="vpl-${rec.id}" src="${vidUrl(first.videoBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
+    note=`<div class="warn" style="margin:6px 8px 0">🧵 Not stitched — scenes play one by one. <button class="iconbtn" onclick="playVidPlaylist('${rec.id}')">▶️ Play all</button> <button class="iconbtn" onclick="retryStitch('${rec.id}')">🧵 Retry stitch</button></div>`;
+  } else media=`<div style="aspect-ratio:${arCss};background:#f0f0f0"></div>`;
+  if(rec.status==='partial') note=`<div class="warn" style="margin:6px 8px 0">⚠️ Stopped at scene ${(rec.failedAt||0)+1} (${rec.error||''}). Paid scenes are safe. <button class="iconbtn" onclick="resumeVidRender('${rec.id}')">▶️ Resume</button></div>`;
+  const strip=(rec.scenes||[]).filter(Boolean).map((s,i)=>`<div style="display:flex;gap:6px;align-items:center;font-size:11px;border-top:1px dashed var(--line);padding:5px 0">
+      <b style="color:#7c3aed">S${i+1}</b><span style="flex:1;color:#666">${(s.vo||'').replace(/</g,'&lt;')}</span>
+      <button class="iconbtn" title="download this scene" onclick="dlVidScene('${rec.id}',${i})">⬇</button>
+      <button class="iconbtn" title="re-roll this scene" onclick="rerollVidScene('${rec.id}',${i})">♻️</button></div>`).join('');
+  return `<div class="card" id="${rec.id}" data-sku="${rec.sku}">${media}${note}
+    <div class="meta"><span class="t">🎬 ${rec.duration}s · ${tLabel} · ${sLabel} · ${mLabel} · ~US$${(rec.cost?.usd||0).toFixed(2)}</span>
+      <button class="iconbtn" title="download MP4" onclick="dlVid('${rec.id}')">⬇</button>
+      <button class="iconbtn" title="QC checklist" onclick="showVidQC('${rec.id}')">✅</button>
+      <button class="iconbtn" title="delete" onclick="delVid('${rec.id}')">🗑</button></div>
+    ${strip?`<div style="padding:0 10px 8px">${strip}</div>`:''}
+    <button class="markybtn" disabled title="Video → Facy coming in v2 — download the MP4 and upload manually for now" style="background:#ddd;color:#888;cursor:not-allowed;border-color:#ddd">🚀 Send to Facy (v2)</button>
+  </div>`;
+}
+function playVidPlaylist(recId){ getVid(recId).then(rec=>{ if(!rec) return;
+  const v=$('vpl-'+recId); if(!v) return; let i=0;
+  const play=()=>{ v.src=vidUrl(rec.scenes[i].videoBlob); v.play(); };
+  v.onended=()=>{ i++; if(i<rec.scenes.length) play(); };
+  i=0; play(); }); }
+async function dlVid(id){ const rec=await getVid(id); if(!rec) return;
+  if(rec.stitchedBlob){ const a=document.createElement('a'); a.href=vidUrl(rec.stitchedBlob); a.download='lacalut-'+rec.sku+'-'+rec.duration+'s.mp4'; a.click(); return; }
+  (rec.scenes||[]).filter(Boolean).forEach((s,i)=>{ const a=document.createElement('a'); a.href=vidUrl(s.videoBlob); a.download='lacalut-'+rec.sku+'-scene'+(i+1)+'.mp4'; a.click(); }); }
+async function dlVidScene(id,i){ const rec=await getVid(id); const s=rec&&rec.scenes[i]; if(!s) return;
+  const a=document.createElement('a'); a.href=vidUrl(s.videoBlob); a.download='lacalut-'+rec.sku+'-scene'+(i+1)+'.mp4'; a.click(); }
+async function showVidQC(id){ const rec=await getVid(id); const qc=(rec&&rec.qc)||E.videoQCChecklist();
+  alert('🎬 VIDEO QC — eyeball the ad against each:\n\n'+qc.map(q=>'☐ '+q).join('\n')); }
+async function delVid(id){ if(!confirm('Delete this video ad (and all its scenes)?')) return; await vidDel(id); renderVideoGallery(curSku); }
+
 // ── Drag-to-reorder gallery cards (pull any two side-by-side for comparison) ──
 let _dragCard=null;
 function initCardDnD(){
@@ -901,7 +1220,9 @@ async function sendToFacy(cardId){
 }
 function galleryOrderKey(sku){ return 'de_order_'+sku+'_'+curPtype; }   // drag order scoped per formula tab + product type
 function saveGalleryOrder(sku){ const ids=[...$('output').querySelectorAll('.card')].map(c=>c.id); localStorage.setItem(galleryOrderKey(sku), JSON.stringify(ids)); }
-async function renderGallery(sku){ const all=await idbBySku(sku);
+async function renderGallery(sku){
+  if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
+  const all=await idbBySku(sku);
   const recs=all.filter(r=>ptypeOf(r)===curPtype);   // untagged legacy = toothpaste, never hidden
   const saved=JSON.parse(localStorage.getItem(galleryOrderKey(sku)) || localStorage.getItem('de_order_'+sku) || 'null');   // legacy order fallback
   if(saved && saved.length){ const pos=new Map(saved.map((id,i)=>[id,i]));
@@ -1087,7 +1408,7 @@ async function pushCardToMarky(cardId){
 /* ═══ INIT ═══ */
 renderTabs(); renderPtypes(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets('');
 migratePtype().then(()=>renderGallery(curSku));   // tag legacy gens as toothpaste first, then paint the gallery
-loadRefLib();
+loadRefLib().then(()=>{ renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // restore Image/Video mode (after refs load for the packshot box)
 $('advNeg').addEventListener('change',renderNeg);
 </script>
 </body>
