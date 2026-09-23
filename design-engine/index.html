@@ -974,9 +974,9 @@ function openStoryboardApproval(sb, ctx){
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="color:#7c3aed">Scene ${i+1}</b><span style="font-size:11px;color:#888">8s</span><span style="flex:1"></span>
         <button onclick="rewriteSbScene(${i})" title="Rewrite just this scene" style="border:1px solid #ddd;background:#fff;border-radius:7px;padding:4px 8px;font-size:11px;cursor:pointer">♻️ Rewrite</button></div>
       <label style="font-size:11px;font-weight:700;color:#555">WE SEE</label>
-      <textarea id="sbV${i}" rows="2" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.visual)}</textarea>
+      <textarea id="sbV${i}" rows="2" oninput="sbFieldFlag(this);autoGrowTA(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px;overflow:hidden;resize:none">${escv(sc.visual)}</textarea>
       <label style="font-size:11px;font-weight:700;color:#555">MOTION</label>
-      <textarea id="sbM${i}" rows="3" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px">${escv(sc.motion)}</textarea>
+      <textarea id="sbM${i}" rows="2" oninput="autoGrowTA(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid #ddd;border-radius:7px;font:inherit;font-size:12px;overflow:hidden;resize:none">${escv(sc.motion)}</textarea>
       <label style="font-size:11px;font-weight:700;color:#555">VOICEOVER (spoken — max ~20 words)</label>
       <input type="text" id="sbVO${i}" value="${escv(sc.vo)}" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 6px;padding:7px;border:1px solid ${sc.flagged?'#b3261e':'#ddd'};border-radius:7px;font-size:12px">
       <label style="font-size:11px;font-weight:700;color:#555">ON-SCREEN TEXT (optional)</label>
@@ -989,8 +989,11 @@ function openStoryboardApproval(sb, ctx){
     </div></div>`;
   document.body.appendChild(dlg);
   dlg._sb=sb; dlg._ctx=ctx;
+  dlg.querySelectorAll('textarea').forEach(autoGrowTA);   // every box opens at full height — no clipped lines, no dragging
   const firstBad=dlg.querySelector('textarea,input'); sbFieldFlag(firstBad);
 }
+// Auto-grow a textarea to fit its content exactly.
+function autoGrowTA(el){ if(!el) return; el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
 async function rewriteSbScene(i){ const dlg=$('sbdlg'); if(!dlg) return;
   const b=dlg.querySelectorAll('button'); const ctx=dlg._ctx;
   try{

@@ -758,7 +758,8 @@ ${basePrompt}
     [/periodontal disease/gi,'gum health issues'],[/periodontitis/gi,'gum health issues'],
     [/gingivitis/gi,'gum problems'],[/gum disease/gi,'gum problems'],[/halitosis/gi,'bad breath']
   ];
-  function sanitizeCopyVO(t){ if(!t) return t; let out=String(t); for(const [re,rep] of VO_REPLACEMENTS) out=out.replace(re,rep); return out; }
+  function sanitizeCopyVO(t){ if(!t) return t; let out=String(t); for(const [re,rep] of VO_REPLACEMENTS) out=out.replace(re,rep);
+    return out.replace(/([a-z])([A-Z])/g,'$1 $2'); }   // un-jam model joins like "AktivAvailable" → "Aktiv Available"
   // Sanitise every written line of a storyboard; flag any scene whose copy
   // still carries a banned disease/therapeutic term (UI blocks approval).
   function sanitizeStoryboard(sb){
