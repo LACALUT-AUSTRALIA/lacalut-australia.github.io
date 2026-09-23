@@ -877,17 +877,42 @@ Return ONLY valid JSON:
   }
 
   /* ═══ SEQUENTIAL RENDER — one scene, then the whole board ═══ */
+  /* Two-step scene render (the Higgsfield-fidelity fix): Veo treats its input image as
+     the literal FIRST FRAME — feeding it a bare packshot + a different scene brief makes
+     it redraw (and mangle) the pack. So: STEP 1 pin fidelity by generating the scene's
+     opening STILL with the image engine (packshot refs = source of truth, caption baked
+     in, text accurate); STEP 2 hand Veo that finished still and ask for MOTION only. */
   async function renderScene(opts){
+    const sc = opts.scene, sb = opts.storyboard;
+    const s = SKUS[opts.sku]||SKUS['aktiv'];
+    const g = getGuide(opts.sku);
+    const onProg = opts.onProgress||function(){};
+    // STEP 1 — scene still, pack-accurate
+    let still = opts.refImgDataUrl, stillOk = false;
+    try{
+      onProg('🖼️ composing scene still…');
+      let sp = `Cinematic opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
+      sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
+      sp += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, high-contrast, instantly readable on a phone, correctly spelled. ` : `No on-screen text. `;
+      sp += `If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text, WHITE cap; never invent, garble or translate pack text; keep pack fine-print softly out of focus. `;
+      sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
+      sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal premium finish, composed with headroom for motion.`;
+      still = await callGemini({ prompt:sp, productImgs:[opts.refImgDataUrl].filter(Boolean), styleImgs:[],
+        render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+      stillOk = true;
+    }catch(e){ /* fall back to animating the raw packshot rather than failing the scene */ }
+    // STEP 2 — animate the still (motion only)
     let prompt = buildScenePrompt(opts);
+    if(stillOk) prompt += ' The supplied image IS the finished opening frame of this scene — composition, product and caption are final; add MOTION only, never redraw or re-letter anything.';
     if(opts.oneUp){
       const bans = [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])];
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
     }
     const call = videoModel(opts.model||'VEO3_FAST').route==='fal' ? callFalVideo : callVeoVideo;
-    const videoBlob = await call({ prompt, imgDataUrl:opts.refImgDataUrl, model:opts.model||'VEO3_FAST',
+    const videoBlob = await call({ prompt, imgDataUrl:still, model:opts.model||'VEO3_FAST',
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
-      onProgress:opts.onProgress||function(){}, asBlob:true });
-    return { prompt, videoBlob };
+      onProgress:onProg, asBlob:true });
+    return { prompt, videoBlob, still: stillOk ? still : null };
   }
 
   async function renderStoryboard(opts){

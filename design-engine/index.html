@@ -1037,7 +1037,7 @@ async function renderScenesInto(recId, startAt){
       const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
         style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, apiKey:KEYS.gemini, oneUp:rec.oneUp,
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
-      rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob };
+      rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null };
       await vidPut(rec);   // bank every paid scene immediately
     }catch(e){ rec.status='partial'; rec.failedAt=i; rec.error=e.message; await vidPut(rec); renderVideoGallery(curSku); return; }
   }
@@ -1067,7 +1067,7 @@ async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) 
   try{
     const r=await E.renderScene({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
       style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:packshotFor(rec.refSku||rec.sku), apiKey:KEYS.gemini, oneUp:rec.oneUp, onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
-    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob };
+    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null };
     rec.stitchedBlob=null; await vidPut(rec);
     try{ const ff=await loadFFmpeg(prog); rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob))); }catch(e){ rec.stitchFailed=e.message; }
     await vidPut(rec); renderVideoGallery(curSku);
@@ -1092,15 +1092,16 @@ function vidCardHTML(rec){
   if(rec.status==='rendering'){
     media=`<div style="aspect-ratio:${arCss};background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;padding:12px;text-align:center" id="vprog-${rec.id}">⏳ rendering…</div>`;
   } else if(rec.stitchedBlob){
-    media=`<video src="${vidUrl(rec.stitchedBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
+    media=`<video id="vmain-${rec.id}" src="${vidUrl(rec.stitchedBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
   } else if(rec.scenes&&rec.scenes.filter(Boolean).length){
     const first=rec.scenes.find(Boolean);
-    media=`<video id="vpl-${rec.id}" src="${vidUrl(first.videoBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
-    note=`<div class="warn" style="margin:6px 8px 0">🧵 Not stitched — scenes play one by one. <button class="iconbtn" onclick="playVidPlaylist('${rec.id}')">▶️ Play all</button> <button class="iconbtn" onclick="retryStitch('${rec.id}')">🧵 Retry stitch</button></div>`;
+    media=`<video id="vmain-${rec.id}" src="${vidUrl(first.videoBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
+    note=`<div class="warn" style="margin:6px 8px 0">🧵 Not stitched${rec.stitchFailed?' — '+String(rec.stitchFailed).replace(/</g,'&lt;').slice(0,120):''}. <button class="iconbtn" onclick="playVidPlaylist('${rec.id}')">▶️ Play all</button> <button class="iconbtn" onclick="retryStitch('${rec.id}')">🧵 Retry stitch</button></div>`;
   } else media=`<div style="aspect-ratio:${arCss};background:#f0f0f0"></div>`;
   if(rec.status==='partial') note=`<div class="warn" style="margin:6px 8px 0">⚠️ Stopped at scene ${(rec.failedAt||0)+1} (${rec.error||''}). Paid scenes are safe. <button class="iconbtn" onclick="resumeVidRender('${rec.id}')">▶️ Resume</button></div>`;
   const strip=(rec.scenes||[]).filter(Boolean).map((s,i)=>`<div style="display:flex;gap:6px;align-items:center;font-size:11px;border-top:1px dashed var(--line);padding:5px 0">
       <b style="color:#7c3aed">S${i+1}</b><span style="flex:1;color:#666">${(s.vo||'').replace(/</g,'&lt;')}</span>
+      <button class="iconbtn" title="play just this scene in the player above" onclick="playVidScene('${rec.id}',${i})">▶</button>
       <button class="iconbtn" title="download this scene" onclick="dlVidScene('${rec.id}',${i})">⬇</button>
       <button class="iconbtn" title="re-roll this scene" onclick="rerollVidScene('${rec.id}',${i})">♻️</button></div>`).join('');
   return `<div class="card" id="${rec.id}" data-sku="${rec.sku}">${media}${note}
@@ -1113,10 +1114,13 @@ function vidCardHTML(rec){
   </div>`;
 }
 function playVidPlaylist(recId){ getVid(recId).then(rec=>{ if(!rec) return;
-  const v=$('vpl-'+recId); if(!v) return; let i=0;
+  const v=$('vmain-'+recId); if(!v) return; let i=0;
   const play=()=>{ v.src=vidUrl(rec.scenes[i].videoBlob); v.play(); };
   v.onended=()=>{ i++; if(i<rec.scenes.length) play(); };
   i=0; play(); }); }
+async function playVidScene(recId,i){ const rec=await getVid(recId); const s=rec&&rec.scenes&&rec.scenes[i]; if(!s) return;
+  const v=$('vmain-'+recId); if(!v){ alert('Player not ready.'); return; }
+  v.onended=null; v.src=vidUrl(s.videoBlob); v.play(); }
 async function dlVid(id){ const rec=await getVid(id); if(!rec) return;
   if(rec.stitchedBlob){ const a=document.createElement('a'); a.href=vidUrl(rec.stitchedBlob); a.download='lacalut-'+rec.sku+'-'+rec.duration+'s.mp4'; a.click(); return; }
   (rec.scenes||[]).filter(Boolean).forEach((s,i)=>{ const a=document.createElement('a'); a.href=vidUrl(s.videoBlob); a.download='lacalut-'+rec.sku+'-scene'+(i+1)+'.mp4'; a.click(); }); }
