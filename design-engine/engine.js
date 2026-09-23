@@ -706,7 +706,7 @@ HARD RULES you must keep from the base brief, never trade away for drama:
 - CHARACTER LOCK: if the base brief describes a person, keep EXACTLY that person — never swap, restyle or introduce a different actor.
 - WORLD LOCK: if the base brief names the ad's single location/set, keep EXACTLY that location — same surfaces, lighting mood and palette; add drama through camera and action, never by moving the scene somewhere else.
 - STYLE LOCK: keep the base brief's VISUAL LOOK exactly — a lo-fi handheld phone-shot look STAYS lo-fi (your "one-up" makes it a better lo-fi shot, more authentic and scroll-native); never upgrade it to cinematic studio polish.
-- AUDIO: ambient sound and music only — zero human vocal sounds of any kind (no speech, singing, whispering, humming, male or female voices, background chatter).
+- AUDIO: quiet ambience and subtle sound effects only — NO music (one continuous soundtrack is added in post) and zero human vocal sounds of any kind (no speech, singing, whispering, humming, male or female voices, background chatter).
 - MIRROR LOCK: no mirrored, reversed or doubled lettering anywhere, including reflections.
 - COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
 - Keep the SKU angle lock and any banned-word constraints from the base brief.
@@ -884,7 +884,7 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - PACK TEXT: never reveal, read or glide to the pack's SIDE or BACK text (it is German and must stay unreadable) — the front label facing camera is the only pack face ever shown.
 - FEEL-LANGUAGE ONLY: every benefit is sensory ("feels firm", "feels clean", "cared-for") — never physiological verbs (firms, strengthens, repairs, protects) and never "effective" or "results".
 - HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
-- RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a sound effect, music-beat change or deliberate beat of silence — write it into "motion"), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds; a cut with no sound change breaks the rhythm.
+- RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a SOUND EFFECT or deliberate beat of silence — write it into "motion"; never music, music is one continuous bed added in post), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds.
 - OPEN LOOP, CLOSE LATE: scene 1 opens a curiosity question ("how is that possible?") that is deliberately NOT answered until the PROOF beat in the second-to-last scene. Revealing the answer early kills the reason to keep watching. The FINAL scene closes with a clear direct CTA — never a loop-back ending (that is for organic, not paid).
 - SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
 - Each scene's "vo" is the EXACT spoken voiceover line — max 18 words, natural spoken Australian English, fits comfortably in 8 seconds.
@@ -972,7 +972,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
     p += sb.world ? `WORLD LOCK: the entire ad happens inside EXACTLY this one location (identical in every scene): ${sb.world} — same set, same surfaces, same lighting mood, same palette; only the camera and the action change between scenes; NEVER drift to a different location or background. ` : '';
     p += sb.character ? `CHARACTER LOCK: any person on screen is EXACTLY this person (identical in every scene): ${sb.character} — same face, hair, outfit; never a different actor. ` : '';
-    p += `AUDIO (mandatory): ambient sound design and music ONLY — ABSOLUTELY NO human vocal sounds of ANY kind: no spoken words, no voiceover, no narration, no talking, no singing, no whispering, no humming, no male voice, no female voice, no background chatter or crowd murmur (one consistent narrator is recorded separately and mixed over the final ad in post). Open the scene on a fresh audio cue (a subtle sound effect or music-beat change) landing together with the visual change. `;
+    p += `AUDIO (mandatory): quiet ambient room tone and subtle SOUND EFFECTS only — NO MUSIC of any kind (each scene composing its own music destroys the ad at the joins; one continuous soundtrack is mixed over the finished ad in post) and ABSOLUTELY NO human vocal sounds of ANY kind: no spoken words, no voiceover, no narration, no talking, no singing, no whispering, no humming, no male voice, no female voice, no background chatter or crowd murmur (one consistent narrator is recorded separately and mixed in post). Open the scene on a subtle sound-effect cue landing together with the visual change. `;
     p += sc.text ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene. `;
     p += `PACK MOTION LOCK: while the pack is on screen its printed front label stays FACING CAMERA, perfectly legible and pixel-stable — NEVER flip, spin, turn over or rotate the pack (a subtle tilt of a few degrees is the maximum); never warp, redraw, re-letter, mirror or reverse the label during motion; keep the pack's real tall slim proportions unchanged in every frame; the pack stays at its opening-frame SIZE — the camera never pushes so close that the label fills the frame. `;
     p += `LIQUID PHYSICS: any water or liquid has a visible natural source and obeys gravity — never emerging from rocks, crystals or objects; no small white beads, pearls or droplet-strings may form. `;
@@ -1198,6 +1198,10 @@ Return ONLY valid JSON:
     if(code!==0) throw new Error('Stitch failed (ffmpeg exit '+code+')');
     let final='out.mp4';
     const vo=(opts.voBlobs||[]).filter(Boolean);
+    // MUSIC LOCK — one continuous soundtrack for the whole ad (scenes render music-free;
+    // per-scene Veo music is roulette, exactly like the voices were)
+    let hasMusic=false;
+    if(opts.musicBlob){ try{ await ffmpeg.writeFile('music.wav', new Uint8Array(await opts.musicBlob.arrayBuffer())); hasMusic=true; }catch(e){} }
     if(vo.length===blobs.length){
       try{
         const secs=String(opts.secondsPerScene||8);
@@ -1207,11 +1211,19 @@ Return ONLY valid JSON:
         }
         const ins=[]; vo.forEach((_,i)=>{ ins.push('-i','p'+i+'.wav'); });
         await ffmpeg.exec([...ins,'-filter_complex', vo.map((_,i)=>'['+i+':a]').join('')+'concat=n='+vo.length+':v=0:a=1[vo]','-map','[vo]','vo.wav']);
-        // duck the scene ambience under the narrator
-        let mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-filter_complex','[0:a]volume=0.12[bg];[bg][1:a]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);   // bg ducked hard — stray Veo voices must never compete with the narrator
+        let mc=1;
+        if(hasMusic){   // ambience ducked hard + one music bed + narrator on top
+          mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-i','music.wav','-filter_complex','[0:a]volume=0.10[amb];[2:a]volume=0.35[mus];[amb][mus][1:a]amix=inputs=3:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);
+        }
+        if(mc!==0) mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-filter_complex','[0:a]volume=0.12[bg];[bg][1:a]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);   // bg ducked hard — stray Veo voices must never compete with the narrator
         if(mc!==0) mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-map','0:v','-map','1:a','-c:v','copy','-c:a','aac','final.mp4']);   // no ambience track — VO only
         if(mc===0) final='final.mp4';
       }catch(e){ /* narrator mix failed — ship the plain stitch rather than nothing */ }
+    } else if(hasMusic){
+      try{   // no narrator — still lay the one continuous bed under the ambience
+        const mc = await ffmpeg.exec(['-i','out.mp4','-i','music.wav','-filter_complex','[0:a]volume=0.15[amb];[1:a]volume=0.35[mus];[amb][mus]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);
+        if(mc===0) final='final.mp4';
+      }catch(e){}
     }
     const data = await ffmpeg.readFile(final);
     try{ for(const n of names) await ffmpeg.deleteFile(n); await ffmpeg.deleteFile('list.txt'); await ffmpeg.deleteFile('out.mp4'); if(final!=='out.mp4') await ffmpeg.deleteFile('final.mp4'); }catch(e){}
