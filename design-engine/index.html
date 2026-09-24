@@ -607,8 +607,12 @@ function compressRef(url,max){ return new Promise(res=>{ const img=new Image(); 
 function renderRefLibGrid(){
   const wrap=$('refLibGrid'); if(!wrap) return;
   const skus=Object.entries(SKUS);
-  const rows=REF_TYPES.filter(([t])=>(PTYPE_REF_ROWS[curPtype]||[]).includes(t));   // only rows for the active product type
-  let h=`<div style="font-size:11px;font-weight:700;color:var(--navy);margin:0 0 4px">${PTYPE_LABEL[curPtype]||curPtype} references — switch the product-type pill to see others</div>`;
+  // During an edit show the FULL library (all product types) so refs can mix toothpaste+mouthwash+toothbrush; otherwise filter to the active pill
+  const editing = typeof _editSrc!=='undefined' && _editSrc;
+  const rows=editing ? REF_TYPES : REF_TYPES.filter(([t])=>(PTYPE_REF_ROWS[curPtype]||[]).includes(t));
+  let h=editing
+    ? `<div style="font-size:11px;font-weight:700;color:var(--navy);margin:0 0 4px">All references (🦷 + 💧 + 🪥) — click to attach to this edit</div>`
+    : `<div style="font-size:11px;font-weight:700;color:var(--navy);margin:0 0 4px">${PTYPE_LABEL[curPtype]||curPtype} references — switch the product-type pill to see others</div>`;
   h+=`<div class="reflib" style="grid-template-columns:78px repeat(${skus.length},1fr)">`;
   h+=`<div></div>`+skus.map(([k,v])=>`<div class="refhdr">${v.name}</div>`).join('');
   for(const [type,tlabel] of rows){
