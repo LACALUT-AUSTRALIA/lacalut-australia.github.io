@@ -908,7 +908,7 @@ ${basePrompt}
       if(!String(sc.text||'').trim()) out.push('Scene '+(i+1)+': missing on-screen caption — SOUND-OFF law: every scene carries a short bold 3-7 word caption; the ad must fully work muted');
       const handHits=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(picks? up|sets? down|places?|reach(es|ing)?|dispens\w+|appl(y|ies|ying)|grabs?|lifts?|puts? down|lowers?)\b/gi)||[];
       // one action re-described ("dispenses… as she dispenses") is ONE action — count distinct verb stems
-      const handActs=[...new Set(handHits.map(a=>a.toLowerCase().replace(/(ing|ied|ies|ed|es|s)\b/,'').replace(/\s+(up|down)$/,'')))];
+      const handActs=[...new Set(handHits.map(a=>a.toLowerCase().replace(/(ing|ied|ies|ed|es|s)\b/,'').replace(/e\b/,'').replace(/\s+(up|down)$/,'')))];
       if(String(sc.motion||'').trim().length<60) out.push('Scene '+(i+1)+' MOTION: too thin ('+String(sc.motion||'').trim().length+' chars) — 8 seconds needs 2-3 distinct visual beats (angle change, action, cut-feel), never one static hold');
       if(handActs.length>=3) out.push('Scene '+(i+1)+': '+handActs.length+' hand actions ('+handActs.slice(0,4).join(', ')+') — max ONE simple hand action per scene; cut the choreography');
       const w=String(sc.vo||'').trim().split(/\s+/).filter(Boolean).length;
