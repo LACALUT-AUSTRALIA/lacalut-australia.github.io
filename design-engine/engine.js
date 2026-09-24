@@ -814,7 +814,7 @@ ${basePrompt}
     { re:/\b(pack|tube|box|product)\b[^.]{0,60}\b(rotat\w+|spins?|spinning|flips?|flipping|turns? (over|around))\b|\b(rotat\w+|spins?|spinning|flips?|flipping)\b[^.]{0,60}\b(pack|tube|box|product)\b/i, f:['visual','motion'], msg:'pack rotation — the pack never rotates; move the camera instead' },
     { re:/\b(effective(ly)?|firms(?! (&|and) cares)|firming|firmness|strengthens?|supports?|protect(s|ion|ive|ed)?|prevents?|fights?|combats?|repairs?|treat(s|ments?)?|cures?|heals?|regenerat\w*|clinical(ly)?|proven|health(y|ier)?(?![- ]look))\b/i, f:['vo','text'], msg:'efficacy/therapeutic wording — cosmetic feel-language only ("feels firm", "cared-for")' },
     { re:/\b(powder|vial|syringe|dropper)\b/i, f:['visual','motion'], msg:'powder/vial imagery — the safety filter reads white powder + glassware as drugs; use settling crystal shards with no hands instead' },
-    { re:/\b(around|orbit\w*|circle|circling|360)\b[^.]{0,40}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.]{0,40}\b(orbit\w*|360|circling)\b/i, f:['visual','motion'], msg:'camera circling the pack — exposes the German side/back text; keep the pack under a third of the frame with a static front-on camera instead' },
+    { re:/\b(around|orbit\w*|circle|circling|360)\b[^.]{0,40}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.]{0,40}\b(orbit\w*|360|circling)\b/i, f:['visual','motion'], msg:'camera or elements circling "around" the pack — the camera never orbits (exposes the German side/back text) and formula elements move NEAR the pack, never around/wrapping it; reword to "near the pack" with a static front-on camera' },
     { re:/\b(zoom|push)[^.]{0,25}\b(into|onto|toward)\b[^.]{0,20}\b(face|her face|his face|eyes|mouth|gaze|expression)\b/i, f:['visual','motion'], msg:'camera pushing into the face — nothing tighter than a chest-up framing on a person' },
     { re:/fade to black/i, f:['visual','motion'], msg:'fade-to-black — the final beat holds bright on the pack + CTA; never waste the close' },
     { re:/\bhands?\b[^.]{0,60}\b(mouth|lips|chin|jaw\w*|cheeks?|gums?|face|temple)\b|\b(mouth|lips|chin|jaw\w*|cheeks?|gums?|face|temple)\b[^.]{0,60}\bhands?\b/i, f:['visual','motion'], msg:'hand touching the mouth/face/jaw — hand-to-face contact renders badly; convey the feeling with expression only, hands may only steady the pack' },
@@ -887,7 +887,9 @@ ${basePrompt}
         if(m) out.push('Scene '+(i+1)+' '+f.toUpperCase()+': "'+m[0]+'" — '+r.msg);
       }
       if(!String(sc.text||'').trim()) out.push('Scene '+(i+1)+': missing on-screen caption — SOUND-OFF law: every scene carries a short bold 3-7 word caption; the ad must fully work muted');
-      const handActs=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(picks? up|sets? down|places?|reach(es|ing)?|dispens\w+|appl(y|ies|ying)|grabs?|lifts?|puts? down|lowers?)\b/gi)||[];
+      const handHits=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(picks? up|sets? down|places?|reach(es|ing)?|dispens\w+|appl(y|ies|ying)|grabs?|lifts?|puts? down|lowers?)\b/gi)||[];
+      // one action re-described ("dispenses… as she dispenses") is ONE action — count distinct verb stems
+      const handActs=[...new Set(handHits.map(a=>a.toLowerCase().replace(/(ing|ies|es|s)\b/,'').replace(/\s+(up|down)$/,'')))];
       if(String(sc.motion||'').trim().length<60) out.push('Scene '+(i+1)+' MOTION: too thin ('+String(sc.motion||'').trim().length+' chars) — 8 seconds needs 2-3 distinct visual beats (angle change, action, cut-feel), never one static hold');
       if(handActs.length>=3) out.push('Scene '+(i+1)+': '+handActs.length+' hand actions ('+handActs.slice(0,4).join(', ')+') — max ONE simple hand action per scene; cut the choreography');
       const w=String(sc.vo||'').trim().split(/\s+/).filter(Boolean).length;
@@ -904,7 +906,7 @@ ${basePrompt}
       const STOP=new Set(['lacalut','gums','online','toothpaste','german','germany','feeling','little','really','everyday','routine','morning','because','should','always','never','their','there','about','would','could','something','coffee']);
       const freq={}; for(const wd of (copy.match(/[a-z][a-z-]{5,}/g)||[])) if(!STOP.has(wd)) freq[wd]=(freq[wd]||0)+1;
       const rep=Object.entries(freq).filter(([,n])=>n>=3).map(([wd,n])=>wd+' ×'+n);
-      if(rep.length) out.push('COPY: repeated distinctive word'+(rep.length>1?'s':'')+' — '+rep.join(', ')+' — vary the wording; a distinctive word appears at most twice across the whole ad');
+      if(rep.length) out.push('COPY: repeated distinctive word'+(rep.length>1?'s':'')+' — '+rep.join(', ')+' — a distinctive word appears at most TWICE across the whole ad; REWRITE the extra uses with different wording (e.g. for cared-for: looked-after, pampered, at their best, given real attention)');
     }
     for(const r of SB_LINT_RULES){ if(r.f.indexOf('vo')>=0||r.f.indexOf('text')>=0){
       const h=String(sb.hook||'').match(r.re); if(h) out.push('HOOK: "'+h[0]+'" — '+r.msg);
