@@ -277,8 +277,8 @@ const $ = id => document.getElementById(id);
    ptype are treated as toothpaste (legacy = all toothpaste), never hidden. */
 const PTYPES=[['toothpaste','🦷 Toothpaste'],['mouthwash','💧 Mouthwash'],['toothbrush','🪥 Toothbrush']];
 const PTYPE_LABEL={toothpaste:'🦷 Toothpaste', mouthwash:'💧 Mouthwash', toothbrush:'🪥 Toothbrush'};
-// Reference-library row → product type: Box/Tube/Box+Tube = toothpaste · Bottle/Bottle+Box = mouthwash · Brush = toothbrush
-const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mw_box','mouthwash'], toothbrush:['toothbrush'] };
+// Reference-library row → product type: Box/Tube/Box+Tube = toothpaste · Bottle/Bottle+Box = mouthwash · Box/Brush/Box+Brush = toothbrush
+const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mw_box','mouthwash'], toothbrush:['tb_box','toothbrush','tb_boxbrush'] };
 function getPtype(sku){ return localStorage.getItem('de_ptype_'+(sku||curSku)) || 'toothpaste'; }
 let curPtype = getPtype(curSku);
 function ptypeOf(rec){ return (rec && rec.ptype) || 'toothpaste'; }   // missing tag = toothpaste, never hidden
@@ -314,6 +314,7 @@ function renderSlots(){
       const roles=['Main','Angle','Detail'];
       html.push(`<div class="slot" onclick="${img?'':'pickPhoto('+i+')'}">${img?`<img src="${img}"><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷'}<span class="lbl">${roles[i]}</span></div>`);
     }
+    html.push(`<div style="grid-column:1/-1;margin-top:2px"><button class="btn" style="font-size:12px;padding:5px 10px;width:100%" title="Fill the 3 slots with this formula's saved library refs — toothpaste + mouthwash + toothbrush (box forms preferred) for a full range/system shot" onclick="fillSystemRefs()">🧰 3-Part System refs (from library)</button></div>`);
     $('slots').innerHTML=html.join('');
     $('slotCount').textContent = productImgs.filter(Boolean).length+'/3';
     $('fidWarn').innerHTML = productImgs.filter(Boolean).length===1
@@ -453,6 +454,21 @@ function fileToDataUrl(cb){ const inp=document.createElement('input'); inp.type=
   inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
 function pickPhoto(i){ fileToDataUrl(d=>{ productImgs[i]=d; saveProduct(); renderSlots(); }); }
 function delPhoto(i){ productImgs[i]=null; saveProduct(); renderSlots(); }
+/* ═══ 3-PART SYSTEM REFS — fill the 3 slots from the saved library: one ref per product
+   form of the CURRENT formula (toothpaste + mouthwash + toothbrush, box/combo forms first)
+   so one generation can reference the whole range. Same-SKU only — never cross-formula. ═══ */
+function fillSystemRefs(){
+  if(curSku==='multi') return;
+  const pick=(...types)=>{ for(const t of types){ const u=_refLib[curSku+'_'+t]; if(u) return u; } return null; };
+  const parts=[ ['🦷 toothpaste', pick('tp_boxtube','tp_box','toothpaste')],
+                ['💧 mouthwash',  pick('mouthwash','mw_box','mw_bottle')],
+                ['🪥 toothbrush', pick('tb_box','tb_boxbrush','toothbrush')] ];
+  const found=parts.filter(([,u])=>u), missing=parts.filter(([,u])=>!u).map(([l])=>l);
+  if(!found.length){ alert('No saved library refs for '+(SKUS[curSku]?.name||curSku)+' yet — upload packs in the Product Reference Library below (switch the product-type pill for mouthwash/toothbrush rows).'); return; }
+  productImgs=[found[0]?.[1]||null, found[1]?.[1]||null, found[2]?.[1]||null];
+  saveProduct(); renderSlots();
+  toast('🧰 Loaded '+found.map(([l])=>l).join(' · ')+(missing.length?' — missing: '+missing.join(', ')+' (upload in the library)':''));
+}
 function pickStyle(i){ fileToDataUrl(d=>{ styleImgs[i]=d; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }); }
 function delStyle(i){ styleImgs[i]=null; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }
 
@@ -578,7 +594,9 @@ const REF_TYPES=[
   ['mw_bottle','💧 Bottle'],
   ['mw_box','💧 Box'],
   ['mouthwash','💧 Bottle+Box'],
+  ['tb_box','🪥 Box'],
   ['toothbrush','🪥 Brush'],
+  ['tb_boxbrush','🪥 Box+Brush'],
 ];
 let _refLib={};   // key `${sku}_${type}` -> dataUrl
 async function refPut(key,url){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').put({key,url}); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
@@ -714,13 +732,13 @@ async function dlCard(id,name){try{const url=await compositeCard(id);dl(url,name
    ═══════════════════════════════════════════════════════════════════ */
 function packshotFor(sku){
   // Best available reference photo for a SKU from the saved reference library, then the Main slot.
-  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','toothbrush'];
+  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','toothbrush','tb_box','tb_boxbrush'];
   for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) return u; }
   const pm=productImgs.filter(Boolean); return pm[0]||null;
 }
 function packshotsFor(sku){
   // Up to 3 refs (tube + box + combo) — more angles = tighter pack fidelity in scene stills.
-  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash'];
+  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','tb_box','toothbrush','tb_boxbrush'];
   const out=[]; for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) out.push(u); }
   if(!out.length){ const pm=productImgs.filter(Boolean); if(pm[0]) out.push(pm[0]); }
   return out.slice(0,3);
