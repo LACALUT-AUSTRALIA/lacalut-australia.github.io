@@ -1279,7 +1279,7 @@ Return ONLY valid JSON:
         const doQC = opts.qc !== false;
         const fn = doQC ? renderSceneQC : renderScene;
         const r = await fn({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
-          style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl,
+          style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl, refImgs:opts.refImgs,
           apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, prevStill, worldStill,
           qcThreshold:opts.qcThreshold, qcMaxRerolls:opts.qcMaxRerolls,
           onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
