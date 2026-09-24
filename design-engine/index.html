@@ -1578,15 +1578,18 @@ async function applyEdit(){
   // Qty>1 must produce DIFFERENT rolls. Gemini's image edit is near-deterministic for an identical
   // prompt, so it returned 4 clones. Nudge each variation to vary the PRODUCT's lighting/angle/3D
   // look while keeping the scene, text and badge locked. Variation 1 stays the clean interpretation.
+  // Soft "slightly different" nudges get IGNORED by Gemini's near-deterministic edit path (proven
+  // 24/09 — twins came back repeatedly). Each variation now carries a FORCEFUL, named recipe with a
+  // failure clause. Every variation (incl. #1) gets one so no two calls share an identical prompt.
   const VARY=[
-    '',
-    ' [VARIATION 2 — render the product with a slightly different grip angle, lighting direction and 3D perspective. Keep the scene, hand positions, headline and badge identical.]',
-    ' [VARIATION 3 — render the product with different highlights, reflections and a subtly different tilt. Keep the scene, headline and badge identical.]',
-    ' [VARIATION 4 — render the product with a different shadow direction, stronger contrast and shallower depth of field. Keep the scene, headline and badge identical.]'
+    ' [VARIATION 1 of N — MANDATORY DIVERGENCE: this render MUST be visibly different at a glance from every other variation of this same edit. Recipe: key light from the LEFT, camera at product eye-level, product angled a few degrees toward the left, crisp deep-focus background. Keep the scene content, all text, headline and badges identical. If this render would look the same as another variation, you have FAILED the instruction — change the lighting and angle until it is clearly distinct.]',
+    ' [VARIATION 2 of N — MANDATORY DIVERGENCE: this render MUST be visibly different at a glance from every other variation of this same edit. Recipe: key light from the RIGHT with warmer tone, camera slightly HIGH looking down a touch, product angled a few degrees toward the right, softer shadows. Keep the scene content, all text, headline and badges identical. If this render would look the same as another variation, you have FAILED the instruction — change the lighting and angle until it is clearly distinct.]',
+    ' [VARIATION 3 of N — MANDATORY DIVERGENCE: this render MUST be visibly different at a glance from every other variation of this same edit. Recipe: cooler daylight from the FRONT, camera slightly LOW looking up a touch, stronger specular highlights and reflections, shallow depth of field on the background. Keep the scene content, all text, headline and badges identical. If this render would look the same as another variation, you have FAILED the instruction — change the lighting and angle until it is clearly distinct.]',
+    ' [VARIATION 4 of N — MANDATORY DIVERGENCE: this render MUST be visibly different at a glance from every other variation of this same edit. Recipe: dramatic side light with higher contrast, longer shadow cast to one side, product tilted subtly, background slightly darker vignette. Keep the scene content, all text, headline and badges identical. If this render would look the same as another variation, you have FAILED the instruction — change the lighting and angle until it is clearly distinct.]'
   ];
   if(qty>1) toast('✨ Rendering '+qty+' variations — no need to wait');
   for(let i=0;i<qty;i++){
-    const instr=instruction+(qty>1?(VARY[i]||(' [VARIATION '+(i+1)+' — vary the product lighting, angle and 3D look; keep the scene, headline and badge identical.]')):'');
+    const instr=instruction+(qty>1?(VARY[i]||VARY[i%VARY.length]).replace(/VARIATION \d+ of N/,'VARIATION '+(i+1)+' of '+qty):'');
     const id='e'+Date.now()+'_'+i;
     $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…${qty>1?' ('+(i+1)+'/'+qty+')':''}</span></div></div>`);
     (async()=>{
