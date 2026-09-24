@@ -829,7 +829,8 @@ ${basePrompt}
     { re:/\b(close-?up|CU|ECU|macro|tight shot)\b[^.]{0,30}\b(hands?|fingers?|knuckles?)\b|\bhands?\b[^.]{0,20}\bfills? the frame\b/i, f:['visual','motion'], msg:'hand close-up — hands are the worst AI subject; hands appear only inside mid-shots, never as the subject of a frame' },
     { re:/\b(grips?|gripping|tightens?|tightening|clench\w*|squeez\w*|white-?knuckl\w*)\b/i, f:['visual','motion'], msg:'gripping/clenching hand mechanics — tension is shown in the FACE (expression), never in hand choreography' },
     { re:/\b(alumini?um( |-)?lactate|strontium|potassium( |-)?(nitrate|chloride)?|chlorhexidine|bisabolol|zinc( |-)?(gluconate|lactate)?|lactate|sr2\+?|titanium dioxide)\b/i, f:['vo','text'], msg:'forbidden ingredient name — ONLY fluoride and hydroxyapatite may ever be named; say "a special German gum-care formula" instead' },
-    { re:/\b(gives?|giving|provides?|delivers?|restores?|brings?|helps? keeps?|keeps?|keeping|makes?|making|leaves?)\b[^.]{0,25}\bgums?\b[^.]{0,25}\b(firm\w*|strength|strong)\b/i, f:['vo','text'], msg:'physical firming-outcome claim — cosmetic feel-language only: "gums that FEEL firm"' },
+    // "gives gums firmness" = outcome claim; "give you gums that FEEL firm" = mandated feel-language — only fire when no FEEL sits between gums and firm (r3 false-positive fix)
+    { re:/\b(gives?|giving|provides?|delivers?|restores?|brings?|helps? keeps?|keeps?|keeping|makes?|making|leaves?)\b[^.]{0,25}\bgums?\b(?![^.]{0,25}\bfeel\w*\b)[^.]{0,25}\b(firm\w*|strength|strong)\b/i, f:['vo','text'], msg:'physical firming-outcome claim — cosmetic feel-language only: "gums that FEEL firm"' },
     { re:/\b\d(\.\d)?\s*[/]\s*5\b|\bstar[- ]?rated\b|review stars?|rating overlay/i, f:['visual','motion','text','vo'], msg:'invented rating or review overlay — never fabricate social proof; real review data is added in post from Judge.me only' },
     { re:/\b(water|liquid|stream|droplets?|drips?|pours?|pouring)\b[^.]{0,55}\b(crystals?(?![- ]clear)|shards?|minerals?)\b|\b(crystals?(?![- ]clear)|shards?)\b[^.]{0,40}\b(water|stream|drips?)\b/i, f:['visual','motion'], msg:'water interacting with crystals/minerals — the rejected rock-water fault; water exists ONLY as tap-into-sink or a drinking glass' },
     { re:/\b(pack|tube|box|product|it)\b[^.]{0,25}\btowards? the (camera|lens|viewer)\b/i, f:['visual','motion'], msg:'pack presented/thrust toward the camera — moving the pack at the lens warps the label; the pack stays where it is, the camera does the work' },
@@ -882,8 +883,13 @@ ${basePrompt}
     const rules = lofi ? [...SB_LINT_RULES, ...SB_LOFI_RULES] : SB_LINT_RULES;
     const stripQuoted = t => String(t||'').replace(/'[^']{0,140}'|"[^"]{0,140}"|‘[^’]{0,140}’|“[^”]{0,140}”/g,' ');
     (sb.scenes||[]).forEach((sc,i)=>{
+      // For caption-aware (sq) traps also remove the scene's OWN caption wording from the field —
+      // apostrophes inside prose ("pack's") break naive quote-pairing (r3 false-positive fix).
+      const capRe = String(sc.text||'').trim().length>3 ? new RegExp(String(sc.text).trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi') : null;
       for(const r of rules) for(const f of r.f){
-        const m=(r.sq ? stripQuoted(sc[f]) : String(sc[f]||'')).match(r.re);
+        let src = String(sc[f]||'');
+        if(r.sq){ if(capRe) src = src.replace(capRe,' '); src = stripQuoted(src); }
+        const m=src.match(r.re);
         if(m) out.push('Scene '+(i+1)+' '+f.toUpperCase()+': "'+m[0]+'" — '+r.msg);
       }
       if(!String(sc.text||'').trim()) out.push('Scene '+(i+1)+': missing on-screen caption — SOUND-OFF law: every scene carries a short bold 3-7 word caption; the ad must fully work muted');
@@ -913,7 +919,10 @@ ${basePrompt}
       const c=String(sb.cta||'').match(r.re);  if(c) out.push('CTA: "'+c[0]+'" — '+r.msg);
     }}
     const wRules = lofi ? [...SB_WORLD_RULES, ...SB_LOFI_WORLD_RULES] : SB_WORLD_RULES;
-    for(const r of wRules){ const m=String(sb.world||'').match(r.re); if(m) out.push('WORLD: "'+m[0]+'" — '+r.msg); }
+    // Strip NEGATED clauses first — "devoid of mirrors, powders or vials" is compliance language,
+    // not a violation (r3 false-positive fix). A negation claims absence up to the clause boundary.
+    const worldSrc = String(sb.world||'').replace(/\b(no|without|devoid of|free of|never any?|never)\b[^.;]{0,80}/gi,' ');
+    for(const r of wRules){ const m=worldSrc.match(r.re); if(m) out.push('WORLD: "'+m[0]+'" — '+r.msg); }
     return out;
   }
 
@@ -959,7 +968,7 @@ CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, Ti
 - CONTINUITY: each scene's opening beat visually echoes the previous scene's closing beat — same palette, same light, same world.
 - SCENE INDEPENDENCE (hard rule): every scene is rendered as its own isolated clip by a generator that cannot see any other scene — each scene's "visual" and "motion" must describe the shot COMPLETELY from scratch and may NEVER reference another scene ("from the previous scene", "continuing the zoom", "as before", "same as scene 1" are all forbidden — restate the content instead).
 - NO COPY AUTOPILOT: never use the same distinctive word three or more times across the ad's hook, captions, VO and CTA — vary the wording (e.g. "cared-for" once or twice, never in every line).
-- AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley) — nothing tighter than a chest-up mid-shot on a person, no mouth-only or teeth-macro framing, NEVER a tongue; keep hands minimal and simple — at most ONE hand visible in frame at any moment (two hands double the AI's failure rate), at most ONE simple hand action per scene (pick up, put down, hold, turn a tap), never twirling/fiddling/tossing objects, never fine finger actions and never touches the mouth, jaw, chin, cheek or any part of the face; NEVER overlay visual effects (gels, mists, glows, particles) on a person's face or skin — effects live in the environment, away from people; the product is lit naturally, never wrapped, enveloped or surrounded by a glow/halo/energy effect — crystals and streams move NEAR the pack, never around or onto it.
+- AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley) — nothing tighter than a chest-up mid-shot on a person, no mouth-only or teeth-macro framing, NEVER a tongue; keep hands minimal and simple — at most ONE hand visible in frame at any moment (two hands double the AI's failure rate), at most ONE simple hand action per scene (pick up, put down, hold, turn a tap), never twirling/fiddling/tossing objects, never fine finger actions and never touches the mouth, jaw, chin, cheek or any part of the face; NEVER overlay visual effects (gels, mists, glows, particles) on a person's face or skin — effects live in the environment, away from people; the product is lit naturally, never wrapped, enveloped or surrounded by a glow/halo/energy effect — crystals and streams move NEAR the pack, never around or onto it — always write the words "near the pack", never the phrase "around the pack".
 - VEO SAFETY FILTER (hard rule — breaching it silently kills the render and wastes the day's quota): NEVER write white pearls, spheres, beads, droplets-as-pearls or ANY small round white objects (the video engine's safety filter reads them as pills and returns nothing). ${String(opts.style||type.style)==='lofi_native' ? 'In this LO-FI look there are NO substitute VFX either — no crystal shards, mineral streams, ribbons of light or particles; use real everyday objects and the pack itself only.' : 'Use angular mineral CRYSTAL SHARDS, flowing mineral streams or ribbons of light instead.'}
 - VOICE-FREE SCENES (hard rule): never write human vocal sounds into any scene's visual or motion ('uhm', sighs, gasps, humming, whispering, chatter) — scenes are voice-free; the narrator is recorded separately in post.
 - PACK TEXT: never reveal, read or glide to the pack's SIDE or BACK text (it is German and must stay unreadable) — the front label facing camera is the only pack face ever shown.
