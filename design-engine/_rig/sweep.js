@@ -37,14 +37,10 @@ function metaChecks(sb, type, style) {
     if (/previous scene|last scene|scene \d/i.test(String(sc.motion || '') + String(sc.visual || '')))
       out.push(`S${sc.n} cross-scene reference`);
   }
-  // repeated distinctive word in creative copy (Quan rule)
-  const copy = [sb.hook, sb.cta, ...scenes.flatMap(s => [s.vo, s.text])].join(' ').toLowerCase();
-  const words = copy.match(/[a-z][a-z-]{5,}/g) || [];
-  const freq = {};
-  for (const w of words) freq[w] = (freq[w] || 0) + 1;
-  const STOP = new Set(['lacalut', 'gums', 'online', 'toothpaste', 'german', 'feeling', 'little', 'really', 'everyday', 'routine']);
-  const rep = Object.entries(freq).filter(([w, n]) => n >= 3 && !STOP.has(w)).map(([w, n]) => `${w}×${n}`);
-  if (rep.length) out.push('word repetition: ' + rep.join(', '));
+  // word-repetition is now owned entirely by engine.lintStoryboard (4-letter floor + full
+  // filler STOP set + count-then-rewrite). The old duplicate here used a 6-letter floor and a
+  // tiny STOP set, so it false-flagged filler like "something ×3" that the engine correctly
+  // ignores — a drift that stopped the autonomous loop ever reaching "clean". Removed.
   if (sb.flagged) out.push('SANITIZE FLAG (banned term survived)');
   return out;
 }
