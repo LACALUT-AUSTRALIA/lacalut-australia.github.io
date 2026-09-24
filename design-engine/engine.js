@@ -807,6 +807,12 @@ ${basePrompt}
     (sb.scenes||[]).forEach(sc=>{
       sc.vo = sanitizeCopyVO(sc.vo||''); sc.text = sanitizeCopyVO(sc.text||'');
       sc.visual = sanitizeCopyVO(sc.visual||''); sc.motion = sc.motion||'';
+      // "around the pack" is the mandated-reword phrase (never orbit the pack). The model keeps
+      // writing it for benign spatial framing ("spaciousness around the pack") and self-repair
+      // is unreliable on it — deterministically swap to "near the pack". A REAL orbit keeps its
+      // "orbit/circles/spins" verb, so the lint's orbit branch still catches those.
+      const nearSwap = t => t.replace(/\baround the (pack|tube|box|product|bottle)\b/gi, 'near the $1');
+      sc.visual = nearSwap(sc.visual); sc.motion = nearSwap(sc.motion);
       sc.flagged = hasBannedTerm(sc.vo)||hasBannedTerm(sc.text)||hasBannedTerm(sc.visual);
     });
     sb.flagged = hasBannedTerm(sb.hook)||hasBannedTerm(sb.cta)||(sb.scenes||[]).some(s=>s.flagged);
