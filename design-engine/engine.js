@@ -919,9 +919,28 @@ ${basePrompt}
     { re:/\b(studio|architectural|matte (navy|black|dark) walls?|glow(ing)? panels?|light panels?|seamless backdrop|minimalist shelv\w+|branded wall|colour-?blocked|color-?blocked|diagonal blocks?|set design|crystals?|shards?|mineral)\b/i, msg:'designed set / VFX prop in the WORLD of a LO-FI ad — must be a real everyday Australian location (home bathroom framed mirror-free, kitchen, bedroom) in natural light' }
   ];
   const SB_ONE_WORLD_RE = /(bathroom[\s\S]{0,110}kitchen|kitchen[\s\S]{0,110}bathroom|bedroom[\s\S]{0,110}(kitchen|bathroom)|(kitchen|bathroom)[\s\S]{0,110}bedroom|adjacent (kitchen|bathroom|bedroom|room|corner|space)|two (rooms|locations|settings|spaces))/i;
-  function lintStoryboard(sb, styleId, typeId){
+  // Cross-SKU angle themes — a script may ONLY use its own SKU's angle. Tonight's bug: a per-scene
+  // rewrite of an AKTIV (gum) ad grabbed a SENSITIVITY hook ("wince after a sip of water"), leaving
+  // the ad incongruent (sensitivity problem, gum solution). Keyword sets are TIGHT to avoid false
+  // positives (e.g. "cold water" in a glass must NOT trip sensitivity — only twinge/wince language).
+  const ANGLE_THEMES = [
+    { key:'SENSITIVITY', owners:['sensitive'], re:/\b(sensitiv\w+|winc\w+|twinges?|twinging|zing|nerve twinge|sharp (?:twinge|sting)|cold[- ]and[- ]hot|hot[- ]and[- ]cold|cold or hot)\b/i },
+    { key:'WHITENING',   owners:['white-repair'], re:/\b(whiten\w+|whiter|brighter smile|surface stains?|coffee stains?|shades? whiter|yellow\w* teeth)\b/i },
+    { key:'FRESH-BREATH',owners:['flora'], re:/\b(bad breath|fresh breath|freshens? breath|halitosis|mouth odou?r|breath odou?r)\b/i },
+  ];
+  const SKU_ANGLE_SAY = { aktiv:"AKTIV's gum-care angle (gums that FEEL firm and cared-for)", 'aktiv-herbal':"AKTIV Herbal's natural gum-care angle", flora:"Flora's fresh-breath angle", sensitive:"Sensitive's cold/hot-twinge comfort angle", 'white-repair':"White & Repair's surface-stain / whiteness angle" };
+  function lintStoryboard(sb, styleId, typeId, sku){
     const out=[];
     const lofi = String(styleId||'')==='lofi_native';
+    // SKU ANGLE LOCK — flag any foreign-SKU angle language in the spoken/written copy.
+    if(sku && SKU_ANGLE_SAY[sku]){
+      const copyAll=[sb.hook,sb.cta,...(sb.scenes||[]).flatMap(s=>[s.vo,s.text,s.visual])].join(' \n ');
+      for(const th of ANGLE_THEMES){
+        if(th.owners.includes(sku)) continue;
+        const m=copyAll.match(th.re);
+        if(m) out.push('SKU ANGLE: "'+m[0]+'" is '+th.key+' language (that belongs to another LACALUT product) — this ad is ONLY '+SKU_ANGLE_SAY[sku]+'. Rewrite that line back onto this product\'s own angle; never borrow another SKU\'s problem or benefit.');
+      }
+    }
     const contrastType = typeId==='vs'||typeId==='transform'||typeId==='mashup';
     if(!contrastType){ const m=String(sb.world||'').match(SB_ONE_WORLD_RE); if(m) out.push('WORLD: "'+m[0]+'" — TWO locations in the world — this ad format is ONE location only; pick a single room and stage every scene inside it'); }
     if(/lacalut|aktiv|lakalut/i.test(String(sb.hook||''))) out.push('HOOK: mentions the brand — the hook opens on the PROBLEM, never the brand or product name');
@@ -948,7 +967,7 @@ ${basePrompt}
       if(w>20) out.push('Scene '+(i+1)+' VO: '+w+' words — max 18 for an 8s scene; trim it');
       // Scenes render as ISOLATED clips — any reference to another scene is meaningless to the
       // renderer and drags in cross-scene drift (the exact bug hand-fixed on 24/09).
-      const xref=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(previous|prior|last|earlier|next|opening|first) scene\b|\bscene \d\b|\bcontinu(ing|es?) from\b|\bas before\b|\bsame as (the )?(previous|last)\b|\(?the ['‘"]?(before|after)['’"]? (beat|state|shot|moment|version)\)?/i);
+      const xref=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(previous|prior|last|earlier|next|opening|first) scene\b|\bscene \d\b|\bs\d\b|\bcontinu(ing|es?) from\b|\bas before\b|\bsame as (the )?(previous|last)\b|\(?the ['‘"]?(before|after)['’"]? (beat|state|shot|moment|version)\)?/i);
       if(xref) out.push('Scene '+(i+1)+': "'+xref[0]+'" — cross-scene reference; every scene renders independently and must describe its shot fully from scratch, never point at another scene');
       // State-change words in a VISUAL imply a prior state the isolated renderer can't see
       // ("the paste NOW swirling", "NOW filled" — the 24/09 hand-fixed fault). Motion may use
@@ -1099,7 +1118,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
         // SELF-REPAIR LOOP — text is free; fix lint violations BEFORE the human ever reads the script
         // (3 rounds, not 2 — r8 showed repetition/VFX faults regularly surviving two passes)
         for(let round=0; round<3; round++){
-          const issues = lintStoryboard(sb, opts.style||type.style, opts.type||'pas');
+          const issues = lintStoryboard(sb, opts.style||type.style, opts.type||'pas', sku);
           if(!issues.length) break;
           try{
             const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects and no powders/vials (safety filter reads them as pills/drugs — use angular crystal shards or mineral streams); no mirrors or vanities anywhere, including the world description (reframe the set so no mirror exists); no finger actions, tongue shots or hands touching the mouth/face; nothing tighter than a chest-up mid-shot on a person; the camera never zooms onto the label, never close-ups/snap-zooms the pack (pack stays under a third of the frame, straight-on, static) and never circles the pack; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); no fade-to-black (hold bright on pack + CTA); at most ONE simple hand action per scene, never twirling/gripping/clenching or fiddling with objects; hands never in close-up and never the subject of a frame; the world is ONE single room (never bathroom+kitchen or any second space); never drinking or raising a glass to the lips; hands only reach for named visible objects; the camera never features a prop (plant/towel/mug); the hook opens on the problem, never the brand name; taps never start/stop by themselves — a hand operates them; never the bare phrase "firm gums" — always "gums that FEEL firm"; never "treatment"/"protects"/"supports"/"firmness" or any physical-outcome wording (feel-language only); never invented ratings or star overlays; water and the formula crystals/minerals never appear in the SAME scene (not touching, not side by side, not bridged by a camera pan — a scene shows EITHER water OR crystals); the pack never moves toward the camera; paste always smooth and creamy, never granular or pulsing; formula crystals NEVER sit in, on or inside the paste (near the product only); water ONLY from a tap or drinking glass, never scenic water down walls/rocks; no music words in scenes (music is added at stitch); in a LO-FI look no VFX elements (crystals/shards/streams/particles) and the world is a real everyday home location; each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs); every scene describes its shot fully from scratch and never references another scene ("from the previous scene", "continuing", "as before", "the 'after' beat" — restate the content instead); a scene's visual never uses state-change words ("now", "no longer", "once again", "has become") — describe what IS in shot absolutely; never write text, words, labels or typography appearing inside a scene's visual/motion (the engine garbles drawn words) — on-screen wording lives ONLY in the "text" caption field; paste/foam never goes in a glass (a glass holds clear water only — paste sits dispensed on a clean surface); never use the same distinctive word 3+ times across the ad's copy — short words like "firm"/"care" count too — COUNT each named overused word's occurrences across hook+captions+VO+CTA and rewrite every use beyond the second (palette: firm → resilient/at their best/comfortable; care → looked-after/pampered/given real attention; fresh → clean-feeling/revitalised); never "healthy"/"health" in any copy (cosmetic feel-language only); EVERY scene has a short bold 3-7 word on-screen caption in "text" (sound-off law — the ad must fully work muted).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
@@ -1121,7 +1140,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
         // do ONE focused low-temp rewrite that touches nothing else — clears the residual without
         // the false-positive risk of tightening the general lint.
         try{
-          const survivors = lintStoryboard(sb, opts.style||type.style, opts.type||'pas');
+          const survivors = lintStoryboard(sb, opts.style||type.style, opts.type||'pas', sku);
           const targeted = survivors.filter(x=>/^COPY: repeated|sourceless|decorative water|scenic water|rock-water|water may ONLY|no natural source|emerges from|interacting with crystals/i.test(x));
           if(targeted.length){
             const focusMeta = `You wrote this LACALUT video-ad storyboard JSON. Two stubborn faults remain — fix ONLY these, change NOTHING else; keep every other word, the world, character, hook, CTA, structure and JSON schema byte-for-byte identical:\n- ${targeted.join('\n- ')}\n\nHOW TO FIX:\n• COPY repetition: COUNT the named word across hook + every caption + every VO + CTA; keep the first TWO uses and REWRITE every later use with different wording (firm → resilient / at their best / comfortable; care → looked-after / pampered / given real attention; fresh → clean-feeling / revitalised; clean → spotless / just-brushed; smile → grin / bright expression). The named word must end up appearing at most TWICE in the whole ad.\n• Sourceless / scenic water: water may ONLY appear as a running tap operated by a visible hand, a pour from directly above, or clear still water in a drinking glass. DELETE any water down walls / rocks / panels, any water feature or hidden basin, any droplets on objects, and any water touching crystals or minerals — replace it with a DRY premium beat instead (soft light shimmer, formula particles drifting NEAR the pack, a gentle push-in).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
@@ -1139,7 +1158,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
             }
           }
         }catch(e){ /* targeted pass is best-effort — whatever survives is surfaced amber below */ }
-        sb.lint = lintStoryboard(sb, opts.style||type.style, opts.type||'pas');   // whatever survived repair — surfaced amber in the approval modal
+        sb.lint = lintStoryboard(sb, opts.style||type.style, opts.type||'pas', sku);   // whatever survived repair — surfaced amber in the approval modal
         return sb;
       }catch(e){ lastErr=e; }
     }
