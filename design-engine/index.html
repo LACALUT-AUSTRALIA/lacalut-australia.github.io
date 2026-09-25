@@ -1148,7 +1148,9 @@ async function _renderScenesInto(recId, startAt){
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
       rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 };
       await vidPut(rec);   // bank every paid scene immediately
-    }catch(e){ rec.status='partial'; rec.failedAt=i; rec.error=e.message; await vidPut(rec); renderVideoGallery(curSku); return; }
+    }catch(e){ rec.status='partial'; rec.failedAt=i; rec.error=e.message; await vidPut(rec); renderVideoGallery(curSku);
+      try{ toast('⚠️ Scene '+(i+1)+' failed: '+String(e.message||'').slice(0,90)+' — paid scenes kept. Resume to retry.'); }catch(_){}
+      return; }
   }
   // 🎙️ ONE narrator for the whole ad (per-scene TTS, same voice — no more accent roulette)
   for(let i=0;i<total;i++){

@@ -665,14 +665,19 @@ ${basePrompt}
     if(!done) throw new Error('Video timed out (still rendering after 10 min).');
     if(done.error) throw new Error(done.error.message || 'Video generation failed');
     const resp = done.response || {};
-    const samples = resp.generateVideoResponse?.generatedSamples
-                 || resp.generateVideoResponse?.generatedVideos
-                 || resp.generatedVideos || [];
+    const gv = resp.generateVideoResponse || {};
+    const samples = gv.generatedSamples || gv.generatedVideos || resp.generatedVideos || [];
     const first = samples[0] || {};
     const inline = first.video?.bytesBase64Encoded || first.bytesBase64Encoded;
     if(inline) return opts.asBlob ? base64ToBlob(inline,'video/mp4') : 'data:video/mp4;base64,'+inline;
     const uri = first.video?.uri || first.video?.videoUri || first.uri;
-    if(!uri) throw new Error('No video returned by Veo');
+    if(!uri){
+      // done:true + no error + zero samples = Veo's silent RAI/safety filter. Surface the reason
+      // if the API gave one (keeps the "no video" substring so the safety-retry ladder still fires).
+      const rai = gv.raiMediaFilteredReasons || resp.raiMediaFilteredReasons
+               || gv.raiMediaFilteredCount || resp.raiMediaFilteredCount;
+      throw new Error('No video returned by Veo' + (rai ? ' — filtered: '+[].concat(rai).join('; ').slice(0,180) : ' (silent safety filter)'));
+    }
     const dl = await fetch(uri + (uri.indexOf('?')>=0?'&':'?') + 'key=' + apiKey);
     if(!dl.ok) throw new Error('Could not download the rendered video (HTTP '+dl.status+')');
     const blob = await dl.blob();
@@ -1217,7 +1222,14 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
     try{ videoBlob = await call(callOpts(prompt)); }
     catch(e){
       if(!/no video/i.test(e.message||'')) throw e;
-      // Veo's safety filter blocks silently ("no video returned"). Retrying identical content
+      // An empty Veo response is sometimes TRANSIENT (LRO race / server hiccup), not a real filter.
+      // Try the SAME prompt once more before altering the creative — a transient empty clears here
+      // and the scene renders exactly as authored.
+      onProg('⚠️ empty response — one identical retry…');
+      try{ videoBlob = await call(callOpts(prompt)); }
+      catch(eRetry){
+        if(!/no video/i.test(eRetry.message||'')) throw eRetry;
+      // Persistent empty = Veo's safety filter blocking silently. Retrying identical content
       // blocks identically — so retry ONCE with an explicit wholesome reframe, and if that is
       // also blocked, once more as text-to-video without the still (the image itself may trip it).
       onProg('🛡️ safety-filter block — retrying with a safe reframe…');
@@ -1228,6 +1240,7 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
         onProg('🛡️ still blocked — final retry without the opening still…');
         const o=callOpts(safe); o.imgDataUrl=null;
         videoBlob = await call(o);
+      }
       }
     }
     return { prompt, videoBlob, still: stillOk ? still : null };
