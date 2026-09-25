@@ -1047,6 +1047,18 @@ function sbFieldFlag(el){ const bad=E.hasBannedTerm(el.value); el.style.borderCo
   const anyBad=[...dlg.querySelectorAll('textarea,input[type=text]')].some(x=>E.hasBannedTerm(x.value));
   const ab=$('sbApprove'); if(ab){ ab.disabled=anyBad; ab.title=anyBad?'A line still contains a blocked claim — edit the red field first':''; }
   const w=$('sbWarn'); if(w) w.style.display=anyBad?'block':'none'; }
+// Switch engine from INSIDE the approval modal — mirrors the choice back to the main #vModel
+// (which approveStoryboard reads), toggles the fal-key field, and live-updates the cost line +
+// Approve button so the script is never lost just to change engine.
+function sbSwitchEngine(sel){
+  const model=sel.value; const vm=document.getElementById('vModel'); if(vm) vm.value=model;
+  const isFal=(E.VIDEO_MODELS[model]||{}).route==='fal';
+  const fk=document.getElementById('sbFalKey'); if(fk){ fk.style.display=isFal?'':'none'; if(isFal && !fk.value){ fk.value=KEYS.fal; } }
+  const dlg=document.getElementById('sbdlg'); const n=(dlg&&dlg._sb&&dlg._sb.scenes&&dlg._sb.scenes.length)||3;
+  const est=E.storyboardCostEstimate({scenes:n, model});
+  const cl=document.getElementById('sbCostLine'); if(cl) cl.innerHTML=`💸 Approving renders <b>${n} scenes × 8s = ~US$${est.usd.toFixed(2)}</b> on ${est.label}.`;
+  const ab=document.getElementById('sbApprove'); if(ab) ab.innerHTML=`🔴 Approve &amp; Render — ~US$${est.usd.toFixed(2)}`;
+}
 function openStoryboardApproval(sb, ctx){
   const scenes=sb.scenes, model=$('vModel').value;
   const est=E.storyboardCostEstimate({scenes:scenes.length, model});
@@ -1057,6 +1069,13 @@ function openStoryboardApproval(sb, ctx){
     <h3 style="margin:0 0 4px;color:#7c3aed">✍️ Approve the Script — ${scenes.length} scenes · ${scenes.length*8}s</h3>
     <div style="font-size:12px;color:#666;margin-bottom:12px">Edit anything below. Nothing renders (or spends) until you hit Approve.</div>
     <div style="background:#eef4ff;border:1px solid #bcd0f5;border-radius:8px;padding:8px 11px;font-size:12.5px;margin-bottom:10px">🎬 <b>TYPE:</b> ${escv(E.VIDEO_TYPES[vType]?.label||vType)} &nbsp;·&nbsp; 🎨 <b>STYLE:</b> ${escv(E.VIDEO_STYLES[vStyleId]?.label||vStyleId)} <span style="color:#667">— ${escv(E.VIDEO_STYLES[vStyleId]?.desc||'')}</span></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+      <label style="font-weight:700;font-size:12px">🎥 Engine:</label>
+      <select id="sbEngine" onchange="sbSwitchEngine(this)" style="flex:1;min-width:180px;padding:7px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:12px">
+        ${V_MODELS.map(k=>{const mm=E.VIDEO_MODELS[k];return `<option value="${k}" ${k===model?'selected':''}>${escv(mm.label)} — ${escv(mm.job||'')}</option>`;}).join('')}
+      </select>
+      <input type="password" id="sbFalKey" placeholder="fal.ai API key (Kling / Seedance)" oninput="localStorage.setItem('lc_fal_key',this.value.trim())" value="${escv(KEYS.fal)}" style="display:${(E.VIDEO_MODELS[model]||{}).route==='fal'?'':'none'};flex-basis:100%;padding:7px;border:1px solid #ddd;border-radius:8px;font-size:12px">
+    </div>
     <div id="sbWarn" style="display:none;background:#fdeaea;border:1px solid #e7b3b0;color:#b3261e;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">⚠️ A red field contains a blocked disease/therapeutic claim — reword it before approving.</div>
     ${(sb.lint&&sb.lint.length)?`<div style="background:#fff7e6;border:1px solid #e8c77b;color:#8a6100;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">🟡 <b>Auto-lint couldn't fully fix these — reword before approving:</b><br>${sb.lint.map(x=>'• '+String(x).replace(/</g,'&lt;')).join('<br>')}</div>`:''}
     <div style="display:flex;gap:10px;margin-bottom:8px">
@@ -1085,7 +1104,7 @@ function openStoryboardApproval(sb, ctx){
       <label style="font-size:11px;font-weight:700;color:#555">ON-SCREEN TEXT (optional)</label>
       <input type="text" id="sbT${i}" value="${escv(sc.text)}" oninput="sbFieldFlag(this)" style="width:100%;margin:2px 0 0;padding:7px;border:1px solid #ddd;border-radius:7px;font-size:12px">
     </div>`).join('')}
-    <div style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin:4px 0 12px">💸 Approving renders <b>${scenes.length} scenes × 8s = ~US$${est.usd.toFixed(2)}</b> on ${est.label}.</div>
+    <div id="sbCostLine" style="font-size:12px;background:#f6f2ff;border:1px solid #e3d9ff;border-radius:8px;padding:9px 11px;margin:4px 0 12px">💸 Approving renders <b>${scenes.length} scenes × 8s = ~US$${est.usd.toFixed(2)}</b> on ${est.label}.</div>
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button onclick="document.getElementById('sbdlg').remove()" style="padding:9px 16px;border:1px solid #ccc;background:#fff;border-radius:8px;cursor:pointer">Cancel</button>
       <button id="sbApprove" onclick="approveStoryboard()" style="padding:9px 18px;border:0;background:#c8102e;color:#fff;border-radius:8px;font-weight:700;cursor:pointer">🔴 Approve &amp; Render — ~US$${est.usd.toFixed(2)}</button>
