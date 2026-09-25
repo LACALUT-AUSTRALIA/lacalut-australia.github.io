@@ -164,7 +164,7 @@
       <span>Engine:</span>
       <select id="vModel" onchange="vCostLine()" style="flex:1;min-width:0;max-width:100%;padding:7px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px"></select>
     </div>
-    <div id="vFalRow" style="display:none;margin:4px 0"><input type="password" id="vFalKey" placeholder="fal.ai API key (Seedance / Kling only)" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px"></div>
+    <div id="vFalRow" style="display:none;margin:4px 0"><input type="password" id="vFalKey" placeholder="fal.ai API key (Seedance / Kling only)" oninput="localStorage.setItem('lc_fal_key',this.value.trim())" style="width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:12px"></div>
 
     <h3 style="margin-top:12px">Format</h3>
     <div class="modes" id="vAspects"></div>
@@ -263,7 +263,7 @@ const DEFAULT_GUIDES = E.DEFAULT_GUIDES, GUIDE_SECTIONS = E.GUIDE_SECTIONS;
 const getGuide = E.getGuide, pickStr = E.pickStr, pickRand = E.pickRand, brainUsesProduct = E.brainUsesProduct;
 
 /* ═══ STATE ═══ */
-const KEYS = { get gemini(){ return localStorage.getItem('lc_gemini_key')||''; }, get marky(){ return localStorage.getItem('lc_marky_key')||''; } };
+const KEYS = { get gemini(){ return localStorage.getItem('lc_gemini_key')||''; }, get marky(){ return localStorage.getItem('lc_marky_key')||''; }, get fal(){ return localStorage.getItem('lc_fal_key')||''; } };
 let curModel = localStorage.getItem('de_model') || 'gemini-2.5-flash-image';
 let curSku='aktiv', curMode='social';
 let productImgs = JSON.parse(localStorage.getItem('de_product_'+curSku)||'[]');
@@ -883,7 +883,7 @@ if(!E.VIDEO_STYLES[vStyleId]) vStyleId=E.VIDEO_TYPES[vType].style;
 let vAspect  = localStorage.getItem('de_vid_ar')   || '9:16';
 let vDurSec  = parseInt(localStorage.getItem('de_vid_dur') || '32');
 const V_DURS=[16,24,32,40];
-const V_MODELS=['VEO3'];   // Quan 23/09: ONE engine — full Veo 3.1, best quality no matter the cost (Fast retired; Seedance/Kling live on the card 🎬 button)
+const V_MODELS=['VEO3','FAL_KLING','FAL_SEEDANCE'];   // VEO3 = hero default; Kling 2.x = best HUMANS/anatomy (needs fal key); Seedance = cheap tests. Fast retired.
 
 function renderTopMode(){ $('topMode').innerHTML =
   `<button class="tab ${curTop==='image'?'active':''}" onclick="pickTopMode('image')">🖼️ Image Generator</button>`+
@@ -922,6 +922,9 @@ function renderVRefBox(){ const sku=vRefSku(); const p=packshotFor(sku);
     ? `<div style="display:flex;gap:8px;align-items:center"><img src="${p}" style="width:52px;height:52px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><span>Real ${SKUS[sku]?.name||sku} packshot anchors every scene — pack fidelity guaranteed.</span></div>`
     : `⚠️ No packshot saved for ${SKUS[sku]?.name||sku} — upload one in ✏️ Edit Image → reference library first.`; }
 function vCostLine(){ const scenes=vDurSec/8; const model=$('vModel')?$('vModel').value:'VEO3';
+  // show the fal.ai key field only when a fal-routed engine (Kling / Seedance) is selected
+  const isFal=(E.VIDEO_MODELS[model]||{}).route==='fal';
+  const fr=$('vFalRow'); if(fr){ fr.style.display=isFal?'':'none'; if(isFal && !$('vFalKey').value) $('vFalKey').value=KEYS.fal; }
   const est=E.storyboardCostEstimate({scenes,model});
   $('vCost').innerHTML=`💸 <b>~US$${est.usd.toFixed(2)}</b> to render — ${scenes} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}.<br><span style="color:#888">Writing the script first is ~free; nothing renders until you approve it.</span>`; }
 
@@ -1113,6 +1116,7 @@ async function approveStoryboard(){
   const dlg=$('sbdlg'); const ctx=dlg._ctx; const sb=collectStoryboard();
   if(sb.flagged){ alert('A line still contains a blocked claim — fix the red field.'); sbFieldFlag(dlg.querySelector('input')); return; }
   const model=$('vModel').value;
+  if((E.VIDEO_MODELS[model]||{}).route==='fal' && !KEYS.fal){ alert('Paste your fal.ai API key (the field under the Engine picker) to render on '+(E.VIDEO_MODELS[model].label||model)+'.'); return; }
   const est=E.storyboardCostEstimate({scenes:sb.scenes.length, model});
   // 🔴 HARD SPEND GATE
   if(!confirm(`This will spend ~US$${est.usd.toFixed(2)} (${sb.scenes.length} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}).\n\n🔍 AUTO-QC: Gemini watches every scene and auto-re-rolls a failed one ONCE (score <${E.QC_THRESHOLD}/10 or legal breach) — worst case ~US$${(est.usd*2).toFixed(2)} total if every scene re-rolls.\n\nRender the ad now?`)) return;
@@ -1144,7 +1148,7 @@ async function _renderScenesInto(recId, startAt){
       prog('🎬 scene '+(i+1)+'/'+total+' starting…');
       const prevStill=(i>0 && rec.scenes[i-1] && rec.scenes[i-1].still)||null;   // world continuity — each still anchors the next
       const r=await E.renderSceneQC({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
-        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp, prevStill,
+        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, refImgs:refs, apiKey:KEYS.gemini, falKey:KEYS.fal, oneUp:rec.oneUp, prevStill,
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
       rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 };
       await vidPut(rec);   // bank every paid scene immediately
@@ -1223,7 +1227,7 @@ async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) 
     const oldVo=rec.scenes[i]&&rec.scenes[i].voWav;   // VO line unchanged — keep the recorded narrator take
     const nbStill=((i>0&&rec.scenes[i-1]&&rec.scenes[i-1].still)||(rec.scenes[i+1]&&rec.scenes[i+1].still))||null;   // anchor the re-roll to a neighbouring scene's world
     const r=await E.renderSceneQC({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
-      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:refs[0]||null, refImgs:refs, apiKey:KEYS.gemini, oneUp:rec.oneUp, prevStill:nbStill,
+      style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:refs[0]||null, refImgs:refs, apiKey:KEYS.gemini, falKey:KEYS.fal, oneUp:rec.oneUp, prevStill:nbStill,
       qcMaxRerolls:0,   // manual re-roll = ONE paid render exactly as confirmed; QC watches + scores it, never respends
       onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
     rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, voWav:oldVo||null, qc:r.qc||null, attempts:1 };
