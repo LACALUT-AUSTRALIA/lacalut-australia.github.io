@@ -1349,7 +1349,7 @@ ${sb.world?('WORLD LOCK — the scene MUST take place inside exactly this locati
 Score against every item:
 1. PACK — real GERMAN pack, WHITE cap, front label facing camera, razor-sharp, real tall-slim proportions; never warped, melted, re-lettered, duplicated, flipped or rotated away; NO legible English health words on the pack.
 2. TEXT — caption matches the expected wording, correctly spelled, not garbled; NO mirrored/reversed/doubled lettering anywhere (including reflections); no invented signage.
-3. HUMANS — indistinguishable from a real filmed person: no uncanny faces, teeth or hands, no plastic skin, no morphing; if a character lock is given, it is EXACTLY that person.
+3. HUMANS — indistinguishable from a real filmed person: no uncanny faces, teeth or hands, no plastic skin, no morphing; if a character lock is given, it is EXACTLY that person. ANATOMY (check every frame): exactly TWO arms, TWO hands and five fingers per hand — any extra, duplicated, missing, fused, floating or malformed limb / hand / finger (e.g. two left arms, a phantom third hand, a hand melting into a prop) is a severe fail.
 4. MOTION — smooth and controlled; no morphing, warping, flicker or artefacts.
 5. EFFECTS — fluids behave physically; NO glow/halo around the product.
 6. AUDIO — ambience and music ONLY; ANY human vocal sound (speech, singing, humming, chatter) is a fail.
@@ -1357,7 +1357,7 @@ Score against every item:
 8. WORLD — if a WORLD LOCK is given above, the scene visibly takes place inside THAT exact location (same set, surfaces, lighting mood, palette); a different or generic background is a major fail.
 
 Be harsh: a real premium brand would only run this at 8+/10.
-HARD CAPS (non-negotiable): if the pack's label text is garbled, invented, pseudo-lettered or degrades during motion at ANY moment, the score is capped at 4. If small white beads, pearls or droplet-strings appear anywhere, the score is capped at 5. If water emerges from an object with no natural source, the score is capped at 6.
+HARD CAPS (non-negotiable): if a person shows extra, duplicated, missing, fused, floating or malformed limbs, hands or fingers at ANY frame (e.g. two left arms, a phantom third hand), the score is capped at 3 — broken human anatomy is the most brand-damaging fault. If the pack's label text is garbled, invented, pseudo-lettered or degrades during motion at ANY moment, the score is capped at 4. If small white beads, pearls or droplet-strings appear anywhere, the score is capped at 5. If water emerges from an object with no natural source, the score is capped at 6.
 
 Return ONLY valid JSON:
 {"score": <0-10 overall, one decimal>, "legalFail": <true if ANY item-7 breach>, "issues": ["<max 5, most damaging first, each with a timestamp>"], "fixNote": "<ONE imperative sentence telling the video generator what to do differently on a re-render, targeting the single most damaging issue>"}`;
