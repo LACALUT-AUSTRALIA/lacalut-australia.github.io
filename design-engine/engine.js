@@ -520,7 +520,7 @@ ${basePrompt}
   const VIDEO_MODELS = {
     VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'RETIRED 23/09 (kept only so old cards keep their label) — never offered in the UI', retired:true },
     FAL_SEEDANCE: { route:'fal',    id:'fal-ai/bytedance/seedance/v1/lite/image-to-video', label:'Seedance 1.0 (fal.ai)', usdPerSec:0.06, audio:false, aspects:['1:1','16:9','9:16'], job:'Cheapest — quick tests + volume B-roll' },
-    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v2/master/image-to-video',      label:'Kling 2.x (fal.ai)',   usdPerSec:0.18, audio:false, aspects:['1:1','16:9','9:16'], job:'Best physical motion — hyper-motion, splash, levitation' },
+    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v2.5-turbo/pro/image-to-video', label:'Kling 2.5 Turbo Pro (fal.ai)', usdPerSec:0.07, audio:false, aspects:['9:16','16:9','1:1'], durations:['5','10'], deriveAR:true, job:'BEST humans/anatomy — realistic people, hands, motion (renders 5s scenes)' },
     VEO3:         { route:'gemini', id:'veo-3.1-generate-preview',  label:'Veo 3.1',    usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
   };
   // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──
@@ -690,7 +690,19 @@ ${basePrompt}
     if(!key) throw new Error('No fal.ai API key — add one to use Seedance / Kling');
     const m = videoModel(opts.model);
     const onProg = opts.onProgress || function(){};
-    const body = { prompt: opts.prompt, image_url: opts.imgDataUrl, aspect_ratio: opts.aspectRatio||'9:16', duration: String(opts.seconds||8) };
+    // Some fal models (Kling 2.5) only accept a fixed duration enum and derive aspect from the
+    // source image. Clamp the requested seconds to the model's allowed set (largest that fits,
+    // else the smallest) and omit aspect_ratio when the model derives it — sending "8" or an
+    // unsupported aspect makes the request fail validation.
+    const reqSec = opts.seconds||8;
+    let dur = String(reqSec);
+    if(Array.isArray(m.durations) && m.durations.length){
+      const nums = m.durations.map(Number);
+      const fit = nums.filter(n=>n<=reqSec);
+      dur = String(fit.length ? Math.max(...fit) : Math.min(...nums));
+    }
+    const body = { prompt: opts.prompt, image_url: opts.imgDataUrl, duration: dur };
+    if(!m.deriveAR) body.aspect_ratio = opts.aspectRatio||'9:16';
     const submit = await fetch('https://queue.fal.run/'+m.id,
       { method:'POST', headers:{'Authorization':'Key '+key,'Content-Type':'application/json'}, body:JSON.stringify(body) });
     const sj = await submit.json();
