@@ -1188,6 +1188,24 @@ async function resumeVidRender(recId){ const rec=await getVid(recId); if(!rec) r
   const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
   if(!confirm(`Resume from scene ${(rec.failedAt||0)+1} — spends ~US$${(est.usd*remaining).toFixed(2)} for the remaining ${remaining} scene(s). Scenes already rendered are kept free.`)) return;
   rec.status='rendering'; await vidPut(rec); renderVideoGallery(curSku); renderScenesInto(recId, rec.failedAt||0); }
+// A — Regenerate ONE blocked beat: when Veo hard-blocks a scene's exact content, Resume just
+// refails the identical beat. This rewrites that one beat safe, then re-renders from it. Paid
+// scenes around it are kept.
+async function regenerateBeat(recId){ const rec=await getVid(recId); if(!rec) return;
+  const i=rec.failedAt||0;
+  const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
+  const remaining=rec.sbScenes.length-i;
+  if(!confirm(`Regenerate scene ${i+1} — rewrites just that blocked beat with safe content, then re-renders from scene ${i+1} (~US$${(est.usd*remaining).toFixed(2)} for the remaining ${remaining} scene(s)). Scenes already rendered are kept.`)) return;
+  try{
+    toast('✏️ Rewriting scene '+(i+1)+' to clear the safety block…');
+    const beat=await E.rewriteSceneBeat({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, index:i, reason:rec.error, apiKey:KEYS.gemini });
+    rec.sbScenes[i]={ ...rec.sbScenes[i], ...beat };
+    if(rec.scenes[i]) rec.scenes[i]=null;   // the old clip for this beat is stale — force a re-render
+    rec.status='rendering'; rec.error=null; await vidPut(rec); renderVideoGallery(curSku);
+    renderScenesInto(recId, i);
+  }catch(e){ try{ toast('⚠️ Could not rewrite scene '+(i+1)+': '+String(e.message||'').slice(0,90)); }catch(_){}
+    rec.status='partial'; await vidPut(rec); renderVideoGallery(curSku); }
+}
 async function retryStitch(recId){ const rec=await getVid(recId); if(!rec) return;
   try{ const ff=await loadFFmpeg(); const bed=await makeMusicBed(rec.duration, musicMoodFor(rec));
     rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
@@ -1259,7 +1277,7 @@ function vidCardHTML(rec){
     media=`<video id="vmain-${rec.id}" src="${vidUrl(first.videoBlob)}" controls playsinline style="width:100%;aspect-ratio:${arCss};background:#000;display:block"></video>`;
     note=`<div class="warn" style="margin:6px 8px 0">🧵 Not stitched${rec.stitchFailed?' — '+String(rec.stitchFailed).replace(/</g,'&lt;').slice(0,120):''}. <button class="iconbtn" onclick="playVidPlaylist('${rec.id}')">▶️ Play all</button> <button class="iconbtn" onclick="retryStitch('${rec.id}')">🧵 Retry stitch</button></div>`;
   } else media=`<div style="aspect-ratio:${arCss};background:#f0f0f0"></div>`;
-  if(rec.status==='partial') note=`<div class="warn" style="margin:6px 8px 0">⚠️ Stopped at scene ${(rec.failedAt||0)+1} (${rec.error||''}). Paid scenes are safe. <button class="iconbtn" onclick="resumeVidRender('${rec.id}')">▶️ Resume</button></div>`;
+  if(rec.status==='partial') note=`<div class="warn" style="margin:6px 8px 0">⚠️ Stopped at scene ${(rec.failedAt||0)+1} (${rec.error||''}). Paid scenes are safe. <button class="iconbtn" onclick="resumeVidRender('${rec.id}')">▶️ Resume</button> <button class="iconbtn" onclick="regenerateBeat('${rec.id}')">✏️ Regenerate beat</button></div>`;
   const qcChip=(q)=>{ if(!q||typeof q.score!=='number') return '';
     const c=q.legalFail?'#c8102e':(q.score>=7.5?'#0a7d33':(q.score>=6?'#b8860b':'#c8102e'));
     return `<b style="color:${c}" title="${(q.issues||[]).join(' · ').replace(/"/g,'&quot;')}">${q.legalFail?'⚖️':''}${q.score.toFixed(1)}</b>`; };

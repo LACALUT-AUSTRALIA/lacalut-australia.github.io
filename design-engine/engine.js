@@ -1103,11 +1103,86 @@ ${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character|
             sb = sanitizeStoryboard(fx);
           }catch(e){ break; }
         }
+        // TARGETED FINAL PASS (B+C) — copy-repetition and sourceless-water are the two stochastic
+        // residuals that occasionally outlive the broad 3-round loop, because that rewrite juggles
+        // ~30 rules at once and lets a stubborn one slip. Re-lint; if ONLY these classes remain,
+        // do ONE focused low-temp rewrite that touches nothing else — clears the residual without
+        // the false-positive risk of tightening the general lint.
+        try{
+          const survivors = lintStoryboard(sb, opts.style||type.style, opts.type||'pas');
+          const targeted = survivors.filter(x=>/^COPY: repeated|sourceless|decorative water|scenic water|rock-water|water may ONLY|no natural source|emerges from|interacting with crystals/i.test(x));
+          if(targeted.length){
+            const focusMeta = `You wrote this LACALUT video-ad storyboard JSON. Two stubborn faults remain — fix ONLY these, change NOTHING else; keep every other word, the world, character, hook, CTA, structure and JSON schema byte-for-byte identical:\n- ${targeted.join('\n- ')}\n\nHOW TO FIX:\n• COPY repetition: COUNT the named word across hook + every caption + every VO + CTA; keep the first TWO uses and REWRITE every later use with different wording (firm → resilient / at their best / comfortable; care → looked-after / pampered / given real attention; fresh → clean-feeling / revitalised; clean → spotless / just-brushed; smile → grin / bright expression). The named word must end up appearing at most TWICE in the whole ad.\n• Sourceless / scenic water: water may ONLY appear as a running tap operated by a visible hand, a pour from directly above, or clear still water in a drinking glass. DELETE any water down walls / rocks / panels, any water feature or hidden basin, any droplets on objects, and any water touching crystals or minerals — replace it with a DRY premium beat instead (soft light shimmer, formula particles drifting NEAR the pack, a gentle push-in).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+            const tr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+              { method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({ contents:[{role:'user',parts:[{text:focusMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.2 } }) });
+            const td = await tr.json();
+            if(tr.ok){
+              const tt = (td.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+              const tx = JSON.parse(tt);
+              if(tx && Array.isArray(tx.scenes) && tx.scenes.length===sb.scenes.length){
+                tx.scenes = tx.scenes.map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+                sb = sanitizeStoryboard(tx);
+              }
+            }
+          }
+        }catch(e){ /* targeted pass is best-effort — whatever survives is surfaced amber below */ }
         sb.lint = lintStoryboard(sb, opts.style||type.style, opts.type||'pas');   // whatever survived repair — surfaced amber in the approval modal
         return sb;
       }catch(e){ lastErr=e; }
     }
     throw new Error('Could not write the script: '+(lastErr?lastErr.message:'unknown'));
+  }
+
+  /* ═══ REGENERATE ONE BEAT (A) — the scene-level escape hatch ═══
+     When a single scene's exact content trips Veo's silent RAI/safety filter, Resume just refails
+     the identical beat forever. This rewrites ONLY that beat — deliberately RAI-safe, same world /
+     character / look / narrative slot — so the ad can finish without discarding the paid scenes
+     around it. Returns a sanitised single scene {n,seconds,visual,motion,vo,text}. */
+  async function rewriteSceneBeat(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const model = opts.textModel || 'gemini-2.5-flash';
+    const sku = opts.sku||'aktiv', s = SKUS[sku]||SKUS['aktiv'];
+    const sb = opts.storyboard||{}; const scenes = sb.scenes||[];
+    const i = Math.max(0, Math.min(scenes.length-1, opts.index|0));
+    const cur = scenes[i]||{}, prev = scenes[i-1], next = scenes[i+1];
+    const bans = [...GLOBAL_BAN, ...(s.ban||[])];
+    const reason = String(opts.reason||'Veo returned no video — silent safety filter').slice(0,180);
+    const meta =
+`You wrote this ${scenes.length}-scene LACALUT ${s.name} video ad. Scene ${i+1} was BLOCKED by the AI video model's safety filter and would not render (${reason}). Rewrite SCENE ${i+1} ONLY so it renders cleanly, keeping its job in the story and its continuity with the neighbouring scenes.
+
+WHY IT LIKELY BLOCKED — rewrite AROUND these triggers: any mouth / teeth / lips / tongue / gum interior in shot; framing tighter than a relaxed chest-up; anything medical, clinical, cosmetic-surgical or suggestive; hands to the face or mouth; small round white beads / pearls / powder (read as pills/drugs); a person in pain or distress. Make the beat WHOLESOME and everyday: a relaxed person with a gentle natural closed-mouth smile, or a clean product / formula beat, in an ordinary setting.
+
+KEEP IDENTICAL: the world, the character (same face / hair / outfit), the shared look, the palette, and this scene's narrative purpose + VO meaning. This scene sits ${prev?`AFTER: "${String(prev.visual||'').slice(0,140)}"`:'as the OPENING scene'} and ${next?`BEFORE: "${String(next.visual||'').slice(0,140)}"`:'as the FINAL scene'} — it must flow between them.
+
+WORLD: ${sb.world||''}
+CHARACTER: ${sb.character||''}
+LOOK: ${sb.styleAnchor||''}
+THE BLOCKED SCENE (its intent to preserve): VO="${cur.vo||''}" · caption="${cur.text||''}" · visual="${cur.visual||''}"
+
+HARD RULES (unchanged): cosmetic feel-language only, NEVER use ${bans.join(', ')}; only "fluoride" / "hydroxyapatite" may be named; ${s.name}'s own benefit angle only (${s.say}); the pack stays front-on, static, under a third of frame, WHITE cap, real German label never re-lettered; at most ONE hand action; water only from a tap or a clear drinking glass, never scenic and never in the same scene as crystals / minerals; a short bold 3-7 word English caption in "text"; VO max 18 words; never draw text / typography inside the visual; no cross-scene references or state-change words ("now" / "no longer"); no mirrors.
+
+Return ONLY this one scene as JSON, exactly this schema: {"visual":"...","motion":"...","vo":"...","text":"..."}`;
+    let last;
+    for(let a=0;a<2;a++){
+      try{
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+          { method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.6 } }) });
+        const d = await r.json();
+        if(!r.ok) throw new Error(d.error?.message||('HTTP '+r.status));
+        const t = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+        const sc = JSON.parse(t);
+        const beat = { n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') };
+        if(!beat.visual || !beat.motion) throw new Error('rewritten beat came back empty');
+        // sanitise inside the FULL storyboard context so cross-field rules apply, then hand back the one beat
+        const clone = { ...sb, scenes: scenes.map((x,ix)=> ix===i ? beat : x) };
+        const clean = sanitizeStoryboard(clone);
+        return clean.scenes[i];
+      }catch(e){ last=e; }
+    }
+    throw new Error('Could not rewrite the scene: '+(last?last.message:'unknown'));
   }
 
   /* ═══ SCENE PROMPT — buildVideoPrompt + continuity + exact VO lock ═══ */
@@ -1451,7 +1526,7 @@ Return ONLY valid JSON:
     VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
     videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
     buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
-    sanitizeStoryboard, generateStoryboard, lintStoryboard, buildScenePrompt, storyboardCostEstimate,
+    sanitizeStoryboard, generateStoryboard, rewriteSceneBeat, lintStoryboard, buildScenePrompt, storyboardCostEstimate,
     renderScene, renderStoryboard, stitchScenes, ttsLine,
     qcSceneClip, renderSceneQC, qcFinalVideo, QC_THRESHOLD, QC_MAX_REROLLS
   };

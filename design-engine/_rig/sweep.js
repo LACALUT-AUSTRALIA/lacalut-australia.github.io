@@ -4,6 +4,22 @@
 'use strict';
 const fs = require('fs'), path = require('path');
 global.window = globalThis;
+
+// ── D: hard per-request timeout ──────────────────────────────────────────────
+// engine.js calls the global fetch; a hung Gemini socket has no timeout and stalls
+// the whole sweep forever (caused 2 overnight stalls). Wrap fetch to inject an
+// AbortSignal.timeout when the caller supplied none — undici aborts the socket, the
+// await rejects with a real error, and the retry loop moves on instead of hanging.
+const REQ_TIMEOUT_MS = 90000;
+const _fetch = global.fetch.bind(global);
+global.fetch = (url, opts = {}) =>
+  opts.signal ? _fetch(url, opts) : _fetch(url, { ...opts, signal: AbortSignal.timeout(REQ_TIMEOUT_MS) });
+// backstop: race any single-combo run against a wall clock in case something non-fetch hangs.
+const COMBO_TIMEOUT_MS = 180000;
+const withTimeout = (p, ms, label) => Promise.race([
+  p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout:' + label + ' >' + (ms / 1000) + 's')), ms).unref()),
+]);
+
 require(path.join(__dirname, '..', 'strategies.js'));
 const E = require(path.join(__dirname, '..', 'engine.js'));
 
@@ -52,7 +68,9 @@ function metaChecks(sb, type, style) {
     let rec = { round, type, style, ok: false };
     for (let a = 0; a < 3; a++) {
       try {
-        const sb = await E.generateStoryboard({ sku: 'aktiv', type, style, seconds: 24, apiKey: API_KEY });
+        const sb = await withTimeout(
+          E.generateStoryboard({ sku: 'aktiv', type, style, seconds: 24, apiKey: API_KEY }),
+          COMBO_TIMEOUT_MS, tag);
         E.sanitizeStoryboard(sb);
         rec.ok = true;
         rec.lint = sb.lint || [];
