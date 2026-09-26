@@ -528,6 +528,12 @@ ${basePrompt}
   const VIDEO_ASPECTS   = { '1:1':'Feed 1:1 (square)', '9:16':'Reels / Stories 9:16', '16:9':'YouTube 16:9' };
   const VIDEO_DURATIONS = [6, 8];   // seconds — Veo 3 Fast supports 4/6/8; default 8
 
+  // ── ARTIFACT NEGATIVE PROMPT — sent to EVERY video render (Veo negativePrompt + fal negative_prompt).
+  //    Belt-and-braces on top of the pre-spend lint: names the exact AI-slop failure modes so the model
+  //    steers away from them. SKU word-bans still ride in the positive prompt; this is anatomy/render only.
+  //    (Quan 26/09: "you should have already done this" — extra arms, floating tube, phantom paste, flipped logo.)
+  const VIDEO_ARTIFACT_NEGATIVE = 'extra limbs, third arm, extra arm, two right hands, duplicate hands, extra hand, extra fingers, missing fingers, six fingers, fused fingers, malformed hands, deformed hands, mangled hands, floating product, levitating tube, product hovering in mid-air, product suspended in air, photoshopped-looking product, pasted-in product, product cut-out edges, toothpaste paste, paste blob, foam, gel blob, stray droplet, dripping paste, dispensing paste, squeezing tube, mirror-flipped logo, reversed text, backwards logo, warped logo, morphing packaging, melting tube, bending tube, duplicated tube, second tube, extra tube, garbled text, gibberish text, distorted face, warped face, deformed face, extra teeth, uncanny valley, plastic skin, low quality, blurry, warping, jitter, flicker, ghosting, watermark, burned-in subtitles, caption bar';
+
   /* ═══ VIDEO STYLE PRESETS — the "Higgsfield Motion" variety pack ═══
      Each preset = a distinct look/feel + the BEST engine for it + a motion
      brief that overrides the generic MOTION DIRECTION line in buildVideoPrompt.
@@ -646,6 +652,7 @@ ${basePrompt}
       ? { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } }
       : { prompt: opts.prompt };
     const parameters = { aspectRatio: ar, durationSeconds: seconds, sampleCount:1 };
+    parameters.negativePrompt = opts.negativePrompt || VIDEO_ARTIFACT_NEGATIVE;   // steer Veo off AI-slop artifacts
     if(imgPart) parameters.personGeneration='allow_adult';   // t2v rejects allow_adult — only valid for image-to-video
     const base = 'https://generativelanguage.googleapis.com/v1beta/';
     const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
@@ -702,6 +709,7 @@ ${basePrompt}
       dur = String(fit.length ? Math.max(...fit) : Math.min(...nums));
     }
     const body = { prompt: opts.prompt, image_url: opts.imgDataUrl, duration: dur };
+    body.negative_prompt = opts.negativePrompt || VIDEO_ARTIFACT_NEGATIVE;   // steer Kling/Seedance off AI-slop artifacts
     if(!m.deriveAR) body.aspect_ratio = opts.aspectRatio||'9:16';
     const submit = await fetch('https://queue.fal.run/'+m.id,
       { method:'POST', headers:{'Authorization':'Key '+key,'Content-Type':'application/json'}, body:JSON.stringify(body) });
