@@ -1006,7 +1006,12 @@ ${basePrompt}
       // before spend; the pack stays put and hands stay up. Free rewrite steers to a hands-up action.
       const scVM=String(sc.visual||'')+' '+String(sc.motion||'');
       const hasProd=/\b(pack|tube|box|bottle|product|lacalut)\b/i.test(scVM);
-      const handsLow=scVM.match(/\b(towel|dry(?:ing|s|ies)?|dab\w*|wipe\w*|reach\w*|pick\w*|grab\w*|wash\w*|splash\w*|rins\w*|scrub\w*)\b/i);
+      let handsLow=scVM.match(/\b(towel|dry(?:ing|s|ies)?|dab\w*|wipe\w*|reach\w*|pick\w*|grab\w*|wash\w*|splash\w*|rins\w*|scrub\w*)\b/i);
+      // ALSO catch hands RESTING / LEANING / PLACED / LOWERED onto the counter/bench/sink (27/09 Scene-2
+      // gap) — a hand at counter level next to the pack is the grab trigger, even without an action verb.
+      // Only fires on rest/lean/place/lower + a bench surface; "hands staying high/away" never matches.
+      if(!handsLow) handsLow=scVM.match(/\b(rest\w*|lean\w*|plac\w*|lower\w*|settl\w*)\b[^.]{0,20}\b(?:her|his|their)?\s*(?:hands?|palms?|fingers?)\b[^.]{0,30}\b(counter|bench|sink|slab|vanity|surface|tabletop|table)\b/i)
+                          || scVM.match(/\b(hands?|palms?)\b[^.]{0,25}\b(rest\w*|lean\w*|placed?|lowered?|settl\w*)\b[^.]{0,25}\b(counter|bench|sink|slab|vanity|surface|tabletop|table)\b/i);
       if(hasProd && handsLow) out.push('Scene '+(i+1)+': "'+handsLow[0]+'" brings the hands DOWN toward the counter where the pack sits — the video model will grab it. Keep the pack in frame but switch to a hands-UP action away from the counter (brushing/touching hair, applying serum or moisturiser to the face, putting on an earring, adjusting a collar).');
       // IDLE person — no concrete action reads as a boring, broken clip (Quan's 27/09 note).
       const hasPerson=/\b(she|he|her|him|they|woman|man|person|girl|guy|lady|model|face|smil\w*|expression|gaz\w*|look\w*|pensive|stand\w*)\b/i.test(scVM);
