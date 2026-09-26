@@ -929,6 +929,7 @@ ${basePrompt}
     { key:'SENSITIVITY', owners:['sensitive'], re:/\b(sensitiv\w+|winc\w+|twinges?|twinging|zing|nerve twinge|sharp (?:twinge|sting)|cold[- ]and[- ]hot|hot[- ]and[- ]cold|cold or hot)\b/i },
     { key:'WHITENING',   owners:['white-repair'], re:/\b(whiten\w+|whiter|brighter smile|surface stains?|coffee stains?|shades? whiter|yellow\w* teeth)\b/i },
     { key:'FRESH-BREATH',owners:['flora'], re:/\b(bad breath|fresh breath|freshens? breath|halitosis|mouth odou?r|breath odou?r)\b/i },
+    { key:'GUM-CARE',    owners:['aktiv','aktiv-herbal'], re:/\b(gum[- ]care|gum[- ]firmness|firm(?:er)? gums|gums that feel firm|cared-for gums|receding gums|gum recession|loose gums|gum ?line)\b/i },
   ];
   const SKU_ANGLE_SAY = { aktiv:"AKTIV's gum-care angle (gums that FEEL firm and cared-for)", 'aktiv-herbal':"AKTIV Herbal's natural gum-care angle", flora:"Flora's fresh-breath angle", sensitive:"Sensitive's cold/hot-twinge comfort angle", 'white-repair':"White & Repair's surface-stain / whiteness angle" };
   function lintStoryboard(sb, styleId, typeId, sku){
