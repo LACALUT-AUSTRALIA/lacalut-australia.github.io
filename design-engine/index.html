@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v6 activity-brain</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v7 lean-ui</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -121,10 +121,10 @@
     <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
 
     <div class="adv">
-      <label class="row"><input type="checkbox" id="advNeg" checked> Compliance negative-prompt (auto-block disease claims)</label>
-      <div class="guide" id="negPreview"></div>
-      <label class="row"><input type="checkbox" id="oneUp" checked> 🚀 One-Up Loop — refine the prompt to its pinnacle (max scroll-stopper)</label>
-      <div class="guide">Drafts the brief, then one-ups it again and again until it can't get better — only then generates. Applies to every strategy.</div>
+      <input type="checkbox" id="advNeg" checked hidden>
+      <input type="checkbox" id="oneUp" checked hidden>
+      <div id="negPreview" style="display:none"></div>
+      <div class="guide" style="font-size:11px">🛡️ Compliance guard <b>on</b> · 🚀 One-Up Loop <b>on</b> — always applied.</div>
     </div>
 
     <div class="fmt">
