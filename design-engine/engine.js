@@ -533,6 +533,11 @@ ${basePrompt}
   //    steers away from them. SKU word-bans still ride in the positive prompt; this is anatomy/render only.
   //    (Quan 26/09: "you should have already done this" — extra arms, floating tube, phantom paste, flipped logo.)
   const VIDEO_ARTIFACT_NEGATIVE = 'extra limbs, third arm, extra arm, two right hands, duplicate hands, extra hand, extra fingers, missing fingers, six fingers, fused fingers, malformed hands, deformed hands, mangled hands, floating product, levitating tube, product hovering in mid-air, product suspended in air, photoshopped-looking product, pasted-in product, product cut-out edges, toothpaste paste, paste blob, foam, gel blob, stray droplet, dripping paste, dispensing paste, squeezing tube, mirror-flipped logo, reversed text, backwards logo, warped logo, morphing packaging, melting tube, bending tube, duplicated tube, second tube, extra tube, garbled text, gibberish text, distorted face, warped face, deformed face, extra teeth, uncanny valley, plastic skin, low quality, blurry, warping, jitter, flicker, ghosting, watermark, burned-in subtitles, caption bar';
+  // Global brain list ALWAYS fires; the per-render "Avoid" box (user) is APPENDED, never a replacement.
+  function mergeNegative(userAvoid){
+    const extra = (userAvoid||'').trim().replace(/^,+|,+$/g,'').trim();
+    return extra ? VIDEO_ARTIFACT_NEGATIVE + ', ' + extra : VIDEO_ARTIFACT_NEGATIVE;
+  }
 
   /* ═══ VIDEO STYLE PRESETS — the "Higgsfield Motion" variety pack ═══
      Each preset = a distinct look/feel + the BEST engine for it + a motion
@@ -571,6 +576,15 @@ ${basePrompt}
       motion:'MOTION: a dramatic cinematic ad moment — moody directional lighting, a smooth crafted camera move (crane, slow track or dolly), rich colour grade and a strong hero beat on the product. Film-grade, premium and emotive; motion smooth and deliberate.' }
   };
   function videoStyle(id){ return VIDEO_STYLES[id] || null; }
+  // The STYLE is the source of truth for the engine — each style is authored with its best engine
+  // (lofi_native→VEO3, hyper_motion/liquid_splash/float→FAL_KLING, retro→FAL_SEEDANCE). This makes a
+  // wrong style↔engine pairing (and the wasted credits it burns) impossible: pick the style, get its
+  // engine automatically. Quan 26/09. An explicit override is honoured ONLY if forceModel is passed.
+  function videoEngineForStyle(style, forceModel){
+    if(forceModel) return forceModel;
+    const st = videoStyle(style);
+    return (st && st.model) || VIDEO_MODEL;
+  }
 
   function videoModel(key){ return VIDEO_MODELS[key||VIDEO_MODEL] || VIDEO_MODELS.VEO3; }
   function getVideoModel(){ return VIDEO_MODEL; }
@@ -652,7 +666,7 @@ ${basePrompt}
       ? { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } }
       : { prompt: opts.prompt };
     const parameters = { aspectRatio: ar, durationSeconds: seconds, sampleCount:1 };
-    parameters.negativePrompt = opts.negativePrompt || VIDEO_ARTIFACT_NEGATIVE;   // steer Veo off AI-slop artifacts
+    parameters.negativePrompt = mergeNegative(opts.negativePrompt);   // global brain list + per-render Avoid box
     if(imgPart) parameters.personGeneration='allow_adult';   // t2v rejects allow_adult — only valid for image-to-video
     const base = 'https://generativelanguage.googleapis.com/v1beta/';
     const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
@@ -709,7 +723,7 @@ ${basePrompt}
       dur = String(fit.length ? Math.max(...fit) : Math.min(...nums));
     }
     const body = { prompt: opts.prompt, image_url: opts.imgDataUrl, duration: dur };
-    body.negative_prompt = opts.negativePrompt || VIDEO_ARTIFACT_NEGATIVE;   // steer Kling/Seedance off AI-slop artifacts
+    body.negative_prompt = mergeNegative(opts.negativePrompt);   // global brain list + per-render Avoid box
     if(!m.deriveAR) body.aspect_ratio = opts.aspectRatio||'9:16';
     const submit = await fetch('https://queue.fal.run/'+m.id,
       { method:'POST', headers:{'Authorization':'Key '+key,'Content-Type':'application/json'}, body:JSON.stringify(body) });
@@ -793,7 +807,7 @@ ${basePrompt}
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:opts.seconds, apiKey:opts.apiKey });
     }
     const call = m.route==='fal' ? callFalVideo : callVeoVideo;
-    const video = await call({ prompt, imgDataUrl:opts.imgDataUrl, model:modelKey, seconds:opts.seconds, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey, onProgress:opts.onProgress, asBlob:opts.asBlob });
+    const video = await call({ prompt, imgDataUrl:opts.imgDataUrl, model:modelKey, seconds:opts.seconds, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey, negativePrompt:opts.avoid||opts.negativePrompt||'', onProgress:opts.onProgress, asBlob:opts.asBlob });
     return { video, prompt, model:m.label, modelKey, style:opts.style||null, seconds:opts.seconds||8, aspectRatio:opts.aspectRatio||'9:16', cost:videoCostEstimate({model:modelKey,seconds:opts.seconds}), qc:videoQCChecklist() };
   }
 
@@ -1393,9 +1407,11 @@ Return ONLY this one scene as JSON, exactly this schema: {"visual":"...","motion
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
     }
     if(opts.fixNote){ prompt += ' QC CORRECTION (highest priority — the previous render failed on exactly this): ' + opts.fixNote; }
-    const call = videoModel(opts.model||'VEO3').route==='fal' ? callFalVideo : callVeoVideo;
-    const callOpts = p => ({ prompt:p, imgDataUrl:still, model:opts.model||'VEO3',
+    const engineKey = videoEngineForStyle(opts.style, opts.forceModel);   // style auto-picks its engine — no mismatch, no wasted credits
+    const call = videoModel(engineKey).route==='fal' ? callFalVideo : callVeoVideo;
+    const callOpts = p => ({ prompt:p, imgDataUrl:still, model:engineKey,
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
+      negativePrompt:opts.avoid||opts.negativePrompt||'',   // per-render Avoid box → merged with the global brain list
       onProgress:onProg, asBlob:true });
     let videoBlob;
     try{ videoBlob = await call(callOpts(prompt)); }
@@ -1533,7 +1549,8 @@ Return ONLY valid JSON:
         const doQC = opts.qc !== false;
         const fn = doQC ? renderSceneQC : renderScene;
         const r = await fn({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
-          style:opts.style, model:opts.model, aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl, refImgs:opts.refImgs,
+          style:opts.style, model:opts.model, forceModel:opts.forceModel, avoid:opts.avoid,
+          aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl, refImgs:opts.refImgs,
           apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, prevStill, worldStill,
           qcThreshold:opts.qcThreshold, qcMaxRerolls:opts.qcMaxRerolls,
           onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
@@ -1633,7 +1650,8 @@ Return ONLY valid JSON:
     oneUpImagePrompt,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm,
     VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
-    videoModel, videoStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
+    videoModel, videoStyle, videoEngineForStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
+    VIDEO_ARTIFACT_NEGATIVE, mergeNegative,
     buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
     sanitizeStoryboard, generateStoryboard, rewriteSceneBeat, lintStoryboard, buildScenePrompt, storyboardCostEstimate,
     renderScene, renderStoryboard, stitchScenes, ttsLine,

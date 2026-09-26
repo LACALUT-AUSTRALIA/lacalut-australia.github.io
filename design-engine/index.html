@@ -36,6 +36,8 @@
   #vTypes .mode{ font-size:11px; padding:7px 3px; line-height:1.2; min-width:0; }
   .slots{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:8px 0; }
   .slot{ aspect-ratio:1; border:2px dashed var(--line); border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-size:11px; color:#999; overflow:hidden; position:relative; background:#fafafa; }
+  .slot{ cursor:pointer; }
+  .slot.drag{ border-color:var(--red,#CF102D); background:#fff2f3; }
   .slot img{ width:100%; height:100%; object-fit:cover; }
   .slot .rm{ position:absolute; top:2px; right:2px; background:rgba(0,0,0,.6); color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; line-height:1; }
   .slot .lbl{ position:absolute; bottom:0; left:0; right:0; background:rgba(0,0,0,.55); color:#fff; font-size:9px; padding:2px; text-align:center; }
@@ -254,6 +256,7 @@
 
 <script src="strategies.js"></script>
 <script src="engine.js"></script>
+<script src="packs-seed.js"></script>
 <script>
 /* Shared brand engine — single source of truth (engine.js). */
 const E = window.LacalutEngine;
@@ -266,7 +269,7 @@ const getGuide = E.getGuide, pickStr = E.pickStr, pickRand = E.pickRand, brainUs
 const KEYS = { get gemini(){ return localStorage.getItem('lc_gemini_key')||''; }, get marky(){ return localStorage.getItem('lc_marky_key')||''; }, get fal(){ return localStorage.getItem('lc_fal_key')||''; } };
 let curModel = localStorage.getItem('de_model') || 'gemini-2.5-flash-image';
 let curSku='aktiv', curMode='social';
-let productImgs = JSON.parse(localStorage.getItem('de_product_'+curSku)||'[]');
+let productImgs = [];   // loaded per SKU+ptype by loadProductImgs() at init (after _refLib is ready)
 let styleImgs   = JSON.parse(localStorage.getItem('lc_style_images')||'[]');
 let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","sensitive","white-repair"]');
 let curBrain = null;
@@ -285,7 +288,7 @@ function ptypeOf(rec){ return (rec && rec.ptype) || 'toothpaste'; }   // missing
 function renderPtypes(){ const el=$('ptypes'); if(!el) return;
   el.innerHTML = PTYPES.map(([k,l])=>`<button class="tab ptab ${k===curPtype?'active':''}" onclick="pickPtype('${k}')">${l}</button>`).join(''); }
 function pickPtype(p){ curPtype=p; localStorage.setItem('de_ptype_'+curSku,p);   // persisted per formula tab
-  renderPtypes(); renderTitle(); renderGallery(curSku); renderRefLibGrid(); }
+  loadProductImgs(); renderPtypes(); renderSlots(); renderTitle(); renderGallery(curSku); renderRefLibGrid(); }
 // one-off migration: tag every legacy saved generation as toothpaste (tag only — nothing deleted/re-rendered)
 async function migratePtype(){ try{ const db=await idb();
   await new Promise(res=>{ const t=db.transaction('gens','readwrite'); const rq=t.objectStore('gens').openCursor();
@@ -312,7 +315,7 @@ function renderSlots(){
     for(let i=0;i<3;i++){
       const img=productImgs[i];
       const roles=['Main','Angle','Detail'];
-      html.push(`<div class="slot" onclick="${img?'':'pickPhoto('+i+')'}">${img?`<img src="${img}"><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷'}<span class="lbl">${roles[i]}</span></div>`);
+      html.push(`<div class="slot" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropPhoto(event,${i})" onclick="${img?'':'pickPhoto('+i+')'}" title="Click to choose, or drag an image here">${img?`<img src="${img}"><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷 drop / click'}<span class="lbl">${roles[i]}</span></div>`);
     }
     html.push(`<div style="grid-column:1/-1;margin-top:2px"><button class="btn" style="font-size:12px;padding:5px 10px;width:100%" title="Fill the 3 slots with this formula's saved library refs — toothpaste + mouthwash + toothbrush (box forms preferred) for a full range/system shot" onclick="fillSystemRefs()">🧰 3-Part System refs (from library)</button></div>`);
     $('slots').innerHTML=html.join('');
@@ -392,7 +395,7 @@ function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes(
   if(KEYS.gemini){ b.className='kbadge ok'; b.textContent='✓ '+mdl; } else { b.className='kbadge no'; b.textContent='⚠ No Gemini key'; } }
 
 /* ═══ ACTIONS ═══ */
-function pickSku(k){ curSku=k; if(k!=='multi') productImgs=JSON.parse(localStorage.getItem('de_product_'+k)||'[]'); curPtype=getPtype(k); renderPtypes(); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
+function pickSku(k){ curSku=k; curPtype=getPtype(k); if(k!=='multi') loadProductImgs(); renderPtypes(); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
 function pickMode(m){ curMode=m; renderModes(); renderEditModes(); renderTitle(); }
 
 /* ═══ PRESETS — save the current recipe (SKU + strategy + form + brief + settings) and reload it in one click ═══ */
@@ -448,11 +451,40 @@ function renderEditSizePreview(){ const el=$('editSizePreview'); if(!el) return;
     <small style="font-size:10px;font-weight:800;color:#8a6d1a">${MODES[curMode].dims}</small></span>`;
 }
 function resolveBrain(){ if(curBrain==='mixed') return BRAINS[Math.floor(Math.random()*BRAINS.length)]; return BRAINS.find(b=>b.id===curBrain)||null; }
-function saveProduct(){ localStorage.setItem('de_product_'+curSku, JSON.stringify(productImgs)); }
+/* ═══ PRODUCT PHOTOS — per SKU + product-type (toothpaste/mouthwash/toothbrush).
+   Manual uploads win and persist; otherwise the 3 slots AUTO-FILL live from the saved
+   reference library for the selected formula + type, so the right packshots are already
+   there without re-uploading each time. ═══ */
+function prodKey(sku,pt){ return 'de_prodpt_'+(sku||curSku)+'_'+(pt||curPtype); }
+function autofillFromLib(){   // ephemeral: this SKU+ptype's saved library refs → the 3 slots
+  const rows=PTYPE_REF_ROWS[curPtype]||[]; const out=[];
+  for(const t of rows){ const u=_refLib[curSku+'_'+t]; if(u&&!out.includes(u)) out.push(u); if(out.length>=3) break; }
+  return [out[0]||null,out[1]||null,out[2]||null];
+}
+function loadProductImgs(){
+  if(curSku==='multi'){ productImgs=[]; return; }
+  const raw=localStorage.getItem(prodKey());
+  if(raw!==null){ try{ const a=JSON.parse(raw)||[]; if(a.filter(Boolean).length){ productImgs=a; return; } }catch(e){} }   // manual upload wins (only if it actually has photos)
+  if(curPtype==='toothpaste'){ const leg=localStorage.getItem('de_product_'+curSku); if(leg!==null){ try{ const a=JSON.parse(leg)||[]; if(a.filter(Boolean).length){ productImgs=a; return; } }catch(e){} } }   // legacy migration
+  productImgs=autofillFromLib();   // empty/absent → mirror the saved library for this formula + type
+}
+function refreshSlotsIfAuto(){   // re-mirror the library after a ref upload/removal, only when slots aren't a manual override
+  if(curSku==='multi') return;
+  if(localStorage.getItem(prodKey())!==null) return;
+  if(curPtype==='toothpaste'&&localStorage.getItem('de_product_'+curSku)!==null) return;
+  loadProductImgs(); renderSlots();
+}
+function saveProduct(){ localStorage.setItem(prodKey(), JSON.stringify(productImgs)); }
 
 function fileToDataUrl(cb){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*';
   inp.onchange=()=>{ const f=inp.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); }; inp.click(); }
 function pickPhoto(i){ fileToDataUrl(d=>{ productImgs[i]=d; saveProduct(); renderSlots(); }); }
+function dropPhoto(e,i){ e.preventDefault(); const el=e.currentTarget; el.classList.remove('drag');
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f&&f.type&&f.type.startsWith('image/')){ const r=new FileReader(); r.onload=()=>{ productImgs[i]=r.result; saveProduct(); renderSlots(); }; r.readAsDataURL(f); return; }
+  const uri=e.dataTransfer&&(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain'));
+  if(uri&&/^(data:image|https?:)/.test(uri)){ productImgs[i]=uri.trim(); saveProduct(); renderSlots(); }
+}
 function delPhoto(i){ productImgs[i]=null; saveProduct(); renderSlots(); }
 /* ═══ 3-PART SYSTEM REFS — fill the 3 slots from the saved library: one ref per product
    form of the CURRENT formula (toothpaste + mouthwash + toothbrush, box/combo forms first)
@@ -603,6 +635,16 @@ async function refPut(key,url){ const db=await idb(); return new Promise((res,re
 async function refDel(key){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').delete(key); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 async function refAll(){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readonly'); const rq=t.objectStore('reflib').getAll(); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
 async function loadRefLib(){ try{ const all=await refAll(); _refLib={}; all.forEach(r=>_refLib[r.key]=r.url); }catch(e){} }
+async function seedPacks(){   // one-time: write bundled German packs (packs-seed.js) that aren't already in the library — never clobbers manual uploads
+  if(typeof window.LAC_PACKS!=='object'||!window.LAC_PACKS) return 0;
+  let added=0;
+  for(const [key,url] of Object.entries(window.LAC_PACKS)){
+    if(_refLib[key]) continue;   // already present (manual upload or previously seeded) → leave it
+    _refLib[key]=url; try{ await refPut(key,url); added++; }catch(e){ /* storage full — keep in-memory copy */ }
+  }
+  if(added) try{ toast('📦 Loaded '+added+' German packshots into the library'); }catch(e){}
+  return added;
+}
 function compressRef(url,max){ return new Promise(res=>{ const img=new Image(); img.onload=()=>{ let w=img.width,h=img.height; if(Math.max(w,h)>max){ const s=max/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s);} const c=document.createElement('canvas'); c.width=w;c.height=h; c.getContext('2d').drawImage(img,0,0,w,h); res(c.toDataURL('image/jpeg',0.85)); }; img.onerror=()=>res(url); img.src=url; }); }
 function renderRefLibGrid(){
   const wrap=$('refLibGrid'); if(!wrap) return;
@@ -622,9 +664,9 @@ function renderRefLibGrid(){
   }
   wrap.innerHTML=h+`</div>`;
 }
-function pickRefSlot(key){ fileToDataUrl(async d=>{ const small=await compressRef(d,1024); _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderRefLibGrid(); }); }
+function pickRefSlot(key){ fileToDataUrl(async d=>{ const small=await compressRef(d,1024); _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderRefLibGrid(); refreshSlotsIfAuto(); }); }
 function toggleRefSelect(key){ const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); else _editRefs.push(key); renderRefLibGrid(); }
-async function removeRef(key){ if(!confirm('Remove this saved reference photo?'))return; delete _refLib[key]; const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); try{ await refDel(key); }catch(e){} renderRefLibGrid(); }
+async function removeRef(key){ if(!confirm('Remove this saved reference photo?'))return; delete _refLib[key]; const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); try{ await refDel(key); }catch(e){} renderRefLibGrid(); refreshSlotsIfAuto(); }
 async function idbPut(rec){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').put(rec); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
@@ -1081,7 +1123,11 @@ function sbSwitchEngine(sel){
   const ab=document.getElementById('sbApprove'); if(ab) ab.innerHTML=`🔴 Approve &amp; Render — ~US$${est.usd.toFixed(2)}`;
 }
 function openStoryboardApproval(sb, ctx){
-  const scenes=sb.scenes, model=$('vModel').value;
+  const scenes=sb.scenes;
+  // 🔒 ENGINE AUTO-SELECTED FROM STYLE — the style is the source of truth (lofi_native→Veo, motion/splash→Kling).
+  // Can't pick the wrong engine for a style → can't waste credits. Mirror it to #vModel which approveStoryboard reads.
+  const model=E.videoEngineForStyle(vStyleId); const _vm=$('vModel'); if(_vm) _vm.value=model;
+  const engLabel=(E.VIDEO_MODELS[model]||{}).label||model, engJob=(E.VIDEO_MODELS[model]||{}).job||'';
   const est=E.storyboardCostEstimate({scenes:scenes.length, model});
   const escv=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
   const dlg=document.createElement('div'); dlg.id='sbdlg';
@@ -1092,9 +1138,8 @@ function openStoryboardApproval(sb, ctx){
     <div style="background:#eef4ff;border:1px solid #bcd0f5;border-radius:8px;padding:8px 11px;font-size:12.5px;margin-bottom:10px">🎬 <b>TYPE:</b> ${escv(E.VIDEO_TYPES[vType]?.label||vType)} &nbsp;·&nbsp; 🎨 <b>STYLE:</b> ${escv(E.VIDEO_STYLES[vStyleId]?.label||vStyleId)} <span style="color:#667">— ${escv(E.VIDEO_STYLES[vStyleId]?.desc||'')}</span></div>
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
       <label style="font-weight:700;font-size:12px">🎥 Engine:</label>
-      <select id="sbEngine" onchange="sbSwitchEngine(this)" style="flex:1;min-width:180px;padding:7px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:12px">
-        ${V_MODELS.map(k=>{const mm=E.VIDEO_MODELS[k];return `<option value="${k}" ${k===model?'selected':''}>${escv(mm.label)} — ${escv(mm.job||'')}</option>`;}).join('')}
-      </select>
+      <div style="flex:1;min-width:180px;padding:7px 10px;border:1px solid #d7ccff;border-radius:8px;font-size:12px;background:#f6f2ff;color:#4c2f9c">🔒 <b>${escv(engLabel)}</b> <span style="color:#8a7bc0">— auto-selected for this style${engJob?' · '+escv(engJob):''}</span></div>
+      <input type="hidden" id="sbEngine" value="${escv(model)}">
       <input type="password" id="sbFalKey" placeholder="fal.ai API key (Kling / Seedance)" oninput="localStorage.setItem('lc_fal_key',this.value.trim())" value="${escv(KEYS.fal)}" style="display:${(E.VIDEO_MODELS[model]||{}).route==='fal'?'':'none'};flex-basis:100%;padding:7px;border:1px solid #ddd;border-radius:8px;font-size:12px">
     </div>
     <div id="sbWarn" style="display:none;background:#fdeaea;border:1px solid #e7b3b0;color:#b3261e;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px">⚠️ A red field contains a blocked disease/therapeutic claim — reword it before approving.</div>
@@ -1112,6 +1157,8 @@ function openStoryboardApproval(sb, ctx){
     <label style="font-weight:700;font-size:12px">WORLD (the ONE location/set — every scene is shot inside it)</label>
     <textarea id="sbWorld" rows="2" oninput="autoGrowTA(this)" style="width:100%;margin:3px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:12px;overflow:hidden;resize:none">${escv(sb.world)}</textarea>
     <input type="hidden" id="sbAnchor" value="${escv(sb.styleAnchor)}">
+    <label style="font-weight:700;font-size:12px">🚫 Avoid — extra things to keep OUT of this render <span style="color:#999;font-weight:400">(added on top of the built-in artifact guard — extra limbs, floating/pasted product, phantom paste, flipped logo etc. always applied)</span></label>
+    <textarea id="sbAvoid" rows="2" placeholder="e.g. sunglasses, pets, competitor products, blue towel — comma-separated" oninput="autoGrowTA(this)" style="width:100%;margin:3px 0 12px;padding:8px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:12px;overflow:hidden;resize:none">${escv(sb.avoid||'')}</textarea>
     ${scenes.map((sc,i)=>`
     <div style="border:1px solid ${sc.flagged?'#b3261e':'#e3d9ff'};border-radius:10px;padding:10px 12px;margin-bottom:10px;background:${sc.flagged?'#fdf3f3':'#fbfaff'}">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><b style="color:#7c3aed">Scene ${i+1}</b><span style="font-size:11px;color:#888">8s</span><span style="flex:1"></span>
@@ -1155,6 +1202,7 @@ function collectStoryboard(){ const dlg=$('sbdlg'); const sb=dlg._sb;
 async function approveStoryboard(){
   const dlg=$('sbdlg'); const ctx=dlg._ctx; const sb=collectStoryboard();
   if(sb.flagged){ alert('A line still contains a blocked claim — fix the red field.'); sbFieldFlag(dlg.querySelector('input')); return; }
+  const avoid=($('sbAvoid')?$('sbAvoid').value.trim():'');   // per-render Avoid box → merged with the global artifact guard
   const model=$('vModel').value;
   if((E.VIDEO_MODELS[model]||{}).route==='fal' && !KEYS.fal){ alert('Paste your fal.ai API key (the field under the Engine picker) to render on '+(E.VIDEO_MODELS[model].label||model)+'.'); return; }
   const est=E.storyboardCostEstimate({scenes:sb.scenes.length, model});
@@ -1162,7 +1210,7 @@ async function approveStoryboard(){
   if(!confirm(`This will spend ~US$${est.usd.toFixed(2)} (${sb.scenes.length} scenes × 8s × US$${est.usdPerSec}/s on ${est.label}).\n\n🔍 AUTO-QC: Gemini watches every scene and auto-re-rolls a failed one ONCE (score <${E.QC_THRESHOLD}/10 or legal breach) — worst case ~US$${(est.usd*2).toFixed(2)} total if every scene re-rolls.\n\nRender the ad now?`)) return;
   dlg.remove();
   const sku=ctx.sku;
-  const rec={ id:'v'+Date.now(), sku:curSku, refSku:sku, type:vType, style:vStyleId, modelKey:model, aspect:vAspect,
+  const rec={ id:'v'+Date.now(), sku:curSku, refSku:sku, type:vType, style:vStyleId, modelKey:model, aspect:vAspect, avoid,
     duration:sb.scenes.length*8, storyboard:{hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor},
     sbScenes:sb.scenes, scenes:[], stitchedBlob:null, status:'rendering',
     cost:est, qc:[...E.videoQCChecklist(),'VO matches the approved script — no drifted claims','Voice consistent across scenes'],
@@ -1188,7 +1236,7 @@ async function _renderScenesInto(recId, startAt){
       prog('🎬 scene '+(i+1)+'/'+total+' starting…');
       const prevStill=(i>0 && rec.scenes[i-1] && rec.scenes[i-1].still)||null;   // world continuity — each still anchors the next
       const r=await E.renderSceneQC({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total,
-        style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:ref, refImgs:refs, apiKey:KEYS.gemini, falKey:KEYS.fal, oneUp:rec.oneUp, prevStill,
+        style:rec.style, model:rec.modelKey, avoid:rec.avoid, aspectRatio:rec.aspect, refImgDataUrl:ref, refImgs:refs, apiKey:KEYS.gemini, falKey:KEYS.fal, oneUp:rec.oneUp, prevStill,
         onProgress:m=>prog('scene '+(i+1)+'/'+total+' · '+m) });
       rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 };
       await vidPut(rec);   // bank every paid scene immediately
@@ -1725,9 +1773,9 @@ async function pushCardToMarky(cardId){
 }
 
 /* ═══ INIT ═══ */
-renderTabs(); renderPtypes(); renderModes(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets('');
+renderTabs(); renderPtypes(); renderModes(); loadProductImgs(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets('');
 migratePtype().then(()=>renderGallery(curSku));   // tag legacy gens as toothpaste first, then paint the gallery
-loadRefLib().then(()=>{ renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // restore Image/Video mode (after refs load for the packshot box)
+loadRefLib().then(seedPacks).then(()=>{ loadProductImgs(); renderSlots(); renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // refs loaded → seed German packs → auto-fill the product-photo slots + restore Image/Video mode
 $('advNeg').addEventListener('change',renderNeg);
 </script>
 </body>
