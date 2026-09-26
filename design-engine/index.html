@@ -1241,7 +1241,8 @@ async function approveStoryboard(){
   dlg.remove();
   const sku=ctx.sku;
   const rec={ id:'v'+Date.now(), sku:curSku, refSku:sku, type:vType, style:vStyleId, modelKey:model, aspect:vAspect, avoid,
-    duration:sb.scenes.length*8, storyboard:{hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor},
+    duration:sb.scenes.length*8, storyboard:{hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',world:sb.world||'',styleAnchor:sb.styleAnchor,
+      product:sb.product||'',postCaptions:sb.postCaptions,nativeProduct:sb.nativeProduct},   // 🔴 carry these or renderScene loses them: nativeProduct→tube renders natively (not pasted/fake); postCaptions→clean frame (no baked garbled text); product→form lock
     sbScenes:sb.scenes, scenes:[], stitchedBlob:null, status:'rendering',
     cost:est, qc:[...E.videoQCChecklist(),'VO matches the approved script — no drifted claims','Voice consistent across scenes'],
     oneUp:$('vOneUp').checked, ts:Date.now() };
