@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v7 lean-ui</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v8 scene-reroll-editor</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -1336,10 +1336,42 @@ async function retryStitch(recId){ const rec=await getVid(recId); if(!rec) retur
     try{ toast('🎵 Audio remixed — one continuous soundtrack'); }catch(_){}
   }
   catch(e){ alert('Stitch failed again: '+e.message); } }
-async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) return;
+// ♻️+ Re-roll ONE scene with an EDITABLE script — shows the same WE SEE / MOTION so you can tweak
+// the action (e.g. fix a brush path) while the woman, background and product stay identical. The
+// character, world and product live in the storyboard and are NEVER touched here; the VO take is kept.
+async function openRerollEditor(recId,i){ const rec=await getVid(recId); if(!rec) return;
+  const sc=(rec.sbScenes&&rec.sbScenes[i])||{}; const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
+  const esc=s=>String(s||'').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const dlg=document.createElement('div'); dlg.id='rrdlg';
+  dlg.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+  dlg.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:560px;width:92%;max-height:88vh;overflow:auto;padding:20px 22px;box-shadow:0 12px 40px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 4px;color:#c8102e">♻️ Re-roll Scene ${i+1} — edit the action</h3>
+    <div style="font-size:12px;color:#666;margin:0 0 14px">Same woman, same background, same tube — only what you type here changes. The voiceover take is kept.</div>
+    <label style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:.03em">WE SEE</label>
+    <textarea id="rrVisual" oninput="autoGrowTA(this)" style="width:100%;margin:3px 0 12px;padding:9px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:13px;line-height:1.4;overflow:hidden;resize:none">${esc(sc.visual)}</textarea>
+    <label style="font-size:11px;font-weight:700;color:#7c3aed;letter-spacing:.03em">MOTION</label>
+    <textarea id="rrMotion" oninput="autoGrowTA(this)" style="width:100%;margin:3px 0 12px;padding:9px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:13px;line-height:1.4;overflow:hidden;resize:none">${esc(sc.motion)}</textarea>
+    <label style="font-size:11px;font-weight:700;color:#999">VOICEOVER (kept — not re-recorded)</label>
+    <div style="font-size:12px;color:#888;margin:3px 0 14px;font-style:italic">${esc(sc.vo)}</div>
+    <div style="font-size:12px;color:#0a7d28;margin:0 0 14px">💸 Renders 1 scene × 8s = ~US$${est.usd.toFixed(2)} on ${esc(est.label)}. QC watches it; no auto-respend.</div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="document.getElementById('rrdlg').remove()" style="padding:9px 16px;border:1px solid #ddd;background:#fff;border-radius:8px;font:inherit;font-weight:600;cursor:pointer">Cancel</button>
+      <button id="rrGo" style="padding:9px 18px;border:0;background:#c8102e;color:#fff;border-radius:8px;font:inherit;font-weight:700;cursor:pointer">♻️ Render this scene</button>
+    </div></div>`;
+  document.body.appendChild(dlg);
+  setTimeout(()=>{ autoGrowTA($('rrVisual')); autoGrowTA($('rrMotion')); },20);
+  $('rrGo').onclick=async()=>{
+    const v=$('rrVisual').value.trim(), m=$('rrMotion').value.trim();
+    const fresh=await getVid(recId); if(!fresh){ dlg.remove(); return; }
+    fresh.sbScenes[i]={ ...fresh.sbScenes[i], visual:v||fresh.sbScenes[i].visual, motion:m||fresh.sbScenes[i].motion };
+    await vidPut(fresh); dlg.remove();
+    rerollVidScene(recId,i,{skipConfirm:true});
+  };
+}
+async function rerollVidScene(recId,i,opts){ opts=opts||{}; const rec=await getVid(recId); if(!rec) return;
   const est=E.videoCostEstimate({model:rec.modelKey,seconds:8});
-  // 🔴 spend gate — single scene
-  if(!confirm(`Re-roll scene ${i+1} only — spends ~US$${est.usd.toFixed(2)}.`)) return;
+  // 🔴 spend gate — single scene (skipped when the editable re-roll dialog already confirmed the render)
+  if(!opts.skipConfirm && !confirm(`Re-roll scene ${i+1} only — spends ~US$${est.usd.toFixed(2)}.`)) return;
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
   try{
     const refs=videoRefsFor(rec.refSku||rec.sku);
@@ -1408,7 +1440,7 @@ function vidCardHTML(rec){
       <b style="color:#7c3aed">S${i+1}</b><span style="flex:1;color:#666">${(s.vo||'').replace(/</g,'&lt;')}</span>${qcChip(s.qc)}${(s.attempts||1)>1?'<span title="auto-re-rolled by QC">♻️</span>':''}
       <button class="iconbtn" title="play just this scene in the player above" onclick="playVidScene('${rec.id}',${i})">▶</button>
       <button class="iconbtn" title="download this scene" onclick="dlVidScene('${rec.id}',${i})">⬇</button>
-      <button class="iconbtn" title="re-roll this scene" onclick="rerollVidScene('${rec.id}',${i})">♻️</button></div>`).join('');
+      <button class="iconbtn" title="re-roll this scene — edit WE SEE / MOTION, same woman·bench·tube" onclick="openRerollEditor('${rec.id}',${i})">♻️</button></div>`).join('');
   const scoreBadge = rec.qcScore100!=null
     ? `<b style="color:${rec.qcScore100>=75?'#0a7d33':(rec.qcScore100>=60?'#b8860b':'#c8102e')}" title="Gemini auto-QC of the finished ad — target 75+">🔍 ${rec.qcScore100}/100</b> · `
     : '';
