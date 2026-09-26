@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v4 saves-fixed</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v5 format-search</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -114,6 +114,7 @@
     <div class="slots" id="styleSlots"></div>
 
     <h3 style="margin-top:12px">Format <span id="stratCount" style="color:#999;font-weight:600;">0/8</span></h3>
+    <input type="text" id="brainSearch" placeholder="🔎 Search formats… (e.g. money)" oninput="setBrainFilter(this.value)" style="width:100%;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
     <div class="chips" id="chips"></div>
 
     <h3 style="margin-top:12px">Brief</h3>
@@ -370,14 +371,20 @@ function toggleMultiSku(k){ const i=multiSel.indexOf(k); if(i>=0)multiSel.splice
   localStorage.setItem('de_multi_sel',JSON.stringify(multiSel)); renderSlots(); renderNeg(); }
 function uploadMultiImg(k){ fileToDataUrl(async d=>{ const small=await compressRef(d,1024); const key=k+'_tp_boxtube';
   _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderSlots(); }); }
+let _brainFilter='';
+function setBrainFilter(q){ _brainFilter=(q||'').trim().toLowerCase(); renderBrains(); }
 function renderBrains(){
   if(!BRAINS.length){ $('chips').innerHTML='<span style="font-size:11px;color:#b3261e">strategies.js not loaded — reload</span>'; return; }
-  const cats={}; BRAINS.forEach(b=>{ (cats[b.cat]=cats[b.cat]||[]).push(b); });
-  let h=`<button class="chip ${curBrain==='mixed'?'on':''}" onclick="selectBrain('mixed')" style="width:100%">🎲 Mixed — random brain per image</button>`;
+  const q=_brainFilter;
+  const match=b=> !q || b.name.toLowerCase().includes(q) || (b.cat||'').toLowerCase().includes(q) || (b.id||'').toLowerCase().includes(q);
+  const list=BRAINS.filter(match);
+  const cats={}; list.forEach(b=>{ (cats[b.cat]=cats[b.cat]||[]).push(b); });
+  let h = q ? '' : `<button class="chip ${curBrain==='mixed'?'on':''}" onclick="selectBrain('mixed')" style="width:100%">🎲 Mixed — random brain per image</button>`;
   for(const cat of Object.keys(cats)){
     h+=`<div style="width:100%;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#999;margin:6px 0 2px">${cat}</div>`;
     h+=cats[cat].map(b=>`<button class="chip ${curBrain===b.id?'on':''}" onclick="selectBrain('${b.id}')" title="${b.name} · product: ${b.product}">${b.name}${b.product==='none'?' ⬜':''}</button>`).join('');
   }
+  if(q && !list.length) h=`<span style="font-size:11px;color:#999">No formats match “${q}”.</span>`;
   $('chips').innerHTML=h;
   $('stratCount').textContent = curBrain ? (curBrain==='mixed'?'Mixed':'1 selected') : 'none';
 }
