@@ -917,10 +917,31 @@ function pickVStyle(k){ vStyleId=k; localStorage.setItem('de_vid_style',k); rend
 function pickVAspect(a){ vAspect=a; localStorage.setItem('de_vid_ar',a); renderVidPanel(); }
 function pickVDur(d){ vDurSec=d; localStorage.setItem('de_vid_dur',String(d)); renderVidPanel(); }
 function vRefSku(){ return curSku==='multi' ? ((typeof multiSel!=='undefined'&&multiSel[0])||'aktiv') : curSku; }
-function renderVRefBox(){ const sku=vRefSku(); const p=packshotFor(sku);
-  $('vRefBox').innerHTML = p
-    ? `<div style="display:flex;gap:8px;align-items:center"><img src="${p}" style="width:52px;height:52px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><span>Real ${SKUS[sku]?.name||sku} packshot anchors every scene — pack fidelity guaranteed.</span></div>`
-    : `⚠️ No packshot saved for ${SKUS[sku]?.name||sku} — upload one in ✏️ Edit Image → reference library first.`; }
+// Manual per-SKU video reference slots (3) — Quan uploads a real GERMAN tube-only / box-only
+// (and later box+tube) image directly; these OVERRIDE the auto library packshot for the render.
+// Stored in _refLib under reserved keys `${sku}__vidref0/1/2` so they persist + stay out of the library grid.
+function vidRefKey(sku,i){ return sku+'__vidref'+i; }
+function videoRefsFor(sku){
+  const out=[]; for(let i=0;i<3;i++){ const u=_refLib[vidRefKey(sku,i)]; if(u) out.push(u); }
+  return out.length ? out : packshotsFor(sku);   // manual uploads win; else fall back to the saved library packshots
+}
+function pickVidRef(i){ const sku=vRefSku(); fileToDataUrl(async d=>{ const small=await compressRef(d,1024); _refLib[vidRefKey(sku,i)]=small; try{ await refPut(vidRefKey(sku,i),small); }catch(e){ alert('Could not save (storage full?).'); } renderVRefBox(); }); }
+function clearVidRef(i){ const sku=vRefSku(); delete _refLib[vidRefKey(sku,i)]; try{ refDel(vidRefKey(sku,i)); }catch(e){} renderVRefBox(); }
+function renderVRefBox(){ const sku=vRefSku();
+  const slot=(i,lbl)=>{ const u=_refLib[vidRefKey(sku,i)];
+    return u
+      ? `<div style="position:relative;text-align:center"><img src="${u}" style="width:74px;height:74px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fff"><button onclick="clearVidRef(${i})" title="Remove" style="position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;border:none;background:#c00;color:#fff;cursor:pointer;font-size:12px;line-height:1">✕</button><div style="font-size:10px;color:#667;margin-top:3px">${lbl}</div></div>`
+      : `<div style="text-align:center"><button onclick="pickVidRef(${i})" style="width:74px;height:74px;border:1.5px dashed var(--line);border-radius:8px;background:#fafafa;cursor:pointer;color:#889;font-size:11px;line-height:1.3">＋<br>Upload</button><div style="font-size:10px;color:#667;margin-top:3px">${lbl}</div></div>`; };
+  const manualN=[0,1,2].filter(i=>_refLib[vidRefKey(sku,i)]).length;
+  const auto=packshotFor(sku);
+  $('vRefBox').innerHTML =
+    `<div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">${slot(0,'German tube')}${slot(1,'German box')}${slot(2,'Box + tube')}</div>`
+    + `<div style="font-size:11.5px;color:#667;margin-top:9px;line-height:1.45">`
+    + (manualN
+        ? `✅ Using your uploaded reference${manualN>1?'s':''} for every scene. <b>Keep it to ONE form</b> (tube-only OR box-only) until box+tube renders cleanly.`
+        : (auto ? `Using the saved ${SKUS[sku]?.name||sku} library packshot. Upload above to override — for now a single <b>German tube-only OR box-only</b> image.`
+                : `⚠️ No reference yet — upload a real <b>GERMAN tube-only or box-only</b> image above. Never an English pack.`))
+    + `</div>`; }
 function vCostLine(){ const scenes=vDurSec/8; const model=$('vModel')?$('vModel').value:'VEO3';
   // show the fal.ai key field only when a fal-routed engine (Kling / Seedance) is selected
   const isFal=(E.VIDEO_MODELS[model]||{}).route==='fal';
@@ -1160,7 +1181,7 @@ async function renderScenesInto(recId, startAt){
 }
 async function _renderScenesInto(recId, startAt){
   const rec=await getVid(recId); if(!rec) return;
-  const total=rec.sbScenes.length; const refs=packshotsFor(rec.refSku||rec.sku); const ref=refs[0]||null;
+  const total=rec.sbScenes.length; const refs=videoRefsFor(rec.refSku||rec.sku); const ref=refs[0]||null;
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
   for(let i=startAt;i<total;i++){
     try{
@@ -1242,7 +1263,7 @@ async function rerollVidScene(recId,i){ const rec=await getVid(recId); if(!rec) 
   if(!confirm(`Re-roll scene ${i+1} only — spends ~US$${est.usd.toFixed(2)}.`)) return;
   const prog=t=>{ const el=$('vprog-'+recId); if(el) el.textContent=t; };
   try{
-    const refs=packshotsFor(rec.refSku||rec.sku);
+    const refs=videoRefsFor(rec.refSku||rec.sku);
     const oldVo=rec.scenes[i]&&rec.scenes[i].voWav;   // VO line unchanged — keep the recorded narrator take
     const nbStill=((i>0&&rec.scenes[i-1]&&rec.scenes[i-1].still)||(rec.scenes[i+1]&&rec.scenes[i+1].still))||null;   // anchor the re-roll to a neighbouring scene's world
     const r=await E.renderSceneQC({ sku:rec.refSku||rec.sku, storyboard:{...rec.storyboard, scenes:rec.sbScenes}, scene:rec.sbScenes[i], index:i, total:rec.sbScenes.length,
