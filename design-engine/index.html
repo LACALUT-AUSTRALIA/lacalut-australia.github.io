@@ -876,8 +876,8 @@ async function showVideoQC(id){ const rec=await getRec(id); const qc=(rec&&rec.v
    → hard spend gate → sequential Veo scenes → ffmpeg.wasm stitch.
    ═══════════════════════════════════════════════════════════════════ */
 let curTop = localStorage.getItem('de_top_mode') || 'image';   // 'image' | 'video'
-let vType  = localStorage.getItem('de_vid_type')  || 'pas';
-if(!E.VIDEO_TYPES[vType]) vType='pas';   // archetype set rebuilt 23/09/2026 — remap stale saved keys
+let vType  = localStorage.getItem('de_vid_type')  || 'routine';
+if(!E.VIDEO_TYPES[vType]) vType='routine';   // render-safe silent-routine is the default (26/09/2026); remap stale saved keys
 let vStyleId = localStorage.getItem('de_vid_style') || (E.VIDEO_TYPES[vType]?.style || 'lofi_native');
 if(!E.VIDEO_STYLES[vStyleId]) vStyleId=E.VIDEO_TYPES[vType].style;
 let vAspect  = localStorage.getItem('de_vid_ar')   || '9:16';
