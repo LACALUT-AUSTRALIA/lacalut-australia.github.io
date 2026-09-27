@@ -519,8 +519,8 @@ ${basePrompt}
   //  • VEO3 — TOP hero quality for the final cinematic ad
   const VIDEO_MODELS = {
     VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'RETIRED 23/09 (kept only so old cards keep their label) — never offered in the UI', retired:true },
-    FAL_SEEDANCE: { route:'fal',    id:'fal-ai/bytedance/seedance/v1/lite/image-to-video', label:'Seedance 1.0 (fal.ai)', usdPerSec:0.06, audio:false, aspects:['1:1','16:9','9:16'], job:'Cheapest — quick tests + volume B-roll' },
-    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v2.5-turbo/pro/image-to-video', label:'Kling 2.5 Turbo Pro (fal.ai)', usdPerSec:0.07, audio:false, aspects:['9:16','16:9','1:1'], durations:['5','10'], deriveAR:true, job:'BEST humans/anatomy — realistic people, hands, motion (renders 5s scenes)' },
+    FAL_SEEDANCE: { route:'fal',    id:'bytedance/seedance-2.5/image-to-video', label:'Seedance 2.5 (fal.ai)', usdPerSec:0.47, audio:false, aspects:['1:1','16:9','9:16'], imgParam:'image_url', noNegative:true, resolution:'720p', aspectAuto:true, genAudioOff:true, job:'Premium long-form — native up to 30s single-shot, 720p/1080p (pricey ~US$0.47/s)' },
+    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v3/pro/image-to-video', label:'Kling v3 Pro (fal.ai)', usdPerSec:0.112, audio:false, aspects:['9:16','16:9','1:1'], deriveAR:true, imgParam:'start_image_url', genAudioOff:true, job:'BEST humans/anatomy — realistic people, hands, motion; native 3–15s (renders true 8s scenes, no 5s drift)' },
     VEO3:         { route:'gemini', id:'veo-3.1-generate-preview',  label:'Veo 3.1',    usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
   };
   // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──

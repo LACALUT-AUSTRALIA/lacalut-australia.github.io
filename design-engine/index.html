@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v8 scene-reroll-editor</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v9 vo-recovery</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -1330,10 +1330,23 @@ async function regenerateBeat(recId){ const rec=await getVid(recId); if(!rec) re
     rec.status='partial'; await vidPut(rec); renderVideoGallery(curSku); }
 }
 async function retryStitch(recId){ const rec=await getVid(recId); if(!rec) return;
-  try{ const ff=await loadFFmpeg(); const bed=await makeMusicBed(rec.duration, musicMoodFor(rec));
+  try{
+    // Recover any SILENT scene for free — a re-rolled scene can lose its narrator take; re-synthesize
+    // any missing voWav from the scene's VO line before stitching so no scene ever plays silent.
+    let recovered=0;
+    for(let i=0;i<rec.scenes.length;i++){
+      const sc=rec.scenes[i]; if(!sc||!sc.videoBlob) continue;
+      if(!sc.voWav && rec.sbScenes[i] && rec.sbScenes[i].vo){
+        try{ toast('🎙️ Restoring narrator on scene '+(i+1)+'…');
+          sc.voWav=await E.ttsLine({ text:rec.sbScenes[i].vo, voiceDesc:(rec.storyboard&&rec.storyboard.voice)||'', apiKey:KEYS.gemini }); recovered++;
+        }catch(e){}
+      }
+    }
+    if(recovered) await vidPut(rec);
+    const ff=await loadFFmpeg(); const bed=await makeMusicBed(rec.duration, musicMoodFor(rec));
     rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
       { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8, musicBlob:bed }); rec.stitchFailed=null; await vidPut(rec); renderVideoGallery(curSku);
-    try{ toast('🎵 Audio remixed — one continuous soundtrack'); }catch(_){}
+    try{ toast(recovered?('🎵 Narrator restored on '+recovered+' scene(s) + remixed'):'🎵 Audio remixed — one continuous soundtrack'); }catch(_){}
   }
   catch(e){ alert('Stitch failed again: '+e.message); } }
 // ♻️+ Re-roll ONE scene with an EDITABLE script — shows the same WE SEE / MOTION so you can tweak
@@ -1381,7 +1394,11 @@ async function rerollVidScene(recId,i,opts){ opts=opts||{}; const rec=await getV
       style:rec.style, model:rec.modelKey, aspectRatio:rec.aspect, refImgDataUrl:refs[0]||null, refImgs:refs, apiKey:KEYS.gemini, falKey:KEYS.fal, oneUp:rec.oneUp, prevStill:nbStill,
       qcMaxRerolls:0,   // manual re-roll = ONE paid render exactly as confirmed; QC watches + scores it, never respends
       onProgress:m=>prog('re-roll scene '+(i+1)+' · '+m) });
-    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, voWav:oldVo||null, qc:r.qc||null, attempts:1 };
+    let voKeep=oldVo;   // reuse the existing narrator take; if it's gone, re-synthesize so the scene is never silent
+    if(!voKeep && rec.sbScenes[i] && rec.sbScenes[i].vo){
+      try{ prog('re-roll scene '+(i+1)+' · 🎙️ narrator line…'); voKeep=await E.ttsLine({ text:rec.sbScenes[i].vo, voiceDesc:(rec.storyboard&&rec.storyboard.voice)||'', apiKey:KEYS.gemini }); }catch(e){}
+    }
+    rec.scenes[i]={ ...rec.sbScenes[i], prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, voWav:voKeep||null, qc:r.qc||null, attempts:1 };
     rec.qcFinal=null; rec.qcScore100=null;   // stale after a scene swap — final QC re-runs on next stitch
     rec.stitchedBlob=null; await vidPut(rec);
     try{ const ff=await loadFFmpeg(prog); const bed=await makeMusicBed(rec.duration, musicMoodFor(rec));
