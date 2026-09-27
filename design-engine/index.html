@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v11 bg-persist</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v12 varied-rules</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -277,6 +277,16 @@ let styleImgs   = JSON.parse(localStorage.getItem('lc_style_images')||'[]');
 let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","sensitive","white-repair"]');
 let curBrain = localStorage.getItem('de_brain') || null;
 const pendingImgGens = [];   // in-flight image renders {id,sku,ptype,ar} — kept so switching Image↔Video never drops a render mid-flight
+// HARD DESIGN RULES — appended to EVERY image prompt (after One-Up) so they can never be skipped
+const HARD_RULES = ' HARD DESIGN RULES — must obey: (1) ICON CONTRAST: the small icon inside each benefit chip/pill MUST be a clearly different, contrasting colour from the chip text (e.g. gold or bright-accent icons beside white text) — never the same colour, so each icon pops. (2) REALISTIC PROPORTIONS: when a product BOX appears in the same frame as its bottle or tube, size them to real-life proportions relative to each other — a mouthwash box is slightly taller/larger than its bottle, a toothpaste box is larger than its tube. A single deliberately OVERSIZED hero product for scroll-stopping impact is allowed, but the box-vs-bottle/tube size relationship must stay realistic. (3) Keep all real German packaging accurate with no fabricated on-pack text.';
+// Qty>1 divergence — each extra image gets a genuinely different composition/camera/background, not a near-clone
+const IMG_VARIATIONS = [
+  'a bold LOW camera angle looking upward so the products tower heroically over the viewer, deep navy-to-black premium gradient background, one dramatic key light, headline banded across the very top.',
+  'a clean TOP-DOWN flat-lay of the whole set arranged on a bright white-blue surface with scattered water droplets, airy minimalist negative space, headline stacked down the left.',
+  'a dynamic WIDE action shot with the products bursting up through a dramatic mid-air water splash, energetic and fresh, light-blue studio, headline across the bottom third.',
+  'an EDITORIAL magazine layout — the product cluster pushed to the right third on a soft graduated studio backdrop, a large confident headline filling the left, calm and premium.',
+  'a bold GRAPHIC colour-blocked poster look — a two-tone split background (LACALUT red meeting deep blue), products centred with a crisp hard drop shadow, headline reversed out of the colour block.'
+];
 const $ = id => document.getElementById(id);
 
 /* ═══ PRODUCT-TYPE SUB-FILTER (second filter level under the formula tabs) ═══
@@ -621,6 +631,11 @@ async function runGenerate(){
         prompt = await E.oneUpImagePrompt({ basePrompt:prompt, bans:$('advNeg').checked?_bans:[], aspectRatio, apiKey:KEYS.gemini });
         if(_t) _t.textContent='⏳ rendering…';
       }
+      // Qty>1 → force each image to be VISUALLY DISTINCT (appended AFTER one-up so it always survives)
+      if(qty>1){ const V=IMG_VARIATIONS[i % IMG_VARIATIONS.length];
+        prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — this execution MUST be VISUALLY DISTINCT from the others in composition, camera angle, layout and background: ${V} Keep the SAME brand, the SAME real product packs, the SAME offer, the SAME benefit points and every compliance rule — only the visual execution changes.`;
+      }
+      prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
         render:rmode, model:curModel, apiKey:KEYS.gemini, aspectRatio, productLabels:refLabels });
       const rec={id:'g'+Date.now()+'_'+i, sku:isMulti?'multi':curSku, mode:curMode, ptype:genPtype, label, ts:Date.now(), url, fav:false};
