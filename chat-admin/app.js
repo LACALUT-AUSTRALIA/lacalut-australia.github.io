@@ -484,7 +484,7 @@ function loadConversations() {
     .then(function (data) {
       document.getElementById('conv-loading').style.display = 'none';
       if (!data || !data.length) { document.getElementById('conv-empty').style.display = 'block'; return; }
-      data.forEach(renderConversation);
+      data.forEach(function (c) { try { renderConversation(c); } catch (e) { /* never let one bad row blank the list */ } });
     })
     .catch(function () {
       document.getElementById('conv-loading').textContent = '⚠️ Could not load conversations.';
@@ -496,11 +496,16 @@ function renderConversation(conv) {
   el.className = 'conv-card';
   var msgs = conv.messages || [];
   var date = new Date(conv.created_at).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' });
-  var preview = msgs.length ? (msgs[0].content || '').slice(0, 80) + (msgs[0].content.length > 80 ? '…' : '') : '(empty)';
+  var firstText = '';
+  for (var _i = 0; _i < msgs.length; _i++) {
+    if (msgs[_i] && msgs[_i].content) { firstText = msgs[_i].content; break; }
+    if (msgs[_i] && msgs[_i].role === 'lead') { firstText = '💌 Lead captured' + (msgs[_i].email ? ': ' + msgs[_i].email : ''); break; }
+  }
+  var preview = firstText ? firstText.slice(0, 80) + (firstText.length > 80 ? '…' : '') : '(no messages)';
 
   el.innerHTML =
     '<div class="conv-header" onclick="this.parentElement.classList.toggle(\'open\')">' +
-      '<div class="conv-meta"><strong>' + esc(conv.session_id.slice(0, 16)) + '…</strong> <span class="conv-date">' + esc(date) + '</span>' +
+      '<div class="conv-meta"><strong>' + esc((conv.session_id || '(no id)').slice(0, 16)) + '…</strong> <span class="conv-date">' + esc(date) + '</span>' +
         (conv.needs_training ? ' <span class="flag-badge">🔴 Needs Training</span>' : '') +
       '</div>' +
       '<div class="conv-preview">' + esc(preview) + '</div>' +
