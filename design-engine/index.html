@@ -118,7 +118,7 @@
     <input type="text" id="brainSearch" placeholder="🔎 Search formats… (e.g. money)" oninput="setBrainFilter(this.value)" style="width:100%;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
     <div class="chips" id="chips"></div>
 
-    <h3 style="margin-top:12px">Brief</h3>
+    <h3 style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">Brief<button type="button" onclick="clearBrief()" title="Clear the brief box so you can paste a fresh prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></h3>
     <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
 
     <div class="adv">
@@ -543,6 +543,7 @@ function fillSystemRefs(){
   saveProduct(); renderSlots();
   toast('🧰 Loaded '+found.map(([l])=>l).join(' · ')+(missing.length?' — missing: '+missing.join(', ')+' (upload in the library)':''));
 }
+function clearBrief(){ const t=$('brief'); if(!t) return; t.value=''; localStorage.removeItem('de_brief'); t.focus(); toast('🧹 Brief cleared — paste your next prompt'); }
 function pickStyle(i){ fileToDataUrl(d=>{ styleImgs[i]=d; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }); }
 function delStyle(i){ styleImgs[i]=null; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }
 
