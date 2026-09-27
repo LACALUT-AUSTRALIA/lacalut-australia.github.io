@@ -120,6 +120,8 @@
 
     <h3 style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">Brief<button type="button" onclick="clearBrief()" title="Clear the brief box so you can paste a fresh prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></h3>
     <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
+    <input type="text" id="facyAngle" placeholder="🎯 Why → Facy (the angle/strategy, e.g. 'mechanism — specialist beats generalist; amplify the baked hook')" title="The strategic WHY behind this creative — travels with the ad to Facy so its copy matches our angle" style="width:100%;padding:7px 9px;margin-top:6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
+    <div style="font-size:10px;color:#8a63d2;margin-top:3px">↑ Rides with every ad to Facy — Facy writes copy that matches this angle</div>
 
     <div class="adv">
       <input type="checkbox" id="advNeg" checked hidden>
@@ -422,9 +424,11 @@ function pickMode(m){ curMode=m; try{ localStorage.setItem('de_mode',m); }catch(
 /* ═══ SETTINGS PERSISTENCE — brief/render/qty survive an Image↔Video switch AND a page refresh ═══ */
 function restoreGenSettings(){
   const b=localStorage.getItem('de_brief'); if(b!=null && $('brief')) $('brief').value=b;
+  const fa=localStorage.getItem('de_facy_angle'); if(fa!=null && $('facyAngle')) $('facyAngle').value=fa;
   const r=localStorage.getItem('de_render'); if(r && $('render')) $('render').value=r;
   const q=localStorage.getItem('de_qty'); if(q && $('qty')) $('qty').value=q;
   const save=(k,v)=>{ try{ localStorage.setItem(k,v); }catch(_){} };
+  if($('facyAngle')) $('facyAngle').addEventListener('input', e=>save('de_facy_angle', e.target.value));
   if($('brief'))  $('brief').addEventListener('input',  e=>save('de_brief', e.target.value));
   if($('render')) $('render').addEventListener('change', e=>save('de_render', e.target.value));
   if($('qty'))    $('qty').addEventListener('change',    e=>save('de_qty', e.target.value));
@@ -660,7 +664,7 @@ async function runGenerate(){
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false};
+      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:($('facyAngle')?$('facyAngle').value.trim():'')};
       await idbPut(rec);   // persisted FIRST — the image can never be lost even if the placeholder card is gone
       const _el=$(id);
       if(_el){ _el.outerHTML=cardHTML(rec); }
@@ -1727,12 +1731,12 @@ async function facyUploadImage(dataUrl,id){
   if(!up.ok){const e=await up.json().catch(()=>({}));throw new Error('image upload failed: '+(e.message||up.status));}
   return FACY_SUPA_URL+'/storage/v1/object/public/ad-images/'+fn;
 }
-async function pushToFacyPipeline(img,sku,label,cardId){
+async function pushToFacyPipeline(img,sku,label,cardId,brief){
   const url=await facyUploadImage(img,cardId);
   const row=[{sku:sku||'multi',creative_name:label||cardId,creative_type:'image',
     image_url:url,image_url_vertical:url,
     adset_id:'',adset_name:'(Facy assigns)',campaign_id:'',template_ad_id:'',
-    primary_text:'',headline:'',description:'',status:'ready_to_push'}];
+    primary_text:'',headline:'',description:brief||'',status:'ready_to_push'}];
   const res=await fetch(FACY_SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
     headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify(row)});
@@ -1746,11 +1750,23 @@ async function sendToFacy(cardId){
   // re-sendable: a green/"sent" button can be clicked again to re-queue the image
   const sku=card.getAttribute('data-sku')||curSku;
   const label=(card.querySelector('.t')?.textContent||'').trim();
+  // CREATIVE BRIEF — the angle/why that MADE this image travels with it so Facy writes aligned copy (not blind).
+  let brief='';
+  try{ const rec=await idbGet(cardId);
+    const angle=(rec&&rec.angle)|| ($('facyAngle')?$('facyAngle').value.trim():'') ||'';
+    const imgBrief=(rec&&rec.brief)|| ($('brief')?$('brief').value.trim():'') ||'';
+    const parts=['[CREATIVE BRIEF — from Desi, write copy that MATCHES this angle; the hook is already baked into the image, amplify it, never contradict it]'];
+    if(label)    parts.push('Creative / format: '+label);
+    if(angle)    parts.push('Angle / why: '+angle);
+    if(imgBrief) parts.push('Image brief: '+imgBrief);
+    parts.push('Compliance: cosmetic-only — no disease/treatment claims, no %, no authority logos.');
+    brief=parts.join('\n');
+  }catch(_){}
   try{
     // primary path: straight into the Supabase pipeline (Facy builds it end-to-end)
-    await pushToFacyPipeline(img, sku, label, cardId);
+    await pushToFacyPipeline(img, sku, label, cardId, brief);
     // fallback path: keep the same-origin IndexedDB inbox in sync (belt-and-braces)
-    try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
+    try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, brief, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
     try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; }catch(_){}
     if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.title='Queued to the Facy pipeline — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
     toast('🚀 Sent straight to Facy — building automatically, no other tab needed');
@@ -1782,12 +1798,12 @@ function callGeminiEdit(imgDataUrl, instruction){
   const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
   return E.editImage({ imgDataUrl, instruction, refImgs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio });
 }
-let _editSrc=null, _editRefs=[], _editSrcLabel='';   // _editRefs holds selected library KEYS; _editSrcLabel carries the source card's format label through the edit
+let _editSrc=null, _editRefs=[], _editSrcLabel='', _editSrcBrief='', _editSrcAngle='';   // carry the source card's format label + creative brief + angle through the edit
 async function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
   _editSrc=src; _editRefs=[];
-  try{ _editSrcLabel=(await idbGet(cardId))?.label||''; }catch(e){ _editSrcLabel=''; }   // inherit format keyword (Challenge/Dare) so Send-to-Facy detects it
+  try{ const _sr=await idbGet(cardId); _editSrcLabel=_sr?.label||''; _editSrcBrief=_sr?.brief||''; _editSrcAngle=_sr?.angle||''; }catch(e){ _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; }   // inherit format keyword + brief + angle so Send-to-Facy stays in context
   renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
@@ -1803,8 +1819,8 @@ function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image — or drag &amp; drop / paste it here</div>`; }
   renderEditSizePreview();   // keep the mini preview beside Apply edit in sync with the loaded image
 }
-function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; renderEditSrc(); }); }
-function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; renderEditSrc(); }; r.readAsDataURL(file); }
+function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; renderEditSrc(); }); }
+function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; renderEditSrc(); }; r.readAsDataURL(file); }
 function editDragOver(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline='2px solid #6d5efc'; }
 function editDragLeave(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; }
 function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; const f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) _fileToEditSrc(f); }
@@ -1862,7 +1878,7 @@ async function applyEdit(){
       (async ()=>{
         try{
           const url=await callGeminiEditRefs(src, instruction, [key]);
-          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false};
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||''};
           await finishEditCard(id, rec);
         }catch(e){ markCardFailed(id, e.message); }
       })();
@@ -1894,7 +1910,7 @@ async function applyEdit(){
     (async()=>{
       try{
         const url=await callGeminiEditRefs(src, instr, refKeys);
-        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false};
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||''};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
