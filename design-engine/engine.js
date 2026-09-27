@@ -300,9 +300,12 @@
     const pLabels=opts.productLabels||null;
     let instr='';
     if(pRefs.length){
-      const base=(pLabels && pLabels.length>1)
+      let base=(pLabels && pLabels.length>1)
         ? `The FIRST ${pRefs.length} reference images are ${pRefs.length} DIFFERENT LACALUT products, in this exact left-to-right order: ${pLabels.slice(0,pRefs.length).map((n,i)=>`${i+1}) ${n}`).join(', ')}. Treat each image ONLY as the source of truth for THAT product's real packaging shape, label layout, colours, logo and exact wording. Keep every product visually DISTINCT and every label word and logo accurate and legible; never invent, garble, mistranslate, merge or swap the products' text. `
         : `The FIRST ${pRefs.length} reference image(s) show the EXACT LACALUT product — treat them ONLY as the source of truth for the product's branding: real packaging shape, label layout, colours, logo and exact wording. Keep every label word and logo accurate and legible; never invent, garble, mistranslate or alter the product text. `;
+      // PRODUCT-COUNT LOCK — the loaded reference slots are the single source of truth for WHICH products appear.
+      // Renders EXACTLY the N supplied packs and nothing else; ignores any product the brief names but the slots don't contain.
+      base += `PRODUCT LOCK (non-negotiable — overrides the brief and every other instruction): the final image must show EXACTLY these ${pRefs.length} product item${pRefs.length>1?'s':''} — the ${pRefs.length===1?'single reference pack':pRefs.length+' reference packs'} above — and NOTHING else. Do NOT add, invent, duplicate or include ANY other LACALUT product, tube, box, bottle, sachet, applicator or toothbrush that is not shown in ${pRefs.length===1?'that reference image':'those reference images'}. If the brief or scene note mentions or implies a product, form or pack that is NOT in the reference image${pRefs.length>1?'s':''}, IGNORE it completely. The number, type and packaging form of products in the render MUST match the reference photo${pRefs.length>1?'s':''} exactly — same count, same form (tube vs box vs bottle), no extras. `;
       if(opts.chatShot){
         instr+=base+`Place the product ONLY as a small, flat, slightly-compressed PHOTO inside a chat message bubble — exactly like a JPEG a friend texted you (an MMS). Keep the packaging, label, logo and wording accurate and legible, white cap. Do NOT render it as a large 3D studio hero, do NOT give it a new background, scene, podium or dramatic lighting — it is just a small inline photo within a flat messaging-screen screenshot. `;
       } else {
