@@ -722,9 +722,13 @@ ${basePrompt}
       const fit = nums.filter(n=>n<=reqSec);
       dur = String(fit.length ? Math.max(...fit) : Math.min(...nums));
     }
-    const body = { prompt: opts.prompt, image_url: opts.imgDataUrl, duration: dur };
-    body.negative_prompt = mergeNegative(opts.negativePrompt);   // global brain list + per-render Avoid box
-    if(!m.deriveAR) body.aspect_ratio = opts.aspectRatio||'9:16';
+    const body = { prompt: opts.prompt, duration: dur };
+    body[m.imgParam||'image_url'] = opts.imgDataUrl;             // Kling v3 uses start_image_url; others image_url
+    if(!m.noNegative) body.negative_prompt = mergeNegative(opts.negativePrompt);   // Seedance 2.5 has no negative_prompt param
+    if(m.genAudioOff) body.generate_audio = false;              // never let the engine bake its own audio (we add VO/music in post)
+    if(m.resolution)  body.resolution = m.resolution;           // Seedance 2.5 resolution tier
+    if(m.aspectAuto)  body.aspect_ratio = 'auto';               // Seedance 2.5 derives aspect from the image via 'auto'
+    else if(!m.deriveAR) body.aspect_ratio = opts.aspectRatio||'9:16';
     const submit = await fetch('https://queue.fal.run/'+m.id,
       { method:'POST', headers:{'Authorization':'Key '+key,'Content-Type':'application/json'}, body:JSON.stringify(body) });
     const sj = await submit.json();
