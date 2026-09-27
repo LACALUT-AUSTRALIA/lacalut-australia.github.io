@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v12 varied-rules</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v13 no-halluc</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -278,7 +278,7 @@ let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","se
 let curBrain = localStorage.getItem('de_brain') || null;
 const pendingImgGens = [];   // in-flight image renders {id,sku,ptype,ar} — kept so switching Image↔Video never drops a render mid-flight
 // HARD DESIGN RULES — appended to EVERY image prompt (after One-Up) so they can never be skipped
-const HARD_RULES = ' HARD DESIGN RULES — must obey: (1) ICON CONTRAST: the small icon inside each benefit chip/pill MUST be a clearly different, contrasting colour from the chip text (e.g. gold or bright-accent icons beside white text) — never the same colour, so each icon pops. (2) REALISTIC PROPORTIONS: when a product BOX appears in the same frame as its bottle or tube, size them to real-life proportions relative to each other — a mouthwash box is slightly taller/larger than its bottle, a toothpaste box is larger than its tube. A single deliberately OVERSIZED hero product for scroll-stopping impact is allowed, but the box-vs-bottle/tube size relationship must stay realistic. (3) Keep all real German packaging accurate with no fabricated on-pack text.';
+const HARD_RULES = ' HARD DESIGN RULES — must obey: (1) ICON CONTRAST: the small icon inside each benefit chip/pill MUST be a clearly different, contrasting colour from the chip text (e.g. gold or bright-accent icons beside white text) — never the same colour, so each icon pops. (2) REALISTIC PROPORTIONS: when a product BOX appears in the same frame as its bottle or tube, size them to real-life proportions relative to each other — a mouthwash box is slightly taller/larger than its bottle, a toothpaste box is larger than its tube. A single deliberately OVERSIZED hero product for scroll-stopping impact is allowed, but the box-vs-bottle/tube size relationship must stay realistic. (3) PRODUCT ACCURACY — NEVER hallucinate or invent product: render every product EXACTLY as its attached reference packshot — identical bottle/tube/box shape, cap, label layout, colours and wording. Do not restyle, redraw from imagination, or guess a pack. If a product has no reference attached, do NOT add or alter it. (4) TEXT HIERARCHY: the HEADLINE, sub-headline and CTA button must be the LARGEST, most dominant elements in the frame — bigger and more prominent than any decorative graphic; the CTA button must be large and clearly legible. (5) BADGE PROMINENCE: any money-back / guarantee seal or badge must be LARGE and clearly readable — a prominent trust element, never a small afterthought. (6) Keep all real German packaging accurate with no fabricated on-pack text.';
 // Qty>1 divergence — each extra image gets a genuinely different composition/camera/background, not a near-clone
 const IMG_VARIATIONS = [
   'a bold LOW camera angle looking upward so the products tower heroically over the viewer, deep navy-to-black premium gradient background, one dramatic key light, headline banded across the very top.',
