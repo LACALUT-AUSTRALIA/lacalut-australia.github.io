@@ -664,6 +664,7 @@ async function runGenerate(){
         prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule. Keep the background WITHIN the colour palette stated in the brief — never introduce a clashing colour scheme.`;
       }
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
+      prompt += perfBrainInjection(S.isMulti?'multi':S.curSku);   // bias toward live Meta winners
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
       const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:($('facyAngle')?$('facyAngle').value.trim():'')};
@@ -1721,6 +1722,22 @@ function facyIdbSet(k,v){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{
    the image, runs the compliance gate, assigns the ad set, and builds to Meta per SOP. */
 const FACY_SUPA_URL='https://bfzvxxcsfxvgeblnkqne.supabase.co';
 const FACY_SUPA_KEY='sb_publishable_3Do5mWxJcwfj7Cr_U43CgA_T3sx8n3M';
+/* ═══ PERFORMANCE BRAIN — the closed feedback loop (Phase 2). perf_feedback.py publishes a
+   last-30d winners/losers digest per SKU; we load it on open and bias EVERY generation
+   toward what is actually converting on Meta right now. ═══ */
+let PERF_BRAIN=null;
+fetch(FACY_SUPA_URL+'/storage/v1/object/public/ad-images/perf-digest.json')
+  .then(r=>r.ok?r.json():null).then(j=>{ PERF_BRAIN=j; if(j&&j.updated) console.log('PERF BRAIN loaded ·',j.updated); }).catch(()=>{});
+function perfBrainInjection(sku){
+  if(!PERF_BRAIN||!PERF_BRAIN.skus) return '';
+  const d=PERF_BRAIN.skus[sku]||PERF_BRAIN.skus[(sku==='herbal')?'aktiv-herbal':sku]; if(!d) return '';
+  const fmt=a=>`"${a.name}" (${a.angle?a.angle+' — ':''}CTR ${a.ctr}%, ROAS ${a.roas}, $${a.spend} spent)`;
+  const win=(d.winning||[]).map(fmt).join('; '), lose=(d.losing||[]).map(fmt).join('; ');
+  if(!win&&!lose) return '';
+  return '\n\nPERFORMANCE BRAIN — live Meta results for this range (last 30 days, real spend):'
+    +(win?'\nWINNING RIGHT NOW: '+win+'. Bias this execution toward the winners\' hook energy, layout style and angle — evolve them, never copy verbatim.':'')
+    +(lose?'\nLOSING RIGHT NOW: '+lose+'. Do NOT repeat the losers\' visual patterns or angles.':'');
+}
 async function facyUploadImage(dataUrl,id){
   if(!dataUrl||dataUrl.indexOf('data:')!==0) return dataUrl||'';           // http URL → use as-is
   const parts=dataUrl.split(','); const mime=(parts[0].match(/:([^;]+);/)||[])[1]||'image/png';
