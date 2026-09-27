@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v15 stable-product</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v16 palette-lock</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -286,7 +286,7 @@ const IMG_VARIATIONS = [
   'a bright airy minimalist scene on a clean light surface with lots of empty space, headline stacked down the left.',
   'a fresh scene with sparse tasteful ingredient accents around the base and soft background bokeh, calm and premium, headline across the top.',
   'an editorial magazine layout — the product cluster set to one side on a soft graduated backdrop, a large confident headline filling the open space.',
-  'a clean colour-mood background (a smooth deep-to-light gradient) with a crisp soft drop shadow under the products, headline reversed out at the top.'
+  'a clean background — a smooth deep-to-light gradient IN THE BRIEF’S STATED COLOUR PALETTE — with a crisp soft drop shadow under the products, headline reversed out at the top.'
 ];
 const $ = id => document.getElementById(id);
 
@@ -634,7 +634,7 @@ async function runGenerate(){
       }
       // Qty>1 → force each image to be VISUALLY DISTINCT (appended AFTER one-up so it always survives)
       if(qty>1){ const V=IMG_VARIATIONS[i % IMG_VARIATIONS.length];
-        prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule.`;
+        prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule. Keep the background WITHIN the colour palette stated in the brief — never introduce a clashing colour scheme.`;
       }
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
