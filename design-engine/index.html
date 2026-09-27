@@ -85,7 +85,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v14 pro-only</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v15 stable-product</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -280,12 +280,13 @@ const pendingImgGens = [];   // in-flight image renders {id,sku,ptype,ar} — ke
 // HARD DESIGN RULES — appended to EVERY image prompt (after One-Up) so they can never be skipped
 const HARD_RULES = ' HARD DESIGN RULES — must obey: (1) ICON CONTRAST: the small icon inside each benefit chip/pill MUST be a clearly different, contrasting colour from the chip text (e.g. gold or bright-accent icons beside white text) — never the same colour, so each icon pops. (2) REALISTIC PROPORTIONS: when a product BOX appears in the same frame as its bottle or tube, size them to real-life proportions relative to each other — a mouthwash box is slightly taller/larger than its bottle, a toothpaste box is larger than its tube. A single deliberately OVERSIZED hero product for scroll-stopping impact is allowed, but the box-vs-bottle/tube size relationship must stay realistic. (3) PRODUCT ACCURACY — NEVER hallucinate or invent product: render every product EXACTLY as its attached reference packshot — identical bottle/tube/box shape, cap, label layout, colours and wording. Do not restyle, redraw from imagination, or guess a pack. If a product has no reference attached, do NOT add or alter it. (4) TEXT HIERARCHY: the HEADLINE, sub-headline and CTA button must be the LARGEST, most dominant elements in the frame — bigger and more prominent than any decorative graphic; the CTA button must be large and clearly legible. (5) BADGE PROMINENCE: any money-back / guarantee seal or badge must be LARGE and clearly readable — a prominent trust element, never a small afterthought. (6) Keep all real German packaging accurate with no fabricated on-pack text.';
 // Qty>1 divergence — each extra image gets a genuinely different composition/camera/background, not a near-clone
+// Vary the SCENE/mood/text-layout only — NEVER the product camera angle (that distorts the pack). Products stay front-facing & faithful in every variant.
 const IMG_VARIATIONS = [
-  'a bold LOW camera angle looking upward so the products tower heroically over the viewer, deep navy-to-black premium gradient background, one dramatic key light, headline banded across the very top.',
-  'a clean TOP-DOWN flat-lay of the whole set arranged on a bright white-blue surface with scattered water droplets, airy minimalist negative space, headline stacked down the left.',
-  'a dynamic WIDE action shot with the products bursting up through a dramatic mid-air water splash, energetic and fresh, light-blue studio, headline across the bottom third.',
-  'an EDITORIAL magazine layout — the product cluster pushed to the right third on a soft graduated studio backdrop, a large confident headline filling the left, calm and premium.',
-  'a bold GRAPHIC colour-blocked poster look — a two-tone split background (LACALUT red meeting deep blue), products centred with a crisp hard drop shadow, headline reversed out of the colour block.'
+  'a soft premium studio scene, clean gradient background with generous negative space, one soft key light, headline banded across the top.',
+  'a bright airy minimalist scene on a clean light surface with lots of empty space, headline stacked down the left.',
+  'a fresh scene with sparse tasteful ingredient accents around the base and soft background bokeh, calm and premium, headline across the top.',
+  'an editorial magazine layout — the product cluster set to one side on a soft graduated backdrop, a large confident headline filling the open space.',
+  'a clean colour-mood background (a smooth deep-to-light gradient) with a crisp soft drop shadow under the products, headline reversed out at the top.'
 ];
 const $ = id => document.getElementById(id);
 
@@ -633,7 +634,7 @@ async function runGenerate(){
       }
       // Qty>1 → force each image to be VISUALLY DISTINCT (appended AFTER one-up so it always survives)
       if(qty>1){ const V=IMG_VARIATIONS[i % IMG_VARIATIONS.length];
-        prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — this execution MUST be VISUALLY DISTINCT from the others in composition, camera angle, layout and background: ${V} Keep the SAME brand, the SAME real product packs, the SAME offer, the SAME benefit points and every compliance rule — only the visual execution changes.`;
+        prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule.`;
       }
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
