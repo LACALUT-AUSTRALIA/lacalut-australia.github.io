@@ -291,7 +291,7 @@
   async function callGemini(opts){
     const prompt = opts.prompt;
     const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
-    const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-2.5-flash-image';
+    const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-3-pro-image-preview';
     const render = opts.render || 'photoreal';
     if(!apiKey) throw new Error('No Gemini API key');
 
@@ -355,7 +355,7 @@
   /* ═══ IMAGE-TO-IMAGE EDIT ═══ */
   async function editImage(opts){
     const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
-    const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-2.5-flash-image';
+    const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-3-pro-image-preview';
     const sku = opts.sku || 'aktiv';
     const part = dataUrlToInlinePart(opts.imgDataUrl); if(!part) throw new Error('bad image');
     const refs = (opts.refImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,4);
