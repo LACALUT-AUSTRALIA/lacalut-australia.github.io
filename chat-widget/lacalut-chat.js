@@ -946,7 +946,7 @@
     card.className = 'lc-capture-card';
     card.innerHTML =
       '<div class="lc-capture-dismiss"><button onclick="document.getElementById(\'lc-sms-escalation\').remove()">Dismiss</button></div>' +
-      '<div class="lc-capture-title">Leave your mobile and a real person will text you back.</div>' +
+      '<div class="lc-capture-title">Leave your mobile and we’ll text you the answer straight away.</div>' +
       '<input class="lc-capture-input" id="lc-scap-phone" type="tel" inputmode="tel" placeholder="Your mobile number" autocomplete="tel" />' +
       '<button class="lc-capture-btn" onclick="lcSubmitSmsEscalation()">Text me back</button>';
     chat.appendChild(card);
@@ -960,7 +960,7 @@
     var phone = (inp.value || '').trim();
     if (phone.replace(/\D/g, '').length < 8) { inp.focus(); return; }
     var card = document.getElementById('lc-sms-escalation');
-    if (card) card.innerHTML = '<div class="lc-capture-thanks">Thanks! A real person will text you shortly 📱</div>';
+    if (card) card.innerHTML = '<div class="lc-capture-thanks">Thanks! We’ll text you the answer shortly 📱</div>';
     fetch(WORKER_URL + '/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
