@@ -64,6 +64,8 @@
   .markybtn:hover{ background:#5a33a8; }
   .markybtn:disabled{ background:#b9a8dd; cursor:not-allowed; }
   .markybtn.pushed{ background:#e8f8e8; color:#1e7e34; }
+  .scorebadge{ position:absolute; top:8px; left:8px; z-index:5; padding:4px 9px; border-radius:999px; font-size:12px; font-weight:800; color:#fff; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.35); background:#64748b; user-select:none; }
+  .scorebadge:hover{ filter:brightness(1.1); }
   .empty{ text-align:center; color:#999; padding:60px 20px; }
   .warn{ background:#fff8e6; border:1px solid #f0d98a; color:#8a6d1a; border-radius:8px; padding:8px 10px; font-size:12px; margin:8px 0; }
   .guide{ font-size:11px; color:#888; line-height:1.5; }
@@ -670,6 +672,7 @@ async function runGenerate(){
       if(_el){ _el.outerHTML=cardHTML(rec); }
       else if(curTop==='image' && rec.sku===curSku && ptypeOf(rec)===genPtype){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }
       // else: safely in IndexedDB — it appears the moment he returns to this product tab (renderGallery pulls it)
+      scoreCreative(rec.id).catch(()=>{});   // auto-score every fresh render (fire-and-forget)
     }catch(e){ markCardFailed(id, e.message); }
     finally{ const _pi=pendingImgGens.findIndex(p=>p.id===id); if(_pi>=0) pendingImgGens.splice(_pi,1); }
   }
@@ -751,7 +754,7 @@ async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)
 async function idbGet(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').get(id); rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
-function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><div class="imgwrap"><img src="${rec.url}" draggable="false"><div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
+function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${scoreBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
@@ -1744,6 +1747,13 @@ async function pushToFacyPipeline(img,sku,label,cardId,brief){
 }
 async function sendToFacy(cardId){
   const card=$(cardId); if(!card){ alert('No card.'); return; }
+  // SCORE SOFT-GATE: below the house bar → warn with the top fix; Quan can still override (his taste gate stays king)
+  try{ const _sr=await idbGet(cardId);
+    if(_sr && typeof _sr.score==='number' && _sr.score<SCORE_MIN_SEND){
+      const topFix=(_sr.scoreData&&_sr.scoreData.fixes&&_sr.scoreData.fixes[0]&&_sr.scoreData.fixes[0].fix)||'';
+      if(!confirm('⚠️ This creative scored '+_sr.score+'/100 — under the house bar of '+SCORE_MIN_SEND+'.\n'+(topFix?'Top fix: '+topFix+'\n\n':'\n')+'Send to Facy anyway?')) return;
+    }
+  }catch(_){}
   let img; try{ img=await compositeCard(cardId); }catch(_){ img=card.querySelector('img')?.src; }   // send text-overlay-composited PNG
   if(!img){ alert('No image on this card.'); return; }
   const btn=$('facy-'+cardId);
@@ -1850,6 +1860,7 @@ function callGeminiEditRefs(imgDataUrl, instruction, refKeys, seed){
 // Save + display a finished edit robustly — survives SKU-tab switches (never lost)
 async function finishEditCard(id, rec){
   await idbPut(rec);                                   // always persisted first
+  scoreCreative(rec.id).catch(()=>{});                 // auto-score every finished edit (fire-and-forget)
   const el=$(id);
   if(el){ el.outerHTML=cardHTML(rec); return; }        // placeholder still on screen
   if(rec.sku===curSku && ptypeOf(rec)===curPtype && !$(rec.id)){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }  // back on its tab+pill
@@ -1950,6 +1961,88 @@ async function geminiCaptionFromImage(dataUrl, sku){
   let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
   let obj; try{ obj=JSON.parse(txt); }catch(e){ obj={caption:txt,hashtags:[]}; }
   return obj;
+}
+
+/* ═══ CREATIVE SCORING — pre-spend judge panel (steal from AdCreative.ai scoring + Creatify's
+   open-source 3-persona evaluator). Every render/edit is auto-scored 0–100 by three judges
+   (Performance Marketer / Creative Director / Target Consumer) across 8 dimensions; the badge
+   lands on the card, low scores soft-gate Send-to-Facy, and each fix is one click to apply. ═══ */
+const SCORE_MIN_SEND = 65;   // house bar — under this, Send-to-Facy asks first (Quan can override)
+const SCORE_DIMS = ['hook','clarity','hierarchy','packshot','legibility','cta','emotion','compliance'];
+function scoreColor(s){ return s>=80?'#16a34a':s>=SCORE_MIN_SEND?'#d97706':'#dc2626'; }
+function scoreBadgeHTML(rec){
+  if(typeof rec.score==='number')
+    return `<div class="scorebadge" id="score-${rec.id}" onclick="openScorePanel('${rec.id}')" title="Creative score — click for the judge panel + fixes" style="background:${scoreColor(rec.score)}">${rec.score}</div>`;
+  return `<div class="scorebadge" id="score-${rec.id}" onclick="scoreCreative('${rec.id}')" title="Score this creative (3-judge panel)">🎯</div>`;
+}
+function renderScoreBadge(rec){ const b=$('score-'+rec.id); if(!b) return;
+  b.outerHTML=scoreBadgeHTML(rec); }
+async function scoreCreative(cardId){
+  if(!KEYS.gemini) return;
+  const rec=await idbGet(cardId); if(!rec||!rec.url) return;
+  const b=$('score-'+cardId); if(b){ b.textContent='…'; b.title='scoring…'; }
+  let img; try{ img=await compositeCard(cardId); }catch(_){ img=rec.url; }
+  const part=E.dataUrlToInlinePart(img); if(!part) return;
+  const skuName=rec.sku==='multi'?'the LACALUT range':(SKUS[rec.sku]?.name||rec.sku);
+  const prompt=
+`You are a pre-spend AD CREATIVE JUDGE PANEL for LACALUT® Australia (premium German oral care, AICIS COSMETIC-ONLY — no disease/treatment claims allowed). Judge this Facebook/Instagram feed image ad for ${skuName}.
+
+THREE INDEPENDENT JUDGES — score separately, do NOT converge:
+1. "marketer" — ruthless Meta performance marketer: will this stop the scroll and convert cold traffic?
+2. "director" — creative director: craft, hierarchy, brand premium-ness, layout discipline.
+3. "consumer" — a 45-65yo Australian worried about their gums, scrolling their feed half-asleep: do I notice it, get it in 2 seconds, want it?
+
+EACH judge scores all 8 DIMENSIONS 0-10:
+hook (scroll-stop power of the first visual+headline read) · clarity (one message, instantly understood) · hierarchy (eye lands headline→product→CTA in order) · packshot (product looks EXACTLY like a real LACALUT pack, no warping/garbled label) · legibility (headline still readable at 120px thumbnail / feed size) · cta (clear, contrasting, compelling) · emotion (creates desire/tension, not wallpaper) · compliance (cosmetic-only: no bleeding/gingivitis/gum disease/treats/heals/repairs/clinical/percentages/authority logos — a breach = 0).
+
+Then compute overall = weighted mean of all judges (hook and packshot count double), scaled to 0-100 and rounded.
+fixes = the 2-3 highest-impact IMAGE EDITS (literal, actionable, e.g. "Enlarge the headline ~40% and raise contrast to white-on-dark") each with estimated point gain.
+disagreements = dimensions where judges differ by ≥3 pts, one line each on the tension (these are the interesting calls).
+
+Return ONLY valid JSON:
+{"overall":0,"verdict":"one blunt line","judges":{"marketer":{"dims":{"hook":0,"clarity":0,"hierarchy":0,"packshot":0,"legibility":0,"cta":0,"emotion":0,"compliance":0},"note":"one line"},"director":{...same},"consumer":{...same}},"fixes":[{"fix":"...","gain":7}],"disagreements":["..."]}`;
+  try{
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}, part]}], generationConfig:{responseMimeType:'application/json'} }) });
+    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'score HTTP '+res.status);
+    let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+    const obj=JSON.parse(txt);
+    const score=Math.max(0,Math.min(100,Math.round(obj.overall)));
+    const fresh=await idbGet(cardId); if(!fresh) return;      // deleted mid-flight
+    fresh.score=score; fresh.scoreData=obj; fresh.scoredTs=Date.now();
+    await idbPut(fresh); renderScoreBadge(fresh);
+  }catch(e){ const bb=$('score-'+cardId); if(bb){ bb.textContent='🎯'; bb.title='Scoring failed — click to retry ('+e.message+')'; } }
+}
+function _dimRow(dim,j){ return `<td style="text-align:center;padding:3px 6px;font-weight:700;color:${j>=8?'#16a34a':j>=6?'#d97706':'#dc2626'}">${j}</td>`; }
+function openScorePanel(cardId){ idbGet(cardId).then(rec=>{
+  if(!rec||!rec.scoreData) return;
+  const d=rec.scoreData, J=d.judges||{};
+  const names={marketer:'📈 Marketer',director:'🎨 Director',consumer:'🛒 Consumer'};
+  let rows='';
+  SCORE_DIMS.forEach(dim=>{ rows+=`<tr><td style="padding:3px 6px;font-size:11px;color:#555">${dim}</td>${['marketer','director','consumer'].map(k=>_dimRow(dim,(J[k]?.dims?.[dim])??'–')).join('')}</tr>`; });
+  const fixes=(d.fixes||[]).map((f,i)=>`<div style="display:flex;gap:8px;align-items:center;margin:6px 0"><span style="flex:1;font-size:12px">🛠️ ${f.fix} <b style="color:#16a34a">+${f.gain||'?'}</b></span><button class="btn" style="font-size:11px;padding:4px 10px;white-space:nowrap" onclick="applyScoreFix('${cardId}',${i})">✏️ Fix it</button></div>`).join('')||'<div style="font-size:12px;color:#888">No fixes suggested.</div>';
+  const dis=(d.disagreements||[]).map(x=>`<div style="font-size:11px;color:#7c3aed;margin:3px 0">⚡ ${x}</div>`).join('');
+  const el=document.createElement('div'); el.id='scorePanel';
+  el.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:999;display:flex;align-items:center;justify-content:center';
+  el.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:520px;width:92%;max-height:86vh;overflow:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.35)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span style="font-size:26px;font-weight:900;color:${scoreColor(rec.score)}">${rec.score}</span>
+      <span style="font-size:13px;font-weight:700;flex:1">${d.verdict||''}</span>
+      <button class="iconbtn" onclick="document.getElementById('scorePanel').remove()">✕</button></div>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0"><tr><th></th>${['marketer','director','consumer'].map(k=>`<th style="font-size:11px;padding:3px">${names[k]}</th>`).join('')}</tr>${rows}</table>
+    <div style="font-size:11px;color:#666;margin-bottom:4px">${['marketer','director','consumer'].map(k=>J[k]?.note?`<div>${names[k]}: ${J[k].note}</div>`:'').join('')}</div>
+    ${dis?`<div style="margin:8px 0">${dis}</div>`:''}
+    <div style="border-top:1px solid #eee;margin-top:8px;padding-top:8px"><b style="font-size:12px">Highest-impact fixes</b>${fixes}</div>
+    <button class="btn" style="margin-top:10px;font-size:12px;padding:6px 12px" onclick="document.getElementById('scorePanel').remove();scoreCreative('${cardId}')">🔄 Re-score</button></div>`;
+  el.onclick=()=>el.remove();
+  document.body.appendChild(el);
+});}
+async function applyScoreFix(cardId, fixIdx){
+  const rec=await idbGet(cardId); const fix=rec?.scoreData?.fixes?.[fixIdx]?.fix; if(!fix) return;
+  const p=document.getElementById('scorePanel'); if(p) p.remove();
+  await editImage(cardId);                                  // opens the edit dialog with this card loaded
+  const ta=$('editInstruction'); if(ta){ ta.value=fix+' Keep everything else on the image EXACTLY as it is — same product rendering, layout, colours and all other text.'; ta.focus(); }
 }
 
 async function pushCardToMarky(cardId){
