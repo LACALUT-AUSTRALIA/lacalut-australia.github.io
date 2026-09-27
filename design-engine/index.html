@@ -157,6 +157,10 @@
     </div>
 
     <button class="btn primary" id="genBtn" style="width:100%;padding:12px" onclick="runGenerate()">✨ Generate</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openMatrix()" title="One click → a grid of variants across the proven angles for this SKU">🧮 Batch Matrix</button>
+      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openClone()" title="Paste a competitor's winning ad — deconstruct it and rebuild the concept for LACALUT">🧬 Ad Clone</button>
+    </div>
   </div>
 
   <!-- LEFT (video mode): Video Generator settings -->
@@ -229,6 +233,26 @@
   </div>
 </div></dialog>
 
+<dialog id="matrixDlg" style="max-width:560px"><div class="dlg">
+  <h3 style="margin:0 0 4px">🧮 Batch Matrix — angles × executions</h3>
+  <div style="font-size:12px;color:#666;margin-bottom:10px">Ticks the proven angles for this SKU; each fires its own generation carrying that angle to Facy. Uses the current strategy, packshot and format.</div>
+  <div id="matrixAngles" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px"></div>
+  <label style="font-size:12px;font-weight:700">Executions per angle
+    <select id="matrixQty" style="margin-left:8px;padding:4px 8px"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option></select></label>
+  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+    <button class="btn" onclick="matrixDlg.close()">Cancel</button>
+    <button class="btn primary" id="matrixGo" onclick="runMatrix()">🧮 Generate the Matrix</button></div>
+</div></dialog>
+
+<dialog id="cloneDlg" style="max-width:560px"><div class="dlg">
+  <h3 style="margin:0 0 4px">🧬 Ad Clone — steal the concept, not the ad</h3>
+  <div style="font-size:12px;color:#666;margin-bottom:10px">Paste / drop a competitor's winning ad. The engine deconstructs its hook, layout, offer and emotion — then rebuilds the CONCEPT for LACALUT with OUR packshot and compliant copy.</div>
+  <div id="cloneSlot" onclick="pickCloneSrc()" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px;min-height:60px">📤 Click to load the competitor ad — or paste it here (Ctrl+V)</div>
+  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end">
+    <button class="btn" onclick="cloneDlg.close()">Cancel</button>
+    <button class="btn primary" id="cloneGo" onclick="runClone()" disabled>🧬 Deconstruct &amp; Rebuild for LACALUT</button></div>
+</div></dialog>
+
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
   <div id="editSrcSlot" style="margin:0 0 10px" ondragover="editDragOver(event)" ondragenter="editDragOver(event)" ondragleave="editDragLeave(event)" ondrop="editDrop(event)"></div>
@@ -262,6 +286,7 @@
 
 <script src="strategies.js"></script>
 <script src="engine.js"></script>
+<script src="brand-brain.js"></script>
 <script src="packs-seed.js"></script>
 <script>
 /* Shared brand engine — single source of truth (engine.js). */
@@ -665,6 +690,7 @@ async function runGenerate(){
       }
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
       prompt += perfBrainInjection(S.isMulti?'multi':S.curSku);   // bias toward live Meta winners
+      prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
       const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:($('facyAngle')?$('facyAngle').value.trim():'')};
@@ -762,6 +788,7 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="Generate video — animate this into a 5–8s clip" onclick="openVideo('${rec.id}')">🎬</button>
+   <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
@@ -1978,6 +2005,94 @@ async function geminiCaptionFromImage(dataUrl, sku){
   let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
   let obj; try{ obj=JSON.parse(txt); }catch(e){ obj={caption:txt,hashtags:[]}; }
   return obj;
+}
+
+/* ═══ BATCH MATRIX — one click → a grid across the SKU's proven angles (Cuttable's volume thesis) ═══ */
+function openMatrix(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  const sku=curSku==='multi'?'multi':curSku;
+  const angles=(window.BRAND_BRAIN&&window.BRAND_BRAIN.angles[sku])||(window.BRAND_BRAIN&&window.BRAND_BRAIN.angles[(sku==='herbal')?'aktiv-herbal':sku])||[];
+  if(!angles.length){ alert('No angle matrix for this SKU yet — add it to brand-brain.js.'); return; }
+  $('matrixAngles').innerHTML=angles.map((a,i)=>
+    `<label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;cursor:pointer"><input type="checkbox" class="mxAngle" value="${i}" ${i<3?'checked':''} style="margin-top:2px">${a}</label>`).join('');
+  matrixDlg.showModal();
+}
+async function runMatrix(){
+  const sku=curSku==='multi'?'multi':curSku;
+  const angles=(window.BRAND_BRAIN&&window.BRAND_BRAIN.angles[sku])||[];
+  const picked=[...document.querySelectorAll('.mxAngle:checked')].map(c=>angles[+c.value]).filter(Boolean);
+  if(!picked.length){ alert('Tick at least one angle.'); return; }
+  const per=$('matrixQty').value;
+  matrixDlg.close();
+  const prevBrief=$('brief').value, prevAngle=$('facyAngle')?$('facyAngle').value:'', prevQty=$('qty').value;
+  toast('🧮 Matrix firing — '+picked.length+' angle'+(picked.length>1?'s':'')+' × '+per+' execution'+(per>1?'s':''));
+  try{
+    for(const angle of picked){
+      $('facyAngle').value=angle;                                   // rides to Facy as the creative brief
+      $('brief').value=(prevBrief?prevBrief+'\n':'')+'THE ANGLE FOR THIS EXECUTION (build the whole creative around it): '+angle;
+      $('qty').value=per;
+      await runGenerate();                                          // snapshot mechanism keeps each combo clean
+    }
+  } finally {
+    $('brief').value=prevBrief; if($('facyAngle'))$('facyAngle').value=prevAngle; $('qty').value=prevQty;
+  }
+  toast('🧮 Matrix complete — scores landing on each card now');
+}
+
+/* ═══ AD CLONE — competitor winner → deconstructed concept → LACALUT rebuild (Creatify's Ad Clone) ═══ */
+let _cloneSrc=null;
+function pickCloneSrc(){ fileToDataUrl(d=>{ _cloneSrc=d; renderCloneSlot(); }); }
+function renderCloneSlot(){ const s=$('cloneSlot'); if(!s) return;
+  if(_cloneSrc){ s.innerHTML='<img src="'+_cloneSrc+'" style="max-width:100%;max-height:240px;border-radius:8px">'; $('cloneGo').disabled=false; }
+}
+function openClone(){ if(!KEYS.gemini){ openKeys(); return; } _cloneSrc=null; $('cloneSlot').innerHTML='📤 Click to load the competitor ad — or paste it here (Ctrl+V)'; $('cloneGo').disabled=true; cloneDlg.showModal(); }
+document.addEventListener('paste', e=>{ if(!cloneDlg.open) return; const items=(e.clipboardData&&e.clipboardData.items)||[]; for(const it of items){ if(it.type&&it.type.indexOf('image')===0){ const f=it.getAsFile(); if(f){ const r=new FileReader(); r.onload=()=>{ _cloneSrc=r.result; renderCloneSlot(); }; r.readAsDataURL(f); e.preventDefault(); break; } } } });
+async function runClone(){
+  if(!_cloneSrc) return;
+  const go=$('cloneGo'); go.disabled=true; go.textContent='🔎 Deconstructing…';
+  try{
+    const part=E.dataUrlToInlinePart(_cloneSrc); if(!part) throw new Error('bad image');
+    const prompt=`You are a direct-response creative strategist. DECONSTRUCT this competitor's ad into its transferable CONCEPT — not its brand assets. Return ONLY valid JSON:
+{"hook":"the psychological hook in one line","headline_style":"how the headline works (size/tone/device)","layout":"the visual layout formula (composition, product placement, text zones)","offer":"the offer/promise structure","emotion":"the feeling it triggers","angle":"the strategic angle in one line","cta":"the CTA approach"}`;
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}, part]}], generationConfig:{responseMimeType:'application/json'} }) });
+    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'clone HTTP '+res.status);
+    const txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+    const d=JSON.parse(txt);
+    cloneDlg.close();
+    $('brief').value='AD CLONE — rebuild this PROVEN competitor concept for LACALUT (steal the concept, never their brand/packaging/colours):\n'
+      +'HOOK: '+d.hook+'\nLAYOUT FORMULA: '+d.layout+'\nHEADLINE STYLE: '+d.headline_style
+      +'\nOFFER STRUCTURE: '+d.offer+'\nEMOTION: '+d.emotion+'\nCTA APPROACH: '+d.cta
+      +'\nUse OUR real packshot exactly as referenced, LACALUT brand colours, and cosmetic-only claims.';
+    if($('facyAngle')) $('facyAngle').value='Ad Clone — '+(d.angle||d.hook);
+    $('qty').value='1';
+    toast('🧬 Concept deconstructed — brief loaded, generating the LACALUT rebuild');
+    await runGenerate();
+  }catch(e){ alert('Ad Clone failed: '+e.message); }
+  finally{ go.disabled=false; go.textContent='🧬 Deconstruct & Rebuild for LACALUT'; }
+}
+
+/* ═══ AUTO-RESIZE — one approved 4:5 → Story 9:16 + Square 1:1, layout preserved (AdCreative/Cuttable) ═══ */
+const SIZE_TARGETS=[ ['9:16','ad','Story 9:16'], ['1:1','listing','Square 1:1'] ];
+async function makeSizes(cardId){
+  if(!KEYS.gemini){ openKeys(); return; }
+  const rec=await idbGet(cardId); if(!rec){ alert('No card.'); return; }
+  let src; try{ src=await compositeCard(cardId); }catch(_){ src=rec.url; }
+  toast('📐 Building Story 9:16 + Square 1:1 — no need to wait');
+  SIZE_TARGETS.forEach(([ratio,mode,label],i)=>{
+    const id='sz'+Date.now()+'_'+i;
+    $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">📐 ${label}…</span></div></div>`);
+    (async ()=>{
+      try{
+        const url=await E.editImage({ imgDataUrl:src,
+          instruction:'REFRAME this finished ad to a '+ratio+' canvas ('+label+'). Keep EVERY element identical — same product rendering, headline text word-for-word, colours, badges and style. Recompose the layout gracefully for the new shape (extend the background naturally to fill; restack text zones if needed). Never crop off the product or any text.',
+          refImgs:[], sku:rec.sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio:ratio });
+        const nrec={id:'g'+Date.now()+'_sz'+i, sku:rec.sku, mode, ptype:ptypeOf(rec), label:(rec.label||'')+' · '+label, ts:Date.now(), url, fav:false, brief:rec.brief||'', angle:rec.angle||''};
+        await finishEditCard(id, nrec);
+      }catch(e){ markCardFailed(id, e.message); }
+    })();
+  });
 }
 
 /* ═══ CREATIVE SCORING — pre-spend judge panel (steal from AdCreative.ai scoring + Creatify's
