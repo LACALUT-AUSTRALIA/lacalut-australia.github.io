@@ -598,39 +598,59 @@ async function runGenerate(){
   }
   const qty=parseInt($('qty').value); const btn=$('genBtn');
   const genPtype=curPtype;   // tag every new generation with the active product type at generate time
+  // ═══ INPUT SNAPSHOT (Qty 2+ bulletproofing) — freeze EVERY input the instant Generate is hit, so
+  // roaming tabs / switching SKU or product-type / editing the brief / changing format mid-batch can
+  // NEVER poison images 2 & 3. The whole batch renders off S, not the live DOM/globals. ═══
+  const S = {
+    isMulti, curSku, curMode, curModel, curBrain, genPtype,
+    brief: $('brief').value,
+    advNeg: $('advNeg').checked,
+    render: $('render').value,
+    oneUp: !!($('oneUp') && $('oneUp').checked),
+    geminiKey: KEYS.gemini,
+    ar: MODES[curMode].ar,
+    productImgs: productImgs.filter(Boolean).slice(),
+    styleImgs:   styleImgs.filter(Boolean).slice(),
+    multiImgs:   multiImgs.slice(),
+    multiLabels: multiLabels.slice(),
+    multiSel:    multiSel.slice(),
+    multiForm
+  };
+  // 'mixed' still varies per image, but only across the SNAPSHOTTED strategy id — immune to live switches.
+  const pickBrainS = ()=> S.curBrain==='mixed' ? BRAINS[Math.floor(Math.random()*BRAINS.length)] : (BRAINS.find(b=>b.id===S.curBrain)||null);
   btn.disabled=true; btn.textContent='✨ Generating…';
   if($('output').querySelector('.empty')) $('output').innerHTML='';
   for(let i=0;i<qty;i++){
     const id='c'+Date.now()+i;
-    const _ar=MODES[curMode].ar.split(' ')[0].replace(':','/');
-    pendingImgGens.push({id, sku:isMulti?'multi':curSku, ptype:genPtype, ar:_ar});   // track it so a mode/tab switch never drops the in-flight render
+    const _ar=S.ar.split(' ')[0].replace(':','/');
+    pendingImgGens.push({id, sku:S.isMulti?'multi':S.curSku, ptype:S.genPtype, ar:_ar});   // track it so a mode/tab switch never drops the in-flight render
     if(curTop==='image') $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${_ar}"><div class="meta"><span class="t">⏳ rendering…</span></div></div>`);
     try{
-      const rsel=$('render').value;
+      const rsel=S.render;
       const rmode = rsel==='mixed' ? (i%2===0?'photoreal':'graphical') : rsel;
-      const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
+      const aspectRatio=(S.ar||'4:5').split(' ')[0];
       let prompt, label, refImgs, refLabels=null;
-      if(isMulti){
-        const brain = curBrain ? resolveBrain() : null;
-        const bans=[...new Set([...GLOBAL_BAN, ...multiSel.flatMap(k=>SKUS[k]?.ban||[])])];
-        prompt = E.buildMultiPrompt({ skuNames:multiLabels, mode:curMode, brain, brief:$('brief').value, advNeg:$('advNeg').checked, bans, form:MULTI_FORM_LABEL[multiForm] });
-        refImgs = multiImgs; refLabels = multiLabels;
-        label = (brain?brain.name:'Range')+' · '+multiLabels.length+' SKUs';
+      if(S.isMulti){
+        const brain = S.curBrain ? pickBrainS() : null;
+        const bans=[...new Set([...GLOBAL_BAN, ...S.multiSel.flatMap(k=>SKUS[k]?.ban||[])])];
+        prompt = E.buildMultiPrompt({ skuNames:S.multiLabels, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, bans, form:MULTI_FORM_LABEL[S.multiForm] });
+        refImgs = S.multiImgs; refLabels = S.multiLabels;
+        label = (brain?brain.name:'Range')+' · '+S.multiLabels.length+' SKUs';
       } else {
-        const brain=resolveBrain();
+        const brain=pickBrainS();
         const useProd = (brain && brain.product==='none') ? false : true; // always attach real packshot refs so the product is never invented
-        prompt=buildPrompt(brain, useProd);
-        refImgs = useProd?productImgs.filter(Boolean):[];
+        prompt=E.buildPrompt({ sku:S.curSku, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, useProd });
+        refImgs = useProd?S.productImgs:[];
         const finish = rmode==='graphical'?'CGI':rmode==='exact'?'flat':'photoreal';
         label=(brain?brain.name:'Hero')+(useProd?' · '+finish:' · logo-only');
       }
       // 🚀 ONE-UP LOOP — refine the assembled brief to its pinnacle before generating (every strategy)
-      if($('oneUp') && $('oneUp').checked){
+      if(S.oneUp){
         const _t=$(id)?.querySelector('.t'); if(_t) _t.textContent='🚀 one-upping the prompt…';
-        const _bans = isMulti
-          ? [...new Set([...GLOBAL_BAN, ...multiSel.flatMap(k=>SKUS[k]?.ban||[])])]
-          : [...GLOBAL_BAN, ...SKUS[curSku].ban];
-        prompt = await E.oneUpImagePrompt({ basePrompt:prompt, bans:$('advNeg').checked?_bans:[], aspectRatio, apiKey:KEYS.gemini });
+        const _bans = S.isMulti
+          ? [...new Set([...GLOBAL_BAN, ...S.multiSel.flatMap(k=>SKUS[k]?.ban||[])])]
+          : [...GLOBAL_BAN, ...SKUS[S.curSku].ban];
+        prompt = await E.oneUpImagePrompt({ basePrompt:prompt, bans:S.advNeg?_bans:[], aspectRatio, apiKey:S.geminiKey });
         if(_t) _t.textContent='⏳ rendering…';
       }
       // Qty>1 → force each image to be VISUALLY DISTINCT (appended AFTER one-up so it always survives)
@@ -638,9 +658,9 @@ async function runGenerate(){
         prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule. Keep the background WITHIN the colour palette stated in the brief — never introduce a clashing colour scheme.`;
       }
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
-      const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:styleImgs.filter(Boolean),
-        render:rmode, model:curModel, apiKey:KEYS.gemini, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:isMulti?'multi':curSku, mode:curMode, ptype:genPtype, label, ts:Date.now(), url, fav:false};
+      const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
+        render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
+      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false};
       await idbPut(rec);   // persisted FIRST — the image can never be lost even if the placeholder card is gone
       const _el=$(id);
       if(_el){ _el.outerHTML=cardHTML(rec); }
