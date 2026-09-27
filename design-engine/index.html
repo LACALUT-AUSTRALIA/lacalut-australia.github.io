@@ -744,6 +744,7 @@ function toggleRefSelect(key){ const i=_editRefs.indexOf(key); if(i>=0)_editRefs
 async function removeRef(key){ if(!confirm('Remove this saved reference photo?'))return; delete _refLib[key]; const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); try{ await refDel(key); }catch(e){} renderRefLibGrid(); refreshSlotsIfAuto(); }
 async function idbPut(rec){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').put(rec); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').index('sku').getAll(sku); rq.onsuccess=()=>res(rq.result||[]); rq.onerror=()=>rej(rq.error); }); }
+async function idbGet(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').get(id); rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
 function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><div class="imgwrap"><img src="${rec.url}" draggable="false"><div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
@@ -1781,11 +1782,13 @@ function callGeminiEdit(imgDataUrl, instruction){
   const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
   return E.editImage({ imgDataUrl, instruction, refImgs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio });
 }
-let _editSrc=null, _editRefs=[];   // _editRefs holds selected library KEYS (e.g. 'aktiv_toothpaste')
-function editImage(cardId){
+let _editSrc=null, _editRefs=[], _editSrcLabel='';   // _editRefs holds selected library KEYS; _editSrcLabel carries the source card's format label through the edit
+async function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
-  _editSrc=src; _editRefs=[]; renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
+  _editSrc=src; _editRefs=[];
+  try{ _editSrcLabel=(await idbGet(cardId))?.label||''; }catch(e){ _editSrcLabel=''; }   // inherit format keyword (Challenge/Dare) so Send-to-Facy detects it
+  renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
@@ -1800,8 +1803,8 @@ function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image — or drag &amp; drop / paste it here</div>`; }
   renderEditSizePreview();   // keep the mini preview beside Apply edit in sync with the loaded image
 }
-function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; renderEditSrc(); }); }
-function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; renderEditSrc(); }; r.readAsDataURL(file); }
+function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; renderEditSrc(); }); }
+function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; renderEditSrc(); }; r.readAsDataURL(file); }
 function editDragOver(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline='2px solid #6d5efc'; }
 function editDragLeave(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; }
 function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; const f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) _fileToEditSrc(f); }
@@ -1846,6 +1849,7 @@ async function applyEdit(){
   const src=_editSrc; if(!src){ editDlg.close(); return; }
   const refs=_editRefs.slice();
   const firePtype=curPtype;   // tag edit outputs with the active product type at fire time
+  const editLbl = _editSrcLabel ? (_editSrcLabel.replace(/ · edited$/,'')+' · edited') : 'edited';   // KEEP the source format keyword so Send-to-Facy fires the right copy layer
   editDlg.close();
   // BATCH: only when explicitly opted-in → fire one independent render per reference, each tagged to its own SKU
   if(refs.length>=2 && $('batchPerRef') && $('batchPerRef').checked){
@@ -1858,7 +1862,7 @@ async function applyEdit(){
       (async ()=>{
         try{
           const url=await callGeminiEditRefs(src, instruction, [key]);
-          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:'edited', ts:Date.now(), url, fav:false};
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false};
           await finishEditCard(id, rec);
         }catch(e){ markCardFailed(id, e.message); }
       })();
@@ -1890,7 +1894,7 @@ async function applyEdit(){
     (async()=>{
       try{
         const url=await callGeminiEditRefs(src, instr, refKeys);
-        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:'edited', ts:Date.now(), url, fav:false};
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
