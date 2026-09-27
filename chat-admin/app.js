@@ -480,6 +480,13 @@ function loadConversations() {
   document.getElementById('conv-loading').style.display = 'block';
   document.getElementById('conv-empty').style.display = 'none';
 
+  api('/conversations?count=1', { auth: true })
+    .then(function (res) {
+      var el = document.getElementById('conv-count');
+      if (el && res && typeof res.count === 'number') el.textContent = '(' + res.count.toLocaleString() + ')';
+    })
+    .catch(function () {});
+
   api('/conversations', { auth: true })
     .then(function (data) {
       document.getElementById('conv-loading').style.display = 'none';
