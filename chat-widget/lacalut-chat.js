@@ -203,6 +203,48 @@
         { label: 'Straight after', reply: "Most people do! But rinsing right after brushing can wash away the goodness your paste just left behind. Try mouthwash at a different time — after lunch is perfect 👌" },
         { label: 'Another time', reply: "Smart routine 👏 Keeping mouthwash away from brushing time lets both do their best work. After lunch is the sweet spot." },
       ] },
+    { id: 'quizfirstpaste', q: '🏺 Pop quiz: when did humans FIRST use toothpaste?',
+      buttons: [
+        { label: 'Ancient Egypt', reply: "Nailed it 🏆 The Ancient Egyptians were mixing tooth cleaning pastes about 5,000 years ago — crushed minerals and herbs. It's come a long way since 😄" },
+        { label: 'The 1800s', reply: "Way earlier! The Ancient Egyptians were cleaning their teeth with mineral pastes about 5,000 years ago 🏺 The 1800s just put it in a jar." },
+        { label: 'The 1950s', reply: "Off by about 5,000 years 😄 The Ancient Egyptians got there first with crushed-mineral pastes. Fresh smiles are an old obsession 🏺" },
+      ] },
+    { id: 'quiztube', q: '🧴 When did toothpaste first come in a squeezable tube?',
+      buttons: [
+        { label: '1892', reply: "Spot on 🏆 A dentist called Dr Sheffield launched the first collapsible tube in 1892. Before that, everyone dipped their brush into a shared jar 😬" },
+        { label: '1932', reply: "Earlier! 1892 — a dentist called Dr Sheffield. Before the tube, families dipped their brushes into one shared jar 😬 You're welcome for that image." },
+        { label: '1969', reply: "Much earlier — 1892! Before Dr Sheffield's tube, everyone dipped their brush in a shared family jar 😬" },
+      ] },
+    { id: 'quizbristles', q: '🪥 What were the first toothbrush bristles made from?',
+      buttons: [
+        { label: 'Boar hair 🐗', reply: "Correct — and slightly gross 😄 Bristle brushes were invented in China around 500 years ago using boar hair. Nylon bristles only arrived in 1938. Progress!" },
+        { label: 'Horse hair 🐴', reply: "Close! Horse hair had its moment, but the original bristle brush — invented in China ~500 years ago — used boar hair 🐗 Nylon saved us all in 1938." },
+        { label: 'Plant fibres 🌿', reply: "Good guess — chew-sticks came first, but the first true bristle brush (China, ~500 years ago) used boar hair 🐗 Nylon took over in 1938." },
+      ] },
+    { id: 'quizamount', q: '🫛 How much toothpaste should you ACTUALLY use?',
+      buttons: [
+        { label: 'Pea-sized', reply: "Exactly right 🏆 A pea-sized dab is all an adult needs. That full-brush swoosh in the ads? Pure marketing 😄 Your tube should last months." },
+        { label: 'Cover the brush', reply: "That's the ad-land swoosh 😄 Truth: a pea-sized dab is all you need. Looks less dramatic, works just as hard — and your tube lasts way longer." },
+        { label: 'Half the tube 😅', reply: "Ha! Bold strategy 😄 A pea-sized dab is genuinely all you need — anything more is just extra foam." },
+      ] },
+    { id: 'quizshark', q: '🦈 Which animal never has to worry about its teeth?',
+      buttons: [
+        { label: 'Sharks', reply: "Correct 🏆 Shark enamel is naturally rich in fluoride — AND they regrow teeth their entire lives. Some sharks go through 30,000 teeth. We get one set, so look after it 😄" },
+        { label: 'Crocodiles', reply: "Good guess — crocs do regrow teeth, but sharks win: fluoride-rich enamel AND up to 30,000 teeth in a lifetime 🦈 We get one set. Worth pampering." },
+        { label: 'Horses', reply: "Nope — horses actually have famously high-maintenance teeth 😄 It's sharks: fluoride-rich enamel and endless replacements 🦈 We get one set. Treat it well." },
+      ] },
+    { id: 'quizcolour', q: "🎨 What's the world's most popular toothbrush colour?",
+      buttons: [
+        { label: 'Blue', reply: "Correct 🏆 Blue wins worldwide — apparently we find it 'cleaner looking'. No hard feelings, red is clearly the superior colour 😄🔴" },
+        { label: 'Red', reply: "A person of taste 😄🔴 Sadly the world disagrees — blue is the most popular toothbrush colour on earth. Their loss." },
+        { label: 'White', reply: "Sensible guess — but it's blue! Apparently blue 'feels cleaner' to most people. We remain loyal to red 😄🔴" },
+      ] },
+    { id: 'quizoldest', q: '🧐 Pop quiz: who sold the first commercial toothpaste?',
+      buttons: [
+        { label: 'Colgate', reply: "Correct — Colgate sold aromatic toothpaste in jars from 1873 🏺 We arrived in 1925 with German precision… and we'd argue we aged rather well 😄🇩🇪" },
+        { label: 'LACALUT', reply: "Flattering! 😄 It was actually Colgate, in jars, from 1873. LACALUT joined in 1925 — fashionably late, impeccably German 🇩🇪" },
+        { label: 'Some pharmacist?', reply: "Honestly, half of dental history IS 'some pharmacist' 😄 Officially it was Colgate in 1873 — jars, not tubes. LACALUT arrived in 1925 with German precision 🇩🇪" },
+      ] },
   ];
 
   // Resolve the live opener list from config, falling back to the defaults.
