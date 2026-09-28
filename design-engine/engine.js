@@ -220,10 +220,17 @@
       p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image. A viewer comparing it side-by-side with any other LACALUT ad format must instantly see a DIFFERENT structural skeleton. NEVER collapse into the default template (centred product hero on a glowing backdrop, headline above, three badges below) unless the strategy above explicitly asks for exactly that. `;
     }
     if(salesLike){
-      const head=pickRand(g.headlines,1)[0]; if(head) p += `Headline (exact wording): "${head}". `;
-      const bens=pickRand(g.benefits,3); if(bens.length) p += `Benefit badges: ${bens.join('; ')}. `;
-      const trust=pickRand(g.trust,2); if(trust.length) p += `Trust badges: ${trust.join('; ')}. `;
-      const bg=pickRand(g.backgrounds,1)[0]; if(bg) p += `Background scene: ${bg}. `;
+      // GUIDE INJECTION ONLY AS FALLBACK — a format's own Hook/Layout dims outrank the generic
+      // Brand Guide pools. Injecting the guide headline + badge stack over every Sales brain was
+      // the root cause of "every format renders the same centred-hero-with-badges ad".
+      const hasHook   = !!(brain && brain.dims && brain.dims.some(([d])=>/hook/i.test(d)));
+      const hasLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d)));
+      if(!hasHook){ const head=pickRand(g.headlines,1)[0]; if(head) p += `Headline (exact wording): "${head}". `; }
+      if(!hasLayout){
+        const bens=pickRand(g.benefits,3); if(bens.length) p += `Benefit badges: ${bens.join('; ')}. `;
+        const trust=pickRand(g.trust,2); if(trust.length) p += `Trust badges: ${trust.join('; ')}. `;
+        const bg=pickRand(g.backgrounds,1)[0]; if(bg) p += `Background scene: ${bg}. `;
+      }
     }
     if(brief) p += `Art-director note (priority): ${brief}. `;
     if(opts.headline) p += `TOPIC LOCK (highest priority): the MAIN on-image headline and all overlay text must convey THIS exact message/topic — "${opts.headline}". Do NOT substitute a different tip, fact or headline; everything written on the image must be consistent with it. `;
@@ -243,7 +250,7 @@
       p += `TYPOGRAPHY SIZE (mandatory): the caption text is LARGE and bold — big enough to read instantly on a small mobile screen — just in a casual native style rather than a formal headline. Text sells the creative as much as the image. `;
     } else {
       if(useProd){
-        p += `Product packaging LARGE and dominant — lower ~55% as the clear hero. Prefer "Clinical Formula", never "Mineral Formula". `;
+        p += `Product packaging LARGE and dominant — lower ~55% as the clear hero. Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
         p += `CRITICAL PRODUCT FIDELITY: the tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white cap included. `;
       } else {
         p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
@@ -277,7 +284,7 @@
     if(opts.headline) p += `TOPIC LOCK (highest priority): the main on-image headline and all overlay text must convey THIS exact message — "${opts.headline}". `;
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
     p += `ALL overlay/design text — headline, labels, badges — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (Each product's own printed packaging text stays unchanged.) `;
-    p += `The products are LARGE and dominant as the clear hero of the composition. Prefer "Clinical Formula", never "Mineral Formula". `;
+    p += `The products are LARGE and dominant as the clear hero of the composition. Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
     p += `CRITICAL PRODUCT FIDELITY: every tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white caps included. `;
     p += `CONSISTENT PRODUCT FORM (mandatory, non-negotiable): render ALL ${names.length} products as ${form||'ONE single form (all tubes OR all boxes — never mixed)'}${form?` — show EVERY product as ${form} and NOTHING else (do NOT draw tubes if these are boxes, do NOT draw boxes if these are tubes, do NOT add a mouthwash bottle unless these ARE bottles)`:''}. Identical form for every product, matching the reference photos exactly. NEVER mix forms in one image; even if a supplied reference photo shows a box AND a tube together, render ONLY the ${form||'chosen'} form. Keep it uniform so the range reads as one clean, cohesive set. `;
     p += `COPY RELEVANCE: every headline and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste or fresh breath — never a vague generic line like "German pharmacy care" on its own; tie it to the actual products (e.g. "German pharmacy-grade oral care"). `;
