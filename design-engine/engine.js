@@ -217,6 +217,7 @@
     if(brain){
       p += `CREATIVE STRATEGY — "${brain.name}": `;
       brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p += `${d} — ${v}. `; });
+      p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image. A viewer comparing it side-by-side with any other LACALUT ad format must instantly see a DIFFERENT structural skeleton. NEVER collapse into the default template (centred product hero on a glowing backdrop, headline above, three badges below) unless the strategy above explicitly asks for exactly that. `;
     }
     if(salesLike){
       const head=pickRand(g.headlines,1)[0]; if(head) p += `Headline (exact wording): "${head}". `;
@@ -270,6 +271,7 @@
     if(brain){
       p += `CREATIVE STRATEGY — "${brain.name}": `;
       brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p += `${d} — ${v}. `; });
+      p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image; never collapse into the default centred-lineup-with-badges template unless the strategy explicitly asks for exactly that. `;
     }
     if(brief) p += `Art-director note (HIGHEST priority — follow it exactly): ${brief}. `;
     if(opts.headline) p += `TOPIC LOCK (highest priority): the main on-image headline and all overlay text must convey THIS exact message — "${opts.headline}". `;
