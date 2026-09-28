@@ -87,7 +87,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v16 palette-lock</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v17 one-click-10/10</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -160,6 +160,8 @@
     <div style="display:flex;gap:8px;margin-top:8px">
       <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openMatrix()" title="One click → a grid of variants across the proven angles for this SKU">🧮 Batch Matrix</button>
       <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openClone()" title="Paste a competitor's winning ad — deconstruct it and rebuild the concept for LACALUT">🧬 Ad Clone</button>
+      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openTournament()" title="Render 1 ad for EVERY format on this SKU, auto-score all, rank them — every format earns its place">🏆 Tournament</button>
+      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openCoverage()" title="SKU × format matrix of everything generated + sent — the red gaps are what to build next">📊 Coverage</button>
     </div>
   </div>
 
@@ -699,7 +701,7 @@ async function runGenerate(){
       if(_el){ _el.outerHTML=cardHTML(rec); }
       else if(curTop==='image' && rec.sku===curSku && ptypeOf(rec)===genPtype){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }
       // else: safely in IndexedDB — it appears the moment he returns to this product tab (renderGallery pulls it)
-      scoreCreative(rec.id).catch(()=>{});   // auto-score every fresh render (fire-and-forget)
+      (TOURN_ACTIVE?scoreCreative(rec.id):autoPolish(rec.id)).catch(()=>{});   // auto-score + AUTO-POLISH every fresh render (tournament judges RAW brain quality — no polish)
     }catch(e){ markCardFailed(id, e.message); }
     finally{ const _pi=pendingImgGens.findIndex(p=>p.id===id); if(_pi>=0) pendingImgGens.splice(_pi,1); }
   }
@@ -1778,12 +1780,63 @@ async function facyUploadImage(dataUrl,id){
   if(!up.ok){const e=await up.json().catch(()=>({}));throw new Error('image upload failed: '+(e.message||up.status));}
   return FACY_SUPA_URL+'/storage/v1/object/public/ad-images/'+fn;
 }
-async function pushToFacyPipeline(img,sku,label,cardId,brief){
+/* ═══ ONE-BRAIN COPY SYNC — the copy IS the creative.
+   Reads the FINAL image (exact on-image wording, offer, challenge) and writes the matching
+   Meta ad copy: the offer/claim wording on the image is repeated VERBATIM in the primary text
+   (e.g. "Take the Gum Care Challenge — love it or keep it free" must match exactly), so the
+   ad Facy launches and the creative Desi built are one congruent brain. ═══ */
+async function generateAdCopy(cardId, imgDataUrl){
+  const rec=await idbGet(cardId); if(!rec) return null;
+  const part=E.dataUrlToInlinePart(imgDataUrl||rec.url); if(!part) return null;
+  const skuKey=rec.sku==='multi'?'multi':rec.sku;
+  const skuName=rec.sku==='multi'?'the LACALUT range':(SKUS[rec.sku]?.name||rec.sku);
+  const say=rec.sku==='multi'?'each product’s own cosmetic feel-benefit':(SKUS[rec.sku]?.say||'');
+  const B=window.BRAND_BRAIN||{};
+  const angles=(B.angles&&(B.angles[skuKey]||[]))||[];
+  const prompt=
+`You are Facy — LACALUT® Australia's senior Meta ads copywriter. This IMAGE is a finished Facebook/Instagram ad creative for ${skuName}. Write the Meta ad copy that ships WITH this exact image.
+
+STEP 1 — READ THE IMAGE: extract every word written on it (headline, offer, badges, CTA). The image is the source of truth.
+
+CONGRUENCE LAW (the #1 rule): if the image carries an offer, challenge, guarantee or named claim (e.g. "Take the Gum Care Challenge — Love It or Keep It Free"), the primary text MUST repeat that offer in the SAME words, verbatim — never a paraphrase, never a different offer. The copy amplifies the image's baked hook; it never contradicts or replaces it.
+
+${rec.angle?`THE ANGLE behind this creative (from the designer — amplify it): ${rec.angle}. `:''}${rec.brief?`Designer's brief: ${rec.brief}. `:''}
+PRODUCT TRUTH: ${skuName} — ${say}. ${angles.length?`Proven angles for this range: ${angles.slice(0,4).join(' | ')}.`:''}
+TONE: ${B.tone||'Premium German engineering meets warm Aussie plain-talk.'}
+TRUST LINES (only ever these): ${(B.trust||[]).join(' · ')}
+HARD COMPLIANCE (AICIS cosmetic-only — a breach kills the ad): never write ${B.banned||'disease, treatment or medical claims'}. Cosmetic FEEL language only. Australian English.
+
+WRITE (Facy house style):
+- primary_text: LONG sell-hard direct-response body — hook line first (customer's feeling/moment, never brand-first), short punchy paragraphs separated by line breaks, tasteful emojis as visual bullets (✅\u{1F1E9}\u{1F1EA}\u{1F9B7} etc.), the image's offer VERBATIM if it has one, reason-to-believe (German pharmacy heritage), soft urgency, CTA line. 500-900 characters.
+- headlines: 3 DIFFERENT punchy headlines (≤40 chars each, may open with one emoji) — at least one repeats the image's core promise word-for-word.
+- description: one line for the display-link description slot.
+- first_comment: a warm first-person comment from the brand (1-2 lines + link placeholder "https://lacalut.com.au/") answering "where do I get it".
+
+Return ONLY valid JSON: {"on_image_text":"every word you read on the image","primary_text":"...","headlines":["...","...","..."],"description":"...","first_comment":"..."}`;
+  const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}, part]}], generationConfig:{responseMimeType:'application/json'} }) });
+  const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'copy HTTP '+res.status);
+  let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+  const c=JSON.parse(txt);
+  // belt-and-braces: sanitise every field so a non-compliant line can never reach the pipeline
+  const copy={ on_image_text:E.sanitizeCopy(c.on_image_text||''),
+    primary_text:E.sanitizeCopy(c.primary_text||''),
+    headlines:(c.headlines||[]).map(h=>E.sanitizeCopy(h)).filter(Boolean).slice(0,5),
+    description:E.sanitizeCopy(c.description||''),
+    first_comment:E.sanitizeCopy(c.first_comment||'') };
+  const fresh=await idbGet(cardId); if(fresh){ fresh.adCopy=copy; fresh.adCopyTs=Date.now(); await idbPut(fresh); }
+  return copy;
+}
+
+async function pushToFacyPipeline(img,sku,label,cardId,brief,copy){
   const url=await facyUploadImage(img,cardId);
+  const extra=copy?('\n\n[MATCHED AD COPY — generated FROM this exact image, offer wording verbatim; use as-is or refine, never change the offer]\nALT HEADLINES: '+(copy.headlines||[]).slice(1).join(' | ')+'\nFIRST COMMENT: '+(copy.first_comment||'')+'\nON-IMAGE TEXT: '+(copy.on_image_text||'')):'';
   const row=[{sku:sku||'multi',creative_name:label||cardId,creative_type:'image',
     image_url:url,image_url_vertical:url,
     adset_id:'',adset_name:'(Facy assigns)',campaign_id:'',template_ad_id:'',
-    primary_text:'',headline:'',description:brief||'',status:'ready_to_push'}];
+    primary_text:(copy&&copy.primary_text)||'',headline:(copy&&copy.headlines&&copy.headlines[0])||'',
+    description:(brief||'')+extra,status:'ready_to_push'}];
   const res=await fetch(FACY_SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
     headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify(row)});
@@ -1816,11 +1869,17 @@ async function sendToFacy(cardId){
     parts.push('Compliance: cosmetic-only — no disease/treatment claims, no %, no authority logos.');
     brief=parts.join('\n');
   }catch(_){}
+  // ONE-BRAIN: write the matching Meta copy FROM the final image (offer verbatim) so creative + copy ship congruent
+  let adCopy=null;
+  try{ if(btn){ btn.disabled=true; btn.textContent='🧠 writing matched copy…'; }
+    adCopy=await generateAdCopy(cardId, img);
+  }catch(_){ /* copy gen failed → Facy writes from the brief as before */ }
+  finally{ if(btn){ btn.disabled=false; } }
   try{
     // primary path: straight into the Supabase pipeline (Facy builds it end-to-end)
-    await pushToFacyPipeline(img, sku, label, cardId, brief);
+    await pushToFacyPipeline(img, sku, label, cardId, brief, adCopy);
     // fallback path: keep the same-origin IndexedDB inbox in sync (belt-and-braces)
-    try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, brief, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
+    try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, brief, adCopy, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
     try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; }catch(_){}
     if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.title='Queued to the Facy pipeline — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
     toast('🚀 Sent straight to Facy — building automatically, no other tab needed');
@@ -2039,6 +2098,142 @@ async function runMatrix(){
   toast('🧮 Matrix complete — scores landing on each card now');
 }
 
+/* ═══ FORMAT TOURNAMENT — every format earns its place.
+   Renders ONE ad per format for the active SKU (RAW brain quality — no auto-polish, no brief),
+   auto-scores each with the judge panel, then ranks all formats on a leaderboard.
+   Under 65 = cull/rework candidate. The bloat question answered with data, not opinion. ═══ */
+let TOURN_ACTIVE=false;
+function openTournament(){
+  const saved=localStorage.getItem('de_tournament_'+curSku);
+  if(saved){ showTournamentBoard(curSku); return; }
+  runTournament();
+}
+async function runTournament(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  if(curSku==='multi'){ alert('The tournament runs on a single formulation tab — switch to Aktiv / Flora / White etc. first.'); return; }
+  if(!productImgs.filter(Boolean).length){ alert('Upload the Main packshot first — most formats need the real product.'); return; }
+  const list=BRAINS.slice();
+  const est=(list.length*0.14).toFixed(2);
+  if(!confirm('🏆 FORMAT TOURNAMENT — renders 1 ad for EVERY format ('+list.length+') on '+(SKUS[curSku]?.name||curSku)+', raw brain quality (no brief, no polish), auto-scored + ranked.\n\nTakes a while and spends ~US$'+est+' on image generations. Run it?')) return;
+  const prevBrief=$('brief').value, prevAngle=$('facyAngle')?$('facyAngle').value:'', prevQty=$('qty').value, prevBrain=curBrain;
+  const results=[]; const sku=curSku;
+  TOURN_ACTIVE=true;
+  try{
+    $('brief').value=''; if($('facyAngle'))$('facyAngle').value=''; $('qty').value='1';
+    for(let i=0;i<list.length;i++){
+      const b=list[i];
+      toast('🏆 '+(i+1)+'/'+list.length+' — '+b.name);
+      curBrain=b.id;
+      const before=Date.now();
+      try{
+        await runGenerate();
+        const all=await idbBySku(sku); const newest=all.sort((x,y)=>y.ts-x.ts)[0];
+        if(newest && newest.ts>=before) results.push({ id:b.id, name:b.name, cat:b.cat, recId:newest.id });
+        else results.push({ id:b.id, name:b.name, cat:b.cat, recId:null });   // render failed — scores as ✖
+      }catch(_){ results.push({ id:b.id, name:b.name, cat:b.cat, recId:null }); }
+      if(curSku!==sku){ toast('🏆 Tournament paused — you switched tabs. Results so far saved.'); break; }   // tab roam = stop cleanly
+    }
+  } finally {
+    TOURN_ACTIVE=false; curBrain=prevBrain;
+    $('brief').value=prevBrief; if($('facyAngle'))$('facyAngle').value=prevAngle; $('qty').value=prevQty;
+  }
+  toast('🏆 Renders done — waiting for the last scores…');
+  const t0=Date.now();
+  while(Date.now()-t0<120000){
+    let pending=0;
+    for(const r of results){ if(!r.recId){ continue; }
+      const rec=await idbGet(r.recId);
+      if(rec && typeof rec.score==='number'){ r.score=rec.score; r.verdict=(rec.scoreData&&rec.scoreData.verdict)||''; }
+      else pending++;
+    }
+    if(!pending) break;
+    await new Promise(r=>setTimeout(r,3000));
+  }
+  const board=results.sort((a,b)=>((typeof b.score==='number'?b.score:-1)-(typeof a.score==='number'?a.score:-1)));
+  localStorage.setItem('de_tournament_'+sku, JSON.stringify({ ts:Date.now(), sku, board }));
+  showTournamentBoard(sku);
+}
+function showTournamentBoard(sku){
+  const saved=localStorage.getItem('de_tournament_'+sku);
+  if(!saved){ runTournament(); return; }
+  const {ts, board}=JSON.parse(saved);
+  const flag=s=> typeof s!=='number' ? '✖ failed' : s>=80 ? '✅ earns its place' : s>=SCORE_MIN_SEND ? '🛠 rework' : '🪓 cull / merge';
+  const rows=board.map((r,i)=>`<tr>
+    <td style="padding:4px 8px;font-weight:800;color:#64748b">${i+1}</td>
+    <td style="padding:4px 8px;font-size:12px"><b>${r.name}</b><br><span style="color:#94a3b8;font-size:10px">${r.cat}</span></td>
+    <td style="padding:4px 8px;text-align:center;font-weight:900;font-size:15px;color:${typeof r.score==='number'?scoreColor(r.score):'#94a3b8'}">${typeof r.score==='number'?r.score:'–'}</td>
+    <td style="padding:4px 8px;font-size:11px">${flag(r.score)}</td>
+    <td style="padding:4px 8px;font-size:10px;color:#64748b;max-width:220px">${r.verdict||''}</td></tr>`).join('');
+  const scored=board.filter(r=>typeof r.score==='number');
+  const avg=scored.length?Math.round(scored.reduce((a,r)=>a+r.score,0)/scored.length):0;
+  const culls=scored.filter(r=>r.score<SCORE_MIN_SEND).length;
+  const el=document.createElement('div'); el.id='tournPanel';
+  el.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:999;display:flex;align-items:center;justify-content:center';
+  el.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:720px;width:94%;max-height:88vh;overflow:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.35)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <span style="font-size:20px;font-weight:900">🏆 Format Tournament — ${SKUS[sku]?.name||sku}</span>
+      <span style="flex:1;font-size:11px;color:#64748b">${new Date(ts).toLocaleDateString('en-AU')} · avg ${avg} · ${culls} cull/merge candidate${culls===1?'':'s'}</span>
+      <button class="iconbtn" onclick="document.getElementById('tournPanel').remove()">✕</button></div>
+    <table style="width:100%;border-collapse:collapse"><tr>
+      <th style="font-size:10px;text-align:left;padding:4px 8px">#</th><th style="font-size:10px;text-align:left;padding:4px 8px">Format</th>
+      <th style="font-size:10px;padding:4px 8px">Score</th><th style="font-size:10px;text-align:left;padding:4px 8px">Verdict</th>
+      <th style="font-size:10px;text-align:left;padding:4px 8px">Judge note</th></tr>${rows}</table>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button class="btn" onclick="localStorage.removeItem('de_tournament_${sku}');document.getElementById('tournPanel').remove();runTournament()">🔄 Run again (fresh)</button>
+      <button class="btn primary" onclick="document.getElementById('tournPanel').remove()">Done</button></div></div>`;
+  el.onclick=()=>el.remove();
+  document.body.appendChild(el);
+}
+
+/* ═══ COVERAGE MAP — build what we DON'T have, not more of the same.
+   SKU × format matrix of every generation (and what actually went to Facy).
+   Empty cell = a gap; click any cell → jumps to that SKU tab + selects that format,
+   ready to Generate. Kills the "same ads, too many of them" drift. ═══ */
+async function openCoverage(){
+  const skuKeys=Object.keys(SKUS).concat(['multi']);
+  const counts={};   // counts[brainName][sku] = {n, sent}
+  for(const sk of skuKeys){
+    let recs=[]; try{ recs=await idbBySku(sk); }catch(_){}
+    for(const r of recs){
+      const bn=(r.label||'').split(' · ')[0].trim(); if(!bn) continue;
+      counts[bn]=counts[bn]||{};
+      const c=counts[bn][sk]=counts[bn][sk]||{n:0,sent:0};
+      c.n++; if(r.sentToFacy) c.sent++;
+    }
+  }
+  const cats={}; BRAINS.forEach(b=>{ (cats[b.cat]=cats[b.cat]||[]).push(b); });
+  const skuHead=skuKeys.map(sk=>`<th style="font-size:10px;padding:4px 6px;white-space:nowrap">${sk==='multi'?'🎁 Multi':(SKUS[sk]?.name||sk)}</th>`).join('');
+  let rows='';
+  for(const [cat,list] of Object.entries(cats)){
+    rows+=`<tr><td colspan="${skuKeys.length+1}" style="padding:8px 6px 3px;font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase">${cat}</td></tr>`;
+    for(const b of list){
+      const cells=skuKeys.map(sk=>{
+        const c=counts[b.name]&&counts[b.name][sk];
+        if(!c) return `<td onclick="coverageJump('${sk}','${b.id}')" title="GAP — no ${b.name} ad for this SKU yet. Click to set up + generate." style="cursor:pointer;text-align:center;padding:3px 6px;background:#fef2f2;color:#fca5a5;font-size:11px;border-radius:4px">·</td>`;
+        const col=c.sent?'#16a34a':'#64748b';
+        return `<td onclick="coverageJump('${sk}','${b.id}')" title="${c.n} generated · ${c.sent} sent to Facy — click to make another" style="cursor:pointer;text-align:center;padding:3px 6px;font-size:11px;font-weight:800;color:${col}">${c.sent?c.sent+'✈':''}${c.sent&&c.n>c.sent?' ':''}${c.n>c.sent?(c.n-c.sent):''}</td>`;
+      }).join('');
+      rows+=`<tr><td style="padding:3px 6px;font-size:11px;white-space:nowrap">${b.name}</td>${cells}</tr>`;
+    }
+  }
+  const el=document.createElement('div'); el.id='covPanel';
+  el.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:999;display:flex;align-items:center;justify-content:center';
+  el.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:860px;width:96%;max-height:90vh;overflow:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.35)" onclick="event.stopPropagation()">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:18px;font-weight:900">📊 Coverage Map — what we have vs the gaps</span>
+      <button class="iconbtn" style="margin-left:auto" onclick="document.getElementById('covPanel').remove()">✕</button></div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:8px"><b style="color:#16a34a">n✈ = sent to Facy</b> · grey n = generated only · <b style="color:#fca5a5">red · = GAP</b> — click any cell to jump there and generate. Mix it up: build the red cells before adding more to the green ones.</div>
+    <table style="width:100%;border-collapse:collapse"><tr><th style="font-size:10px;text-align:left;padding:4px 6px">Format</th>${skuHead}</tr>${rows}</table></div>`;
+  el.onclick=()=>el.remove();
+  document.body.appendChild(el);
+}
+function coverageJump(sk,brainId){
+  const p=document.getElementById('covPanel'); if(p) p.remove();
+  pickSku(sk); curBrain=brainId; try{ localStorage.setItem('de_brain',brainId); }catch(_){}
+  renderBrains();
+  toast('🎯 '+(SKUS[sk]?.name||sk)+' + '+((BRAINS.find(b=>b.id===brainId)||{}).name||brainId)+' loaded — hit ✨ Generate');
+}
+
 /* ═══ AD CLONE — competitor winner → deconstructed concept → LACALUT rebuild (Creatify's Ad Clone) ═══ */
 let _cloneSrc=null;
 function pickCloneSrc(){ fileToDataUrl(d=>{ _cloneSrc=d; renderCloneSlot(); }); }
@@ -2103,19 +2298,22 @@ const SCORE_MIN_SEND = 65;   // house bar — under this, Send-to-Facy asks firs
 const SCORE_DIMS = ['hook','clarity','hierarchy','packshot','legibility','cta','emotion','compliance'];
 function scoreColor(s){ return s>=80?'#16a34a':s>=SCORE_MIN_SEND?'#d97706':'#dc2626'; }
 function scoreBadgeHTML(rec){
-  if(typeof rec.score==='number')
-    return `<div class="scorebadge" id="score-${rec.id}" onclick="openScorePanel('${rec.id}')" title="Creative score — click for the judge panel + fixes" style="background:${scoreColor(rec.score)}">${rec.score}</div>`;
+  if(typeof rec.score==='number'){
+    const trail=(rec.polish && rec.polish.to>rec.polish.from) ? `${rec.polish.from}→${rec.score} ⚡` : `${rec.score}`;
+    const tip=(rec.polish && rec.polish.to>rec.polish.from) ? `Auto-polished ${rec.polish.from}→${rec.score} in ${rec.polish.passes} pass${rec.polish.passes>1?'es':''} — click for the judge panel + fixes` : 'Creative score — click for the judge panel + fixes';
+    return `<div class="scorebadge" id="score-${rec.id}" onclick="openScorePanel('${rec.id}')" title="${tip}" style="background:${scoreColor(rec.score)}">${trail}</div>`;
+  }
   return `<div class="scorebadge" id="score-${rec.id}" onclick="scoreCreative('${rec.id}')" title="Score this creative (3-judge panel)">🎯</div>`;
 }
 function renderScoreBadge(rec){ const b=$('score-'+rec.id); if(!b) return;
   b.outerHTML=scoreBadgeHTML(rec); }
-async function scoreCreative(cardId){
-  if(!KEYS.gemini) return;
-  const rec=await idbGet(cardId); if(!rec||!rec.url) return;
-  const b=$('score-'+cardId); if(b){ b.textContent='…'; b.title='scoring…'; }
-  let img; try{ img=await compositeCard(cardId); }catch(_){ img=rec.url; }
-  const part=E.dataUrlToInlinePart(img); if(!part) return;
-  const skuName=rec.sku==='multi'?'the LACALUT range':(SKUS[rec.sku]?.name||rec.sku);
+/* judgeImage — score ANY image data-url with the 3-judge panel; returns {score, data} or null.
+   Extracted from scoreCreative so the Auto-Polish loop can judge candidate images
+   BEFORE committing them to the card. */
+async function judgeImage(imgDataUrl, skuKey){
+  if(!KEYS.gemini) return null;
+  const part=E.dataUrlToInlinePart(imgDataUrl); if(!part) return null;
+  const skuName=skuKey==='multi'?'the LACALUT range':(SKUS[skuKey]?.name||skuKey);
   const prompt=
 `You are a pre-spend AD CREATIVE JUDGE PANEL for LACALUT® Australia (premium German oral care, AICIS COSMETIC-ONLY — no disease/treatment claims allowed). Judge this Facebook/Instagram feed image ad for ${skuName}.
 
@@ -2133,18 +2331,67 @@ disagreements = dimensions where judges differ by ≥3 pts, one line each on the
 
 Return ONLY valid JSON:
 {"overall":0,"verdict":"one blunt line","judges":{"marketer":{"dims":{"hook":0,"clarity":0,"hierarchy":0,"packshot":0,"legibility":0,"cta":0,"emotion":0,"compliance":0},"note":"one line"},"director":{...same},"consumer":{...same}},"fixes":[{"fix":"...","gain":7}],"disagreements":["..."]}`;
+  const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}, part]}], generationConfig:{responseMimeType:'application/json'} }) });
+  const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'score HTTP '+res.status);
+  let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+  const obj=JSON.parse(txt);
+  return { score:Math.max(0,Math.min(100,Math.round(obj.overall))), data:obj };
+}
+
+async function scoreCreative(cardId){
+  if(!KEYS.gemini) return null;
+  const rec=await idbGet(cardId); if(!rec||!rec.url) return null;
+  const b=$('score-'+cardId); if(b){ b.textContent='…'; b.title='scoring…'; }
+  let img; try{ img=await compositeCard(cardId); }catch(_){ img=rec.url; }
   try{
-    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
-      { method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ contents:[{role:'user',parts:[{text:prompt}, part]}], generationConfig:{responseMimeType:'application/json'} }) });
-    const data=await res.json(); if(!res.ok) throw new Error(data.error?.message||'score HTTP '+res.status);
-    let txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
-    const obj=JSON.parse(txt);
-    const score=Math.max(0,Math.min(100,Math.round(obj.overall)));
-    const fresh=await idbGet(cardId); if(!fresh) return;      // deleted mid-flight
-    fresh.score=score; fresh.scoreData=obj; fresh.scoredTs=Date.now();
+    const r=await judgeImage(img, rec.sku); if(!r) return null;
+    const fresh=await idbGet(cardId); if(!fresh) return null;      // deleted mid-flight
+    fresh.score=r.score; fresh.scoreData=r.data; fresh.scoredTs=Date.now();
     await idbPut(fresh); renderScoreBadge(fresh);
-  }catch(e){ const bb=$('score-'+cardId); if(bb){ bb.textContent='🎯'; bb.title='Scoring failed — click to retry ('+e.message+')'; } }
+    return fresh;
+  }catch(e){ const bb=$('score-'+cardId); if(bb){ bb.textContent='🎯'; bb.title='Scoring failed — click to retry ('+e.message+')'; } return null; }
+}
+
+/* ═══ AUTO-POLISH LOOP — the one-click 10/10 floor.
+   Fresh render → judge → if under POLISH_MIN, auto-apply the judges' top point-valued fix
+   as a literal image edit → judge the candidate → keep whichever scores HIGHER → repeat
+   (max POLISH_PASSES). The badge shows the trail (e.g. 68→84 ⚡). Hard-coded ON, like the
+   One-Up Loop: every Generate lands at its best self with zero babysitting. ═══ */
+const POLISH_MIN = 80;      // stop polishing once a render reaches this
+const POLISH_PASSES = 2;    // max auto-fix attempts per render
+async function autoPolish(cardId){
+  const first=await scoreCreative(cardId); if(!first || typeof first.score!=='number') return;
+  let rec=first;
+  if(rec.overlay && (rec.overlay.h?.text || rec.overlay.s?.text)) return;   // manual text overlays — never auto-edit under Quan's copy
+  const startScore=rec.score;
+  const aspectRatio=((MODES[rec.mode]&&MODES[rec.mode].ar)||'4:5').split(' ')[0];
+  let pass=0;
+  while(rec.score<POLISH_MIN && pass<POLISH_PASSES){
+    const fixes=(rec.scoreData&&rec.scoreData.fixes||[]).slice().sort((a,b)=>(b.gain||0)-(a.gain||0));
+    const fix=fixes[0]&&fixes[0].fix; if(!fix) break;
+    pass++;
+    const b=$('score-'+cardId); if(b){ b.textContent='⚡'+rec.score; b.title='auto-polishing (pass '+pass+'): '+fix; }
+    try{
+      const candUrl=await E.editImage({ sku:rec.sku==='multi'?'aktiv':rec.sku, imgDataUrl:rec.url, aspectRatio,
+        instruction: fix+' Keep everything else on the image EXACTLY as it is — same product rendering (identical pack, label, colours), same layout, background and all other text.' });
+      const cand=await judgeImage(candUrl, rec.sku);
+      const fresh=await idbGet(cardId); if(!fresh) return;    // deleted mid-flight
+      if(cand && cand.score>fresh.score){
+        fresh.url=candUrl; fresh.score=cand.score; fresh.scoreData=cand.data; fresh.scoredTs=Date.now();
+        fresh.polish={ from:startScore, to:cand.score, passes:pass };
+        await idbPut(fresh);
+        const cardImg=$(cardId)&&$(cardId).querySelector('img'); if(cardImg) cardImg.src=candUrl;   // live-swap the card image
+        rec=fresh;
+      } else {
+        // the fix didn't beat the original — keep the original, note the attempt, stop (don't burn more passes on a losing line)
+        fresh.polish=fresh.polish||{ from:startScore, to:fresh.score, passes:pass, kept:'original' };
+        await idbPut(fresh); rec=fresh; break;
+      }
+    }catch(e){ break; }   // any edit/judge failure → the scored original stands
+  }
+  renderScoreBadge(rec);
 }
 function _dimRow(dim,j){ return `<td style="text-align:center;padding:3px 6px;font-weight:700;color:${j>=8?'#16a34a':j>=6?'#d97706':'#dc2626'}">${j}</td>`; }
 function openScorePanel(cardId){ idbGet(cardId).then(rec=>{
