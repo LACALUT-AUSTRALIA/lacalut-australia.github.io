@@ -189,6 +189,10 @@
     const salesLike = brain && ['Sales','Social Proof','Story'].includes(brain.cat);
     const isUGC = brain && brain.cat === 'UGC';
     const isChat = brain && /chat|text message/i.test(brain.name);
+    // Format owns the frame: when the brain carries its own Layout dim, the generic template
+    // mandates (pack lower-third hero, mandatory badge stack) step aside — they were flattening
+    // every format into the same headline-top / tube-bottom / three-badges ad.
+    const fmtLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d)));
 
     // ═══ CHAT / TEXT MESSAGE — dedicated FLAT full-bleed messaging-screen screenshot ═══
     // Bypasses ALL the generic headline/variation/photoreal/badge scaffolding, which was
@@ -250,8 +254,22 @@
       p += `TYPOGRAPHY SIZE (mandatory): the caption text is LARGE and bold — big enough to read instantly on a small mobile screen — just in a casual native style rather than a formal headline. Text sells the creative as much as the image. `;
     } else {
       if(useProd){
-        p += `Product packaging LARGE and dominant — lower ~55% as the clear hero. Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
+        // PRODUCT PROMINENCE DIAL (Quan 28/09: "a lot more lifestyle images with the product
+        // secondary or very small — or no product at all, just our logo"). Each brain carries
+        // prom: 'hero' | 'secondary' | 'cameo' | 'logo'. Pack-hero is the EXCEPTION now, not the rule.
+        const prom = (brain && brain.prom) || 'hero';
+        if(prom === 'secondary'){
+          p += `PRODUCT PROMINENCE — SECONDARY (mandatory): a REAL HUMAN LIFESTYLE MOMENT is the hero of this image — a believable person and scene own the frame; the product appears naturally IN the scene at TRUE real-world size (on the vanity, on the bench, held casually) occupying NO MORE than ~15% of the frame. NEVER a giant floating pack, never a studio product hero, never the pack as the main subject. `;
+        } else if(prom === 'cameo'){
+          p += `PRODUCT PROMINENCE — CAMEO (mandatory): the IDEA/GRAPHIC CONCEPT is the ad; the product appears only as a small, sharp cameo in a lower corner near the CTA — roughly logo-sized, NO MORE than ~10% of the frame. The concept owns the canvas, the pack just signs it. NEVER a big centred product hero. `;
+        } else {
+          p += `Product packaging LARGE and dominant${fmtLayout?' exactly where the strategy layout above places it':' — lower ~55% as the clear hero'}. `;
+        }
+        p += `Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
         p += `CRITICAL PRODUCT FIDELITY: the tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white cap included. `;
+        if(prom==='secondary' || prom==='cameo'){
+          p += `HUMAN REALISM (when people appear): believable everyday Australian adults with natural, imperfect skin texture and real proportions — photoreal, never plastic-smooth AI faces, never stock-photo posing. `;
+        }
       } else {
         p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
       }
