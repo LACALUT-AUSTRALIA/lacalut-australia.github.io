@@ -20,11 +20,6 @@
   // ── 10%-off discount flow ────────────────────────────────────────────────────
   var DISCOUNT_CODE = 'WELCOME10';
 
-  // ── Live-chat persona ────────────────────────────────────────────────────────
-  // Overridable via chat_config keys agent_name / agent_avatar.
-  var AGENT_AVATAR = 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/lacalut-chat-avatar-lucy.png?v=1790555890';
-  var AGENT_NAME = 'Lucy';
-
   // ── Product recommendation cards ─────────────────────────────────────────────
   // Keywords are checked against the bot's reply (case-insensitive).
   // Order matters — more specific first (herbal before aktiv).
@@ -88,130 +83,33 @@
     teaser_enabled: 'true',
     teaser_answer: 'Yes 👍',
     teaser_rotate_ms: '4500',
-    teaser_openers: '',
-    agent_name: '',
-    agent_avatar: '',
+    teaser_questions: '',
   };
 
-  function agentName() { return config.agent_name || AGENT_NAME; }
-  function agentAvatar() { return config.agent_avatar || AGENT_AVATAR; }
-
-  // ── Rotating interactive openers ─────────────────────────────────────────────
-  // Each opener is a mini conversation-starter: a message from the agent plus
-  // tappable answers. `action:'discount'` runs the 10%-code flow, `reply` types a
-  // scripted answer, `offer:true` follows the reply with a 10%-code CTA,
-  // `link:{label,url}` follows the reply with a link card.
-  // Overridable via chat_config.teaser_openers (JSON, same shape) — shared brain.
-  var OPENERS = [
-    { id: 'discount', q: null, // q filled page-aware via getPageTeaser()
-      buttons: [
-        { label: 'Yes please 🤞', action: 'discount' },
-        { label: 'No thanks', reply: "No worries at all 😊 I'm right here if you have any questions — about products, shipping, orders, anything!" },
-      ] },
-    { id: 'win12', q: 'Want to WIN 12 months of LACALUT? 🏆',
-      buttons: [
-        { label: 'How do I enter?', reply: "Join our Smile Club — keep your smile streak going in the app and you're in the running to win a full year of LACALUT, on us 🏆", link: { label: 'Check out the Smile Club →', url: STORE + '/pages/smile-club' } },
-        { label: 'Maybe later', reply: "All good 😊 The Smile Club will be here when you're ready. Anything I can help you with in the meantime?" },
-      ] },
-    { id: 'smileclub', q: 'Have you heard about our Smile Club? 💎',
-      buttons: [
-        { label: 'Tell me more', reply: "It's our free membership 💎\n\n🏷️ **10% off** your first order\n⭐ A **free travel product** at a 4-week smile streak\n🏆 A **WIN Smile of the Month** entry at 8 weeks\n💎 A **20% loyalty reward** at 12 weeks", link: { label: 'Join the Smile Club →', url: STORE + '/pages/smile-club' } },
-        { label: 'No thanks', reply: "No worries 😊 Ask me anything about our products, shipping or orders any time!" },
-      ] },
-    { id: 'guarantee', q: "On the fence? New customers get our Love-It-Or-It's-FREE guarantee 🤝",
-      buttons: [
-        { label: 'How does it work?', reply: "Simple — switch to LACALUT, and if you don't feel the difference, we refund you AND you keep the order. That's how confident we are 😄", offer: true },
-        { label: '😏 Prove it', reply: "Love the attitude 😄 Try any LACALUT — if you don't feel the difference, your money comes straight back and the product stays yours.", offer: true },
-      ] },
-    { id: 'rinse', q: 'Quick one 🤔 Do you rinse your mouth right after brushing?',
-      buttons: [
-        { label: 'Yes, always', reply: "Most people do! But rinsing straight away washes the good stuff off your teeth before it can finish working. Try spit-don't-rinse — your smile will thank you 😉" },
-        { label: 'Never', reply: "Look at you — ahead of the curve 👏 Spit-don't-rinse lets the actives keep working long after you've put the brush down." },
-      ] },
-    { id: 'coffee', q: 'Do you brush before your morning coffee… or after? ☕',
-      buttons: [
-        { label: 'Before ☕', reply: "Perfect habit 👏 Brushing first gives your enamel a protective once-over before the coffee arrives — and your coffee tastes better without the minty clash 😄" },
-        { label: 'After ☕', reply: "You're not alone! Enamel is a touch softer right after acidic drinks like coffee — give it about 30 minutes, or flip the order and brush first 😉" },
-      ] },
-    { id: 'enamel', q: 'Fun fact 🦷 Enamel is the hardest thing in your body — harder than bone. Want to know how to keep it strong?',
-      buttons: [
-        { label: 'Tell me!', reply: "It's all about minerals ✨ Our WHITE & REPAIR toothpaste has the highest hydroxyapatite in our range — it remineralises enamel while gently lifting stains." },
-        { label: 'I knew that 😎', reply: "A dental trivia champion 😄 Here's one you might not know: LACALUT has been made in Germany since 1925. Anything I can help you with?" },
-      ] },
-    { id: 'brushage', q: 'Be honest 😅 How old is your toothbrush?',
-      buttons: [
-        { label: 'Under 3 months', reply: "Gold star ⭐ Fresh bristles clean best — swap every 3 months. Ours are micro-fine, so they get right along the gum line while staying gentle." },
-        { label: 'No idea…', reply: "Ha — you're in good company 😄 Worn bristles just push things around instead of sweeping them away. Swap every 3 months; our micro-fine bristles are a lovely fresh start." },
-      ] },
-    { id: 'twomin', q: 'Pop quiz ⏱️ How long should the perfect brush take?',
-      buttons: [
-        { label: '2 minutes', reply: "Nailed it 👏 Two full minutes, twice a day. Most people tap out around 45 seconds — a song chorus is a handy timer 🎵" },
-        { label: '45 seconds 😅', reply: "That's most of us, honestly 😄 The magic number is 2 full minutes — try humming a chorus while you brush. Your smile notices the difference." },
-      ] },
-    { id: 'stains', q: 'Coffee, tea or red wine — which stains teeth the most? ☕🍷',
-      buttons: [
-        { label: 'Coffee', reply: "Sneaky one — tea is actually one of the biggest culprits! They all do their bit though 😅 Our WHITE & REPAIR gently lifts stains while it remineralises enamel ✨" },
-        { label: 'Red wine', reply: "Good guess — but plain old tea is one of the biggest culprits! Our WHITE & REPAIR gently lifts stains while it remineralises enamel ✨" },
-      ] },
-    { id: 'eightydays', q: "You'll spend about 80 DAYS of your life brushing your teeth 🪥 May as well love your toothpaste, right?",
-      buttons: [
-        { label: 'Fair point 😄', reply: "Right? 80 days deserves better than boring 😄 Fancy 10% off to find your new favourite?", offer: true },
-        { label: '80 days?!', reply: "Two minutes, twice a day, for a lifetime — it adds up 🤯 May as well make every brush a good one. Want 10% off to upgrade yours?", offer: true },
-      ] },
-    { id: 'since1925', q: 'Pop quiz 🇩🇪 What year did LACALUT start making toothpaste in Germany?',
-      buttons: [
-        { label: '1970s?', reply: "Older — 1925! Almost 100 years of German oral care, and we're still obsessed with the details. Some things are worth doing properly 🇩🇪" },
-        { label: 'Way older', reply: "Spot on — 1925! Almost a century of German oral care know-how in every tube 🇩🇪" },
-      ] },
-    { id: 'floss', q: '🧵 Truth time — when did you last floss?',
-      buttons: [
-        { label: 'This morning 😇', reply: "A rare unicorn 🦄 Keep it up — brushing only reaches about 60% of each tooth's surface, so flossing does the corners the brush can't." },
-        { label: "Define 'last'… 😅", reply: "Honesty! Love it 😄 Here's the thing: brushing only reaches about 60% of each tooth. A quick floss gets the rest — your gums will feel the difference." },
-      ] },
-    { id: 'morningbreath', q: '🥱 Ever wondered why morning breath is a thing?',
-      buttons: [
-        { label: 'Go on…', reply: "While you sleep, saliva slows right down — and saliva is your mouth's rinse cycle. Less rinse, more pong 😅 Our FLORA range neutralises the sulphur compounds behind bad breath, right at the source." },
-        { label: "I'd rather not know 😅", reply: "Fair 😄 Short version: sleep = less saliva = morning pong. FLORA sorts the compounds that cause it — fresh breath that actually lasts." },
-      ] },
-    { id: 'tongueprint', q: '👅 Your tongue print is as unique as your fingerprint. True or false?',
-      buttons: [
-        { label: 'True?!', reply: "100% true — no two tongue prints are alike 🤯 Bonus tip: giving your tongue a gentle brush is one of the easiest fresh-breath upgrades there is." },
-        { label: 'No way', reply: "Way! Totally unique to you 🤯 And since we're on tongues — a gentle tongue brush is the most underrated fresh-breath trick going." },
-      ] },
-    { id: 'icecream', q: '🍦 Does biting into ice cream make you wince?',
-      buttons: [
-        { label: 'Every time 😖', reply: "You're not imagining it — that zing comes from tiny exposed channels in the tooth surface. Our SENSITIVE range seals them, so cold treats stop being a dare." },
-        { label: 'Nope 😎', reply: "Lucky you 😄 Keep it that way — gentle brushing and a good paste keep that protective layer happy. Anything I can help you find?" },
-      ] },
-    { id: 'electric', q: '🪥⚡ Electric or manual toothbrush — which team are you?',
-      buttons: [
-        { label: 'Electric ⚡', reply: "Team gadget! Great choice — just let it glide, no scrubbing. And remember it's the toothpaste doing the chemistry: the brush is the delivery van 😄" },
-        { label: 'Manual 🪥', reply: "Classic! Technique beats tech — soft bristles, gentle circles, two minutes. Pair it with a great paste and you're set 👌" },
-      ] },
-    { id: 'smilenotice', q: "😁 Studies say your smile is one of the FIRST things people notice about you. Feeling ready?",
-      buttons: [
-        { label: 'Always 😏', reply: "That's the energy 😄 Keep it dazzling — and if it ever needs a boost, our WHITE & REPAIR lifts stains while strengthening enamel ✨" },
-        { label: 'Umm… 😅', reply: "You're one good routine away 😄 Two minutes twice a day, and WHITE & REPAIR gently lifts stains while it remineralises enamel. Want 10% off to get started?", offer: true },
-      ] },
-    { id: 'germaneng', q: '🇩🇪 German cars. German kitchens. German… toothpaste?',
-      buttons: [
-        { label: 'Wait, really?', reply: "Really 😄 LACALUT has been formulated and made in Germany since 1925 — same obsession with precision, applied to your smile." },
-        { label: 'Naturally 😄', reply: "Exactly — precision where it matters most 😄 Made in Germany since 1925, and you can feel it from the first brush." },
-      ] },
-    { id: 'mwtiming', q: '🥤 Mouthwash: straight after brushing, or at another time?',
-      buttons: [
-        { label: 'Straight after', reply: "Most people do! But rinsing right after brushing can wash away the goodness your paste just left behind. Try mouthwash at a different time — after lunch is perfect 👌" },
-        { label: 'Another time', reply: "Smart routine 👏 Keeping mouthwash away from brushing time lets both do their best work. After lunch is the sweet spot." },
-      ] },
+  // Default rotating teaser questions — used only if the admin hasn't set any.
+  var TEASER_QUESTIONS = [
+    'Good for everyday gum care?',
+    'Is it safe for sensitive teeth?',
+    'Does it fight bad breath at the source?',
+    'Trusted in 60+ countries?',
+    'Made in Germany?',
+    'Trusted by dentists?',
+    'Free shipping over $99?',
+    'Gentle enough for daily use?',
   ];
+  var activeTeaserList = [];
 
-  // Resolve the live opener list from config, falling back to the defaults.
-  function getOpeners() {
+  // Resolve the live teaser question list from config (array of {q, active} or strings),
+  // falling back to the hardcoded defaults if nothing is set.
+  function getTeaserQuestions() {
     var list = null;
-    try { list = JSON.parse(config.teaser_openers); } catch (e) { list = null; }
-    if (!Array.isArray(list) || !list.length) return OPENERS.slice();
-    var out = list.filter(function (o) { return o && (o.q || o.id === 'discount') && Array.isArray(o.buttons) && o.buttons.length && o.active !== false; });
-    return out.length ? out : OPENERS.slice();
+    try { list = JSON.parse(config.teaser_questions); } catch (e) { list = null; }
+    if (!Array.isArray(list) || !list.length) return TEASER_QUESTIONS.slice();
+    var out = list
+      .map(function (it) { return typeof it === 'string' ? { q: it, active: true } : it; })
+      .filter(function (it) { return it && it.q && it.active !== false; })
+      .map(function (it) { return it.q; });
+    return out.length ? out : TEASER_QUESTIONS.slice();
   }
 
   // ── CSS ──────────────────────────────────────────────────────────────────────
@@ -245,56 +143,56 @@
       100% { box-shadow: 0 0 0 0 rgba(207,16,45,0); }
     }
 
-    /* Proactive teaser — minimal live-chat card: avatar + message + "Lucy · now" */
+    /* Proactive teaser card (rotating Q&A) */
     #lc-teaser {
       position: fixed; bottom: 96px; right: 24px; z-index: 99998;
-      max-width: 330px; cursor: pointer;
+      width: 268px; background: #fff; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.22); cursor: pointer;
       animation: lc-teaser-in 0.4s cubic-bezier(.34,1.2,.64,1);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    #lc-teaser::after {
+      content: ''; position: absolute; bottom: -8px; right: 30px;
+      border-left: 8px solid transparent; border-right: 8px solid transparent;
+      border-top: 8px solid #fff;
     }
     @keyframes lc-teaser-in {
       from { transform: scale(0.85) translateY(14px); opacity: 0; }
       to   { transform: scale(1) translateY(0); opacity: 1; }
     }
-    .lc-teaser-card {
-      display: flex; gap: 11px; align-items: flex-start;
-      background: #fff; border-radius: 16px; padding: 14px 16px;
-      box-shadow: 0 6px 28px rgba(0,0,0,0.16), 0 1px 3px rgba(0,0,0,0.08);
-      position: relative;
+    .lc-teaser-head {
+      background: var(--lc, #cf102d); color: #fff;
+      padding: 11px 14px; display: flex; align-items: center; gap: 8px;
     }
-    .lc-teaser-ava {
-      width: 38px; height: 38px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
+    .lc-teaser-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #6ee7a8; flex-shrink: 0;
     }
-    .lc-teaser-content { min-width: 0; }
+    .lc-teaser-title { font-size: 14px; font-weight: 700; flex: 1; }
+    .lc-teaser-x {
+      background: none; border: none; color: rgba(255,255,255,0.85); cursor: pointer;
+      font-size: 15px; line-height: 1; padding: 2px 0 2px 6px; flex-shrink: 0;
+    }
+    .lc-teaser-x:hover { color: #fff; }
+    .lc-teaser-body { padding: 14px; }
     .lc-teaser-q {
-      color: #111; font-size: 14.5px; font-weight: 500; line-height: 1.4;
-      transition: opacity 0.25s; min-height: 20px;
+      background: #f1f3f5; color: #111; font-size: 13.5px; font-weight: 600;
+      line-height: 1.35; border-radius: 12px; padding: 11px 13px;
+      transition: opacity 0.25s; min-height: 18px;
     }
     .lc-teaser-q.lc-fade { opacity: 0; }
-    .lc-teaser-meta { font-size: 12.5px; color: #9ca3af; margin-top: 4px; }
-    .lc-teaser-meta b { color: #6b7280; font-weight: 600; }
-    .lc-teaser-x {
-      position: absolute; top: -9px; left: -9px;
-      width: 22px; height: 22px; border-radius: 50%;
-      background: #fff; border: 1px solid #e5e7eb; color: #9ca3af; cursor: pointer;
-      font-size: 11px; line-height: 1; display: none; align-items: center; justify-content: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    .lc-teaser-a {
+      margin: 9px 0 0 auto; width: fit-content;
+      background: var(--lc, #cf102d); color: #fff; font-size: 14px; font-weight: 700;
+      border-radius: 12px; padding: 8px 16px; transition: opacity 0.3s; opacity: 0;
     }
-    #lc-teaser:hover .lc-teaser-x { display: flex; }
-    .lc-teaser-x:hover { color: #374151; }
-    .lc-teaser-btns { display: flex; gap: 7px; margin-top: 9px; justify-content: flex-end; flex-wrap: wrap; }
-    .lc-teaser-btn {
-      background: var(--lc, #cf102d); color: #fff; border: none; border-radius: 16px;
-      padding: 8px 15px; font-size: 13.5px; font-weight: 700; cursor: pointer;
-      font-family: inherit; transition: transform 0.12s, box-shadow 0.15s;
-      box-shadow: 0 2px 8px rgba(207,16,45,0.28); animation: lc-fadein 0.3s ease both;
+    .lc-teaser-cta {
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      width: 100%; margin-top: 12px; padding: 11px;
+      background: #fdeaec; color: var(--lc, #cf102d); border: none; border-radius: 12px;
+      font-size: 13.5px; font-weight: 700; cursor: pointer; transition: background 0.15s;
+      font-family: inherit;
     }
-    .lc-teaser-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(207,16,45,0.38); }
-    .lc-teaser-btn.lc-sec {
-      background: #fff; color: #374151; border: 1.5px solid #e5e7eb; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    .lc-teaser-btn.lc-sec:hover { border-color: #9ca3af; }
-    #lc-teaser .lc-typing { padding: 2px 0; background: none; }
+    .lc-teaser-cta:hover { background: #fbd9dd; }
 
     /* Panel */
     #lc-panel {
@@ -375,14 +273,6 @@
     .lc-msg { max-width: 84%; padding: 11px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
     .lc-msg-bot { background: #f3f4f6; color: #111; border-bottom-left-radius: 4px; align-self: flex-start; }
     .lc-msg-user { background: var(--lc, #cf102d); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
-    /* Bot rows carry the agent's photo beside every bubble — real live-chat feel */
-    .lc-bot-row { display: flex; gap: 7px; align-items: flex-end; align-self: flex-start; max-width: 92%; }
-    .lc-bot-avatar {
-      width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.16); margin-bottom: 2px;
-    }
-    .lc-bot-row .lc-msg-bot { max-width: 100%; }
-    .lc-suggestions, .lc-product-cards { margin-left: 35px; }
     .lc-typing { display: flex; gap: 4px; padding: 12px 16px; align-items: center; align-self: flex-start; background: #f3f4f6; border-radius: 16px; border-bottom-left-radius: 4px; }
     .lc-dot { width: 7px; height: 7px; border-radius: 50%; background: #9ca3af; animation: lc-bounce 1.2s infinite ease-in-out; }
     .lc-dot:nth-child(2) { animation-delay: 0.2s; }
@@ -525,16 +415,16 @@
     var panel = el('div', { id: 'lc-panel', role: 'dialog', 'aria-label': 'Ask Lacalut' });
     panel.innerHTML =
       '<div id="lc-head">' +
-        '<div class="lc-avatar"><img id="lc-head-ava" src="' + AGENT_AVATAR + '" alt="' + AGENT_NAME + ' from LACALUT" style="width:38px;height:38px;border-radius:50%;object-fit:cover;background:#fff;" /></div>' +
+        '<div class="lc-avatar"><img src="https://cdn.shopify.com/s/files/1/0635/3960/9651/files/download_4.png" alt="Lacalut" style="width:38px;height:38px;border-radius:50%;object-fit:contain;background:#fff;padding:3px;" /></div>' +
         '<div class="lc-head-info">' +
-          '<div class="lc-head-name" id="lc-head-name">' + AGENT_NAME + ' · LACALUT</div>' +
-          '<div class="lc-head-status"><span class="lc-status-dot"></span>Online now — replies in seconds</div>' +
+          '<div class="lc-head-name">Ask Lacalut</div>' +
+          '<div class="lc-head-status"><span class="lc-status-dot"></span>Always here to help</div>' +
         '</div>' +
         '<button class="lc-back-btn" id="lc-back" aria-label="Go back">←</button>' +
         '<button id="lc-close" aria-label="Close">&#10005;</button>' +
       '</div>' +
       '<div id="lc-home">' +
-        '<div class="lc-bot-row" style="margin-bottom:18px"><img class="lc-bot-avatar" src="' + AGENT_AVATAR + '" alt="" /><div class="lc-greeting-bubble" id="lc-greeting-text" style="margin-bottom:0">' + config.greeting + '</div></div>' +
+        '<div class="lc-greeting-bubble" id="lc-greeting-text">' + config.greeting + '</div>' +
         '<p class="lc-symptom-label">What brings you here today?</p>' +
         '<button id="lc-discount-btn" class="lc-discount-btn"><span class="lc-discount-emoji">🎁</span><span class="lc-discount-text">Get 10% Off Code</span></button>' +
         '<div class="lc-symptom-grid" id="lc-symptom-grid"></div>' +
@@ -581,11 +471,6 @@
     var greetingEl = document.getElementById('lc-greeting-text');
     if (greetingEl) greetingEl.textContent = config.greeting;
 
-    var headName = document.getElementById('lc-head-name');
-    if (headName) headName.textContent = agentName() + ' · LACALUT';
-    var headAva = document.getElementById('lc-head-ava');
-    if (headAva && headAva.src !== agentAvatar()) headAva.src = agentAvatar();
-
     var grid = document.getElementById('lc-symptom-grid');
     if (grid) {
       grid.innerHTML = '';
@@ -624,7 +509,7 @@
     }, delay);
   }
 
-  var teaserRotateTimer, teaserAnswerTimer;
+  var teaserRotateTimer, teaserAnswerTimer, teaserIdx = 0;
 
   // Page-aware opening hook — matches keywords in the URL to the most relevant offer.
   // Order matters: most specific (dentists) first, generic 10%-off last.
@@ -646,136 +531,65 @@
     return { q: 'Want a 10% off code? 🎁', a: 'Yes please 👍', cta: 'Get my code ›' };
   }
 
-  // Which opener greets this visitor. The pointer lives in localStorage and
-  // advances every time a teaser is shown, so repeat visitors keep seeing a
-  // fresh opener — 10% off, quizzes, fun facts, Smile Club — recycled in turn.
-  function nextOpener(openers) {
-    var i = parseInt(localStorage.getItem('lc_opener_i') || '0', 10) || 0;
-    var opener = openers[i % openers.length];
-    try { localStorage.setItem('lc_opener_i', String((i + 1) % openers.length)); } catch (e) {}
-    return opener;
-  }
-
   function showNudge() {
     var teaser = document.createElement('div');
     teaser.id = 'lc-teaser';
     teaser.innerHTML =
-      '<div class="lc-teaser-card">' +
+      '<div class="lc-teaser-head">' +
+        '<span class="lc-teaser-dot"></span>' +
+        '<span class="lc-teaser-title">Ask Lacalut</span>' +
         '<button class="lc-teaser-x" id="lc-teaser-x" aria-label="Dismiss">&#10005;</button>' +
-        '<img class="lc-teaser-ava" src="' + agentAvatar() + '" alt="" />' +
-        '<div class="lc-teaser-content">' +
-          '<div class="lc-teaser-q" id="lc-teaser-q"></div>' +
-          '<div class="lc-teaser-meta"><b>' + agentName() + '</b> · now</div>' +
-        '</div>' +
       '</div>' +
-      '<div class="lc-teaser-btns" id="lc-teaser-btns"></div>';
+      '<div class="lc-teaser-body">' +
+        '<div class="lc-teaser-q" id="lc-teaser-q"></div>' +
+        '<div class="lc-teaser-a" id="lc-teaser-a"></div>' +
+        '<button class="lc-teaser-cta">Ask me anything ›</button>' +
+      '</div>';
 
     document.getElementById('lc-teaser') && document.getElementById('lc-teaser').remove();
     document.body.appendChild(teaser);
+
+    var pt = getPageTeaser();
+    document.getElementById('lc-teaser-q').textContent = pt.q;
+    var aEl = document.getElementById('lc-teaser-a');
+    aEl.textContent = pt.a;
+    aEl.style.opacity = '0';
+    setTimeout(function () { if (aEl) aEl.style.opacity = '1'; }, 600);
+    var ctaEl = teaser.querySelector('.lc-teaser-cta');
+    if (ctaEl) ctaEl.textContent = pt.cta;
 
     document.getElementById('lc-teaser-x').addEventListener('click', function (e) {
       e.stopPropagation();
       removeTeaser();
     });
-    // Clicking anywhere else on the card just opens the chat.
     teaser.addEventListener('click', function () { removeTeaser(); toggle(); });
-    // Pause rotation while the visitor is reading / hovering.
-    teaser.addEventListener('mouseenter', function () { clearTimeout(teaserRotateTimer); });
-    teaser.addEventListener('mouseleave', function () { scheduleTeaserRotate(); });
-
-    playOpener(nextOpener(getOpeners()));
 
     var btn = document.getElementById('lc-btn');
     btn.classList.add('lc-pulse');
     setTimeout(function () { btn.classList.remove('lc-pulse'); }, 6000);
   }
 
-  // Types the opener into the teaser like a human: typing dots first, then the
-  // message, then the tappable answer buttons.
-  function playOpener(opener) {
+  function rotateTeaser() {
     var qEl = document.getElementById('lc-teaser-q');
-    var btnsEl = document.getElementById('lc-teaser-btns');
-    if (!qEl || !btnsEl || !opener) return;
-
-    var question = opener.q || getPageTeaser().q;
+    var aEl = document.querySelector('#lc-teaser .lc-teaser-a');
+    if (!qEl || !activeTeaserList.length) return;
+    var rotateMs = parseInt(config.teaser_rotate_ms || '4500', 10) || 4500;
+    qEl.textContent = activeTeaserList[teaserIdx % activeTeaserList.length];
     qEl.classList.remove('lc-fade');
-    btnsEl.innerHTML = '';
-    qEl.innerHTML = '<div class="lc-typing" style="padding:2px 0;background:none"><div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div></div>';
-
+    if (aEl) aEl.style.opacity = '0';
     clearTimeout(teaserAnswerTimer);
-    teaserAnswerTimer = setTimeout(function () {
-      if (!document.getElementById('lc-teaser')) return;
-      qEl.textContent = question;
-      (opener.buttons || []).forEach(function (b, i) {
-        var btn = document.createElement('button');
-        btn.className = 'lc-teaser-btn' + (i > 0 ? ' lc-sec' : '');
-        btn.textContent = b.label;
-        btn.style.animationDelay = (0.15 + i * 0.12) + 's';
-        btn.addEventListener('click', function (e) {
-          e.stopPropagation();
-          handleOpenerAnswer(opener, b);
-        });
-        btnsEl.appendChild(btn);
-      });
-      scheduleTeaserRotate();
-    }, 1200);
-  }
+    teaserAnswerTimer = setTimeout(function () { if (aEl) aEl.style.opacity = '1'; }, 700);
 
-  function scheduleTeaserRotate() {
-    var rotateMs = (parseInt(config.teaser_rotate_ms || '4500', 10) || 4500) * 2;
     clearTimeout(teaserRotateTimer);
     teaserRotateTimer = setTimeout(function () {
-      var qEl = document.getElementById('lc-teaser-q');
-      if (!qEl) return;
+      if (!document.getElementById('lc-teaser')) return;
       qEl.classList.add('lc-fade');
+      if (aEl) aEl.style.opacity = '0';
       setTimeout(function () {
-        if (!document.getElementById('lc-teaser')) return;
-        playOpener(nextOpener(getOpeners()));
+        teaserIdx = (teaserIdx + 1) % activeTeaserList.length;
+        rotateTeaser();
       }, 300);
     }, rotateMs);
-  }
-
-  // A teaser answer button was tapped — carry the conversation into the chat
-  // panel: the visitor's answer as their bubble, then Mia's scripted reply.
-  function handleOpenerAnswer(opener, btn) {
-    removeTeaser();
-    if (!isOpen) toggle();
-    enterChatMode();
-
-    if (btn.action === 'discount') { startDiscountFlow(); return; }
-
-    appendMsg('user', btn.label);
-    var typingEl = showTyping();
-    setTimeout(function () {
-      typingEl.remove();
-      var botDiv = appendMsg('bot', '');
-      typeMessage(botDiv, btn.reply || '', function () {
-        if (btn.link && btn.link.url) {
-          var chat = document.getElementById('lc-chat');
-          var wrap = document.createElement('div');
-          wrap.className = 'lc-product-cards';
-          wrap.innerHTML =
-            '<a class="lc-product-card" href="' + btn.link.url + '" target="_blank" rel="noopener" style="justify-content:center">' +
-              '<div class="lc-product-cta" style="font-size:14px">' + btn.link.label + '</div>' +
-            '</a>';
-          chat.appendChild(wrap);
-          chat.scrollTop = chat.scrollHeight;
-        }
-        if (btn.offer) {
-          var chat2 = document.getElementById('lc-chat');
-          var offerWrap = document.createElement('div');
-          offerWrap.className = 'lc-suggestions';
-          var offerBtn = document.createElement('button');
-          offerBtn.className = 'lc-chip';
-          offerBtn.textContent = '🎁 Get my 10% code';
-          offerBtn.onclick = function () { offerWrap.remove(); startDiscountFlow(); };
-          offerWrap.appendChild(offerBtn);
-          chat2.appendChild(offerWrap);
-          chat2.scrollTop = chat2.scrollHeight;
-        }
-        showProductCards(btn.reply || '');
-      });
-    }, 900);
   }
 
   function removeTeaser() {
@@ -1086,35 +900,24 @@
   }
 
   // ── Message helpers ──────────────────────────────────────────────────────────
-  // Bot messages sit in a row beside the agent's photo, like a real live chat.
   function appendMsg(role, text) {
     var chat = document.getElementById('lc-chat');
     var div = document.createElement('div');
     div.className = 'lc-msg lc-msg-' + role;
     div.textContent = text;
-    if (role === 'bot') {
-      var row = document.createElement('div');
-      row.className = 'lc-bot-row';
-      row.innerHTML = '<img class="lc-bot-avatar" src="' + agentAvatar() + '" alt="" />';
-      row.appendChild(div);
-      chat.appendChild(row);
-    } else {
-      chat.appendChild(div);
-    }
+    chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
     return div;
   }
 
   function showTyping() {
     var chat = document.getElementById('lc-chat');
-    var row = document.createElement('div');
-    row.className = 'lc-bot-row';
-    row.innerHTML =
-      '<img class="lc-bot-avatar" src="' + agentAvatar() + '" alt="" />' +
-      '<div class="lc-typing"><div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div></div>';
-    chat.appendChild(row);
+    var div = document.createElement('div');
+    div.className = 'lc-typing';
+    div.innerHTML = '<div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div>';
+    chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
-    return row;
+    return div;
   }
 
   function maybeShowCapture() {
