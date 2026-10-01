@@ -290,6 +290,8 @@
 <script src="engine.js"></script>
 <script src="brand-brain.js"></script>
 <script src="packs-seed.js"></script>
+<script src="gap-tracker/data.js"></script> <!-- live-Meta snapshot for Coverage Map (refresh: Desi session "refresh gap tracker") -->
+
 <script>
 /* Shared brand engine — single source of truth (engine.js). */
 const E = window.LacalutEngine;
@@ -2216,14 +2218,32 @@ async function openCoverage(){
       rows+=`<tr><td style="padding:3px 6px;font-size:11px;white-space:nowrap">${b.name}</td>${cells}</tr>`;
     }
   }
+  /* LIVE ON META strip — what's actually running right now (snapshot via gap-tracker/data.js).
+     Generated ≠ live: this row is the account truth, so gaps = cells with nothing LIVE, not just nothing made. */
+  let liveRow='', liveNote='';
+  const GD=window.GAP_DATA;
+  if(GD){
+    const slug2key={'aktiv-original':'aktiv','aktiv-herbal':'aktiv-herbal','white-repair':'white-repair','sensitive':'sensitive','flora':'flora','multi-sku':'multi'};
+    const live={}; GD.activeAds.forEach(a=>{ const k=slug2key[a.sku]||a.sku; live[k]=live[k]||{static:0,video:0}; live[k][a.format]++; });
+    const blocked={}; Object.keys(GD.stockBlocked||{}).forEach(s=>{ blocked[slug2key[s]||s]=GD.stockBlocked[s]; });
+    const liveCells=skuKeys.map(sk=>{
+      if(blocked[sk]) return `<td title="${blocked[sk]} — do not build ads" style="text-align:center;padding:4px 6px;font-size:10px;color:#94a3b8;background:#f1f5f9;border-radius:4px">⚫ OOS</td>`;
+      const l=live[sk];
+      if(!l&&sk!=='listing') return `<td title="ZERO ads live on Meta for this SKU — biggest gap in the account" style="text-align:center;padding:4px 6px;font-size:10px;font-weight:800;color:#fff;background:#dc2626;border-radius:4px">0 LIVE</td>`;
+      if(!l) return `<td style="text-align:center;padding:4px 6px;font-size:10px;color:#cbd5e1">—</td>`;
+      return `<td title="${l.static} static + ${l.video} video live on Meta right now" style="text-align:center;padding:4px 6px;font-size:10px;font-weight:800;color:#16a34a">🖼${l.static} 🎬${l.video}</td>`;
+    }).join('');
+    liveRow=`<tr><td style="padding:4px 6px;font-size:10px;font-weight:800;color:#0f172a;white-space:nowrap">📡 LIVE ON META</td>${liveCells}</tr>`;
+    liveNote=` · <b style="color:#0ea5e9">📡 live row = Meta snapshot ${GD.snapshotDate}</b> (refresh: tell Desi "refresh gap tracker")`;
+  }
   const el=document.createElement('div'); el.id='covPanel';
   el.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:999;display:flex;align-items:center;justify-content:center';
   el.innerHTML=`<div style="background:#fff;border-radius:14px;max-width:860px;width:96%;max-height:90vh;overflow:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,.35)" onclick="event.stopPropagation()">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
-      <span style="font-size:18px;font-weight:900">📊 Coverage Map — what we have vs the gaps</span>
+      <span style="font-size:18px;font-weight:900">📊 Coverage Map — generated · sent · LIVE vs the gaps</span>
       <button class="iconbtn" style="margin-left:auto" onclick="document.getElementById('covPanel').remove()">✕</button></div>
-    <div style="font-size:11px;color:#64748b;margin-bottom:8px"><b style="color:#16a34a">n✈ = sent to Facy</b> · grey n = generated only · <b style="color:#fca5a5">red · = GAP</b> — click any cell to jump there and generate. Mix it up: build the red cells before adding more to the green ones.</div>
-    <table style="width:100%;border-collapse:collapse"><tr><th style="font-size:10px;text-align:left;padding:4px 6px">Format</th>${skuHead}</tr>${rows}</table></div>`;
+    <div style="font-size:11px;color:#64748b;margin-bottom:8px"><b style="color:#16a34a">n✈ = sent to Facy</b> · grey n = generated only · <b style="color:#fca5a5">red · = GAP</b>${liveNote} — click any cell to jump there and generate. Mix it up: build the red cells before adding more to the green ones.</div>
+    <table style="width:100%;border-collapse:collapse"><tr><th style="font-size:10px;text-align:left;padding:4px 6px">Format</th>${skuHead}</tr>${liveRow}${rows}</table></div>`;
   el.onclick=()=>el.remove();
   document.body.appendChild(el);
 }
