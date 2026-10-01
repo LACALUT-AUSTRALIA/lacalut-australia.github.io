@@ -178,6 +178,36 @@
   function pickVariationLens(){ return VARIATION_LENSES[Math.floor(Math.random()*VARIATION_LENSES.length)]; }
   function pickVariationMood(){ return VARIATION_MOODS[Math.floor(Math.random()*VARIATION_MOODS.length)]; }
 
+  /* ═══ LAYOUT-ARCHETYPE LIBRARY (Phase 4 #3) — structural skeletons of PROVEN winner ads ═══
+     Loaded from layout-archetypes.js (window.LAYOUT_ARCHETYPES). When a render carries an
+     archetype, its layout spec becomes the LAW of the canvas: it outranks the brain's own
+     Layout dim, the generic template scaffolding AND the random variation lens — only the
+     brand/compliance locks stay above it. The source ad's CONTENT is never copied: the
+     skeleton is re-skinned with LACALUT packs, palette and cosmetic-only copy. */
+  const ARCHS = global.LAYOUT_ARCHETYPES || [];
+  function resolveArchetype(idOrObj){
+    if(!idOrObj) return null;
+    if(typeof idOrObj === 'object') return idOrObj;
+    if(idOrObj === 'random') return ARCHS.length ? ARCHS[Math.floor(Math.random()*ARCHS.length)] : null;
+    return ARCHS.find(a=>a.id===idOrObj) || null;
+  }
+  function archetypeBlock(a){
+    if(!a) return '';
+    let t = `LAYOUT ARCHETYPE — "${a.name}" (THE LAW of this canvas — reverse-engineered from a PROVEN, long-running winning Meta ad; reproduce its STRUCTURE exactly, never its source brand, product, wording or imagery): `;
+    t += `GRID: ${a.gridDNA}. `;
+    (a.zones||[]).forEach(z=>{
+      t += `ZONE [${z.role}]: ${z.position}${z.sizePct?`, ~${z.sizePct}% of canvas`:''}${z.align?`, ${z.align}-aligned`:''}${z.treatment?`; treatment: ${z.treatment}`:''}${z.note?` (${z.note})`:''}. `;
+    });
+    if(a.typeScale) t += `TYPE SCALE: ${a.typeScale}. `;
+    if(a.colourBlocking) t += `COLOUR BLOCKING (structure only — REMAP every colour to the LACALUT brand palette stated above; keep the same light/dark/saturation relationships): ${a.colourBlocking}. `;
+    if(a.hierarchy && a.hierarchy.length) t += `VISUAL HIERARCHY (strongest first): ${a.hierarchy.join(' > ')}. `;
+    if(a.negativeSpace) t += `NEGATIVE SPACE: ${a.negativeSpace}. `;
+    if(a.eyePath) t += `EYE PATH: ${a.eyePath}. `;
+    if(a.whyItWins) t += `WHY THIS SKELETON CONVERTS (preserve this quality): ${a.whyItWins}. `;
+    t += `RE-SKIN RULE (non-negotiable): every structural slot is filled with LACALUT content — the real referenced pack(s), LACALUT red #CF102D / navy #004A88 palette, cosmetic-only oral-care copy. If the archetype's canvas ratio differs from the requested aspect ratio, adapt the skeleton proportionally — never letterbox. NEVER reproduce the source ad's brand, product shape, mascot, illustration characters' likeness, logo or any of its words. `;
+    return t;
+  }
+
   /* ═══ PROMPT BUILD (DOM-free) ═══ */
   function buildPrompt(opts){
     const sku = opts.sku, mode = opts.mode || 'social', brain = opts.brain;
@@ -193,6 +223,7 @@
     // mandates (pack lower-third hero, mandatory badge stack) step aside — they were flattening
     // every format into the same headline-top / tube-bottom / three-badges ad.
     const fmtLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d)));
+    const arch = resolveArchetype(opts.archetype);   // winner-ad layout skeleton — outranks brain layout + variation lens
 
     // ═══ CHAT / TEXT MESSAGE — dedicated FLAT full-bleed messaging-screen screenshot ═══
     // Bypasses ALL the generic headline/variation/photoreal/badge scaffolding, which was
@@ -223,12 +254,16 @@
       brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p += `${d} — ${v}. `; });
       p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image. A viewer comparing it side-by-side with any other LACALUT ad format must instantly see a DIFFERENT structural skeleton. NEVER collapse into the default template (centred product hero on a glowing backdrop, headline above, three badges below) unless the strategy above explicitly asks for exactly that. `;
     }
+    if(arch){
+      p += archetypeBlock(arch);
+      if(brain) p += `PRECEDENCE: where the "${brain.name}" strategy's layout and the LAYOUT ARCHETYPE disagree on STRUCTURE (placement, sizes, grid), the ARCHETYPE wins; the strategy still supplies the content idea, hook angle and mood. `;
+    }
     if(salesLike){
       // GUIDE INJECTION ONLY AS FALLBACK — a format's own Hook/Layout dims outrank the generic
       // Brand Guide pools. Injecting the guide headline + badge stack over every Sales brain was
       // the root cause of "every format renders the same centred-hero-with-badges ad".
       const hasHook   = !!(brain && brain.dims && brain.dims.some(([d])=>/hook/i.test(d)));
-      const hasLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d)));
+      const hasLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d))) || !!arch;
       if(!hasHook){ const head=pickRand(g.headlines,1)[0]; if(head) p += `Headline (exact wording): "${head}". `; }
       if(!hasLayout){
         const bens=pickRand(g.benefits,3); if(bens.length) p += `Benefit badges: ${bens.join('; ')}. `;
@@ -263,7 +298,7 @@
         } else if(prom === 'cameo'){
           p += `PRODUCT PROMINENCE — CAMEO (mandatory): the IDEA/GRAPHIC CONCEPT is the ad; the product appears only as a small, sharp cameo in a lower corner near the CTA — roughly logo-sized, NO MORE than ~10% of the frame. The concept owns the canvas, the pack just signs it. NEVER a big centred product hero. `;
         } else {
-          p += `Product packaging LARGE and dominant${fmtLayout?' exactly where the strategy layout above places it':' — lower ~55% as the clear hero'}. `;
+          p += `Product packaging LARGE and dominant${(fmtLayout||arch)?' exactly where the layout structure above places it':' — lower ~55% as the clear hero'}. `;
         }
         p += `Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
         p += `CRITICAL PRODUCT FIDELITY: the tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white cap included. `;
@@ -273,7 +308,11 @@
       } else {
         p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
       }
-      p += `VARIATION (make THIS render visually DISTINCT from other ads of the same concept): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected composition — do NOT default to the obvious centred-hero-on-a-glowing-backdrop look. `;
+      if(arch){
+        p += `VARIATION: ${pickVariationMood()} — but the COMPOSITION comes ONLY from the LAYOUT ARCHETYPE above; never override its structure with a different camera or layout idea. `;
+      } else {
+        p += `VARIATION (make THIS render visually DISTINCT from other ads of the same concept): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected composition — do NOT default to the obvious centred-hero-on-a-glowing-backdrop look. `;
+      }
       p += `TYPOGRAPHY SIZE (mandatory): render the MAIN HEADLINE as the single biggest element on the canvas — huge, bold and dominant — and the SUBHEADLINE clearly extra-large too, so both read instantly on a small mobile screen. Prioritise large, legible headline/subheadline type over decorative detail. `;
     }
     p += `PACKAGING FINE-PRINT: keep any small printed body or claims text on the product packaging in the product\u0027s ORIGINAL GERMAN and render it small and softly out of focus so it is NOT legible; never reproduce the pack fine print as legible English health, disease or treatment claims (e.g. never show readable words like bleeding, gingivitis, periodontitis in English). `; p += `TEXT CONTRAST (mandatory — the single most important design rule): all overlay text must be high-contrast and instantly legible. On any red, dark or saturated background the text MUST be white/light; on any white, light, pale or pastel background the text MUST be navy/dark. NEVER white or light text on a light/pale background (e.g. no white on light blue), and NEVER navy/dark text on a red or dark background. `; if(!isUGC){ p += `TITLE CASE (mandatory): the MAIN HEADLINE and the SUB-HEADLINE must BOTH be written in Title Case — capitalise the first letter of every significant word (e.g. "German Pharmacy Whitening That Lifts Everyday Stains"). Never sentence case, never all-lowercase for the sub-headline. `; p += `HEADLINE vs SUB-HEADLINE COLOUR (mandatory): render the main headline and the sub-headline in two DIFFERENT but complementary on-brand colours — never both in the same flat colour. e.g. a white headline with a brand-red #CF102D or light-accent sub-headline, or a navy #004A88 headline with a brand-red sub. Both must stay high-contrast against the background; the slight colour shift separates the two lines and makes the copy pop and feel more clickable. `; p += `BADGES ARE OPTIONAL — include benefit/trust badges ONLY when the strategy layout above asks for them; a clean lifestyle or concept image with just headline + CTA is often stronger than a badge stack. IF badges appear, BADGE & ICON SYSTEM applies: give each a small relevant icon (e.g. sparkle for stain-lift, a tooth for a clean feel, a droplet for freshness, a medal or ribbon for German heritage / "since 1925") — icons crisp and consistent line-weight, never plain unstyled text labels. ICON COLOUR (hard rule): every badge/feature icon MUST be rendered in a DIFFERENT colour from its own label text — e.g. a brand-red #CF102D icon beside navy #004A88 text, never icon and text the same flat colour — so the icon reads as a distinct visual element and never blends into the words. SHAPE CONSISTENCY (hard rule): within THIS single image EVERY benefit/feature badge MUST be the exact SAME shape as the others — all identical rounded pills, OR all identical rectangles, OR all identical squares — NEVER mix different badge shapes in one image (mixed shapes look unprofessional and cheap). All trust badges likewise share one uniform shape. Pick ONE badge shape for the set; the shape MAY differ between separate images for variety, but must be uniform inside any one image. `; p += `BADGE CONTRAST (non-negotiable — the #1 design rule): light or white badge text ALWAYS sits on a DARK, deep or saturated fill (navy #004A88, brand red #CF102D, deep teal or charcoal) — NEVER on a light, pale or pastel fill (e.g. never white text on light blue). Dark text (navy or charcoal) sits ONLY on a white or light fill. When unsure, darken the badge background until the text reads instantly. `; } p += `HEADLINE LEGIBILITY (mandatory): wherever the headline sits over a busy, bright or light area, add a subtle darkened gradient, scrim or soft shadow directly behind the headline text so it stays high-contrast and instantly readable — never let a bright background or light flare wash out the headline. `; p += `PLAIN LANGUAGE: keep copy simple and everyday (this is a Facebook ad, not a science paper) - avoid medical or scientific jargon and never print obscure or scary-sounding ingredient names such as "aluminium lactate"; reference any formula plainly, e.g. "a special German gum-care formula". `; p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
@@ -298,6 +337,13 @@
       brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p += `${d} — ${v}. `; });
       p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image; never collapse into the default centred-lineup-with-badges template unless the strategy explicitly asks for exactly that. `;
     }
+    { const archM = resolveArchetype(opts.archetype);
+      if(archM){
+        p += archetypeBlock(archM);
+        if(brain) p += `PRECEDENCE: where the "${brain.name}" strategy's layout and the LAYOUT ARCHETYPE disagree on STRUCTURE, the ARCHETYPE wins; the strategy still supplies the content idea and hook angle. `;
+        p += `All ${names.length} products are arranged WITHIN the archetype's product zone(s) as one cohesive group. `;
+      }
+    }
     if(brief) p += `Art-director note (HIGHEST priority — follow it exactly): ${brief}. `;
     if(opts.headline) p += `TOPIC LOCK (highest priority): the main on-image headline and all overlay text must convey THIS exact message — "${opts.headline}". `;
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
@@ -306,7 +352,11 @@
     p += `CRITICAL PRODUCT FIDELITY: every tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white caps included. `;
     p += `CONSISTENT PRODUCT FORM (mandatory, non-negotiable): render ALL ${names.length} products as ${form||'ONE single form (all tubes OR all boxes — never mixed)'}${form?` — show EVERY product as ${form} and NOTHING else (do NOT draw tubes if these are boxes, do NOT draw boxes if these are tubes, do NOT add a mouthwash bottle unless these ARE bottles)`:''}. Identical form for every product, matching the reference photos exactly. NEVER mix forms in one image; even if a supplied reference photo shows a box AND a tube together, render ONLY the ${form||'chosen'} form. Keep it uniform so the range reads as one clean, cohesive set. `;
     p += `COPY RELEVANCE: every headline and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste or fresh breath — never a vague generic line like "German pharmacy care" on its own; tie it to the actual products (e.g. "German pharmacy-grade oral care"). `;
-    p += `VARIATION (make THIS render visually DISTINCT from other range shots): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected arrangement — do NOT default to a flat line-up on a plain backdrop. `;
+    if(resolveArchetype(opts.archetype)){
+      p += `VARIATION: ${pickVariationMood()} — but the COMPOSITION comes ONLY from the LAYOUT ARCHETYPE above; never override its structure. `;
+    } else {
+      p += `VARIATION (make THIS render visually DISTINCT from other range shots): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected arrangement — do NOT default to a flat line-up on a plain backdrop. `;
+    }
     p += `TYPOGRAPHY SIZE (mandatory): render the MAIN HEADLINE as the single biggest element on the canvas — huge, bold and dominant — and the SUBHEADLINE clearly extra-large too, so both read instantly on a small mobile screen. Prioritise large, legible headline/subheadline type over decorative detail. `;
     p += `PACKAGING FINE-PRINT: keep any small printed body or claims text on the product packaging in the product\u0027s ORIGINAL GERMAN and render it small and softly out of focus so it is NOT legible; never reproduce the pack fine print as legible English health, disease or treatment claims (e.g. never show readable words like bleeding, gingivitis, periodontitis in English). `; p += `TEXT CONTRAST (mandatory — the single most important design rule): all overlay text must be high-contrast and instantly legible. On any red, dark or saturated background the text MUST be white/light; on any white, light, pale or pastel background the text MUST be navy/dark. NEVER white or light text on a light/pale background (e.g. no white on light blue), and NEVER navy/dark text on a red or dark background. `; p += `TITLE CASE (mandatory): the MAIN HEADLINE and the SUB-HEADLINE must BOTH be written in Title Case — capitalise the first letter of every significant word (e.g. "German Pharmacy Whitening That Lifts Everyday Stains"). Never sentence case, never all-lowercase for the sub-headline. `; p += `HEADLINE vs SUB-HEADLINE COLOUR (mandatory): render the main headline and the sub-headline in two DIFFERENT but complementary on-brand colours — never both in the same flat colour. e.g. a white headline with a brand-red #CF102D or light-accent sub-headline, or a navy #004A88 headline with a brand-red sub. Both must stay high-contrast against the background; the slight colour shift separates the two lines and makes the copy pop and feel more clickable. `; p += `BADGE & ICON SYSTEM (mandatory): give benefit and trust badges a small relevant icon (e.g. sparkle for stain-lift, a tooth, a shield for protection, a globe for "trusted in X countries", a medal or ribbon for heritage / "since 1925") — icons crisp and consistent line-weight, never plain unstyled text labels. ICON COLOUR (hard rule): every badge/feature icon MUST be rendered in a DIFFERENT colour from its own label text — e.g. a brand-red #CF102D icon beside navy #004A88 text, never icon and text the same flat colour — so the icon reads as a distinct visual element and never blends into the words. SHAPE CONSISTENCY (hard rule): within THIS single image EVERY benefit/feature badge MUST be the exact SAME shape as the others — all identical rounded pills, OR all identical rectangles, OR all identical squares — NEVER mix different badge shapes in one image (mixed shapes look unprofessional and cheap). All trust badges likewise share one uniform shape. Pick ONE badge shape for the set; the shape MAY differ between separate images for variety, but must be uniform inside any one image. `; p += `BADGE CONTRAST (non-negotiable — the #1 design rule): light or white badge text ALWAYS sits on a DARK, deep or saturated fill (navy #004A88, brand red #CF102D, deep teal or charcoal) — NEVER on a light, pale or pastel fill (e.g. never white text on light blue). Dark text (navy or charcoal) sits ONLY on a white or light fill. When unsure, darken the badge background until the text reads instantly. `; p += `HEADLINE LEGIBILITY (mandatory): wherever the headline sits over a busy, bright or light area, add a subtle darkened gradient, scrim or soft shadow directly behind the headline text so it stays high-contrast and instantly readable — never let a bright background or light flare wash out the headline. `; p += `PLAIN LANGUAGE: keep copy simple and everyday (this is a Facebook ad, not a science paper) - avoid medical or scientific jargon and never print obscure or scary-sounding ingredient names such as "aluminium lactate"; reference any formula plainly, e.g. "a special German gum-care formula". `; p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
     return p;
@@ -368,7 +418,7 @@
     const brain = opts.brain || resolveBrain(opts.brainId);
     const isChat = brain && /chat|text message/i.test(brain.name);
     const wantsProduct = /\b(box|tube|pack|packshot|packaging|product|bottle)\b/i.test(opts.brief||''); const useProd = isChat ? true : ((typeof opts.useProd==='boolean') ? opts.useProd : ((brain && brain.product==='none') ? false : true));
-    const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, headline:opts.headline, advNeg:opts.advNeg, useProd });
+    const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, headline:opts.headline, advNeg:opts.advNeg, useProd, archetype:opts.archetype });
     const aspectRatio = ((MODES[mode] && MODES[mode].ar) || '4:5').split(' ')[0];
 
     const url = await callGemini({
@@ -494,6 +544,8 @@ Follow this ONE-UP LOOP internally before you answer:
 
 DIVERGENCE (critical): this is ONE of many ads for this strategy — it MUST look clearly DIFFERENT from the others. Build the pinnacle AROUND the specific composition/camera lens and colour mood named in the base brief's VARIATION directive; do not override them with the obvious centred-hero look. A distinct, unexpected execution beats a generic "perfect" one — never collapse every render to the same single best idea.
 
+LAYOUT ARCHETYPE OVERRIDE: if the base brief contains a "LAYOUT ARCHETYPE" block, that block is the LAW of the canvas — carry its ENTIRE structure (grid, every zone's position/size/alignment/treatment, type scale, colour blocking, hierarchy, eye path) into the final brief UNCHANGED and UNABRIDGED. Your one-upping then happens only INSIDE that skeleton: richer lighting, more premium finish, sharper copy, better micro-details — never a different composition, never moved or resized zones.
+
 HARD RULES — the final brief MUST keep every one of these from the base brief, never trade them away for drama:
 - The REAL product packaging: exact shape, label layout, brand colours, logo and exact printed wording. Never invent, garble, translate or alter product text. Keep which product(s) appear. The product CAP is ALWAYS WHITE — never red, navy, blue or any coloured cap.
 - CONSISTENT PRODUCT FORM: if multiple different products appear, they MUST all be the same format — all tubes/bottles OR all boxes, never a mix of tubes and boxes in one image.
@@ -549,8 +601,8 @@ ${basePrompt}
   //  • VEO3 — TOP hero quality for the final cinematic ad
   const VIDEO_MODELS = {
     VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'RETIRED 23/09 (kept only so old cards keep their label) — never offered in the UI', retired:true },
-    FAL_SEEDANCE: { route:'fal',    id:'bytedance/seedance-2.5/image-to-video', label:'Seedance 2.5 (fal.ai)', usdPerSec:0.47, audio:false, aspects:['1:1','16:9','9:16'], imgParam:'image_url', noNegative:true, resolution:'720p', aspectAuto:true, genAudioOff:true, job:'Premium long-form — native up to 30s single-shot, 720p/1080p (pricey ~US$0.47/s)' },
-    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v3/pro/image-to-video', label:'Kling v3 Pro (fal.ai)', usdPerSec:0.112, audio:false, aspects:['9:16','16:9','1:1'], deriveAR:true, imgParam:'start_image_url', genAudioOff:true, job:'BEST humans/anatomy — realistic people, hands, motion; native 3–15s (renders true 8s scenes, no 5s drift)' },
+    FAL_SEEDANCE: { route:'fal',    id:'bytedance/seedance-2.5/image-to-video', label:'Seedance 2.5 (fal.ai)', usdPerSec:0.47, audio:false, aspects:['1:1','16:9','9:16'], imgParam:'image_url', noNegative:true, resolution:'720p', aspectAuto:true, genAudioOff:true, maxPrompt:2500, job:'Premium long-form — native up to 30s single-shot, 720p/1080p (pricey ~US$0.47/s)' },
+    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v3/pro/image-to-video', label:'Kling v3 Pro (fal.ai)', usdPerSec:0.112, audio:false, aspects:['9:16','16:9','1:1'], deriveAR:true, imgParam:'start_image_url', genAudioOff:true, maxPrompt:2500, job:'BEST humans/anatomy — realistic people, hands, motion; native 3–15s (renders true 8s scenes, no 5s drift)' },
     VEO3:         { route:'gemini', id:'veo-3.1-generate-preview',  label:'Veo 3.1',    usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
   };
   // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──
@@ -563,10 +615,17 @@ ${basePrompt}
   //    steers away from them. SKU word-bans still ride in the positive prompt; this is anatomy/render only.
   //    (Quan 26/09: "you should have already done this" — extra arms, floating tube, phantom paste, flipped logo.)
   const VIDEO_ARTIFACT_NEGATIVE = 'extra limbs, third arm, extra arm, two right hands, duplicate hands, extra hand, extra fingers, missing fingers, six fingers, fused fingers, malformed hands, deformed hands, mangled hands, floating product, levitating tube, product hovering in mid-air, product suspended in air, photoshopped-looking product, pasted-in product, product cut-out edges, toothpaste paste, paste blob, foam, gel blob, stray droplet, dripping paste, dispensing paste, squeezing tube, mirror-flipped logo, reversed text, backwards logo, warped logo, morphing packaging, melting tube, bending tube, duplicated tube, second tube, extra tube, garbled text, gibberish text, distorted face, warped face, deformed face, extra teeth, uncanny valley, plastic skin, low quality, blurry, warping, jitter, flicker, ghosting, watermark, burned-in subtitles, caption bar';
+  // MULTI-PACK variant: an intentional pile of identical tubes is the creative, so DROP the anti-duplicate
+  // bans ("duplicated tube / second tube / extra tube") that would fight it — and ADD the motion artefacts
+  // Kling sneaks in on piles (falling/tumbling tubes that then morph + garble their labels mid-clip).
+  const VIDEO_ARTIFACT_NEGATIVE_MULTIPACK = VIDEO_ARTIFACT_NEGATIVE
+    .replace(/, duplicated tube, second tube, extra tube/, '')
+    + ', falling tubes, tumbling tubes, cascading tubes, avalanche of tubes, tubes sliding, tubes rolling, moving product, product in motion, collapsing pile, shifting pile';
   // Global brain list ALWAYS fires; the per-render "Avoid" box (user) is APPENDED, never a replacement.
-  function mergeNegative(userAvoid){
+  function mergeNegative(userAvoid, multiPack){
+    const base = multiPack ? VIDEO_ARTIFACT_NEGATIVE_MULTIPACK : VIDEO_ARTIFACT_NEGATIVE;
     const extra = (userAvoid||'').trim().replace(/^,+|,+$/g,'').trim();
-    return extra ? VIDEO_ARTIFACT_NEGATIVE + ', ' + extra : VIDEO_ARTIFACT_NEGATIVE;
+    return extra ? base + ', ' + extra : base;
   }
 
   /* ═══ VIDEO STYLE PRESETS — the "Higgsfield Motion" variety pack ═══
@@ -696,7 +755,7 @@ ${basePrompt}
       ? { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } }
       : { prompt: opts.prompt };
     const parameters = { aspectRatio: ar, durationSeconds: seconds, sampleCount:1 };
-    parameters.negativePrompt = mergeNegative(opts.negativePrompt);   // global brain list + per-render Avoid box
+    parameters.negativePrompt = mergeNegative(opts.negativePrompt, opts.allowMultiPack);   // global brain list + per-render Avoid box
     if(imgPart) parameters.personGeneration='allow_adult';   // t2v rejects allow_adult — only valid for image-to-video
     const base = 'https://generativelanguage.googleapis.com/v1beta/';
     const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
@@ -752,9 +811,15 @@ ${basePrompt}
       const fit = nums.filter(n=>n<=reqSec);
       dur = String(fit.length ? Math.max(...fit) : Math.min(...nums));
     }
-    const body = { prompt: opts.prompt, duration: dur };
+    // Kling / Seedance reject prompts over their char cap (fal 422 string_too_long) — hard-trim to fit,
+    // keeping the front of the prompt (brand + motion + scene) and dropping only the tail boilerplate.
+    let promptText = opts.prompt || '';
+    if(m.maxPrompt && promptText.length > m.maxPrompt){
+      promptText = promptText.slice(0, m.maxPrompt - 1).replace(/\s+\S*$/, '') + '…';
+    }
+    const body = { prompt: promptText, duration: dur };
     body[m.imgParam||'image_url'] = opts.imgDataUrl;             // Kling v3 uses start_image_url; others image_url
-    if(!m.noNegative) body.negative_prompt = mergeNegative(opts.negativePrompt);   // Seedance 2.5 has no negative_prompt param
+    if(!m.noNegative) body.negative_prompt = mergeNegative(opts.negativePrompt, opts.allowMultiPack);   // Seedance 2.5 has no negative_prompt param
     if(m.genAudioOff) body.generate_audio = false;              // never let the engine bake its own audio (we add VO/music in post)
     if(m.resolution)  body.resolution = m.resolution;           // Seedance 2.5 resolution tier
     if(m.aspectAuto)  body.aspect_ratio = 'auto';               // Seedance 2.5 derives aspect from the image via 'auto'
@@ -774,8 +839,11 @@ ${basePrompt}
       if(stj.status==='FAILED') throw new Error('fal generation failed');
     }
     if(!out) throw new Error('Video timed out.');
-    const url = out.video?.url || out.video_url || out.videos?.[0]?.url;
-    if(!url) throw new Error('No video URL from fal');
+    const url = out.video?.url || out.video_url || out.videos?.[0]?.url
+              || out.data?.video?.url || out.output?.video?.url || out.output?.[0]?.url
+              || out.images?.[0]?.url || out.url;
+    if(!url){ try{ console.error('[fal debug] response keys:', JSON.stringify(out).slice(0,600)); }catch(_){}
+              throw new Error('No video URL from fal'); }
     const blob = await (await fetch(url)).blob();
     return opts.asBlob ? blob : await blobToDataUrl(blob);
   }
@@ -1343,6 +1411,30 @@ Return ONLY this one scene as JSON, exactly this schema: {"visual":"...","motion
     return p;
   }
 
+  /* Compact scene prompt for fal models (Kling / Seedance) which HARD-CAP the prompt at 2500 chars.
+     Keeps every essential lock (motion, character, world, product fidelity, compliance) in priority
+     order, tersely — so nothing important is lost to truncation. Veo (no cap) still uses the full one. */
+  function buildScenePromptFal(opts){
+    const sb = opts.storyboard, sc = opts.scene, i = opts.index, total = opts.total;
+    const s = SKUS[opts.sku]||SKUS['aktiv'];
+    const hasPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
+    const personless = !/\b(she|he|her|him|they|their|woman|man|person|girl|guy|lady|model|hands?|face|smil\w*|shav\w*|apply\w*|button\w*|brush\w*)\b/i.test((sc.visual||'')+' '+(sc.motion||''));
+    let p = `8-second image-to-video ad for LACALUT ${s.name} (German pharmacy oral-care), scene ${i+1} of ${total} of one continuous film. The SUPPLIED image is the final opening frame — keep its exact person, location, props, lighting and framing; add MOTION only; never redraw, re-letter, restyle or morph anything in it. `;
+    p += `MOTION: ${sc.motion || sc.visual}. `;
+    if(!personless) p += `CHARACTER LOCK: keep the EXACT same person as the frame — identical face, hair, age, build; real human skin and texture, natural expression, never a different face and never plastic or uncanny. `;
+    if(hasPack && opts.allowMultiPack){
+      p += `PRODUCT (multi-pack comedy): show MANY IDENTICAL real German LACALUT ${s.name} tubes — same red-white pack, WHITE cap, tall-slim proportions. The FRONT/nearest tubes are razor-sharp with the real German label facing camera, correctly rendered; tubes deeper in the pile may soften with depth-of-field / motion blur. NEVER a fabricated or English-language front label. Tubes may stack, pile, multiply and tumble exactly as the MOTION describes. No paste, foam or droplet appears. `;
+    } else if(hasPack){
+      p += `PRODUCT: the real German LACALUT pack stays razor-sharp and identical — exact label, WHITE cap, tall-slim proportions, front label to camera; never blur, warp, duplicate, re-letter, translate or mirror it. It STANDS untouched — no hand holds or lifts it, and no paste, foam or droplet appears. `;
+      p += personless ? `Locked-off tripod shot: the pack holds perfectly still. ` : `Hands stay up and away from the pack. `;
+    }
+    p += `COMPLIANCE: cosmetic only — no therapeutic/disease claims, no percentages; only fluoride and hydroxyapatite may be named. `;
+    p += `TEXT/MIRROR LOCK: no on-screen words except the post caption; the pack's German label stays soft and unreadable; never render mirrored, reversed or reflected text. `;
+    p += `AUDIO: ambient room tone and light sound effects only — no music and NO human voice, speech or narration (voiceover added in post). `;
+    p += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal, smooth natural motion, no flicker or artefacts.`;
+    return p;
+  }
+
   function storyboardCostEstimate(opts){
     const m = videoModel(opts.model||'VEO3');
     const scenes = Math.max(1, opts.scenes||3);
@@ -1386,6 +1478,25 @@ Return ONLY this one scene as JSON, exactly this schema: {"visual":"...","motion
     try{
       onProg('🖼️ composing scene still…');
       const vlook = videoStyle(opts.style);
+      // MULTI-PACK COMEDY (allowMultiPack) — the whole single-pack fidelity pipeline (native compose,
+      // PASS-A/B insert, "never a second pack", 30% scale cap) fights an intentional pile of tubes.
+      // Compose the multi-tube still in ONE pass with the packshot as the identity reference instead.
+      if(opts.allowMultiPack && sceneWantsPack){
+        onProg('🧴 composing multi-pack still…');
+        const capM = sc.text && String(sc.text).trim() && (!sb.postCaptions || String(sc.text).trim().split(/\s+/).filter(Boolean).length<=3);
+        let spM = `Opening FRAME of a comedic PRODUCT-ONLY video ad for LACALUT ${s.name} (German pharmacy oral-care brand), no people. `;
+        spM += vlook ? `VISUAL LOOK: ${vlook.motion} ` : '';
+        spM += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
+        spM += `Show MANY IDENTICAL real German LACALUT ${s.name} tubes — the SAME red-white pack, WHITE cap, tall-slim proportions, matching the reference packshot EXACTLY. The NEAREST/front tubes are razor-sharp with the real German label facing camera and correctly rendered; tubes deeper in the pile soften with natural depth of field. NEVER a fabricated, translated or English-language front label. `;
+        spM += capM ? `ON-SCREEN CAPTION (exact wording): "${sc.text}" — LARGE, bold, clean, high-contrast, correctly spelled. ` : `No on-screen text — clean frame, caption added in post. `;
+        spM += `No other invented text or signage; never mirrored, reversed or reflected lettering. Cosmetic product only — no therapeutic claims, no percentages. ${opts.aspectRatio||'9:16'} aspect ratio, photoreal, bright clean satisfying comedic product-shot look, composed with headroom for motion.`;
+        try{
+          still = await callGemini({ prompt:spM, productImgs:packRefs, styleImgs:anchors,
+            render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+          stillOk = true;
+        }catch(eM){ /* fall through to raw packshot animate */ }
+        throw { __multiPackDone:true };   // skip the single-pack still paths below
+      }
       let sp = `Opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
       sp += vlook ? `VISUAL LOOK (hard rule — this defines the entire frame and OVERRIDES any default polish): ${vlook.motion} If this look is lo-fi/handheld, the frame must read as a candid smartphone photo a real person took — natural imperfect framing, real-world light — NOT a glossy studio ad. ` : '';
       sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
@@ -1439,16 +1550,17 @@ Return ONLY this one scene as JSON, exactly this schema: {"visual":"...","motion
       stillOk = true;
     }catch(e){ /* fall back to animating the raw packshot rather than failing the scene */ }
     // STEP 2 — animate the still (motion only)
-    let prompt = buildScenePrompt(opts);
-    if(stillOk) prompt += ' The supplied image IS the finished opening frame of this scene — composition, product and caption are final; add MOTION only, never redraw or re-letter anything.';
-    if(opts.oneUp && !opts.scene){   // one-up ONLY for single-image animate flow — an approved storyboard scene is already the locked creative
+    const engineKey = videoEngineForStyle(opts.style, opts.forceModel);   // style auto-picks its engine — no mismatch, no wasted credits
+    const engineHasCap = !!videoModel(engineKey).maxPrompt;               // fal (Kling/Seedance) hard-cap the prompt at 2500 chars
+    let prompt = engineHasCap ? buildScenePromptFal(opts) : buildScenePrompt(opts);
+    if(stillOk && !engineHasCap) prompt += ' The supplied image IS the finished opening frame of this scene — composition, product and caption are final; add MOTION only, never redraw or re-letter anything.';
+    if(opts.oneUp && !opts.scene && !engineHasCap){   // one-up ONLY for single-image animate flow — an approved storyboard scene is already the locked creative
       const bans = [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])];
       prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
     }
     if(opts.fixNote){ prompt += ' QC CORRECTION (highest priority — the previous render failed on exactly this): ' + opts.fixNote; }
-    const engineKey = videoEngineForStyle(opts.style, opts.forceModel);   // style auto-picks its engine — no mismatch, no wasted credits
     const call = videoModel(engineKey).route==='fal' ? callFalVideo : callVeoVideo;
-    const callOpts = p => ({ prompt:p, imgDataUrl:still, model:engineKey,
+    const callOpts = p => ({ prompt:p, imgDataUrl:still, model:engineKey, allowMultiPack:opts.allowMultiPack,
       seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
       negativePrompt:opts.avoid||opts.negativePrompt||'',   // per-render Avoid box → merged with the global brain list
       onProgress:onProg, asBlob:true });
@@ -1686,13 +1798,14 @@ Return ONLY valid JSON:
     getGuide, pickStr, pickRand,
     resolveBrain, brainUsesProduct, pickBrainForCategories,
     buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
+    resolveArchetype, archetypeBlock, ARCHS,
     oneUpImagePrompt,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm,
     VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
     videoModel, videoStyle, videoEngineForStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
     VIDEO_ARTIFACT_NEGATIVE, mergeNegative,
     buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
-    sanitizeStoryboard, generateStoryboard, rewriteSceneBeat, lintStoryboard, buildScenePrompt, storyboardCostEstimate,
+    sanitizeStoryboard, generateStoryboard, rewriteSceneBeat, lintStoryboard, buildScenePrompt, buildScenePromptFal, storyboardCostEstimate,
     renderScene, renderStoryboard, stitchScenes, ttsLine,
     qcSceneClip, renderSceneQC, qcFinalVideo, QC_THRESHOLD, QC_MAX_REROLLS
   };

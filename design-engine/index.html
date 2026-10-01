@@ -87,7 +87,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v19 lifestyle-first</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v20 winner-layouts</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -119,6 +119,13 @@
     <h3 style="margin-top:12px">Format <span id="stratCount" style="color:#999;font-weight:600;">0/8</span></h3>
     <input type="text" id="brainSearch" placeholder="🔎 Search formats… (e.g. money)" oninput="setBrainFilter(this.value)" style="width:100%;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
     <div class="chips" id="chips"></div>
+
+    <h3 style="margin-top:12px">🏛 Winner Layout <span style="color:#999;font-weight:600;font-size:11px">skeletons of proven Meta winners</span></h3>
+    <div class="guide" style="font-size:11px">Locks the canvas to a layout reverse-engineered from a long-running winning ad — our pack, our copy, their structure.</div>
+    <select id="archSel" onchange="try{localStorage.setItem('de_arch',this.value)}catch(_){}" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;box-sizing:border-box">
+      <option value="">None — engine composes freely</option>
+      <option value="random">🎲 Random winner layout per image</option>
+    </select>
 
     <h3 style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">Brief<button type="button" onclick="clearBrief()" title="Clear the brief box so you can paste a fresh prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></h3>
     <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
@@ -287,6 +294,7 @@
 </div></dialog>
 
 <script src="strategies.js"></script>
+<script src="layout-archetypes.js"></script>
 <script src="engine.js"></script>
 <script src="brand-brain.js"></script>
 <script src="packs-seed.js"></script>
@@ -640,6 +648,7 @@ async function runGenerate(){
     advNeg: $('advNeg').checked,
     render: $('render').value,
     oneUp: !!($('oneUp') && $('oneUp').checked),
+    archSel: ($('archSel') ? $('archSel').value : ''),
     geminiKey: KEYS.gemini,
     ar: MODES[curMode].ar,
     productImgs: productImgs.filter(Boolean).slice(),
@@ -663,20 +672,23 @@ async function runGenerate(){
       const rmode = rsel==='mixed' ? (i%2===0?'photoreal':'graphical') : rsel;
       const aspectRatio=(S.ar||'4:5').split(' ')[0];
       let prompt, label, refImgs, refLabels=null;
+      // 🏛 winner-layout archetype: resolve per-image so 'random' varies across a Qty batch
+      const archPick = S.archSel ? E.resolveArchetype(S.archSel) : null;
       if(S.isMulti){
         const brain = S.curBrain ? pickBrainS() : null;
         const bans=[...new Set([...GLOBAL_BAN, ...S.multiSel.flatMap(k=>SKUS[k]?.ban||[])])];
-        prompt = E.buildMultiPrompt({ skuNames:S.multiLabels, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, bans, form:MULTI_FORM_LABEL[S.multiForm] });
+        prompt = E.buildMultiPrompt({ skuNames:S.multiLabels, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, bans, form:MULTI_FORM_LABEL[S.multiForm], archetype:archPick });
         refImgs = S.multiImgs; refLabels = S.multiLabels;
         label = (brain?brain.name:'Range')+' · '+S.multiLabels.length+' SKUs';
       } else {
         const brain=pickBrainS();
         const useProd = (brain && brain.product==='none') ? false : true; // always attach real packshot refs so the product is never invented
-        prompt=E.buildPrompt({ sku:S.curSku, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, useProd });
+        prompt=E.buildPrompt({ sku:S.curSku, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, useProd, archetype:archPick });
         refImgs = useProd?S.productImgs:[];
         const finish = rmode==='graphical'?'CGI':rmode==='exact'?'flat':'photoreal';
         label=(brain?brain.name:'Hero')+(useProd?' · '+finish:' · logo-only');
       }
+      if(archPick) label += ' · 🏛 '+archPick.name;
       // 🚀 ONE-UP LOOP — refine the assembled brief to its pinnacle before generating (every strategy)
       if(S.oneUp){
         const _t=$(id)?.querySelector('.t'); if(_t) _t.textContent='🚀 one-upping the prompt…';
@@ -687,7 +699,9 @@ async function runGenerate(){
         if(_t) _t.textContent='⏳ rendering…';
       }
       // Qty>1 → force each image to be VISUALLY DISTINCT (appended AFTER one-up so it always survives)
-      if(qty>1){ const V=IMG_VARIATIONS[i % IMG_VARIATIONS.length];
+      if(qty>1 && archPick){
+        prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — vary ONLY the lighting mood and background texture WITHIN the locked LAYOUT ARCHETYPE structure; never change the layout, zone placement or text positions.`;
+      } else if(qty>1){ const V=IMG_VARIATIONS[i % IMG_VARIATIONS.length];
         prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule. Keep the background WITHIN the colour palette stated in the brief — never introduce a clashing colour scheme.`;
       }
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
@@ -2451,6 +2465,11 @@ async function pushCardToMarky(cardId){
 if(typeof MODES!=='undefined' && !MODES[curMode]) curMode='social';   // drop a stale saved mode
 if(curBrain && curBrain!=='mixed' && typeof BRAINS!=='undefined' && !BRAINS.find(b=>b.id===curBrain)){ curBrain=null; try{localStorage.removeItem('de_brain');}catch(_){} }   // drop a stale saved strategy
 renderTabs(); renderPtypes(); renderModes(); loadProductImgs(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets(''); restoreGenSettings();
+// 🏛 Winner-Layout archetype picker — populate from layout-archetypes.js + restore last choice
+if($('archSel') && window.LAYOUT_ARCHETYPES){
+  window.LAYOUT_ARCHETYPES.forEach(a=>$('archSel').insertAdjacentHTML('beforeend',`<option value="${a.id}">${a.name} · ${a.styleFamily}</option>`));
+  try{ const v=localStorage.getItem('de_arch'); if(v && [...$('archSel').options].some(o=>o.value===v)) $('archSel').value=v; }catch(_){}
+}
 migratePtype().then(()=>renderGallery(curSku));   // tag legacy gens as toothpaste first, then paint the gallery
 loadRefLib().then(seedPacks).then(loadProdSlots).then(()=>{ loadProductImgs(); renderSlots(); renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // refs → seed German packs → load saved slot photos → fill slots + restore Image/Video mode
 $('advNeg').addEventListener('change',renderNeg);
