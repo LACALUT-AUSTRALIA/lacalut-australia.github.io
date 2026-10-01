@@ -1,0 +1,1793 @@
+[
+  {
+    "canvasRatio": "1:1",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "Central vertical stack of bold text blocks and horizontal pill-shaped CTAs, anchored by a prominent price block at the bottom, all overlaid on a vibrant gradient background with scattered, angled product cards providing visual texture and implied social proof.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "gradient from purple to orange/pink",
+        "note": "dynamic, vibrant gradient covering the entire canvas"
+      },
+      {
+        "role": "headline",
+        "position": "centre-top, starting 20% from top",
+        "sizePct": 24,
+        "align": "center",
+        "treatment": "bold, uppercase, white text",
+        "note": "dominant, multi-line headline"
+      },
+      {
+        "role": "cta",
+        "position": "centre, starting 50% from top",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "white text on rounded purple pill container",
+        "note": "first of two sequential call-to-action steps"
+      },
+      {
+        "role": "cta",
+        "position": "centre, starting 58% from top",
+        "sizePct": 5,
+        "align": "center",
+        "treatment": "white text on rounded purple pill container",
+        "note": "second of two sequential call-to-action steps, wider than the first"
+      },
+      {
+        "role": "body",
+        "position": "centre-bottom, starting 68% from top",
+        "sizePct": 8,
+        "align": "center",
+        "treatment": "white text",
+        "note": "supporting benefit statement"
+      },
+      {
+        "role": "offer",
+        "position": "centre-bottom, bottom edge 5% from bottom",
+        "sizePct": 8,
+        "align": "center",
+        "treatment": "bold red/orange text on rounded white rectangle container",
+        "note": "prominent price and offer statement"
+      },
+      {
+        "role": "proof",
+        "position": "scattered across canvas, top-left, top-right, mid-left, mid-right",
+        "sizePct": 18,
+        "align": "none",
+        "treatment": "angled, semi-transparent product cards with brand logos and small text",
+        "note": "background elements providing implied social proof and visual interest"
+      }
+    ],
+    "typeScale": "headline ~30% of canvas height, offer ~10%, cta text ~6%, body ~4%",
+    "colourBlocking": "full-bleed gradient background, white text for main content, distinct purple pills for CTAs, and a prominent white/red block for the offer.",
+    "hierarchy": [
+      "headline",
+      "offer",
+      "cta",
+      "body",
+      "proof",
+      "background"
+    ],
+    "negativeSpace": "Ample negative space around the central text stack allows each element to stand out, particularly between the headline, CTAs, and the final offer, creating clear visual breaks.",
+    "eyePath": "The eye is immediately drawn to the large, bold headline, then follows the sequential CTA pills, down to the supporting body text, and finally lands on the highly contrasted and prominent offer at the bottom.",
+    "whyItWins": "The layout wins by using a bold, attention-grabbing headline, a clear sequential call-to-action, and a highly contrasted, prominent offer, all within a visually dynamic but uncluttered central stack.",
+    "productPresence": "cameo",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1054681783836722-30-aug-2026",
+    "sourceFile": "hismile_1054681783836722_30-Aug-2026.png"
+  },
+  {
+    "canvasRatio": "1:1",
+    "styleFamily": "studio-product",
+    "gridDNA": "A central, slightly angled product display (shopping basket filled with product boxes) occupies the mid-to-lower canvas, framed by a large, prominent speech bubble offer at the top-left and a smaller, angled badge at the bottom-right. A minimal background provides contrast.",
+    "zones": [
+      {
+        "role": "offer",
+        "position": "top-left, starting 6% from top, 5% from left, contained within a speech bubble shape",
+        "sizePct": 12,
+        "align": "left",
+        "treatment": "white bold text, '2 FREE!' in yellow bold, inside a solid blue speech bubble container with a white outline, 'FREE' in all caps",
+        "note": "Main value proposition, visually dominant due to size and colour contrast."
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, clustered within the basket, angled",
+        "sizePct": 20,
+        "align": "centre",
+        "treatment": "standard product packaging, multiple units visible",
+        "note": "Multiple units displayed to reinforce the bundle offer."
+      },
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "solid light beige colour",
+        "note": "Provides a clean, neutral backdrop for product and graphic elements."
+      },
+      {
+        "role": "other",
+        "position": "mid-to-lower canvas, angled, starting 35% from top, extending to bottom",
+        "sizePct": 38,
+        "align": "none",
+        "treatment": "solid blue plastic shopping basket",
+        "note": "Visual container for products, reinforces 'shopping' or 'bundle' concept."
+      },
+      {
+        "role": "badgeRow",
+        "position": "bottom-right, angled, overlapping the basket, starting 70% from top, 55% from left",
+        "sizePct": 6,
+        "align": "centre",
+        "treatment": "white bold text on a solid red oval/pill shape with a slight white outline, all caps",
+        "note": "Reinforces product popularity and bundle value."
+      },
+      {
+        "role": "caption",
+        "position": "bottom-most, full width, starting 90% from top, 5% from left",
+        "sizePct": 4,
+        "align": "left",
+        "treatment": "small, dark grey text, regular weight",
+        "note": "Legal disclaimers and terms."
+      }
+    ],
+    "typeScale": "headline (offer) ~12-15% of canvas height, badge text ~5-6%, caption ~1%",
+    "colourBlocking": "Top-left quadrant dominated by a bright blue speech bubble. Bottom-right features a bright red badge. The central area is occupied by the blue basket and product boxes, all against a neutral beige background.",
+    "hierarchy": [
+      "offer",
+      "product",
+      "badgeRow",
+      "other",
+      "caption"
+    ],
+    "negativeSpace": "Ample negative space in the top-right and bottom-left corners, and around the central product arrangement, allowing key elements (offer, product, badge) to stand out without clutter.",
+    "eyePath": "Offer (speech bubble) -> Product (basket with boxes) -> Badge (BEST SELLER BUNDLE) -> Caption (disclaimer)",
+    "whyItWins": "The layout immediately communicates a clear, high-value offer and visually presents the product bundle, creating an instant perception of quantity and savings through prominent graphic elements.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1076172164846486-2-aug-2026",
+    "sourceFile": "hismile_1076172164846486_2-Aug-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "illustration",
+    "gridDNA": "A vertical stack of distinct content blocks: a large top section with a prominent headline, hero product illustration, and a multi-step process diagram; a middle section featuring a horizontal product array with an offer callout; and a bottom section with a three-column instructional grid.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-left, starting 6% from top, 10% from left",
+        "sizePct": 6,
+        "align": "left",
+        "treatment": "bold, sans-serif, black, none, uppercase",
+        "note": "Dominant brand name at the top of the canvas."
+      },
+      {
+        "role": "product",
+        "position": "mid-left, starting 19.5% from top, 14% from left",
+        "sizePct": 9,
+        "align": "left",
+        "treatment": "line art illustration, white fill",
+        "note": "Primary product bottle illustration, vertically oriented."
+      },
+      {
+        "role": "offer",
+        "position": "overlapping main product, top-left of product, starting 25% from top, 7% from left",
+        "sizePct": 1,
+        "align": "centre",
+        "treatment": "circular shape, solid red fill, white bold text, uppercase",
+        "note": "High-contrast circular badge highlighting a key offer."
+      },
+      {
+        "role": "body",
+        "position": "on the main product illustration, mid-left, starting 31% from top, 21% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "small, black text",
+        "note": "Product features and details integrated onto the hero product illustration."
+      },
+      {
+        "role": "other",
+        "position": "top-right, starting 19.5% from top, 55.5% from left",
+        "sizePct": 11,
+        "align": "left",
+        "treatment": "line art illustration, white fill",
+        "note": "Multi-step visual guide demonstrating product usage, including a human element."
+      },
+      {
+        "role": "offer",
+        "position": "mid-canvas, starting 54.6% from top, 14% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "bold, black, uppercase",
+        "note": "Secondary offer headline acting as a visual divider."
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, below offer headline, starting 58.6% from top, 14% from left",
+        "sizePct": 9,
+        "align": "left",
+        "treatment": "simplified product illustrations, horizontal row, includes multiplier",
+        "note": "Visual representation of the bundled product quantity."
+      },
+      {
+        "role": "body",
+        "position": "bottom-mid, starting 74.2% from top, 14% from left",
+        "sizePct": 9,
+        "align": "centre",
+        "treatment": "3-column grid, each with an icon and short text",
+        "note": "Step-by-step instructions with corresponding icons."
+      },
+      {
+        "role": "caption",
+        "position": "bottom, starting 92.2% from top, 7% from left",
+        "sizePct": 5,
+        "align": "left",
+        "treatment": "very small, light grey text",
+        "note": "Legal disclaimers and fine print."
+      }
+    ],
+    "typeScale": "headline ~8% of canvas height, offer headline ~2.3%, badge text ~2%, instructional text ~1.5%, fine print ~0.8%",
+    "colourBlocking": "The entire canvas is a stark white background, providing maximum contrast for black line art illustrations and text, with a single vibrant red circular badge serving as a high-impact accent color.",
+    "hierarchy": [
+      "headline",
+      "offer (Year Supply Bundle badge)",
+      "product (main bottle)",
+      "offer (BUY 3, GET 5 FREE)",
+      "other (process illustration)",
+      "product (array of bottles)",
+      "body (instructional grid)",
+      "body (product features on bottle)",
+      "caption (fine print)"
+    ],
+    "negativeSpace": "Ample white space surrounds all major elements, particularly in the top half and between sections, allowing each visual and text block to breathe and stand out without clutter, emphasizing clarity and focus.",
+    "eyePath": "Headline -> Year Supply Bundle badge -> Main Product -> Process Illustration (pour -> swish) -> Offer Headline (BUY 3, GET 5 FREE) -> Product Array -> Instructional Grid (left to right).",
+    "whyItWins": "The clear, illustrative, and segmented layout effectively communicates the product, its benefits, and a compelling offer through a logical visual flow, making complex information digestible.",
+    "productPresence": "hero",
+    "humanPresence": "face-crop",
+    "textDensity": "moderate",
+    "id": "hismile-1094417666418379-20-sep-2026",
+    "sourceFile": "hismile_1094417666418379_20-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "studio-product",
+    "gridDNA": "A top-heavy, centered text block is positioned above two distinct, angled product clusters in the mid-canvas, connected by a central graphic, all on a solid background with fine print at the bottom.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-center, starting 8% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "black, serif, normal weight, title case",
+        "note": "First line of a multi-line headline, smaller than the main headline."
+      },
+      {
+        "role": "headline",
+        "position": "center, below first headline, starting 12% from top",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "red, bold serif, all caps",
+        "note": "The dominant visual element of the headline, uses a period for emphasis."
+      },
+      {
+        "role": "subheadline",
+        "position": "center, below main headline, starting 24% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "black, serif, normal weight, lowercase",
+        "note": "Reinforces the main headline's message."
+      },
+      {
+        "role": "offer",
+        "position": "top-left of Product Group 1, starting 30% from top, 15% from left edge",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "white text on light grey pill shape with black outline, rotated -15 degrees",
+        "note": "Highlights the quantity for the first product bundle."
+      },
+      {
+        "role": "product",
+        "position": "mid-left, starting 35% from top, horizontally centered within left 40% of canvas",
+        "sizePct": 12,
+        "align": "left",
+        "treatment": "studio product shot, angled and overlapping",
+        "note": "Three bottles arranged dynamically, creating a sense of volume."
+      },
+      {
+        "role": "other",
+        "position": "mid-center, starting 55% from top, horizontally centered",
+        "sizePct": 0.5,
+        "align": "center",
+        "treatment": "black, bold, simple graphic",
+        "note": "Visually links the two product bundles."
+      },
+      {
+        "role": "offer",
+        "position": "top-right of Product Group 2, starting 30% from top, 15% from right edge",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "white text on black pill shape with black outline, rotated 15 degrees",
+        "note": "Highlights the bonus quantity for the second product bundle."
+      },
+      {
+        "role": "product",
+        "position": "mid-right, starting 35% from top, horizontally centered within right 40% of canvas",
+        "sizePct": 20,
+        "align": "right",
+        "treatment": "studio product shot, angled and overlapping",
+        "note": "Five bottles arranged dynamically, visually larger than the first group to emphasize 'free'."
+      },
+      {
+        "role": "body",
+        "position": "bottom-left, starting 90% from top, 5% from left edge",
+        "sizePct": 5,
+        "align": "left",
+        "treatment": "small black text, normal weight",
+        "note": "Legal disclaimers and offer details, low visual hierarchy."
+      }
+    ],
+    "typeScale": "headline ('IDIOT.') ~10% of canvas height, sub-headlines ~3%, offer badges ~3%, body ~1%",
+    "colourBlocking": "The entire canvas is a single, light, warm off-white/beige background color, with text and product colors providing the primary contrast.",
+    "hierarchy": [
+      "headline (IDIOT.)",
+      "product (5 free group)",
+      "product (Buy 3 group)",
+      "headline (Don't Be An)",
+      "subheadline",
+      "offer (5 free)",
+      "offer (Buy 3)",
+      "other (connector)",
+      "body"
+    ],
+    "negativeSpace": "Ample negative space surrounds the headline block and separates the two product groups, allowing key elements to breathe and stand out. The bottom 10% also provides clear separation for the fine print.",
+    "eyePath": "The eye is immediately drawn to the bold headline ('IDIOT.'), then moves to the left product group ('Buy 3'), across the connector to the larger right product group ('5 free'), then up to the smaller subheadline, and finally to the fine print at the bottom.",
+    "whyItWins": "The layout uses a provocative, high-contrast headline to immediately grab attention, followed by a clear, visually distinct presentation of a compelling bundle offer, creating a strong value proposition.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1094785449609586-24-sep-2026",
+    "sourceFile": "hismile_1094785449609586_24-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "Solid red background with a large, angled, multi-line headline at the top, a receding row of multiple products centered below, and a large, angled offer statement at the bottom, complemented by a circular badge in the top-right.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-centre, starting ~10% from top, angled up slightly to the right",
+        "sizePct": 18,
+        "align": "centre",
+        "treatment": "White, bold, sans-serif. Key numbers/words larger and contained within a red pill shape with white outline.",
+        "note": "Multi-line headline with dynamic sizing and container for emphasis on the core offer."
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, starting ~35% from top, centered horizontally, arranged in a receding line",
+        "sizePct": 35,
+        "align": "centre",
+        "treatment": "Studio-lit product photography, silver bottles with red caps.",
+        "note": "Multiple products shown in a group to imply quantity and a bundle. Small vertical text labels on individual bottles."
+      },
+      {
+        "role": "offer",
+        "position": "bottom-centre, starting ~78% from top, angled up slightly to the right",
+        "sizePct": 10,
+        "align": "centre",
+        "treatment": "White, bold, sans-serif, with a thick white outline.",
+        "note": "Acts as a clear, direct call to action and summary of the offer, mirroring the headline's angle."
+      },
+      {
+        "role": "badge",
+        "position": "top-right, starting ~20% from top, ~15% from right edge, circular",
+        "sizePct": 4,
+        "align": "centre",
+        "treatment": "Red circle with white, bold, uppercase, sans-serif text.",
+        "note": "Provides additional context or value proposition for the offer."
+      },
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "N/A",
+        "treatment": "Solid red.",
+        "note": "Provides high contrast for white text and product elements, likely a brand colour."
+      }
+    ],
+    "typeScale": "Headline's largest element (~15% of canvas height), bottom offer (~8%), headline's secondary elements (~5%), badge text (~2%), small product text (~1%).",
+    "colourBlocking": "The entire canvas is a solid red background, providing a high-contrast stage for white text elements and the silver/red product photography.",
+    "hierarchy": [
+      "headline",
+      "offer",
+      "product",
+      "badge"
+    ],
+    "negativeSpace": "Ample negative space in the top-left and bottom-left corners, and between the main text blocks and the product group. This breathing room allows the bold, angled text and prominent product display to stand out without clutter, enhancing immediate impact.",
+    "eyePath": "The eye is immediately drawn to the large, angled headline at the top-centre, then drops to the equally bold, angled offer at the bottom-centre, then moves up to scan the product group, and finally registers the badge in the top-right.",
+    "whyItWins": "This layout converts by using large, high-contrast, angled text elements to aggressively communicate a compelling offer, supported by a clear visual of the product quantity, all on a striking brand-colour background.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1383307873789152-21-sep-2026",
+    "sourceFile": "hismile_1383307873789152_21-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "1:1",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "A vibrant gradient background serves as the base, overlaid with scattered, angled product images acting as a textured backdrop. A dominant, multi-line headline is centrally placed, followed by two stacked, pill-shaped action steps, a concise body text block, and a large, distinct price offer anchored within a rounded white container at the bottom.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "gradient (pink to purple) with scattered, angled product images",
+        "note": "Product images are semi-transparent and serve as visual texture rather than focal points."
+      },
+      {
+        "role": "headline",
+        "position": "top-center, starting 25% from top",
+        "sizePct": 25,
+        "align": "center",
+        "treatment": "bold, uppercase, white text",
+        "note": "Multi-line, stacked for impact, occupying significant vertical space."
+      },
+      {
+        "role": "offer",
+        "position": "mid-center, starting 55% from top",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "white text on a rounded-rectangle (pill) background, dark purple",
+        "note": "First step-by-step instruction or benefit, acting as a callout."
+      },
+      {
+        "role": "offer",
+        "position": "mid-center, starting 60% from top, directly below the first offer pill",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "white text on a rounded-rectangle (pill) background, dark purple",
+        "note": "Second step-by-step instruction or benefit, reinforcing the process."
+      },
+      {
+        "role": "body",
+        "position": "mid-center, starting 68% from top",
+        "sizePct": 6,
+        "align": "center",
+        "treatment": "white text, regular weight",
+        "note": "Concise summary of the value proposition, positioned below the offers."
+      },
+      {
+        "role": "other",
+        "position": "bottom-center, starting 78% from top",
+        "sizePct": 17,
+        "align": "center",
+        "treatment": "rounded-rectangle, solid white fill",
+        "note": "A prominent container that anchors the main price offer at the bottom."
+      },
+      {
+        "role": "price",
+        "position": "bottom-center, starting 82% from top, inside white container",
+        "sizePct": 6,
+        "align": "center",
+        "treatment": "large, bold, gradient text (purple to pink)",
+        "note": "The primary call to action, highly prominent and visually distinct within its container."
+      }
+    ],
+    "typeScale": "headline (total) ~25% of canvas height, offer pill text ~4%, body text (total) ~6%, price text ~6%",
+    "colourBlocking": "Full-bleed gradient background (pink-purple). White text for headline, offers, and body. Dark purple rounded-rectangle pills. Large white rounded rectangle at the bottom for the price, which itself uses a gradient.",
+    "hierarchy": [
+      "headline",
+      "price",
+      "offer",
+      "body",
+      "background"
+    ],
+    "negativeSpace": "Minimal negative space, but the large headline and the white price block create strong visual anchors. The scattered background products allow the central text elements to stand out, and the space around the pills and body text provides necessary breathing room.",
+    "eyePath": "Headline (top-center) -> Offer pills (mid-center) -> Body text (mid-center) -> Price (bottom-center).",
+    "whyItWins": "The layout wins by using a bold, attention-grabbing headline, clear step-by-step offers, and a highly prominent, contrasting price block to guide the user directly to the value proposition and call to action.",
+    "productPresence": "cameo",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1398794972317562-30-aug-2026",
+    "sourceFile": "hismile_1398794972317562_30-Aug-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "studio-product",
+    "gridDNA": "Full-bleed textured background, a dominant left-aligned text column in the upper-left, a stylized product presentation with a human hand in the upper-right, and a secondary text line in the lower-left, with a fine print footer.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "textured velvet curtain",
+        "note": "provides a rich, deep, single-colour backdrop"
+      },
+      {
+        "role": "logo",
+        "position": "top-left, starting 3% from top, 5% from left",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "small, white, sans-serif, uppercase",
+        "note": "minimal brand presence, almost a watermark"
+      },
+      {
+        "role": "headline",
+        "position": "top-left, starting 20% from top, 8% from left",
+        "sizePct": 11,
+        "align": "left",
+        "treatment": "large, bold, white, sans-serif, sentence case",
+        "note": "occupies a significant portion of the left half, multi-line"
+      },
+      {
+        "role": "offer",
+        "position": "mid-left, starting 45% from top, 8% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "white text on a rounded-rectangle (pill) background, bold, sans-serif, sentence case",
+        "note": "acts as a prominent call-out for the deal"
+      },
+      {
+        "role": "product",
+        "position": "mid-right, starting 30% from top, extending to 90% from right",
+        "sizePct": 15,
+        "align": "right",
+        "treatment": "stylized gift bag with multiple product units spilling out",
+        "note": "visually balanced against the headline, occupies upper-right quadrant"
+      },
+      {
+        "role": "human",
+        "position": "upper-right, integrated with product, starting 28% from top",
+        "sizePct": 1,
+        "align": "right",
+        "treatment": "red gloved hand",
+        "note": "adds a human touch and implies gifting/receiving"
+      },
+      {
+        "role": "product",
+        "position": "mid-right, on the product bag, starting 48% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "dark text on a light pink circular badge, rotated slightly",
+        "note": "identifies the specific product bundle"
+      },
+      {
+        "role": "subheadline",
+        "position": "lower-left, starting 78% from top, 8% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "medium weight, white, sans-serif, sentence case",
+        "note": "engages the viewer with a question, reinforces the offer"
+      },
+      {
+        "role": "disclaimer",
+        "position": "bottom, starting 93% from top, 5% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "small, white, sans-serif, fine print",
+        "note": "legally required details, minimal visual impact"
+      }
+    ],
+    "typeScale": "headline ~14% of canvas height, subheadline ~5%, offer ~3.5%, product label ~3%, logo/disclaimer ~1%",
+    "colourBlocking": "The entire canvas is dominated by a deep, rich red/burgundy background. Text is primarily white. The offer pill is a distinct pink/red, and the product bag is light pink, creating a contrast against the background.",
+    "hierarchy": [
+      "headline",
+      "product",
+      "offer",
+      "subheadline",
+      "human",
+      "product",
+      "logo",
+      "disclaimer"
+    ],
+    "negativeSpace": "Ample negative space on the left side of the canvas around the headline and subheadline, allowing the text to breathe and stand out against the dark background. The right side is more occupied by the product, but the background still provides breathing room around it.",
+    "eyePath": "Logo -> Headline -> Offer -> Product -> Human -> Product Label -> Subheadline -> Disclaimer",
+    "whyItWins": "The clear left-aligned text hierarchy combined with a visually engaging, stylized product presentation on the right creates a balanced yet dynamic composition that guides the eye efficiently through the offer.",
+    "productPresence": "hero",
+    "humanPresence": "hands-only",
+    "textDensity": "moderate",
+    "id": "hismile-1486662106628907-24-sep-2026",
+    "sourceFile": "hismile_1486662106628907_24-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "4:5",
+    "styleFamily": "studio-product",
+    "gridDNA": "A dominant central product shot with a large, two-line headline anchored top-left, and a high-contrast offer badge positioned mid-left, all against a clean, light background with a dynamic foreground element.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "centre",
+        "treatment": "light gradient, subtle texture",
+        "note": "provides clean stage for product and text"
+      },
+      {
+        "role": "headline",
+        "position": "top-left, starting 10% from top, 10% from left",
+        "sizePct": 6,
+        "align": "left",
+        "treatment": "dark grey, sans-serif, regular weight, title case",
+        "note": "first line of a two-line headline"
+      },
+      {
+        "role": "subheadline",
+        "position": "below headline, left-aligned, starting 17% from top, 10% from left",
+        "sizePct": 4,
+        "align": "left",
+        "treatment": "bright accent colour, sans-serif, bold weight, lowercase",
+        "note": "punchy, contrasting second line of headline"
+      },
+      {
+        "role": "product",
+        "position": "vertically centred, horizontally offset 10% to the right of centre, base at 60% from top",
+        "sizePct": 15,
+        "align": "centre",
+        "treatment": "clean studio shot, prominent branding",
+        "note": "main hero product, stands tall"
+      },
+      {
+        "role": "product",
+        "position": "mid-left, behind offer badge, starting 35% from top, 5% from left",
+        "sizePct": 7,
+        "align": "left",
+        "treatment": "clean studio shot, stacked arrangement",
+        "note": "supports the bundle offer, secondary product display"
+      },
+      {
+        "role": "offer",
+        "position": "mid-left, above main offer text, starting 38% from top, 5% from left",
+        "sizePct": 2,
+        "align": "centre",
+        "treatment": "white text on solid accent colour pill-shaped container, uppercase",
+        "note": "introduces the offer context"
+      },
+      {
+        "role": "offer",
+        "position": "mid-left, below offer label, starting 43% from top, 5% from left",
+        "sizePct": 8,
+        "align": "centre",
+        "treatment": "white text on solid black rectangular container, bold, uppercase, large font",
+        "note": "the primary value proposition, high contrast"
+      },
+      {
+        "role": "other",
+        "position": "bottom-centre, starting 60% from top, spanning ~50% of canvas width",
+        "sizePct": 10,
+        "align": "centre",
+        "treatment": "realistic, slightly messy, contrasting colour",
+        "note": "adds a dynamic, relatable element, grounds the product"
+      },
+      {
+        "role": "caption",
+        "position": "bottom-left, starting 92% from top, 5% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "dark grey, very small font, regular weight",
+        "note": "standard legal disclaimer, minimal visual weight"
+      }
+    ],
+    "typeScale": "headline ~10% of canvas height, sub ~7%, offer text ~6%, offer label ~2%, legal ~1%",
+    "colourBlocking": "Top 20% is mostly negative space with dark text. Mid-section is dominated by the silver product and a strong red/black offer block. Bottom 40% is negative space with a brown foreground element and small legal text. The background is a consistent light neutral.",
+    "hierarchy": [
+      "offer",
+      "subheadline",
+      "headline",
+      "product",
+      "other",
+      "caption",
+      "background"
+    ],
+    "negativeSpace": "Significant negative space in the top-right and bottom-right, allowing the headline and product to breathe and stand out. The clean, light background emphasizes the foreground elements.",
+    "eyePath": "Headline -> Subheadline -> Offer Badge (text) -> Product (main) -> Product (bundle) -> Prop/Foreground Element -> Legal/Disclaimer",
+    "whyItWins": "The clear, bold problem/solution headline combined with an unmissable, high-value offer badge and a hero product shot creates immediate visual impact and communicates value quickly.",
+    "productPresence": "hero | secondary",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1597696618753434-17-sep-2026",
+    "sourceFile": "hismile_1597696618753434_17-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "1:1",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "A central, large, rounded-rectangle container with a soft gradient background, featuring a prominent testimonial quote and a circular human portrait and logo anchored at the bottom-left.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "soft gradient from light blue to light purple",
+        "note": "provides a subtle, modern backdrop"
+      },
+      {
+        "role": "other",
+        "position": "centred, occupying ~90% width and height",
+        "sizePct": 81,
+        "align": "centre",
+        "treatment": "solid white with rounded corners, subtle drop shadow/inner glow effect",
+        "note": "frames the testimonial content, creating focus"
+      },
+      {
+        "role": "other",
+        "position": "top-left within container, starting ~6% from top, 8% from left",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "large, bold, white quotation marks",
+        "note": "visually signals a direct quote"
+      },
+      {
+        "role": "headline",
+        "position": "top-left within container, below quote-device, starting ~18% from top, 10% from left",
+        "sizePct": 25,
+        "align": "left",
+        "treatment": "dark grey/black, bold, mixed case, sans-serif",
+        "note": "the primary message of the testimonial"
+      },
+      {
+        "role": "offer",
+        "position": "embedded within headline, starting ~35% from top, 10% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "dark grey/black, bold, mixed case, sans-serif, contained within a light grey/white rounded pill background",
+        "note": "draws attention to the key benefit/statistic"
+      },
+      {
+        "role": "human",
+        "position": "bottom-right within container, starting ~60% from top, 60% from left",
+        "sizePct": 3,
+        "align": "centre",
+        "treatment": "circular headshot, white stroke border",
+        "note": "adds a personal, trustworthy face to the testimonial"
+      },
+      {
+        "role": "proof",
+        "position": "bottom-left within container, starting ~65% from top, 10% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "dark grey/black, mixed case, sans-serif, name bolder than title",
+        "note": "identifies the person giving the testimonial"
+      },
+      {
+        "role": "logo",
+        "position": "bottom-left within container, starting ~80% from top, 10% from left",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "brand-specific logo, colour",
+        "note": "identifies the company associated with the testimonial"
+      }
+    ],
+    "typeScale": "headline ~12% of canvas height, proof name ~4%, proof title ~2.5%",
+    "colourBlocking": "The canvas is dominated by a soft gradient background. A large, central white rounded rectangle contains all primary content. Text is dark, with one specific element highlighted by a light pill background. The human portrait adds a natural skin tone and clothing.",
+    "hierarchy": [
+      "headline",
+      "human",
+      "offer",
+      "proof",
+      "logo",
+      "other (quote-device)"
+    ],
+    "negativeSpace": "Ample negative space within the white container, especially around the quote and between the quote and the bottom elements. This allows the text and human face to breathe and stand out, making the ad feel clean and uncluttered.",
+    "eyePath": "Quote device -> Headline (main text) -> Highlighted offer -> Human face (smile) -> Proof (name) -> Logo.",
+    "whyItWins": "This layout wins by clearly presenting a strong, quantifiable benefit from a credible human source within a clean, focused design, leveraging social proof and a clear value proposition.",
+    "productPresence": "none",
+    "humanPresence": "face-crop",
+    "textDensity": "moderate",
+    "id": "hismile-1688897022338939-29-jun-2026",
+    "sourceFile": "hismile_1688897022338939_29-Jun-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "illustration",
+    "gridDNA": "A large, full-bleed cartoon illustration occupies the top ~68% of the canvas, depicting a narrative scene with two characters. The bottom ~32% is a prominent, angled solid red colour block containing the main offer headline, subheadline, and a hero product shot, with a small legal disclaimer at the very bottom.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "cartoon illustration",
+        "note": "depicts a narrative scene with two characters interacting, setting up the offer"
+      },
+      {
+        "role": "other",
+        "position": "top-left, starting 12% from top, 10% from left",
+        "sizePct": 8,
+        "align": "center",
+        "treatment": "black text, bold, uppercase, inside white speech bubble with black stroke",
+        "note": "dialogue from the left character, part of the narrative"
+      },
+      {
+        "role": "other",
+        "position": "top-right, starting 10% from top, 50% from left",
+        "sizePct": 8,
+        "align": "center",
+        "treatment": "black text, bold, uppercase, inside white speech bubble with black stroke",
+        "note": "dialogue from the right character, part of the narrative"
+      },
+      {
+        "role": "background",
+        "position": "bottom, starting ~68% from top, angled up from left to right",
+        "sizePct": 32,
+        "align": "none",
+        "treatment": "solid red colour block",
+        "note": "serves as a strong visual anchor for the offer and product, creating a clear break from the illustration"
+      },
+      {
+        "role": "headline",
+        "position": "bottom-left of red block, starting ~72% from top, 10% from left",
+        "sizePct": 10,
+        "align": "left",
+        "treatment": "white text, very bold, uppercase",
+        "note": "primary offer statement, highly prominent"
+      },
+      {
+        "role": "subheadline",
+        "position": "below headline, starting ~85% from top, 10% from left",
+        "sizePct": 4,
+        "align": "left",
+        "treatment": "white text, bold, title case",
+        "note": "clarifies the offer details"
+      },
+      {
+        "role": "product",
+        "position": "bottom-right of red block, starting ~65% from top, 65% from left, angled slightly",
+        "sizePct": 15,
+        "align": "right",
+        "treatment": "photorealistic product shot, slightly angled",
+        "note": "overlaps the red block and the illustration slightly, providing visual depth"
+      },
+      {
+        "role": "body",
+        "position": "bottom-most, starting ~95% from top, 5% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "small black text",
+        "note": "legal disclaimer/fine print"
+      }
+    ],
+    "typeScale": "headline (offer) ~10% of canvas height, subheadline (offer) ~4%, dialogue bubbles ~8%, body (disclaimer) ~2%",
+    "colourBlocking": "Top ~68% is a light, illustrated background with varied colours. Bottom ~32% is a solid, vibrant red block, angled, providing high contrast for the offer text and product.",
+    "hierarchy": [
+      "headline",
+      "product",
+      "other",
+      "subheadline",
+      "background",
+      "body"
+    ],
+    "negativeSpace": "Ample negative space around the characters in the top illustration, particularly in the top-left and top-right, allowing the dialogue bubbles to stand out and the narrative to breathe. The red offer block is dense but uses high contrast for readability.",
+    "eyePath": "Left character's speech bubble -> Right character's speech bubble -> Offer Headline -> Product -> Offer Subheadline -> Disclaimer.",
+    "whyItWins": "The layout effectively uses an engaging narrative illustration to capture initial attention, then transitions sharply to a high-contrast, prominent offer block with a clear product visual, creating a strong and memorable value proposition.",
+    "productPresence": "hero",
+    "humanPresence": "full-body",
+    "textDensity": "moderate",
+    "id": "hismile-1766453347891071-26-sep-2026",
+    "sourceFile": "hismile_1766453347891071_26-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "3:5",
+    "styleFamily": "illustration",
+    "gridDNA": "A two-part vertical layout featuring a full-bleed cartoon illustration in the top 65% and a solid color band with product and offer text in the bottom 25%, separated by a small white margin at the very bottom for legal text.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "top-left, starting 0% from top",
+        "sizePct": 65,
+        "align": "left",
+        "treatment": "full-bleed cartoon illustration",
+        "note": "The primary visual narrative, occupying the majority of the canvas."
+      },
+      {
+        "role": "headline",
+        "position": "top-left, starting 10% from top, 5% from left",
+        "sizePct": 2.5,
+        "align": "left",
+        "treatment": "black text, bold, inside white speech bubble, uppercase",
+        "note": "First narrative element, drawing attention to the 'problem'."
+      },
+      {
+        "role": "headline",
+        "position": "top-center, starting 15% from top, 35% from left",
+        "sizePct": 1.6,
+        "align": "center",
+        "treatment": "black text, bold, inside white speech bubble, uppercase",
+        "note": "Second narrative element, building tension."
+      },
+      {
+        "role": "headline",
+        "position": "top-right, starting 10% from top, 60% from left",
+        "sizePct": 2.5,
+        "align": "right",
+        "treatment": "black text, bold, inside white speech bubble, uppercase",
+        "note": "Third narrative element, revealing the 'solution' or 'deal' within the story."
+      },
+      {
+        "role": "product",
+        "position": "mid-right, starting 35% from top, 60% from left",
+        "sizePct": 2,
+        "align": "right",
+        "treatment": "multiple product units, illustrated",
+        "note": "Product integrated into the narrative scene, held by a character."
+      },
+      {
+        "role": "offer",
+        "position": "bottom-center, starting 65% from top",
+        "sizePct": 25,
+        "align": "center",
+        "treatment": "solid red colour block, full width",
+        "note": "A strong, contrasting band for the main offer."
+      },
+      {
+        "role": "product",
+        "position": "bottom-left, starting 60% from top, 5% from left",
+        "sizePct": 2.5,
+        "align": "left",
+        "treatment": "single product unit, photo-realistic",
+        "note": "Hero product shot, slightly overlapping the illustration and the offer band."
+      },
+      {
+        "role": "headline",
+        "position": "bottom-center, starting 70% from top, 20% from left",
+        "sizePct": 7,
+        "align": "left",
+        "treatment": "white text, very bold, no container, mixed case",
+        "note": "The primary call-to-value, large and prominent on the red band."
+      },
+      {
+        "role": "subheadline",
+        "position": "bottom-center, starting 80% from top, 20% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "white text, medium weight, no container, mixed case",
+        "note": "Clarifies the main offer with additional detail."
+      },
+      {
+        "role": "caption",
+        "position": "bottom-left, starting 92% from top, 5% from left",
+        "sizePct": 4.5,
+        "align": "left",
+        "treatment": "black text, light weight, no container, mixed case",
+        "note": "Legal disclaimer/fine print, small and unobtrusive."
+      }
+    ],
+    "typeScale": "headline (offer) ~10% of canvas height, subheadline ~5%, body (speech bubbles) ~8-10%, caption ~2%",
+    "colourBlocking": "Top 65% is a detailed, multi-colour illustration; bottom 25% is a solid red band; the very bottom 10% is a white background for legal text.",
+    "hierarchy": [
+      "offer",
+      "background",
+      "headline",
+      "product",
+      "subheadline",
+      "caption"
+    ],
+    "negativeSpace": "Strategic negative space within the illustration allows characters and speech bubbles to stand out. The white space below the red offer band provides a clean break for the disclaimer, preventing visual clutter.",
+    "eyePath": "The eye is first drawn to the action and faces in the top illustration, then follows the speech bubbles from left to right, before dropping down to the large, bold offer on the red band, then to the hero product, and finally the subheadline.",
+    "whyItWins": "The layout effectively uses a two-tier structure to first engage with a relatable, humorous narrative and then immediately deliver a clear, high-impact offer, creating a strong emotional and logical hook.",
+    "productPresence": "hero",
+    "humanPresence": "full-body",
+    "textDensity": "moderate",
+    "id": "hismile-1775721163666999-23-sep-2026",
+    "sourceFile": "hismile_1775721163666999_23-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "studio-product",
+    "gridDNA": "a clean, vertically stacked layout featuring a top-aligned headline and subheadline, two distinct product clusters floating symmetrically in the mid-canvas, a central divider, and a prominent call-to-action button at the bottom, all on a solid, light background.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-centre, starting 10% from top",
+        "sizePct": 6,
+        "align": "centre",
+        "treatment": "large, bold, sans-serif, orange text",
+        "note": "occupies approximately 80% of canvas width"
+      },
+      {
+        "role": "subheadline",
+        "position": "below headline, centre-aligned, starting 19% from top",
+        "sizePct": 2,
+        "align": "centre",
+        "treatment": "medium, regular weight, sans-serif, dark grey text",
+        "note": "occupies approximately 60% of canvas width"
+      },
+      {
+        "role": "product",
+        "position": "mid-left, starting 28% from top",
+        "sizePct": 16,
+        "align": "left",
+        "treatment": "three product bottles, angled and clustered, with a black speech bubble badge 'buy 3' floating above them",
+        "note": "the cluster occupies roughly 40% of canvas width and 35% of canvas height"
+      },
+      {
+        "role": "product",
+        "position": "mid-right, starting 28% from top",
+        "sizePct": 20,
+        "align": "right",
+        "treatment": "five product bottles, angled and clustered, with a black speech bubble badge '5 free' floating above them and a circular yellow badge 'THE YEAR SUPPLY BUNDLE' anchored to the bottom-right of the cluster",
+        "note": "the cluster occupies roughly 45% of canvas width and 40% of canvas height"
+      },
+      {
+        "role": "other",
+        "position": "mid-centre, starting 45% from top",
+        "sizePct": 1,
+        "align": "centre",
+        "treatment": "large plus symbol icon",
+        "note": "acts as a visual divider between the two product clusters"
+      },
+      {
+        "role": "cta",
+        "position": "bottom-centre, starting 75% from top",
+        "sizePct": 4,
+        "align": "centre",
+        "treatment": "rounded pill-shaped button, light grey background, dark grey text, green phone icon on left",
+        "note": "button occupies approximately 50% of canvas width"
+      },
+      {
+        "role": "caption",
+        "position": "bottom-left, starting 90% from top",
+        "sizePct": 5,
+        "align": "left",
+        "treatment": "small, regular weight, sans-serif, dark grey text",
+        "note": "occupies approximately 90% of canvas width, acts as legal disclaimer"
+      },
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "centre",
+        "treatment": "solid light beige/off-white colour",
+        "note": "provides a clean, neutral canvas for all elements"
+      }
+    ],
+    "typeScale": "headline ~8% of canvas height, sub ~3%, body/caption ~1-2%",
+    "colourBlocking": "the canvas is a single, solid light background colour, with text elements in orange and dark grey, and product elements introducing silver, red, and yellow accents, along with black speech bubble badges.",
+    "hierarchy": [
+      "headline",
+      "product",
+      "cta",
+      "subheadline",
+      "other",
+      "caption"
+    ],
+    "negativeSpace": "Ample negative space surrounds the headline, subheadline, and especially the product clusters, allowing them to 'float' and stand out. The space around the CTA also gives it prominence. This breathing room prevents visual clutter.",
+    "eyePath": "headline -> subheadline -> left product cluster (buy 3) -> right product cluster (5 free + bundle badge) -> cta -> caption",
+    "whyItWins": "The clear, symmetrical vertical stacking of a problem-oriented headline, a value-driven product comparison, and a direct call-to-action creates a logical and easy-to-follow conversion path.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1797690474770856-23-sep-2026",
+    "sourceFile": "hismile_1797690474770856_23-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "4:5",
+    "styleFamily": "studio-product",
+    "gridDNA": "A dominant vertical product shot occupies the left column, while a multi-sectioned text column with associated visual proof elements fills the right. A distinct dark horizontal band at the bottom houses a sub-headline, a row of smaller proof images, a retailer logo, and a prominent CTA button, all against a solid background with a small disclaimer at the very bottom.",
+    "zones": [
+      {
+        "role": "logo",
+        "position": "top-left, starting 3% from top, 5% from left",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "white text on red background for primary mark, white text for secondary",
+        "note": "small brand logo"
+      },
+      {
+        "role": "headline",
+        "position": "top-left, right of logo, starting 3% from top, 17% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "white, bold, uppercase, with a dash separator",
+        "note": "primary product/benefit headline"
+      },
+      {
+        "role": "product",
+        "position": "left column, centered vertically within the top 70% of the canvas, starting 15% from top, 5% from left",
+        "sizePct": 14,
+        "align": "left",
+        "treatment": "studio product shot, full bottle",
+        "note": "dominant visual element on the left"
+      },
+      {
+        "role": "body",
+        "position": "right of product, starting 18% from top, 35% from left",
+        "sizePct": 26,
+        "align": "left",
+        "treatment": "white text, varying weights (bold for mini-headlines, regular for body), no container",
+        "note": "structured as a list of benefits with explanations, connected by lines to proof"
+      },
+      {
+        "role": "proof",
+        "position": "top-right, starting 25% from top, 55% from left",
+        "sizePct": 8,
+        "align": "center",
+        "treatment": "photo, circular crop, with graphic lines connecting to body text",
+        "note": "primary visual proof, highly prominent"
+      },
+      {
+        "role": "subheadline",
+        "position": "bottom-center, within a dark band, starting 75% from top",
+        "sizePct": 2,
+        "align": "center",
+        "treatment": "white, bold, uppercase, with one word highlighted in red",
+        "note": "acts as a bridge to the smaller proof images"
+      },
+      {
+        "role": "proof",
+        "position": "bottom-center, below sub-headline, starting 80% from top",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "photos, circular crop, arranged in a horizontal row of three",
+        "note": "secondary visual proof, reinforcing the main proof"
+      },
+      {
+        "role": "logo",
+        "position": "bottom-left, below proof images, starting 88% from top, 10% from left",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "brand logo, multi-colour",
+        "note": "retailer endorsement logo"
+      },
+      {
+        "role": "cta",
+        "position": "bottom-right, below proof images, starting 88% from top, 55% from left",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "blue pill-shaped button, white bold text",
+        "note": "clear call to action"
+      },
+      {
+        "role": "caption",
+        "position": "very bottom, full width, starting 95% from top",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "small white text",
+        "note": "legal disclaimer"
+      }
+    ],
+    "typeScale": "headline ~5% of canvas height, sub-headline ~3.5%, mini-headlines ~3%, body ~2%, disclaimer ~1%",
+    "colourBlocking": "top 72% is solid red, bottom 23% is a solid dark blue/black band, very bottom 5% is solid red again for the disclaimer",
+    "hierarchy": [
+      "product",
+      "headline",
+      "proof (large circular image)",
+      "body (mini-headlines)",
+      "cta",
+      "subheadline",
+      "body (supporting text)",
+      "proof (row of 3 images)",
+      "logo (retailer)",
+      "logo (small brand)",
+      "caption"
+    ],
+    "negativeSpace": "Ample solid red background provides breathing room around the product, headline, and body text, making them stand out. The dark bottom band also uses negative space to clearly frame the action-oriented elements.",
+    "eyePath": "The eye starts at the top-left brand logo and headline, moves down to the dominant product bottle, then across to the structured body copy and the large visual proof graphic. It then drops to the sub-headline, scans the row of smaller proof images, and finally lands on the prominent CTA button.",
+    "whyItWins": "The layout effectively combines a hero product shot with structured, benefit-driven copy and compelling visual proof, guiding the eye directly to a clear call to action within a distinct action zone.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1967046580626076-31-aug-2026",
+    "sourceFile": "hismile_1967046580626076_31-Aug-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "A vertical stack of distinct content blocks: a two-line headline, a horizontal product comparison section with associated badges and a connector, a two-line offer statement, and a bottom call-to-action band with fine print. The background is a solid color with a contrasting bottom band.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-left, starting 7% from top, 8% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "black, bold, sans-serif, normal case",
+        "note": "First line of a two-line headline."
+      },
+      {
+        "role": "headline",
+        "position": "below previous headline, left-aligned, starting 12% from top, 8% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "red, bold, serif, normal case",
+        "note": "Second line of a two-line headline, visually distinct."
+      },
+      {
+        "role": "offer",
+        "position": "above Product Group 1, centered horizontally above its group, starting 23% from top",
+        "sizePct": 0,
+        "align": "center",
+        "treatment": "white pill background with black outline, black text, normal case",
+        "note": "Badge associated with the first product group."
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, left-aligned within its horizontal section, starting 28% from top, 10% from left",
+        "sizePct": 8,
+        "align": "center",
+        "treatment": "studio shot, outlined",
+        "note": "Group of 3 identical products."
+      },
+      {
+        "role": "other",
+        "position": "horizontal center, between product groups, starting 35% from top",
+        "sizePct": 0,
+        "align": "center",
+        "treatment": "black, bold",
+        "note": "Visually connects the two product groups."
+      },
+      {
+        "role": "offer",
+        "position": "above Product Group 2, centered horizontally above its group, starting 23% from top",
+        "sizePct": 0,
+        "align": "center",
+        "treatment": "green pill background with black outline, white text, normal case",
+        "note": "Badge associated with the second product group."
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, right-aligned within its horizontal section, starting 28% from top, 10% from right",
+        "sizePct": 10,
+        "align": "center",
+        "treatment": "studio shot, outlined",
+        "note": "Group of 5 identical products, slightly overlapping."
+      },
+      {
+        "role": "subheadline",
+        "position": "below product groups, centered, starting 55% from top",
+        "sizePct": 2,
+        "align": "center",
+        "treatment": "black, normal weight, sans-serif, normal case",
+        "note": "Introduces the main offer."
+      },
+      {
+        "role": "offer",
+        "position": "below subheadline, centered, starting 60% from top",
+        "sizePct": 6,
+        "align": "center",
+        "treatment": "large, green outline, black fill, bold, sans-serif, uppercase",
+        "note": "The primary call-to-value, highly prominent."
+      },
+      {
+        "role": "background",
+        "position": "bottom 20% of canvas, starting 80% from top",
+        "sizePct": 20,
+        "align": "none",
+        "treatment": "solid bright green fill",
+        "note": "Distinct colour block for the call to action."
+      },
+      {
+        "role": "cta",
+        "position": "centered within the green band, starting 85% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "black, normal weight, sans-serif, normal case",
+        "note": "The actionable text for the call to action."
+      },
+      {
+        "role": "caption",
+        "position": "bottom-left, starting 92% from top, 8% from left",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "small, black, light weight, sans-serif, normal case",
+        "note": "Legal disclaimers or fine print."
+      }
+    ],
+    "typeScale": "headline (red) ~6% of canvas height, headline (black) ~5%, offer (green) ~8%, subheadline/cta ~3%, fine print ~1.5%",
+    "colourBlocking": "Top 80% light grey solid background, bottom 20% bright green solid background band.",
+    "hierarchy": [
+      "offer (green text)",
+      "headline (red)",
+      "product (5 items)",
+      "product (3 items)",
+      "headline (black)",
+      "cta",
+      "subheadline",
+      "offer (green badge)",
+      "offer (white badge)",
+      "other (plus device)",
+      "caption"
+    ],
+    "negativeSpace": "Ample negative space around the headline and between the product groups, allowing each element to stand out clearly and preventing visual clutter, especially around the main offer text.",
+    "eyePath": "Headline (red) -> Offer (green text) -> Product Group 2 (5 Free) -> Product Group 1 (Buy 3) -> CTA Text.",
+    "whyItWins": "The clear visual comparison of product quantities combined with a highly contrasting, oversized offer statement immediately communicates value and urgency.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-1974651150134539-24-sep-2026",
+    "sourceFile": "hismile_1974651150134539_24-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "studio-product",
+    "gridDNA": "Flat-lay arrangement of two distinct product groups on a natural grass background, each associated with a handwritten sticky note, all positioned above a prominent, centrally-aligned text block with a dark gradient overlay at the bottom.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "none",
+        "treatment": "natural grass texture",
+        "note": "provides a natural, slightly informal context"
+      },
+      {
+        "role": "product",
+        "position": "top-left, starting 8% from top, 14% from left",
+        "sizePct": 10,
+        "align": "left",
+        "treatment": "vertical arrangement of 3 identical bottles",
+        "note": "represents the 'paid' portion of the offer"
+      },
+      {
+        "role": "offer",
+        "position": "top-right, starting 12% from top, ending 21% from right",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "yellow sticky note with handwritten text and arrow",
+        "note": "visually links to the top-left product group, indicating the 'buy' quantity"
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, starting 38% from top, 14% from left",
+        "sizePct": 16,
+        "align": "left",
+        "treatment": "vertical arrangement of 5 identical bottles",
+        "note": "represents the 'free' portion of the offer"
+      },
+      {
+        "role": "offer",
+        "position": "mid-left, starting 40% from top, 21% from left",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "yellow sticky note with handwritten text and arrow",
+        "note": "visually links to the mid-canvas product group, indicating the 'free' quantity"
+      },
+      {
+        "role": "background",
+        "position": "bottom 35% of canvas, starting 65% from top",
+        "sizePct": 35,
+        "align": "none",
+        "treatment": "dark gradient overlay, fading into the grass",
+        "note": "provides contrast and readability for the text block"
+      },
+      {
+        "role": "headline",
+        "position": "bottom-middle, starting 68% from top",
+        "sizePct": 7,
+        "align": "center",
+        "treatment": "large, bold, white sans-serif text, all caps, on dark overlay",
+        "note": "summarizes the core offer with high impact"
+      },
+      {
+        "role": "offer",
+        "position": "below headline, starting 77% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "smaller, white sans-serif text, mixed case, on dark overlay",
+        "note": "provides context for the headline offer"
+      },
+      {
+        "role": "caption",
+        "position": "bottom-most, starting 92% from top",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "tiny, white sans-serif text, mixed case, on dark overlay",
+        "note": "essential legal fine print"
+      }
+    ],
+    "typeScale": "headline ~8% of canvas height, subheadline ~2.5%, legal ~1.2%",
+    "colourBlocking": "Top 65% features a natural green grass background with products and yellow sticky notes. The bottom 35% is a dark, semi-transparent gradient overlay providing a high-contrast backdrop for white text.",
+    "hierarchy": [
+      "headline",
+      "product",
+      "offer",
+      "subheadline",
+      "caption"
+    ],
+    "negativeSpace": "Ample negative space around the product groups and sticky notes on the grass background, allowing each element to stand out. The dark text block at the bottom also uses negative space effectively around the headline for impact.",
+    "eyePath": "Top-left product group -> top-right sticky note -> mid-left sticky note -> mid-canvas product group -> large headline -> subheadline -> legal text.",
+    "whyItWins": "The clear visual distinction between 'buy' and 'get free' product quantities, reinforced by handwritten notes, immediately communicates a compelling value proposition before the main headline confirms the offer.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-2007138676656982-21-sep-2026",
+    "sourceFile": "hismile_2007138676656982_21-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "A vertically stacked, symmetrical layout on a light grey background, featuring two distinct product groupings flanked by offer badges, with a strong headline stack at the top and a prominent call-to-action block at the bottom on a contrasting green background.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-centre, starting 6% from top",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "black, bold, sans-serif, normal case",
+        "note": "First line of a two-line headline, left-aligned within a centered block."
+      },
+      {
+        "role": "headline",
+        "position": "top-centre, starting 11% from top",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "red, bold, serif, normal case",
+        "note": "Second line of a two-line headline, visually distinct in colour and font, left-aligned within a centered block."
+      },
+      {
+        "role": "offer",
+        "position": "top-left of product group 1, starting 20% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "black text in white pill with black stroke",
+        "note": "Small offer badge positioned above and slightly to the left of the first product group."
+      },
+      {
+        "role": "offer",
+        "position": "top-right of product group 2, starting 20% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "black text in bright green pill with green stroke",
+        "note": "Small offer badge positioned above and slightly to the right of the second product group, using a contrasting colour."
+      },
+      {
+        "role": "product",
+        "position": "left-centre, starting 25% from top",
+        "sizePct": 9,
+        "align": "left",
+        "treatment": "studio product shot, outlined, stacked vertically",
+        "note": "Group of three product bottles, left-aligned in the central product section."
+      },
+      {
+        "role": "product",
+        "position": "right-centre, starting 25% from top",
+        "sizePct": 9,
+        "align": "right",
+        "treatment": "studio product shot, outlined, stacked vertically",
+        "note": "Group of five product bottles, right-aligned in the central product section."
+      },
+      {
+        "role": "other",
+        "position": "centre, between product groups, starting 38% from top",
+        "sizePct": 1,
+        "align": "center",
+        "treatment": "black, bold, sans-serif",
+        "note": "A plus sign acting as a visual connector between the two product offers."
+      },
+      {
+        "role": "subheadline",
+        "position": "centre, below product groups, starting 55% from top",
+        "sizePct": 2,
+        "align": "center",
+        "treatment": "black, normal weight, sans-serif, normal case",
+        "note": "Introductory text for the main offer, centered."
+      },
+      {
+        "role": "offer",
+        "position": "centre, below subheadline, starting 60% from top",
+        "sizePct": 4,
+        "align": "center",
+        "treatment": "bright green, bold, outlined, all caps",
+        "note": "Highly emphasized offer text, using strong colour and outline for urgency."
+      },
+      {
+        "role": "cta",
+        "position": "centre, within green background block, starting 78% from top",
+        "sizePct": 2,
+        "align": "center",
+        "treatment": "black, bold, sans-serif, normal case, with arrow device",
+        "note": "Call to action text placed centrally on the contrasting green background block."
+      },
+      {
+        "role": "caption",
+        "position": "bottom-left, starting 90% from top",
+        "sizePct": 6,
+        "align": "left",
+        "treatment": "tiny, black, light weight, sans-serif",
+        "note": "Legal fine print or disclaimers, occupying the bottom portion of the canvas."
+      }
+    ],
+    "typeScale": "headline ~4% of canvas height, subheadline ~3-5%, offer badges ~2%, cta ~3%, legal ~1%",
+    "colourBlocking": "Top 75% of the canvas is a solid light grey background, while the bottom 25% is a solid bright green background, creating a distinct visual anchor for the CTA.",
+    "hierarchy": [
+      "headline",
+      "product",
+      "offer",
+      "cta",
+      "subheadline",
+      "caption",
+      "other"
+    ],
+    "negativeSpace": "Generous negative space surrounds the headline stack and separates the product groups, enhancing readability and allowing key elements to stand out. Significant breathing room within the bottom green block ensures the CTA is highly visible.",
+    "eyePath": "The eye is drawn from the bold headlines at the top, down to the two distinct product groupings and their associated offer badges, then to the emphasized green offer text, and finally to the prominent CTA on the contrasting background.",
+    "whyItWins": "The layout wins by clearly segmenting a complex offer into easily digestible visual blocks, using strong colour contrast and distinct typography to guide the eye directly to the value proposition and call to action.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-2479587195865352-24-sep-2026",
+    "sourceFile": "hismile_2479587195865352_24-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "1:1",
+    "styleFamily": "flat-graphic",
+    "gridDNA": "A solid vibrant blue background with a dominant left-aligned text block in the top-left quadrant, a hero product shot angled in the mid-right, a prominent call-to-action button below the main text, and a distinct footer band containing secondary brand information and a disclaimer.",
+    "zones": [
+      {
+        "role": "background",
+        "position": "full-bleed",
+        "sizePct": 100,
+        "align": "N/A",
+        "treatment": "solid vibrant blue",
+        "note": "Primary canvas colour"
+      },
+      {
+        "role": "headline",
+        "position": "top-left, starting 10% from top, 8% from left",
+        "sizePct": 10,
+        "align": "left",
+        "treatment": "bold, sans-serif, white, no container, title case",
+        "note": "Multi-line, primary offer statement"
+      },
+      {
+        "role": "subheadline",
+        "position": "below headline, starting 30% from top, 8% from left",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "regular weight, sans-serif, white, no container, title case",
+        "note": "Clarifies offer context"
+      },
+      {
+        "role": "product",
+        "position": "mid-right, starting 35% from top, 40% from left, angled upwards",
+        "sizePct": 25,
+        "align": "N/A",
+        "treatment": "clean studio shot, isolated, light purple product and packaging",
+        "note": "Product and its packaging, angled for dynamism"
+      },
+      {
+        "role": "cta",
+        "position": "mid-left, starting 65% from top, 8% from left",
+        "sizePct": 5,
+        "align": "centre",
+        "treatment": "pill-shaped button, solid terracotta background, white bold sans-serif text, title case",
+        "note": "Clear, actionable button"
+      },
+      {
+        "role": "body",
+        "position": "bottom-left, starting 85% from top, 8% from left",
+        "sizePct": 4,
+        "align": "left",
+        "treatment": "bold, sans-serif, dark blue, no container, title case",
+        "note": "Secondary brand/location information"
+      },
+      {
+        "role": "logo",
+        "position": "bottom-right, starting 85% from top, 70% from left",
+        "sizePct": 3,
+        "align": "right",
+        "treatment": "graphic logo, dark blue",
+        "note": "Secondary brand identifier"
+      },
+      {
+        "role": "caption",
+        "position": "bottom-left, starting 95% from top, 8% from left",
+        "sizePct": 1,
+        "align": "left",
+        "treatment": "very small, regular weight, dark blue, no container, sentence case",
+        "note": "Legal fine print/disclaimer"
+      }
+    ],
+    "typeScale": "headline ~10-12% of canvas height, sub ~3-4%, body ~4%, caption ~1%",
+    "colourBlocking": "Full-bleed solid vibrant blue for the top ~80% of the canvas, with an implied white/light footer band at the bottom ~20% where dark text is placed. The CTA button is a distinct terracotta colour.",
+    "hierarchy": [
+      "headline",
+      "product",
+      "cta",
+      "body",
+      "subheadline",
+      "logo",
+      "caption"
+    ],
+    "negativeSpace": "Ample negative space in the top-right and bottom-left (above footer) allows the headline and product to breathe and stand out, creating a clean, uncluttered feel. The blue background itself is a large negative space.",
+    "eyePath": "Headline (top-left) -> Product (mid-right) -> CTA (mid-left) -> Footer text (bottom-left).",
+    "whyItWins": "The clear visual hierarchy, strong contrast, and strategic placement of the offer, product, and call-to-action create an immediate understanding of value and a direct path to conversion.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-2520029418399944-4-may-2026",
+    "sourceFile": "hismile_2520029418399944_4-May-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "studio-product",
+    "gridDNA": "A strong central vertical axis is formed by stacked offer headlines, followed by a fanned, symmetrical arrangement of product bottles. Diagonal sale banners frame the top and bottom of the canvas, creating a dynamic border.",
+    "zones": [
+      {
+        "role": "offer",
+        "position": "top-left to top-right, diagonal, starting 0% from top",
+        "sizePct": 5,
+        "align": "left",
+        "treatment": "yellow ribbon with repeating text and star icons",
+        "note": "repeating diagonal banner, partially obscured by product elements behind it"
+      },
+      {
+        "role": "offer",
+        "position": "top-centre, starting 15% from top",
+        "sizePct": 2,
+        "align": "centre",
+        "treatment": "light blue, sans-serif, uppercase, medium weight",
+        "note": "first line of the main offer, smaller than subsequent lines"
+      },
+      {
+        "role": "offer",
+        "position": "centre, starting 20% from top",
+        "sizePct": 12,
+        "align": "centre",
+        "treatment": "red, balloon-style 3D text, sans-serif, uppercase, bold",
+        "note": "visually dominant part of the offer, distinct texture and colour"
+      },
+      {
+        "role": "offer",
+        "position": "mid-centre, starting 38% from top",
+        "sizePct": 7,
+        "align": "centre",
+        "treatment": "bright blue, sans-serif, uppercase, bold",
+        "note": "emphasizes the 'free' aspect, distinct colour from other headlines"
+      },
+      {
+        "role": "product",
+        "position": "bottom-centre, starting 48% from top",
+        "sizePct": 36,
+        "align": "centre",
+        "treatment": "multiple product bottles arranged in a fanned, slightly curved line, with one central hero product slightly larger and forward",
+        "note": "symmetrical arrangement creating depth, with a clear hero product in the foreground"
+      },
+      {
+        "role": "badge",
+        "position": "overlaid on hero product, bottom-right of centre, starting 60% from top",
+        "sizePct": 1,
+        "align": "centre",
+        "treatment": "circular yellow badge with dark text, sans-serif, uppercase, bold",
+        "note": "highlights a specific value proposition for the product bundle, placed on the hero product"
+      },
+      {
+        "role": "offer",
+        "position": "bottom-left to bottom-right, diagonal, starting 88% from top",
+        "sizePct": 5,
+        "align": "left",
+        "treatment": "yellow ribbon with repeating text and star icons",
+        "note": "repeating diagonal banner, mirrors the top banner"
+      },
+      {
+        "role": "body",
+        "position": "bottom-left, starting 94% from top",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "small, dark grey, sans-serif, regular weight",
+        "note": "legal or offer details in fine print"
+      }
+    ],
+    "typeScale": "Headline (balloon style) ~15% of canvas height, Headline (blue 'FREE') ~10%, Headline (blue 'BUY 3') ~3%, Banner text ~3%, Badge text ~2%, Disclaimer text ~1%",
+    "colourBlocking": "Top and bottom diagonal yellow banners frame the white background. The main offer text uses bright red and blue, contrasting sharply with the white. Products are silver with red accents, grounding the bottom half.",
+    "hierarchy": [
+      "offer (balloon style)",
+      "offer (blue 'FREE')",
+      "product",
+      "offer (blue 'BUY 3')",
+      "badge",
+      "offer (banners)",
+      "body (disclaimer)"
+    ],
+    "negativeSpace": "Ample white space surrounds the central offer text and product array, allowing them to stand out without clutter. The space between the main headlines and the products provides breathing room, emphasizing the offer.",
+    "eyePath": "Top banner -> first offer line -> dominant balloon offer -> emphasized 'FREE' offer -> hero product -> product badge -> surrounding products -> bottom banner -> disclaimer.",
+    "whyItWins": "The clear, bold, and multi-styled offer text immediately communicates value, while the symmetrical product display reinforces the quantity and desirability of the bundle.",
+    "productPresence": "hero",
+    "humanPresence": "none",
+    "textDensity": "moderate",
+    "id": "hismile-3348286618676301-24-sep-2026",
+    "sourceFile": "hismile_3348286618676301_24-Sep-2026.png"
+  },
+  {
+    "canvasRatio": "9:16",
+    "styleFamily": "meme-native",
+    "gridDNA": "The layout features a top-heavy illustrated narrative scene with a speech bubble, leading down to a central product display within a bag, anchored by a strong, full-width offer banner at the bottom with a hero product shot.",
+    "zones": [
+      {
+        "role": "headline",
+        "position": "top-centre, starting 5% from top",
+        "sizePct": 6,
+        "align": "center",
+        "treatment": "black bold text in white speech bubble with black outline, uppercase",
+        "note": "Acts as an immediate hook, question format, drawing attention to the quantity."
+      },
+      {
+        "role": "human",
+        "position": "top-right, starting 15% from top, pointing towards centre",
+        "sizePct": 2,
+        "align": "right",
+        "treatment": "illustrated, cartoon style",
+        "note": "Directs eye flow towards the products in the bag."
+      },
+      {
+        "role": "product",
+        "position": "mid-canvas, starting 25% from top, filling central 40% vertically",
+        "sizePct": 20,
+        "align": "center",
+        "treatment": "illustrated, multiple units (8), numbered",
+        "note": "Visual representation of the quantity being discussed, central to the narrative."
+      },
+      {
+        "role": "human",
+        "position": "bottom-mid, starting 60% from top, flanking the bag",
+        "sizePct": 3,
+        "align": "center",
+        "treatment": "illustrated, cartoon style",
+        "note": "Frames the product display in the bag, grounding the scene."
+      },
+      {
+        "role": "offer",
+        "position": "bottom-centre, starting 65% from top, full width",
+        "sizePct": 20,
+        "align": "left",
+        "treatment": "solid red rectangular block",
+        "note": "High contrast, dominant block for the primary value proposition."
+      },
+      {
+        "role": "product",
+        "position": "bottom-left, starting 65% from top, overlapping red banner and background",
+        "sizePct": 3,
+        "align": "left",
+        "treatment": "photo-realistic product shot, slightly angled",
+        "note": "Hero product shot, contrasts with the illustrated style of the upper canvas."
+      },
+      {
+        "role": "headline",
+        "position": "bottom-left of banner, starting 68% from top",
+        "sizePct": 5,
+        "align": "left",
+        "treatment": "white bold text, black outline, uppercase",
+        "note": "Primary value proposition, highly prominent within the offer banner."
+      },
+      {
+        "role": "subheadline",
+        "position": "below main offer text, starting 76% from top",
+        "sizePct": 2,
+        "align": "left",
+        "treatment": "white text, black outline, title case",
+        "note": "Clarifies the offer's benefit and scale."
+      },
+      {
+        "role": "caption",
+        "position": "bottom-centre, starting 88% from top, full width",
+        "sizePct": 2,
+        "align": "center",
+        "treatment": "small black text",
+        "note": "Essential legal details or disclaimers, minimal visual weight."
+      }
+    ],
+    "typeScale": "headline (speech bubble) ~10% of canvas height, main offer (banner) ~8%, sub-offer ~4%, caption ~2%",
+    "colourBlocking": "Top 65% features a light, neutral background with illustrated elements. The bottom 25% is dominated by a solid, high-contrast red banner, with the very bottom 10% returning to the light background for the disclaimer.",
+    "hierarchy": [
+      "offer",
+      "headline (on banner)",
+      "headline (speech bubble)",
+      "product (in bag)",
+      "human (pointing hand)",
+      "product (hero shot)",
+      "subheadline",
+      "human (hands holding bag)",
+      "caption"
+    ],
+    "negativeSpace": "Ample negative space in the top-left and top-right corners, and around the central bag, allowing the illustrated narrative and the high-impact bottom offer to stand out clearly against the light background.",
+    "eyePath": "The eye travels from the intriguing speech bubble headline -> to the pointing hand -> to the products in the bag (visual proof) -> then drops to the high-contrast red offer banner (main value proposition) -> the hero product -> the subheadline -> and finally the disclaimer.",
+    "whyItWins": "The layout converts by first engaging the viewer with a relatable, curiosity-driven narrative illustration, then immediately resolving the implied question with a clear, high-value offer presented in a visually dominant bottom banner.",
+    "productPresence": "hero",
+    "humanPresence": "hands-only",
+    "textDensity": "moderate",
+    "id": "hismile-923659350467986-23-sep-2026",
+    "sourceFile": "hismile_923659350467986_23-Sep-2026.png"
+  }
+]

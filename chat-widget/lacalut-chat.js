@@ -576,7 +576,7 @@
         '<button id="lc-close" aria-label="Close">&#10005;</button>' +
       '</div>' +
       '<div id="lc-home">' +
-        '<div class="lc-bot-row" style="margin-bottom:18px"><img class="lc-bot-avatar" src="' + AGENT_AVATAR + '" alt="" /><div class="lc-greeting-bubble" id="lc-greeting-text" style="margin-bottom:0">' + config.greeting + '</div></div>' +
+        '<div class="lc-bot-row" style="margin-bottom:18px"><img class="lc-bot-avatar" src="' + AGENT_AVATAR + '" alt="Lucy — LACALUT chat assistant" /><div class="lc-greeting-bubble" id="lc-greeting-text" style="margin-bottom:0">' + config.greeting + '</div></div>' +
         '<p class="lc-symptom-label">What brings you here today?</p>' +
         '<button id="lc-discount-btn" class="lc-discount-btn"><span class="lc-discount-emoji">🎁</span><span class="lc-discount-text">Get 10% Off Code</span></button>' +
         '<div class="lc-symptom-grid" id="lc-symptom-grid"></div>' +
@@ -1137,7 +1137,7 @@
     if (role === 'bot') {
       var row = document.createElement('div');
       row.className = 'lc-bot-row';
-      row.innerHTML = '<img class="lc-bot-avatar" src="' + agentAvatar() + '" alt="" />';
+      row.innerHTML = '<img class="lc-bot-avatar" src="' + agentAvatar() + '" alt="Lucy — LACALUT chat assistant" />';
       row.appendChild(div);
       chat.appendChild(row);
     } else {
@@ -1152,7 +1152,7 @@
     var row = document.createElement('div');
     row.className = 'lc-bot-row';
     row.innerHTML =
-      '<img class="lc-bot-avatar" src="' + agentAvatar() + '" alt="" />' +
+      '<img class="lc-bot-avatar" src="' + agentAvatar() + '" alt="Lucy — LACALUT chat assistant" />' +
       '<div class="lc-typing"><div class="lc-dot"></div><div class="lc-dot"></div><div class="lc-dot"></div></div>';
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
