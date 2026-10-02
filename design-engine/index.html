@@ -1948,6 +1948,12 @@ async function sendToFacy(cardId){
 }
 function galleryOrderKey(sku){ return 'de_order_'+sku+'_'+curPtype; }   // drag order scoped per formula tab + product type
 function saveGalleryOrder(sku){ const ids=[...$('output').querySelectorAll('.card')].map(c=>c.id); localStorage.setItem(galleryOrderKey(sku), JSON.stringify(ids)); }
+function formatGroupLabel(tag){
+  if(!tag) return 'General';
+  if(tag==='aditya-matrix') return 'Aditya Matrix';
+  if(tag==='v20-archetype-proof') return 'v20 Proof Strip';
+  return tag.replace(/[-_]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+}
 async function renderGallery(sku){
   if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
   const all=await idbBySku(sku);
@@ -1958,7 +1964,21 @@ async function renderGallery(sku){
     recs.sort((a,b)=>{ const pa=pos.has(a.id)?pos.get(a.id):-1, pb=pos.has(b.id)?pos.get(b.id):-1; return pa!==pb ? pa-pb : b.ts-a.ts; });
   } else { recs.sort((a,b)=>b.ts-a.ts); }
   const nm=curSku==='multi'&&sku==='multi'?'Multi-SKU':(SKUS[sku]?.name||sku);
-  $('output').innerHTML = recs.length ? recs.map(cardHTML).join('') : `<div class="empty">No ${PTYPE_LABEL[curPtype]||curPtype} images for ${nm} yet${all.length?` — ${all.length} on other product-type pills`:''}. Upload a packshot + pick a strategy → Generate.</div>`;
+  if(!recs.length){
+    $('output').innerHTML = `<div class="empty">No ${PTYPE_LABEL[curPtype]||curPtype} images for ${nm} yet${all.length?` — ${all.length} on other product-type pills`:''}. Upload a packshot + pick a strategy → Generate.</div>`;
+  } else {
+    // GROUP BY FORMAT (rec.angle) so imported batches (tournament formats, Aditya matrix, proof
+    // strip, future spreadsheet batches) never dump into one undifferentiated pile — each format
+    // gets its own labelled section, like a folder, while still sharing the drag-reorder grid.
+    const groups = new Map();   // insertion order = General first, then first-seen order
+    for(const r of recs){ const key=r.angle||''; if(!groups.has(key)) groups.set(key, []); groups.get(key).push(r); }
+    const keys = [...groups.keys()].sort((a,b)=> a===''?-1 : b===''?1 : formatGroupLabel(a).localeCompare(formatGroupLabel(b)));
+    $('output').innerHTML = keys.map(key=>{
+      const list=groups.get(key); const label=formatGroupLabel(key);
+      const header = key==='' ? '' : `<div class="fmt-group-header" style="grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin:14px 0 2px;padding-top:10px;border-top:1px solid var(--line)">📁 ${label} · ${list.length}</div>`;
+      return header + list.map(cardHTML).join('');
+    }).join('');
+  }
   // re-show any render that was still in-flight when he switched away — its live promise will replace this placeholder when it lands
   pendingImgGens.filter(p=>p.sku===sku && p.ptype===curPtype && !$(p.id)).forEach(p=>{
     const emp=$('output').querySelector('.empty'); if(emp) emp.remove();
