@@ -210,6 +210,7 @@
   <!-- RIGHT: output -->
   <div class="panel">
     <h3 id="skuTitle"></h3>
+    <div id="fmtLib" style="display:none"></div>
     <div id="output" class="grid"><div class="empty">Pick a SKU, upload a packshot, choose a strategy → Generate.</div></div>
   </div>
 </div>
@@ -294,6 +295,7 @@
 </div></dialog>
 
 <script src="strategies.js"></script>
+<script src="format-library.js"></script>
 <script src="layout-archetypes.js"></script>
 <script src="engine.js"></script>
 <script src="brand-brain.js"></script>
@@ -442,7 +444,22 @@ function renderBrains(){
   $('chips').innerHTML=h;
   $('stratCount').textContent = curBrain ? (curBrain==='mixed'?'Mixed':'1 selected') : 'none';
 }
-function selectBrain(id){ curBrain=(curBrain===id?null:id); try{ curBrain?localStorage.setItem('de_brain',curBrain):localStorage.removeItem('de_brain'); }catch(_){} renderBrains(); }
+function selectBrain(id){ curBrain=(curBrain===id?null:id); try{ curBrain?localStorage.setItem('de_brain',curBrain):localStorage.removeItem('de_brain'); }catch(_){} renderBrains(); renderFmtLib(); }
+/* ═══ FORMAT LIBRARY — every render ever produced in the selected format (CDN/tournament + filed one-offs) ═══ */
+function renderFmtLib(){
+  const box=$('fmtLib'); if(!box) return;
+  const lib=(window.FORMAT_LIBRARY||{})[curBrain];
+  if(!curBrain || curBrain==='mixed' || !lib || !lib.length){ box.style.display='none'; box.innerHTML=''; return; }
+  const nm=(BRAINS.find(b=>b.id===curBrain)||{}).name||curBrain;
+  box.style.display='block';
+  box.innerHTML = `<div style="margin:0 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
+    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin-bottom:8px">📚 Format library — ${lib.length} existing render${lib.length>1?'s':''} of “${nm}”</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">${lib.map(r=>`
+      <a href="${r.url}" target="_blank" rel="noopener" title="${r.sku} — open full size" style="flex:0 0 auto;text-align:center;text-decoration:none">
+        <img src="${r.url}" loading="lazy" style="height:150px;border-radius:8px;border:1px solid var(--line);display:block">
+        <span style="font-size:10px;color:#777">${r.sku}</span>
+      </a>`).join('')}</div></div>`;
+}
 function renderNeg(){
   const bans = curSku==='multi'
     ? [...new Set([...GLOBAL_BAN, ...multiSel.flatMap(k=>SKUS[k]?.ban||[])])]
@@ -2484,7 +2501,7 @@ async function pushCardToMarky(cardId){
 /* ═══ INIT ═══ */
 if(typeof MODES!=='undefined' && !MODES[curMode]) curMode='social';   // drop a stale saved mode
 if(curBrain && curBrain!=='mixed' && typeof BRAINS!=='undefined' && !BRAINS.find(b=>b.id===curBrain)){ curBrain=null; try{localStorage.removeItem('de_brain');}catch(_){} }   // drop a stale saved strategy
-renderTabs(); renderPtypes(); renderModes(); loadProductImgs(); renderSlots(); renderBrains(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets(''); restoreGenSettings();
+renderTabs(); renderPtypes(); renderModes(); loadProductImgs(); renderSlots(); renderBrains(); renderFmtLib(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets(''); restoreGenSettings();
 // 🏛 Winner-Layout archetype picker — populate from layout-archetypes.js + restore last choice
 if($('archSel') && window.LAYOUT_ARCHETYPES){
   window.LAYOUT_ARCHETYPES.forEach(a=>$('archSel').insertAdjacentHTML('beforeend',`<option value="${a.id}">${a.name} · ${a.styleFamily}</option>`));
