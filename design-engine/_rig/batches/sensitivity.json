@@ -5,23 +5,72 @@
     {
       "id": "c1-iced-water",
       "headline": "Why some people drink iced water through a straw",
-      "brief": "Close-up of an ordinary person's hand holding a tall glass of iced water with a straw, on a cafe table in natural light. Real LACALUT SENSITIVE tube on the table beside the glass. Small CTA-style line beneath the headline: \"It's not for the ice.\" This is a candid lifestyle usage photo, not a studio product shot.",
+      "brief": "Close-up of an ordinary person's hand holding a tall glass of iced water with a straw, on a cafe table in natural light. Real LACALUT SENSITIVE tube on the table beside the glass. Small supporting tagline beneath the headline: \"It's not for the ice.\" This is a candid lifestyle usage photo, not a studio product shot.",
       "prom": "secondary",
       "label": "Sensitivity C1 — Iced Water Straw"
     },
     {
       "id": "c2-hot-tap",
       "headline": "Why some people warm their toothbrush under the hot tap",
-      "brief": "A toothbrush held under a running, steaming hot tap at a bathroom sink. The real LACALUT SENSITIVE tube standing on the sink edge. Small CTA-style line beneath the headline: \"Cold water on sensitive teeth. Ouch.\" Candid bathroom usage photo, not a studio product shot.",
+      "brief": "A toothbrush held under a running, steaming hot tap at a bathroom sink. The real LACALUT SENSITIVE tube standing on the sink edge. Small supporting tagline beneath the headline: \"Cold water on sensitive teeth. Ouch.\" Candid bathroom usage photo, not a studio product shot.",
       "prom": "hero",
       "label": "Sensitivity C2 — Hot Tap Toothbrush"
     },
     {
       "id": "c3-bite-vs-lick",
       "headline": "Some people bite their ice cream. Some people lick it.",
-      "brief": "Split image, two ice cream cones. LEFT cone: perfectly round, only licked, with a large bold high-contrast label beneath it reading exactly \"LICKERS\" (not small print — same weight as a headline). RIGHT cone: an identical cone with a clean bite taken out of it, with an equally large bold high-contrast label beneath it reading exactly \"BITERS\". The real LACALUT SENSITIVE tube, small, bottom right corner only. Small CTA-style line beneath the headline: \"The lickers usually have a reason.\" This is a graphic two-camp comparison concept, not a lifestyle photo.",
+      "brief": "Split image, two ice cream cones. LEFT cone: perfectly round, only licked, with a large bold high-contrast label beneath it reading exactly \"LICKERS\" (not small print — same weight as a headline). RIGHT cone: an identical cone with a clean bite taken out of it, with an equally large bold high-contrast label beneath it reading exactly \"BITERS\". The real LACALUT SENSITIVE tube, small, bottom right corner only. Small supporting tagline beneath the headline: \"The lickers usually have a reason.\" This is a graphic two-camp comparison concept, not a lifestyle photo.",
       "prom": "cameo",
       "label": "Sensitivity C3 — Bite vs Lick"
+    },
+    {
+      "id": "c4-text-thread",
+      "headline": "grabbing drinks, what do u want? / lemonade, no ice pls / again?? it's 34 degrees",
+      "brief": "An iMessage chat screenshot showing this exact exchange: Friend: \"grabbing drinks, what do u want?\" Me: \"lemonade, no ice pls\" Friend: \"again?? it's 34 degrees\". Bottom band of the image: the real LACALUT SENSITIVE tube (German pack) photo.",
+      "prom": "cameo",
+      "label": "Sensitivity C4 — Text Thread"
+    },
+    {
+      "id": "c5-verified-review-card",
+      "headline": "\"Toothpaste works well with my tooth sensitivity issues.\" (Verified customer)",
+      "brief": "Real LACALUT SENSITIVE tube (German pack) on a clean background. Next to it, a review card styled like a verified review, with the quote on it, labelled \"Verified customer\". No star rating or name shown. Small supporting tagline beneath: \"Individual experiences vary.\"",
+      "prom": "hero",
+      "label": "Sensitivity C5 — Verified Review Card"
+    },
+    {
+      "id": "c6-rolled-tube-vs-fresh",
+      "headline": "The tube runs out. The \"ouch\" comes back.",
+      "brief": "A plain, unbranded toothpaste tube rolled all the way up to the last squeeze, lying next to a fresh, real LACALUT SENSITIVE tube (German pack). Clean bathroom bench. Small supporting tagline beneath: \"That's the giveaway.\"",
+      "prom": "secondary",
+      "label": "Sensitivity C6 — Rolled Tube vs Fresh"
+    },
+    {
+      "id": "c7-stats-hero",
+      "headline": "1,000,000,000+ LACALUT tubes sold",
+      "brief": "Hero shot of the real LACALUT SENSITIVE tube and box (German pack) on a clean neutral background. Big stat across the top from the headline, smaller supporting line under the product. Small supporting tagline beneath: \"One German toothpaste. 60+ countries. Made since 1925.\"",
+      "prom": "hero",
+      "label": "Sensitivity C7 — Stats Hero"
+    },
+    {
+      "id": "c8-diagram-arrows",
+      "headline": "Brushing hard, up and down?",
+      "brief": "Toothbrush on a plain background with big hand-drawn marker arrows going up and down, circled in red — playful, NOT anatomical or clinical styling. Real LACALUT SENSITIVE tube (German pack) bottom right. Small supporting tagline beneath: \"Read this before tonight's brush.\"",
+      "prom": "cameo",
+      "label": "Sensitivity C8 — Diagram Arrows"
+    },
+    {
+      "id": "c9-icecream-van-sign",
+      "headline": "It was never the ice cream.",
+      "brief": "Ice cream van menu board on a sunny day, hand-painted style text, showing the headline. Do NOT AI-generate the tube — composite the real LACALUT SENSITIVE tube (German pack) photo in the bottom corner. Small supporting tagline beneath: \"It's not about the weather.\"",
+      "prom": "cameo",
+      "label": "Sensitivity C9 — Ice Cream Van Sign"
+    },
+    {
+      "id": "c10-myth-vs-fact",
+      "headline": "MYTH: Sensitive teeth are an \"older person\" thing. FACT: It can show up at any adult age.",
+      "brief": "2-panel card. Top panel, grey background: the MYTH line. Bottom panel, LACALUT colour background: the FACT line. Real LACALUT SENSITIVE tube (German pack) photo bottom right. Adults only in any imagery.",
+      "prom": "cameo",
+      "label": "Sensitivity C10 — Myth vs Fact"
     }
   ]
 }

@@ -8,7 +8,7 @@ window.BRAND_BRAIN = {
     "Trusted in 60+ countries", "German-engineered formula", "Pharmacy-grade care"
   ],
   tone: "Premium German engineering meets warm Aussie plain-talk. Confident specialist, never shouty pharmacy-discount. Cosmetic FEEL language only (feels firmer / fresher / cared-for) — never medical outcomes.",
-  banned: "bleeding, gingivitis, periodontitis, gum disease, infection, inflamed, clinical, medicinal, heals, cures, treats (therapeutic), repairs gums, percentages, #1/No.1/best, WHO/TGA logos, timed results ('in X days/hours').",
+  banned: "bleeding, gingivitis, periodontitis, gum disease, infection, inflamed, clinical, medicinal, heals, cures, treats (therapeutic), repairs gums, percentages, #1/No.1/best, WHO/TGA logos, timed results ('in X days/hours'), microbiome, bacteria/bacterial, pH-balance/pH-balancing, flora (as a biological/scientific term — fine only as the LACALUT FLORA product name), any invented scientific/biological mechanism-of-action language not printed on the real pack.",
   angles: {
     "aktiv": [
       "Mechanism — most toothpaste stops at your teeth; Aktiv works the gum-line",

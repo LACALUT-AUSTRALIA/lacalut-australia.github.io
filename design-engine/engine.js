@@ -298,7 +298,7 @@
         } else if(prom === 'cameo'){
           p += `PRODUCT PROMINENCE — CAMEO (mandatory): the IDEA/GRAPHIC CONCEPT is the ad; the product appears only as a small, sharp cameo in a lower corner near the CTA — roughly logo-sized, NO MORE than ~10% of the frame. The concept owns the canvas, the pack just signs it. NEVER a big centred product hero. `;
         } else {
-          p += `Product packaging LARGE and dominant${(fmtLayout||arch)?' exactly where the layout structure above places it':' — lower ~55% as the clear hero'}. `;
+          p += `Product packaging LARGE and dominant${(fmtLayout||arch)?' exactly where the layout structure above places it':' — lower ~55% as the clear hero'}. Even in this product-hero composition, a small CTA pill (e.g. "Shop Now") MUST still sit in a bottom corner — it never competes with the product's dominance, it just signs off the ad; a hero shot with no CTA is an incomplete ad, not a cleaner one. `;
         }
         p += `Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
         p += `CRITICAL PRODUCT FIDELITY: the tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white cap included. `;

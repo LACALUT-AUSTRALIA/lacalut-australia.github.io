@@ -57,6 +57,12 @@ for (let i = 0; i < ads.length; i++) {
     prompt = await E.oneUpImagePrompt({ basePrompt: prompt, bans: BANS, aspectRatio: '4:5', apiKey: KEY });
     prompt += HARD_RULES;
     prompt += (window.brandBrainInjection ? window.brandBrainInjection(sku) : '');
+    // Final, isolated, short-and-repeated reminder — the HARD_RULES paragraph above is long (13 rules)
+    // and these 2 were getting dropped in ~half of real renders despite being rule #7/#11/#13 in it.
+    // Models weight the LAST thing in the prompt most heavily, so repeat just these 2 here, alone.
+    prompt += ' FINAL CHECK BEFORE RENDERING (the 2 most-often-missed rules — both are mandatory): '
+      + '(A) Is there exactly ONE large, clearly-readable CTA button/pill (e.g. "Shop Now") visible in the image? If not, add one now in a colour that contrasts its background. '
+      + '(B) Is the product pack\'s printed fine-print text kept SMALL and softly out of focus, never enlarged or sharpened into a readable headline-sized claim? If any pack text reads as clearly as the headline, shrink and soften it now.';
     process.stdout.write('rendering… ');
     const url = await E.callGemini({
       prompt, productImgs: [PACK], styleImgs: [],

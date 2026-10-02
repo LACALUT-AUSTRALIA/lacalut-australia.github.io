@@ -1,0 +1,90 @@
+{
+  "sku": "flora",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "c1-mask-trap-flatlay",
+      "headline": "If mints worked, you wouldn't need one every hour.",
+      "brief": "Overhead flat lay on a white bathroom bench, split down the middle. Left half: a messy pile of mint tins, gum packets, loose wrappers and a travel mouthwash. Right half: the real LACALUT FLORA toothpaste tube (German pack), neat, nothing else. Small supporting tagline beneath the headline, under the right half: \"2 steps. Morning and night.\"",
+      "prom": "hero",
+      "label": "FLORA C1 — Mask Trap Flat Lay"
+    },
+    {
+      "id": "c2-myth-vs-fact",
+      "headline": "MYTH: A stronger mint means fresher breath. FACT: A mint covers it. It doesn't neutralise it.",
+      "brief": "Clean 2-panel card. Top panel, grey background: the MYTH line. Bottom panel, LACALUT red background: the FACT line. Real LACALUT FLORA tube (German pack) photo bottom right corner.",
+      "prom": "cameo",
+      "label": "FLORA C2 — Myth vs Fact"
+    },
+    {
+      "id": "c3-whiteboard-sign",
+      "headline": "Do NOT buy another pack of gum until you read this.",
+      "brief": "Office kitchen whiteboard, handwritten marker, slightly messy, native feel, with the headline written on it. Real LACALUT FLORA tube (German pack) photo composited on the bench below the whiteboard — do not AI-generate the pack, use the exact reference.",
+      "prom": "cameo",
+      "label": "FLORA C3 — Whiteboard Sign"
+    },
+    {
+      "id": "c4-text-thread",
+      "headline": "you coming up for the presentation? / 2 min / gum, mint, quick sip of water first / every single time lol",
+      "brief": "An iMessage/WhatsApp chat screenshot, plain, no branding in the thread, showing this exact exchange: Friend: \"you coming up for the presentation?\" Me: \"2 min\" Me: \"gum, mint, quick sip of water first\" Friend: \"every single time lol\". Bottom band of the image: real LACALUT FLORA tube (German pack) photo. Small supporting tagline beneath: \"Less prep. More talking.\"",
+      "prom": "cameo",
+      "label": "FLORA C4 — Text Thread"
+    },
+    {
+      "id": "c5-office-dropin",
+      "headline": "The unexpected desk drop-in.",
+      "brief": "Candid, slightly imperfect photo of an office: one person seated at a desk, a colleague leaning over their shoulder to look at the screen, both laughing. Natural light, no studio polish. Real LACALUT FLORA tube (German pack) photo small, bottom right. Headline text small, top left, like a caption.",
+      "prom": "secondary",
+      "label": "FLORA C5 — Office Drop-In"
+    },
+    {
+      "id": "c6-notes-checklist",
+      "headline": "before talking to anyone: sip of water / mint / cupped-hand check / stand half a step back",
+      "brief": "A Notes app checklist screenshot, yellow header, showing this exact checklist: \"before talking to anyone — [ ] sip of water [ ] mint [ ] cupped-hand check [ ] stand half a step back\". Below the note, a clean white card with the real LACALUT FLORA tube (German pack) photo. Small supporting tagline beneath: \"Or: paste + rinse. Morning + night.\"",
+      "prom": "cameo",
+      "label": "FLORA C6 — Notes Checklist"
+    },
+    {
+      "id": "c7-diagram-mouth",
+      "headline": "Your toothbrush cleans your teeth. Your teeth are only part of your mouth.",
+      "brief": "Simple hand-drawn marker sketch of a smiling mouth on a notepad — playful, NOT a medical or anatomical illustration. A toothbrush icon with an arrow labelled \"teeth\". A rinse cup icon with a bigger arrow labelled \"the rest of your mouth\". Real LACALUT FLORA tube (German pack) photo bottom right.",
+      "prom": "cameo",
+      "label": "FLORA C7 — Diagram"
+    },
+    {
+      "id": "c8-sticky-note-mirror",
+      "headline": "What you do in the 10 seconds after brushing matters.",
+      "brief": "Bathroom mirror with a yellow sticky note, handwritten with the headline. Real LACALUT FLORA tube (German pack) photo on the sink below the mirror.",
+      "prom": "secondary",
+      "label": "FLORA C8 — Mirror Sticky Note"
+    },
+    {
+      "id": "c9-usual-vs-flora-routine",
+      "headline": "The usual routine: Mint when you notice / Toothpaste on teeth only / Rinse with water after brushing / Top up all day. The FLORA routine: Built to neutralise, not mask / Paste for the whole mouth / Spit, don't rinse / Morning + night.",
+      "brief": "2-column comparison card, real LACALUT FLORA tube (German pack) photo in column 2. No brand names, no logos of other products, no ticks or crosses implying other products fail — plain text columns only.",
+      "prom": "hero",
+      "label": "FLORA C9 — Routine Comparison"
+    },
+    {
+      "id": "c10-tried-everything-list",
+      "headline": "Things I've tried: oil pulling / salt water gargle / parsley / tongue scraper / gum every hour / the mouthwash that burns",
+      "brief": "Handwritten list on lined notepad paper showing the headline items. Below the list, the real LACALUT FLORA tube (German pack) photo. No crosses or \"doesn't work\" labels on the list items. Small supporting tagline beneath: \"1 thing I hadn't: a German routine made since 1925.\"",
+      "prom": "cameo",
+      "label": "FLORA C10 — Tried Everything List"
+    },
+    {
+      "id": "c11-credibility-hero",
+      "headline": "Made in Homburg, Germany since 1925. Sold in 60+ countries. Same formula in Germany and Australia.",
+      "brief": "Hero shot of the real LACALUT FLORA tube (German pack) on a clean neutral background. 3 stat callouts arranged around the product, each pulling one line from the headline. Small supporting tagline beneath: \"Now in Australian pharmacies.\"",
+      "prom": "hero",
+      "label": "FLORA C11 — Credibility Hero"
+    },
+    {
+      "id": "c12-skepticism-bubble",
+      "headline": "Is this just another mouthwash?",
+      "brief": "Big white speech bubble on a soft blue background containing the headline as a question. Answer card underneath, with the real LACALUT FLORA tube (German pack) photo on it. Small supporting tagline beneath: \"No. It's a 2-part routine. Paste + matched rinse. Made in Germany since 1925. 30-day returns.\"",
+      "prom": "cameo",
+      "label": "FLORA C12 — Skepticism Bubble"
+    }
+  ]
+}
