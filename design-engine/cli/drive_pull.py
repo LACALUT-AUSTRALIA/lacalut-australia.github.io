@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
-# drive_pull.py — drains the Supabase `drive_queue` table (filled by the Design Engine's
-# "Send to Drive -> Media Buyer" button) into the Media Buyer Google Drive folder.
+# drive_pull.py — moves images the Design Engine "Send to Drive -> Media Buyer" button uploaded
+# into the Media Buyer Google Drive folder. NO Supabase table needed: the bucket prefix IS the queue.
 #
-# WHAT THE BUTTON DOES (browser side): uploads the image to the Supabase ad-images bucket (public
-# URL) and inserts a `drive_queue` row {sku, creative_name, image_url, folder:'Media Buyer', status:'pending'}.
-# THIS SCRIPT (run locally, or on a schedule): reads pending rows, downloads each image_url, uploads
-# it to the Media Buyer Drive folder, then marks the row status='done'.
+# FLOW:
+#   button  -> uploads image to Supabase bucket  ad-images/drive-media-buyer/<name>.png
+#   this    -> lists that prefix (service_role key), downloads each, uploads to the Media Buyer Drive
+#              folder, then MOVES the object to ad-images/drive-done/ so it isn't re-processed.
 #
-# SETUP (2 one-time steps — see WAKE_REPORT):
-#   1) In Supabase SQL editor, run design-engine/cli/drive_queue.sql (creates the table + RLS).
-#   2) Add to C:\Users\conta\.env:
-#        DRIVE_SUPA_SERVICE_KEY=<supabase service_role key>   # needed to read/update the queue
-#        DRIVE_MEDIA_BUYER_FOLDER_ID=<the Media Buyer Drive folder id>
-#      (Find the folder id with:  python ~/gmail_api/drive_ls.py <parent-folder-id> )
+# SETUP: nothing to create. Needs (already present): SUPABASE_SERVICE_ROLE_KEY in ~/.env and Drive
+#   OAuth at ~/gmail_api/token_docs.json. Media Buyer folder id is baked in (override via .env
+#   DRIVE_MEDIA_BUYER_FOLDER_ID if it ever changes).
 #
-# RUN:  python design-engine/cli/drive_pull.py
-import socket, os, sys, io, re, json, urllib.request
+# RUN:  python design-engine/cli/drive_pull.py      (schedule it every few min for near-instant sync)
+import socket, os, sys, io, re, json, urllib.request, urllib.parse
 _orig = socket.getaddrinfo
 socket.getaddrinfo = lambda h,*a,**k:[r for r in _orig(h,*a,**k) if r[0]==socket.AF_INET]
 from google.oauth2.credentials import Credentials
@@ -23,6 +20,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
 SUPA_URL = "https://bfzvxxcsfxvgeblnkqne.supabase.co"
+BUCKET   = "ad-images"
+SRC_PREFIX  = "drive-media-buyer"
+DONE_PREFIX = "drive-done"
 def _env(path):
     d={}
     try:
@@ -32,44 +32,50 @@ def _env(path):
     except FileNotFoundError: pass
     return d
 ENV=_env(os.path.expanduser("~/.env"))
-SERVICE_KEY=ENV.get("DRIVE_SUPA_SERVICE_KEY","").strip()
-FOLDER_ID=ENV.get("DRIVE_MEDIA_BUYER_FOLDER_ID","").strip()
-if not SERVICE_KEY or not FOLDER_ID:
-    sys.exit("Missing DRIVE_SUPA_SERVICE_KEY and/or DRIVE_MEDIA_BUYER_FOLDER_ID in ~/.env — see setup notes at top of this file.")
+KEY=ENV.get("SUPABASE_SERVICE_ROLE_KEY","").strip()
+FOLDER_ID=ENV.get("DRIVE_MEDIA_BUYER_FOLDER_ID","1GzMliHuCfzVcozN0_zAfANo8q01Hf0UA").strip()
+if not KEY: sys.exit("Missing SUPABASE_SERVICE_ROLE_KEY in ~/.env")
 
-TOKEN=os.path.expanduser("~/gmail_api/token_docs.json")
-creds=Credentials.from_authorized_user_file(TOKEN, ["https://www.googleapis.com/auth/drive"])
+def _req(method, url, body=None, headers=None, raw=False):
+    h={"apikey":KEY,"Authorization":"Bearer "+KEY}
+    if headers: h.update(headers)
+    req=urllib.request.Request(url, method=method, data=body, headers=h)
+    with urllib.request.urlopen(req) as r:
+        data=r.read()
+        return data if raw else (json.loads(data.decode()) if data else [])
+
+def list_queue():
+    body=json.dumps({"prefix":SRC_PREFIX,"limit":1000,"sortBy":{"column":"name","order":"asc"}}).encode()
+    rows=_req("POST", f"{SUPA_URL}/storage/v1/object/list/{BUCKET}", body, {"Content-Type":"application/json"})
+    return [r for r in rows if r.get("name") and r.get("id")]   # id is null for pseudo-folders
+
+def download(name):
+    return _req("GET", f"{SUPA_URL}/storage/v1/object/{BUCKET}/{urllib.parse.quote(SRC_PREFIX+'/'+name)}", raw=True)
+
+def move_done(name):
+    body=json.dumps({"bucketId":BUCKET,"sourceKey":f"{SRC_PREFIX}/{name}","destinationKey":f"{DONE_PREFIX}/{name}"}).encode()
+    try: _req("POST", f"{SUPA_URL}/storage/v1/object/move", body, {"Content-Type":"application/json"})
+    except Exception as e: print(f"  (move failed, will retry next run) {name}: {e}")
+
+creds=Credentials.from_authorized_user_file(os.path.expanduser("~/gmail_api/token_docs.json"),
+        ["https://www.googleapis.com/auth/drive"])
 drv=build("drive","v3",credentials=creds)
 
-def supa(method, path, body=None):
-    req=urllib.request.Request(SUPA_URL+"/rest/v1/"+path, method=method,
-        data=(json.dumps(body).encode() if body is not None else None),
-        headers={"apikey":SERVICE_KEY,"Authorization":"Bearer "+SERVICE_KEY,
-                 "Content-Type":"application/json","Prefer":"return=representation"})
-    with urllib.request.urlopen(req) as r:
-        txt=r.read().decode()
-        return json.loads(txt) if txt else []
-
-rows=supa("GET","drive_queue?status=eq.pending&order=created_at.asc&limit=200")
+rows=list_queue()
 if not rows:
-    print("No pending rows in drive_queue — nothing to do."); sys.exit(0)
-print(f"Draining {len(rows)} queued image(s) -> Media Buyer Drive folder {FOLDER_ID}")
+    print("Drive queue empty — nothing to sync."); sys.exit(0)
+print(f"Syncing {len(rows)} image(s) -> Media Buyer Drive folder {FOLDER_ID}")
 ok=0
-for row in rows:
-    rid=row.get("id"); url=row.get("image_url"); name=(row.get("creative_name") or f"creative-{rid}")
-    sku=row.get("sku") or ""
-    if not url:
-        supa("PATCH", f"drive_queue?id=eq.{rid}", {"status":"error","note":"no image_url"}); continue
+for r in rows:
+    name=r["name"]
     try:
-        data=urllib.request.urlopen(url).read()
-        fn=re.sub(r'[^A-Za-z0-9._ -]','_', f"{sku+' - ' if sku else ''}{name}").strip()[:120]
-        if not fn.lower().endswith((".png",".jpg",".jpeg",".webp")): fn+=".png"
+        data=download(name)
+        drive_name=re.sub(r'__[a-z0-9]+-\d+(?=\.\w+$)','', name)   # strip the __<cardid>-<ts> suffix
         media=MediaIoBaseUpload(io.BytesIO(data), mimetype="image/png", resumable=False)
-        f=drv.files().create(body={"name":fn,"parents":[FOLDER_ID]}, media_body=media,
+        f=drv.files().create(body={"name":drive_name,"parents":[FOLDER_ID]}, media_body=media,
               fields="id,name", supportsAllDrives=True).execute()
-        supa("PATCH", f"drive_queue?id=eq.{rid}", {"status":"done","drive_file_id":f["id"]})
-        ok+=1; print(f"  OK  {fn}  -> {f['id']}")
+        move_done(name); ok+=1
+        print(f"  OK  {drive_name}  -> {f['id']}")
     except Exception as e:
-        supa("PATCH", f"drive_queue?id=eq.{rid}", {"status":"error","note":str(e)[:200]})
         print(f"  FAIL {name}: {e}")
-print(f"Done — {ok}/{len(rows)} uploaded to the Media Buyer folder.")
+print(f"Done — {ok}/{len(rows)} synced to the Media Buyer folder.")
