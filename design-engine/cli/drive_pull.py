@@ -23,15 +23,17 @@ SUPA_URL = "https://bfzvxxcsfxvgeblnkqne.supabase.co"
 BUCKET   = "ad-images"
 SRC_PREFIX  = "drive-media-buyer"
 DONE_PREFIX = "drive-done"
-def _env(path):
+def _env(*paths):
     d={}
-    try:
-        for ln in open(path, encoding="utf-8"):
-            m=re.match(r'^([A-Z0-9_]+)=(.*)$', ln.strip())
-            if m: d[m.group(1)]=m.group(2)
-    except FileNotFoundError: pass
+    for path in paths:
+        try:
+            for ln in open(path, encoding="utf-8"):
+                m=re.match(r'^([A-Z0-9_]+)=(.*)$', ln.strip())
+                if m and m.group(2): d.setdefault(m.group(1), m.group(2))
+        except (FileNotFoundError, OSError): pass
     return d
-ENV=_env(os.path.expanduser("~/.env"))
+# Secrets live in the OneDrive .env (same one wrapup_project.py reads); ~/.env is a fallback.
+ENV=_env("C:/Users/conta/OneDrive/Documents/Claude Code/.env", os.path.expanduser("~/.env"))
 KEY=ENV.get("SUPABASE_SERVICE_ROLE_KEY","").strip()
 FOLDER_ID=ENV.get("DRIVE_MEDIA_BUYER_FOLDER_ID","1GzMliHuCfzVcozN0_zAfANo8q01Hf0UA").strip()
 if not KEY: sys.exit("Missing SUPABASE_SERVICE_ROLE_KEY in ~/.env")
