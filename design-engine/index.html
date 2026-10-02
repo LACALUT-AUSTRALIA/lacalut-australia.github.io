@@ -87,7 +87,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v22 filter+versions</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v23 filter+versions</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -2146,7 +2146,7 @@ async function renderGallery(sku){
   const fmtCount=new Map();
   for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
   const formats=[...fmtCount.entries()].map(([id,count])=>({ id, name:(((BRAINS||[]).find(b=>b.id===id)||{}).name||formatGroupLabel(id)), count }))
-    .sort((a,b)=>a.name.localeCompare(b.name));
+    .sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));   // most-used formats first, then alpha
   // ── APPLY FILTERS (format + search) ──
   let visReps=reps.filter(({rep})=>{
     if(galFmtFilter && brainOf(rep)!==galFmtFilter) return false;
