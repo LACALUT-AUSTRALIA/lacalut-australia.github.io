@@ -96,6 +96,7 @@
   <button class="btn" onclick="exportBackup()" title="Download EVERYTHING in this browser (images, videos, references, guides, keys) as one backup file — use it to move to another page or PC">💾 Backup</button>
   <button class="btn" onclick="importBackup()" title="Load a backup file — adds its images/videos/references/settings into this browser">📥 Restore</button>
   <button class="btn" onclick="importCliRenders()" title="Load videos rendered by the terminal CLI — pick the design-engine/_cli-renders folder; each render imports into the gallery and auto-stitches (VO + music)">🎬 Load Renders</button>
+  <button class="btn" onclick="importCliImageRenders()" title="Load static images rendered by the terminal batch script (same buildPrompt/One-Up/HARD_RULES pipeline as Generate) — pick the design-engine/_cli-renders-images/<batch> folder; each PNG imports into the gallery, Edit-ready">🖼️ Load Image Renders</button>
 </header>
 
 <div class="tabs" id="topMode" style="border-bottom:none;padding-bottom:0"></div>
@@ -1267,6 +1268,33 @@ async function importCliRenders(){
   }
   renderVideoGallery(curSku);
   toast(imported? ('✅ Imported '+imported+' render(s) — check the gallery'):'⚠️ Nothing imported');
+}
+
+/* ── import STATIC images rendered by the terminal batch script (_rig/gen_batch.mjs) ──
+   Folder must contain manifest.json (array of {id,filename,sku,mode,ptype,label,brief,angle})
+   + the PNG files it references. Each entry becomes a real 'gens' record — same shape as a
+   live Generate — so Edit / Favourite / Send-to-Facy all work exactly as if made in-browser. */
+async function importCliImageRenders(){
+  if(!window.showDirectoryPicker){ alert('Your browser lacks the folder picker (needs Chrome). Use Restore with a backup file instead.'); return; }
+  let dir; try{ dir = await window.showDirectoryPicker(); }catch(e){ return; }        // cancelled
+  const files={}; for await (const [name,handle] of dir.entries()){ if(handle.kind==='file') files[name]=handle; }
+  const mf=files['manifest.json'];
+  if(!mf){ alert('No manifest.json here — pick the design-engine/_cli-renders-images/<batch> folder.'); return; }
+  let manifest; try{ manifest=JSON.parse(await (await mf.getFile()).text()); }catch(e){ alert('manifest.json is not valid JSON'); return; }
+  let imported=0, skipped=0;
+  for(const m of manifest){
+    try{
+      if(!files[m.filename]){ console.warn('missing file for manifest entry', m); continue; }
+      const existing = await new Promise(res=>{ idb().then(db=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').get(m.id); rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>res(null); }); });
+      if(existing){ skipped++; continue; }   // never clobber/duplicate on re-import
+      const blob = await files[m.filename].getFile();
+      const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
+      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'' };
+      await idbPut(rec); imported++;
+    }catch(e){ console.error('import failed for', m, e); }
+  }
+  renderGallery(curSku);
+  toast(imported? ('🖼️ Imported '+imported+' image(s)'+(skipped?(' · '+skipped+' already present'):'')+' — check the gallery') : (skipped? '✅ All already imported' : '⚠️ Nothing imported'));
 }
 
 /* ── ffmpeg.wasm loader (single-threaded core — no COOP/COEP needed; lazy, ~31MB one-off) ── */
