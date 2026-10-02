@@ -249,3 +249,19 @@ label input:focus, label textarea:focus, label select:focus { border-color: var(
   .filter-row { flex-direction: column; }
   .cell-answer { display: none; }
 }
+
+/* ── Core Brain tab ──────────────────────────────────────────────────────── */
+.brain-field { display: block; margin-bottom: 22px; }
+.brain-field .brain-label { display: block; font-weight: 700; color: var(--ink, #1a1a1a); margin-bottom: 2px; }
+.brain-field .brain-help { display: block; font-size: 12.5px; color: var(--muted, #6b7280); margin-bottom: 8px; }
+.brain-field textarea {
+  width: 100%; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 13px; line-height: 1.55; padding: 12px 14px;
+  border: 1px solid #d9dde3; border-radius: 10px; background: #fcfcfd;
+  resize: vertical; box-sizing: border-box;
+}
+.brain-field textarea:focus { outline: none; border-color: #cf102d; background: #fff; }
+.brain-field select {
+  width: 100%; font-size: 14px; padding: 10px 12px;
+  border: 1px solid #d9dde3; border-radius: 10px; background: #fff; box-sizing: border-box;
+}

@@ -45,6 +45,46 @@ function switchTab(name) {
   if (name === 'training') loadTraining();
   if (name === 'leads') loadLeads();
   if (name === 'qas') loadQAs();
+  if (name === 'brain') loadBrain();
+}
+
+// ── Core Brain (shared by all 5 AI surfaces) ────────────────────────────────────
+
+function loadBrain() {
+  var loading = document.getElementById('brain-loading');
+  var editor = document.getElementById('brain-editor');
+  loading.style.display = 'block';
+  editor.style.display = 'none';
+  api('/brain', { auth: true }).then(function (b) {
+    b = b || {};
+    document.getElementById('brain-system_rules').value  = b.system_rules || '';
+    document.getElementById('brain-product_facts').value = b.product_facts || '';
+    document.getElementById('brain-training').value      = b.training || '';
+    if (b.model) document.getElementById('brain-model').value = b.model;
+    var badge = document.getElementById('brain-updated');
+    badge.textContent = b.updated_at ? ('updated ' + new Date(b.updated_at).toLocaleString()) : '';
+    loading.style.display = 'none';
+    editor.style.display = 'block';
+  }).catch(function (err) {
+    loading.textContent = 'Could not load brain: ' + err.message;
+  });
+}
+
+function saveBrain() {
+  var body = {
+    system_rules:  document.getElementById('brain-system_rules').value,
+    product_facts: document.getElementById('brain-product_facts').value,
+    training:      document.getElementById('brain-training').value,
+    model:         document.getElementById('brain-model').value,
+  };
+  api('/brain', { method: 'PUT', auth: true, body: JSON.stringify(body) })
+    .then(function (b) {
+      if (b && b.updated_at) {
+        document.getElementById('brain-updated').textContent = 'updated ' + new Date(b.updated_at).toLocaleString();
+      }
+      showStatus('✅ Brain saved — all AI surfaces retrained');
+    })
+    .catch(function (err) { showStatus('Error: ' + err.message, 'error'); });
 }
 
 // ── API ────────────────────────────────────────────────────────────────────────
