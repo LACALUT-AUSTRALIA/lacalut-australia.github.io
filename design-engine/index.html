@@ -90,7 +90,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v24 filter+versions</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v25 collections</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -326,6 +326,7 @@ let curBrain = localStorage.getItem('de_brain') || null;
 let galSearchText = '';        // free-text filter over the feed (label/brief/angle/format)
 let galFmtFilter  = null;      // format (brain id) the feed is filtered to; null = show all formats
 let galChipsExpanded = false;  // chip bar: false = show top 12 formats + "+N more"; true = show all
+let galCollectionFilter = null;  // 'aditya' | 'format-test' | null — show only a named batch/collection
 let verOpen = {};              // rootId -> version index currently shown in its version-stack card
 const pendingImgGens = [];   // in-flight image renders {id,sku,ptype,ar} — kept so switching Image↔Video never drops a render mid-flight
 // HARD DESIGN RULES — appended to EVERY image prompt (after One-Up) so they can never be skipped
@@ -860,7 +861,7 @@ function versionBarHTML(rec, versions){
     <button onclick="showVersion('${root}',${next})" ${curIdx===versions.length-1?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===versions.length-1?'opacity:.4':''}">▶</button>
   </div>`;
 }
-function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${scoreBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
+function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
@@ -1335,7 +1336,7 @@ async function importCliImageRenders(){
       if(existing){ skipped++; continue; }   // never clobber/duplicate on re-import
       const blob = await files[m.filename].getFile();
       const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
-      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null };
+      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null, collection:m.collection||null };
       await idbPut(rec); imported++;
     }catch(e){ console.error('import failed for', m, e); }
   }
@@ -1369,7 +1370,7 @@ async function autoImportCliRenders(){
             if(!imgRes.ok) return;
             const blob = await imgRes.blob();
             const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
-            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null };
+            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null, collection:m.collection||null };
             await idbPut(rec); imported++; batchImported++;
           }catch(e){ console.error('auto-import failed for', m, e); }
           finally{ done++; if(toastEl) toastEl.textContent = '🖼️ Loading new renders… '+done+'/'+fresh.length; }
@@ -2105,6 +2106,23 @@ function brainOf(rec){
   }
   return null;
 }
+/* ═══ COLLECTION / BATCH tag — which named set a creative belongs to, so Quan can isolate the
+   Aditya Creative Matrix (36) or the Format-Test Library (80) from his own ad-hoc generations.
+   Durable field rec.collection when present (set in manifests); else inferred from the label. ═══ */
+const COLLECTIONS={ aditya:{label:'Aditya Matrix', icon:'⭐', colour:'#CF102D'}, 'format-test':{label:'Format Tests', icon:'🧪', colour:'#0a7cff'} };
+function collectionOf(rec){
+  if(!rec) return null;
+  if(rec.collection && COLLECTIONS[rec.collection]) return rec.collection;
+  const L=rec.label||'';
+  if(/^(FLORA|Sensitivity|WHITE\s*&\s*REPAIR)\s+C\d+/i.test(L) || /aditya\s*matrix/i.test(L) || rec.angle==='aditya-matrix') return 'aditya';
+  if(/^Tournament\b/i.test(L) || /^v20\s*Proof\s*Strip/i.test(L)) return 'format-test';
+  return null;
+}
+function collectionBadgeHTML(rec){
+  const c=collectionOf(rec); if(!c) return '';
+  const m=COLLECTIONS[c];
+  return `<span title="Part of the ${m.label} collection" style="position:absolute;top:7px;left:7px;z-index:3;background:${m.colour};color:#fff;font-size:10px;font-weight:800;letter-spacing:.3px;padding:3px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.3)">${m.icon} ${m.label}</span>`;
+}
 /* ═══ VERSION STACKING — records that are edits/sizes of a source carry rec.parent = the root id,
    so every version of a creative groups into ONE card with a v1/v2/v3 switcher and nothing is lost. ═══ */
 function rootOf(rec){ let r=rec, seen=0; while(r && r.parent && seen<20){ const p=_recById&&_recById[r.parent]; if(!p) return r.parent; r=p; seen++; } return r?r.id:(rec&&rec.id); }
@@ -2115,9 +2133,16 @@ function matchesSearch(rec){
   const bn=(()=>{ const id=brainOf(rec); const b=(BRAINS||[]).find(x=>x.id===id); return b?b.name:''; })();
   return ((rec.label||'')+' '+(rec.brief||'')+' '+(rec.angle||'')+' '+bn).toLowerCase().includes(q);
 }
-function galleryBarHTML(sku, formats){
-  // formats: [{id,name,count}] present for this sku+ptype. Chips filter the feed; search box free-filters.
-  const activeName=galFmtFilter ? (((BRAINS||[]).find(b=>b.id===galFmtFilter)||{}).name||formatGroupLabel(galFmtFilter)) : null;
+function galleryBarHTML(sku, formats, collections){
+  // formats: [{id,name,count}] · collections: [{id,name,icon,colour,count}] — chips filter the feed; search free-filters.
+  const anyFilter = galFmtFilter||galSearchText||galCollectionFilter;
+  const activeName=galFmtFilter ? (((BRAINS||[]).find(b=>b.id===galFmtFilter)||{}).name||formatGroupLabel(galFmtFilter))
+                 : galCollectionFilter ? COLLECTIONS[galCollectionFilter].label : null;
+  // Collection chips FIRST (Aditya Matrix / Format Tests) — big, coloured, always visible.
+  const collChips = (collections||[]).map(c=>{
+    const on=galCollectionFilter===c.id;
+    return `<button class="galchip coll${on?' on':''}" onclick="setCollectionFilter('${c.id}')" title="Show only the ${c.name} collection (${c.count})" style="font-weight:800;${on?`background:${c.colour};color:#fff;border-color:${c.colour}`:`border-color:${c.colour};color:${c.colour}`}">${c.icon} ${c.name} · ${c.count}</button>`;
+  }).join('');
   // Keep the bar compact (ADHD): show the top CHIP_CAP formats by count; "+N more" reveals the rest.
   const CHIP_CAP=12;
   const showAll = galChipsExpanded || formats.length<=CHIP_CAP || !!galFmtFilter;
@@ -2128,15 +2153,16 @@ function galleryBarHTML(sku, formats){
     : (galChipsExpanded && formats.length>CHIP_CAP ? `<button class="galchip" onclick="galChipsExpanded=false;renderGallery(curSku)" title="Collapse">▲ less</button>` : '');
   return `<div id="galBar" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
     <input id="galSearch" type="text" placeholder="🔎 Search images… (headline, format, brief)" value="${(galSearchText||'').replace(/"/g,'&quot;')}" oninput="onGalSearch(this.value)" style="flex:1 1 220px;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px">
-    <button class="galchip${!galFmtFilter?' on':''}" onclick="setFmtFilter(null)" title="Show every format">All${galFmtFilter?'':' ✓'}</button>
-    ${chips}${moreBtn}
-    ${galFmtFilter||galSearchText?`<button class="galchip clear" onclick="clearGalFilters()" title="Clear filters" style="background:#fff;border-color:#CF102D;color:#CF102D">✕ Clear${activeName?' · '+activeName:''}</button>`:''}
+    <button class="galchip${!anyFilter?' on':''}" onclick="clearGalFilters()" title="Show every image">All${!anyFilter?' ✓':''}</button>
+    ${collChips}${collChips?'<span style="width:1px;height:20px;background:var(--line);margin:0 2px"></span>':''}${chips}${moreBtn}
+    ${anyFilter?`<button class="galchip clear" onclick="clearGalFilters()" title="Clear filters" style="background:#fff;border-color:#CF102D;color:#CF102D">✕ Clear${activeName?' · '+activeName:''}</button>`:''}
   </div>`;
 }
 let _galSearchTimer=null;
 function onGalSearch(v){ galSearchText=v; clearTimeout(_galSearchTimer); _galSearchTimer=setTimeout(()=>{ const a=document.activeElement; renderGallery(curSku); const el=$('galSearch'); if(el&&a&&a.id==='galSearch'){ el.focus(); el.setSelectionRange(el.value.length,el.value.length); } },180); }
-function setFmtFilter(id){ galFmtFilter=id; curBrain=id||curBrain; renderGallery(curSku); }
-function clearGalFilters(){ galFmtFilter=null; galSearchText=''; renderGallery(curSku); }
+function setFmtFilter(id){ galFmtFilter=id; galCollectionFilter=null; curBrain=id||curBrain; renderGallery(curSku); }
+function setCollectionFilter(id){ galCollectionFilter=(galCollectionFilter===id?null:id); galFmtFilter=null; renderGallery(curSku); }
+function clearGalFilters(){ galFmtFilter=null; galCollectionFilter=null; galSearchText=''; renderGallery(curSku); }
 async function renderGallery(sku){
   if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
   const all=await idbBySku(sku);
@@ -2158,8 +2184,13 @@ async function renderGallery(sku){
   for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
   const formats=[...fmtCount.entries()].map(([id,count])=>({ id, name:(((BRAINS||[]).find(b=>b.id===id)||{}).name||formatGroupLabel(id)), count }))
     .sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));   // most-used formats first, then alpha
-  // ── APPLY FILTERS (format + search) ──
+  // ── COLLECTION CHIPS: counts per named batch (Aditya Matrix / Format Tests) across ALL reps ──
+  const collCount=new Map();
+  for(const {rep} of reps){ const c=collectionOf(rep); if(!c) continue; collCount.set(c,(collCount.get(c)||0)+1); }
+  const collections=['aditya','format-test'].filter(c=>collCount.get(c)).map(c=>({ id:c, name:COLLECTIONS[c].label, icon:COLLECTIONS[c].icon, colour:COLLECTIONS[c].colour, count:collCount.get(c) }));
+  // ── APPLY FILTERS (collection + format + search) ──
   let visReps=reps.filter(({rep})=>{
+    if(galCollectionFilter && collectionOf(rep)!==galCollectionFilter) return false;
     if(galFmtFilter && brainOf(rep)!==galFmtFilter) return false;
     if(galSearchText && !matchesSearch(rep)) return false;
     return true;
@@ -2170,12 +2201,12 @@ async function renderGallery(sku){
     visReps.sort((a,b)=>{ const pa=pos.has(a.rep.id)?pos.get(a.rep.id):-1, pb=pos.has(b.rep.id)?pos.get(b.rep.id):-1; return pa!==pb ? pa-pb : b.rep.ts-a.rep.ts; });
   } else { visReps.sort((a,b)=>b.rep.ts-a.rep.ts); }
   const nm=curSku==='multi'&&sku==='multi'?'Multi-SKU':(SKUS[sku]?.name||sku);
-  const bar=galleryBarHTML(sku, formats);
+  const bar=galleryBarHTML(sku, formats, collections);
   if(!recs.length){
     $('output').innerHTML = bar + `<div class="empty">No ${PTYPE_LABEL[curPtype]||curPtype} images for ${nm} yet${all.length?` — ${all.length} on other product-type pills`:''}. Upload a packshot + pick a strategy → Generate.</div>`;
   } else if(!visReps.length){
-    $('output').innerHTML = bar + `<div class="empty">No images match this filter${galFmtFilter?` · format “${((BRAINS||[]).find(b=>b.id===galFmtFilter)||{}).name||galFmtFilter}”`:''}${galSearchText?` · “${galSearchText}”`:''}. <a href="javascript:clearGalFilters()" style="color:#CF102D">Clear filters</a>.</div>`;
-  } else if(galFmtFilter || galSearchText){
+    $('output').innerHTML = bar + `<div class="empty">No images match this filter${galCollectionFilter?` · ${COLLECTIONS[galCollectionFilter].icon} ${COLLECTIONS[galCollectionFilter].label}`:''}${galFmtFilter?` · format “${((BRAINS||[]).find(b=>b.id===galFmtFilter)||{}).name||galFmtFilter}”`:''}${galSearchText?` · “${galSearchText}”`:''}. <a href="javascript:clearGalFilters()" style="color:#CF102D">Clear filters</a>.</div>`;
+  } else if(galCollectionFilter || galFmtFilter || galSearchText){
     // filtered → flat grid (no format-folder headers; the filter IS the grouping)
     $('output').innerHTML = bar + visReps.map(({rep,list})=>cardHTML(rep,list)).join('');
   } else {
