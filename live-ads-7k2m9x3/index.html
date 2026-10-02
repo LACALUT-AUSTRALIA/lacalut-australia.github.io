@@ -1,0 +1,544 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta http-equiv="refresh" content="900"><title>LACALUT Live Ads Monitor</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--brand:#0B5394;--accent:#1c7ed6;--good:#1a7f45;--goodbg:#e7f6ec;--mid:#8a6d00;--midbg:#fbf3d6;--bad:#a4122b;--badbg:#fbe4e8;--live:#1a7f45;--warn:#b8860b;--stuck:#a4122b;}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1116;--card:#171b22;--ink:#e8eaed;--sub:#9aa3af;--line:#262c36;--brand:#6fb3ff;--accent:#4da3ff;--goodbg:#10301d;--midbg:#332b0c;--badbg:#36121b;}}
+:root[data-theme=light]{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--goodbg:#e7f6ec;--midbg:#fbf3d6;--badbg:#fbe4e8;}
+:root[data-theme=dark]{--bg:#0e1116;--card:#171b22;--ink:#e8eaed;--sub:#9aa3af;--line:#262c36;--brand:#6fb3ff;--goodbg:#10301d;--midbg:#332b0c;--badbg:#36121b;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 60px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:20px}
+h1{font-size:24px;margin:0;letter-spacing:-.3px}
+h1 .sw{color:var(--brand)}
+.stamp{color:var(--sub);font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0 30px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.kpi .lbl{color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:30px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
+.kpi .val.good{color:var(--good)}.kpi .val.bad{color:var(--bad)}
+h2{font-size:18px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
+h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;padding:2px 11px;font-weight:600}
+.note{color:var(--sub);font-size:13px;margin:4px 0 14px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
+thead th{text-align:left;color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+td.c{color:var(--sub);font-size:13px}
+td.sub{font-size:12.5px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.dot-live{background:var(--live)}.dot-warn{background:var(--warn)}.dot-stuck{background:var(--stuck)}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.pill-good{background:var(--goodbg);color:var(--good)}.pill-mid{background:var(--midbg);color:var(--mid)}.pill-bad{background:var(--badbg);color:var(--bad)}.pill-none{background:var(--line);color:var(--sub)}
+footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
+</style></head><body>
+<div class="wrap">
+<header>
+<h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
+<div class="stamp">Refreshed 03/10/2026 03:18 AEDT &middot; auto-updates every 15 min</div>
+</header>
+
+<div class="cards">
+<div class="kpi"><div class="lbl">Running (active)</div><div class="val">24</div></div>
+<div class="kpi"><div class="lbl">Built, not launched</div><div class="val bad">48</div></div>
+<div class="kpi"><div class="lbl">Spend (7d)</div><div class="val">$27,190</div></div>
+<div class="kpi"><div class="lbl">Blended ROAS (7d)</div><div class="val good">1.19x</div></div>
+<div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">602</div></div>
+</div>
+
+<h2>Running ads <span class="count">24</span></h2>
+<p class="note">Status ACTIVE in Meta. Sorted by 7-day spend. ROAS and purchases are last 7 days.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Ad</th><th>Campaign</th><th>Ad set</th><th>Spend 7d</th><th>ROAS 7d</th><th>Purch.</th><th>Delivery</th></tr></thead>
+<tbody><tr>
+<td><span class="dot dot-live"></span>Multi-SKU | IMG | Choose Where It Hurts | A-Problem</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day</td>
+<td class="num">$2,971</td>
+<td class="num"><span class="pill pill-good">2.16x</span></td>
+<td class="num">104</td>
+<td class="c sub">delivering</td>
+</tr><tr>
+<td><span class="dot dot-live"></span>Dynamic Product Catalog Ad</td>
+<td class="c">BOF | Retargeting</td>
+<td class="c">Visited Site - Didn&#x27;t convert</td>
+<td class="num">$1,172</td>
+<td class="num"><span class="pill pill-good">1.45x</span></td>
+<td class="num">30</td>
+<td class="c sub">delivering</td>
+</tr><tr>
+<td><span class="dot dot-live"></span>Multi-SKU · Benefit First · 5 SKUs</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day</td>
+<td class="num">$4</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">delivering</td>
+</tr><tr>
+<td><span class="dot dot-live"></span>Multi-SKU · Trust / Proof · 5 SKUs</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day</td>
+<td class="num">$0.95</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">delivering</td>
+</tr><tr>
+<td><span class="dot dot-live"></span>Multi-SKU · Lifestyle · 5 SKUs</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day</td>
+<td class="num">$0.54</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">delivering</td>
+</tr><tr>
+<td><span class="dot dot-live"></span>Multi-SKU · Trust / Proof · 5 SKUs</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day</td>
+<td class="num">$0.19</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">delivering</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>AKTIV_ReviewSceptic_IMG_ReviewsWereHype_PDP_V2AI_100226</td>
+<td class="c">CreativeTesting_AKTIV_ABO_Acq_Aus_031026</td>
+<td class="c">Testing05_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>1. AKTIV_NightRoutine_IMG_SaveForBedtime_PDP_V1_100226</td>
+<td class="c">CreativeTesting_AKTIV_ABO_Acq_Aus_031026</td>
+<td class="c">Testing04_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>AKTIV_SensoryContrast_IMG_BurnsVsTightens_PDP_V1_100226</td>
+<td class="c">CreativeTesting_AKTIV_ABO_Acq_Aus_031026</td>
+<td class="c">Testing03_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>AKTIV_AntiGimmick_IMG_GoodbyeGumCareGimmicks_PDP_V1_100226</td>
+<td class="c">CreativeTesting_AKTIV_ABO_Acq_Aus_031026</td>
+<td class="c">Testing02_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>AKTIV_ReviewSceptic_IMG_ReviewsWereHype_PDP_V1_100226</td>
+<td class="c">CreativeTesting_AKTIV_ABO_Acq_Aus_031026</td>
+<td class="c">Testing_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>3-SKU Chooser | Image | Find Your Formula</td>
+<td class="c">TOF | Testing</td>
+<td class="c">3-SKU Chooser | Broad AU | $25/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Image | 15c Upgrade (Mercedes)</td>
+<td class="c">TOF | Testing</td>
+<td class="c">White | Mercedes 15c | Test | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Image | 6-Month Journey</td>
+<td class="c">TOF | Testing</td>
+<td class="c">White | 6M Journey | Test | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Image | Dual Action</td>
+<td class="c">TOF | Testing</td>
+<td class="c">White | Dual Action | Broad AU | $25/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Image | Hydroxyapatite - Whiten Without Peroxide</td>
+<td class="c">TOF | Testing</td>
+<td class="c">White | Hydroxyapatite | Test | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>Sensitive | Image | Stops at Source</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Sensitive | Stops at Source | Broad AU | $25/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>Sensitive | Mercedes 15c</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Sensitive | Mercedes 15c | Broad AU | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>Sensitive | German Authority</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Sensitive | German Authority | Broad AU | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Video | Purple Motion | TOF Test</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Video | Testing | Broad AU | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Video | ff9ed | TOF Test</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Video | Testing | Broad AU | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Image | German Authority</td>
+<td class="c">TOF | Testing</td>
+<td class="c">White | German Authority | Test | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>Sensitive | Video | d0ae0 | TOF Test</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Video | Testing | Broad AU | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr><tr>
+<td><span class="dot dot-warn"></span>White | Video | 10554 | TOF Test</td>
+<td class="c">TOF | Testing</td>
+<td class="c">Video | Testing | Broad AU | $15/day</td>
+<td class="num">$0</td>
+<td class="num"><span class="pill pill-none">no data</span></td>
+<td class="num">0</td>
+<td class="c sub">no spend 7d</td>
+</tr></tbody>
+</table></div>
+
+<h2>Built but not launched <span class="count">48</span></h2>
+<p class="note">Created in the last 21 days, not archived, zero spend in the last 7 days. These are sitting idle.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Ad</th><th>Campaign</th><th>Ad set</th><th>Status</th><th>Built</th></tr></thead>
+<tbody><tr>
+<td><span class="dot dot-stuck"></span>FLORA | Stop Masking The Problem | Pearl Mask | Cosmetic MAIN — HEADLINE B</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Flora - Challenge Test</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 4d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>FLORA | Stop Masking Bad Breath | Pearl Mask | Cosmetic MAIN</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Flora - Challenge Test</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 4d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">ADSET_PAUSED</td>
+<td class="c sub">built 5d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Sensitive | Video | UGC Ice Water | Cosmetic v1</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Sensitive</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 9d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White | Image | 15c Upgrade (Mercedes) — W1 MAIN TOF</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">White &amp; Repair</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 11d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White | Image | 6-Month Journey — W1 MAIN TOF</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">White &amp; Repair</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 11d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White | Image | Hydroxyapatite — W1 MAIN TOF</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">White &amp; Repair</td>
+<td class="c sub">ADSET_PAUSED</td>
+<td class="c sub">built 11d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White | Image | Dual Action — W1 MAIN TOF</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">White &amp; Repair</td>
+<td class="c sub">ADSET_PAUSED</td>
+<td class="c sub">built 11d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AKTIV | Museum Plinth Tube | RB2</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Aktiv - Original</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 14d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AKTIV | Did You Know Gum Line | RB2</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Aktiv - Original</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 14d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AKTIV | Gums Feeling Neglected | RB2</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Aktiv - Original</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 14d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>FLORA | Serious German Engineering | RB2</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Flora / Bad Breath</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 14d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>FLORA | Stop Broadcasting Sulfur | RB2</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Flora / Bad Breath</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 14d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>VID - Funky Music | Herbal | COMPLIANT rebuild</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Herbal</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 14d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Flora · Bold Headliner · photoreal</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Flora / Bad Breath</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv Herbal · edited</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Herbal</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Sensitive · Chat / Text Message · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">TOF | IMG | Broad AU | Sensitive Cold Drinks | $15/day</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White &amp; Repair · Bold Headliner · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">White | German Engineered | Broad AU | $25/day</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · Did-You-Know / Fact · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Flora · Bold Headliner · photoreal</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Flora / Bad Breath</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · Bold Headliner · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 16d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Aktiv - Original</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · Packaging Hero · photoreal</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Aktiv - Original</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv Herbal · edited</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Herbal</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White &amp; Repair · edited</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">White &amp; Repair</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Sensitive · Benefit First · photoreal</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Sensitive</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>White &amp; Repair · Premium Platform · photoreal</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">White &amp; Repair</td>
+<td class="c sub">ADSET_PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · Packaging Hero · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Sensitive · Benefit First · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">TOF | IMG | Broad AU | Sensitive Cold Drinks | $15/day</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · Chat / Text Message · photoreal</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 17d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AKTIV | Spiderman Super Gums | compliant 2026-09-14</td>
+<td class="c">MAIN | TOF</td>
+<td class="c">Aktiv - Original</td>
+<td class="c sub">WITH_ISSUES</td>
+<td class="c sub">built 18d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 18d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv | Plinth Since 1925 BOX | Compliant</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 18d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 18d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 18d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>Aktiv · edited</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 18d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU ZH | AKTIV Museum | R1</td>
+<td class="c">AU | Chinese-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Chinese-speakers | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU VI | AKTIV Museum | R1</td>
+<td class="c">AU | Vietnamese-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Vietnamese | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU AR | AKTIV German Gum Care | R1</td>
+<td class="c">AU | Arabic-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Arabic | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU ZH | AKTIV 100 Years Vault | R1</td>
+<td class="c">AU | Chinese-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Chinese-speakers | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU VI | AKTIV Vault | R1</td>
+<td class="c">AU | Vietnamese-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Vietnamese | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU AR | AKTIV Museum | R1</td>
+<td class="c">AU | Arabic-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Arabic | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU AR | AKTIV Vault | R1</td>
+<td class="c">AU | Arabic-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Arabic | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU VI | AKTIV German Gum Care | R1</td>
+<td class="c">AU | Vietnamese-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Vietnamese | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AU ZH | AKTIV German Gum Care | R1</td>
+<td class="c">AU | Chinese-Speakers | AKTIV Static Test</td>
+<td class="c">AU | Chinese-speakers | AKTIV | $10/day</td>
+<td class="c sub">CAMPAIGN_PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr><tr>
+<td><span class="dot dot-stuck"></span>AKTIV | Museum Plinth 1925 | Heritage R1</td>
+<td class="c">TOF | Testing</td>
+<td class="c">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 21d ago</td>
+</tr></tbody>
+</table></div>
+
+<footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; 316 ads scanned</footer>
+</div></body></html>
