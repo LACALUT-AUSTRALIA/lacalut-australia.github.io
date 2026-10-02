@@ -87,7 +87,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v21 auto-import</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v22 filter+versions</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -320,6 +320,9 @@ let productImgs = [];   // loaded per SKU+ptype by loadProductImgs() at init (af
 let styleImgs   = JSON.parse(localStorage.getItem('lc_style_images')||'[]');
 let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","sensitive","white-repair"]');
 let curBrain = localStorage.getItem('de_brain') || null;
+let galSearchText = '';        // free-text filter over the feed (label/brief/angle/format)
+let galFmtFilter  = null;      // format (brain id) the feed is filtered to; null = show all formats
+let verOpen = {};              // rootId -> version index currently shown in its version-stack card
 const pendingImgGens = [];   // in-flight image renders {id,sku,ptype,ar} — kept so switching Image↔Video never drops a render mid-flight
 // HARD DESIGN RULES — appended to EVERY image prompt (after One-Up) so they can never be skipped
 const HARD_RULES = ' HARD DESIGN RULES — must obey: (1) ICON CONTRAST: the small icon inside each benefit chip/pill MUST be a clearly different, contrasting colour from the chip text (e.g. gold or bright-accent icons beside white text) — never the same colour, so each icon pops. (2) REALISTIC PROPORTIONS: when a product BOX appears in the same frame as its bottle or tube, size them to real-life proportions relative to each other — a mouthwash box is slightly taller/larger than its bottle, a toothpaste box is larger than its tube. A single deliberately OVERSIZED hero product for scroll-stopping impact is allowed, but the box-vs-bottle/tube size relationship must stay realistic. (3) PRODUCT ACCURACY — NEVER hallucinate or invent product: render every product EXACTLY as its attached reference packshot — identical bottle/tube/box shape, cap, label layout, colours and wording. Do not restyle, redraw from imagination, or guess a pack. If a product has no reference attached, do NOT add or alter it. (4) TEXT HIERARCHY: the HEADLINE, sub-headline and CTA button must be the LARGEST, most dominant elements in the frame — bigger and more prominent than any decorative graphic; the CTA button must be large and clearly legible. (5) BADGE PROMINENCE: any money-back / guarantee seal or badge must be LARGE and clearly readable — a prominent trust element, never a small afterthought. (6) Keep all real German packaging accurate with no fabricated on-pack text. (7) CTA CONTRAST (non-negotiable): the CTA button fill MUST strongly contrast whatever sits directly behind it — NEVER a pill the same or similar hue to its background (e.g. never a green button on a green scene, never navy on navy); if the scene is green use a red, gold or white pill, if red use white, if white use red or green. (8) LAYOUT PIZZAZZ: do NOT default to a flat, perfectly-horizontal stacked template every time — for energy, OFTEN set the CTA pill on a slight dynamic SLANT (about 6–12°), and occasionally angle a headline banner or the guarantee badge too, with bold drop-shadows or outlines, so the ad feels lively and premium rather than a rigid template. The CTA and headline still stay large, bold and instantly legible. (9) MAXIMISE SIZE + CONTRAST: push every overlay element (headline, sub-headline, CTA, badge, chips) to the largest legible size and the highest contrast against its background — err on the side of BIGGER and BOLDER. (10) NO REDUNDANT / DUPLICATE TEXT (non-negotiable): every text element in the ad — eyebrow, headline, sub-headline, badge, trust chips, CTA — must say something DIFFERENT. NEVER repeat the same phrase, claim or wording across two elements (e.g. NEVER an eyebrow "Why We\'re Different" sitting above a CTA "See Why It\'s Different", never a chip that echoes the headline). If two elements would carry the same message, drop one or reword it so each element earns its place and adds new information. (11) PACK FINE-PRINT DE-EMPHASIS: reproduce the pack\'s printed claims/fine-print lines exactly as on the reference but keep them SMALL, at true pack scale and softly out of focus — never enlarge, sharpen or zoom them into a readable focal element, never repeat any pack claim as overlay/design text, and never INVENT claims text that is not on the reference pack; the brand name LACALUT and the variant name are what read clearly. (12) NO MEDICAL-CROSS ICON: never use a red cross / medical cross symbol anywhere (protected emblem) — use a shield, medal, ribbon or tooth icon instead. (13) CTA PILL MANDATORY (non-negotiable): exactly ONE large button-style CTA pill in a contrasting brand colour (e.g. "Shop Now") ALWAYS appears in the design — never omit it, never more than one; every ad must tell the viewer what to do next.';
@@ -445,21 +448,42 @@ function renderBrains(){
   $('chips').innerHTML=h;
   $('stratCount').textContent = curBrain ? (curBrain==='mixed'?'Mixed':'1 selected') : 'none';
 }
-function selectBrain(id){ curBrain=(curBrain===id?null:id); try{ curBrain?localStorage.setItem('de_brain',curBrain):localStorage.removeItem('de_brain'); }catch(_){} renderBrains(); renderFmtLib(); }
-/* ═══ FORMAT LIBRARY — every render ever produced in the selected format (CDN/tournament + filed one-offs) ═══ */
-function renderFmtLib(){
+function selectBrain(id){
+  const wasOn = (curBrain===id);
+  curBrain=(wasOn?null:id); try{ curBrain?localStorage.setItem('de_brain',curBrain):localStorage.removeItem('de_brain'); }catch(_){}
+  // Picking a format on the left FILTERS the main feed to that format (deselect/clear shows all).
+  galFmtFilter = (curBrain && curBrain!=='mixed') ? curBrain : null;
+  renderBrains(); renderFmtLib(); if(typeof renderGallery==='function') renderGallery(curSku);
+}
+/* ═══ FORMAT LIBRARY — the user's OWN prior renders of the selected format for the CURRENT sku
+   (falls back to the AKTIV CDN winner reference only when on AKTIV). ═══ */
+async function renderFmtLib(){
   const box=$('fmtLib'); if(!box) return;
-  const lib=(window.FORMAT_LIBRARY||{})[curBrain];
-  if(!curBrain || curBrain==='mixed' || !lib || !lib.length){ box.style.display='none'; box.innerHTML=''; return; }
+  if(!curBrain || curBrain==='mixed'){ box.style.display='none'; box.innerHTML=''; return; }
   const nm=(BRAINS.find(b=>b.id===curBrain)||{}).name||curBrain;
+  // 1) the user's own gallery renders of this format, for the CURRENT sku + product type
+  let own=[];
+  try{ const all=await idbBySku(curSku); own=all.filter(r=>ptypeOf(r)===curPtype && brainOf(r)===curBrain); }catch(_){}
+  own.sort((a,b)=>b.ts-a.ts);
+  // 2) CDN winner reference — only relevant when the sku IS aktiv (the library is all-AKTIV)
+  const cdn=(curSku==='aktiv') ? ((window.FORMAT_LIBRARY||{})[curBrain]||[]) : [];
+  if(!own.length && !cdn.length){ box.style.display='none'; box.innerHTML=''; return; }
+  const skuNm=(SKUS[curSku]?.name||curSku);
+  const ownHTML = own.map(r=>`
+      <a href="${r.url}" target="_blank" rel="noopener" title="${skuNm} — your render, open full size" style="flex:0 0 auto;text-align:center;text-decoration:none">
+        <img src="${r.url}" loading="lazy" style="height:150px;border-radius:8px;border:1px solid var(--line);display:block">
+        <span style="font-size:10px;color:#16a34a;font-weight:700">${skuNm}</span>
+      </a>`).join('');
+  const cdnHTML = cdn.map(r=>`
+      <a href="${r.url}" target="_blank" rel="noopener" title="AKTIV winner reference — open full size" style="flex:0 0 auto;text-align:center;text-decoration:none;opacity:.85">
+        <img src="${r.url}" loading="lazy" style="height:150px;border-radius:8px;border:1px dashed var(--line);display:block">
+        <span style="font-size:10px;color:#999">ref · ${r.sku}</span>
+      </a>`).join('');
+  const total=own.length+cdn.length;
   box.style.display='block';
   box.innerHTML = `<div style="margin:0 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin-bottom:8px">📚 Format library — ${lib.length} existing render${lib.length>1?'s':''} of “${nm}”</div>
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">${lib.map(r=>`
-      <a href="${r.url}" target="_blank" rel="noopener" title="${r.sku} — open full size" style="flex:0 0 auto;text-align:center;text-decoration:none">
-        <img src="${r.url}" loading="lazy" style="height:150px;border-radius:8px;border:1px solid var(--line);display:block">
-        <span style="font-size:10px;color:#777">${r.sku}</span>
-      </a>`).join('')}</div></div>`;
+    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin-bottom:8px">📚 ${own.length?own.length+' existing '+skuNm+' render'+(own.length>1?'s':''):'No '+skuNm+' renders yet'} of “${nm}”${cdn.length?' · '+cdn.length+' AKTIV ref':''}</div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">${ownHTML}${cdnHTML}</div></div>`;
 }
 function renderNeg(){
   const bans = curSku==='multi'
@@ -691,17 +715,19 @@ async function runGenerate(){
       const rsel=S.render;
       const rmode = rsel==='mixed' ? (i%2===0?'photoreal':'graphical') : rsel;
       const aspectRatio=(S.ar||'4:5').split(' ')[0];
-      let prompt, label, refImgs, refLabels=null;
+      let prompt, label, refImgs, refLabels=null, brainId=null;
       // 🏛 winner-layout archetype: resolve per-image so 'random' varies across a Qty batch
       const archPick = S.archSel ? E.resolveArchetype(S.archSel) : null;
       if(S.isMulti){
         const brain = S.curBrain ? pickBrainS() : null;
+        brainId = brain?brain.id:null;
         const bans=[...new Set([...GLOBAL_BAN, ...S.multiSel.flatMap(k=>SKUS[k]?.ban||[])])];
         prompt = E.buildMultiPrompt({ skuNames:S.multiLabels, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, bans, form:MULTI_FORM_LABEL[S.multiForm], archetype:archPick });
         refImgs = S.multiImgs; refLabels = S.multiLabels;
         label = (brain?brain.name:'Range')+' · '+S.multiLabels.length+' SKUs';
       } else {
         const brain=pickBrainS();
+        brainId = brain?brain.id:null;
         const useProd = (brain && brain.product==='none') ? false : true; // always attach real packshot refs so the product is never invented
         prompt=E.buildPrompt({ sku:S.curSku, mode:S.curMode, brain, brief:S.brief, advNeg:S.advNeg, useProd, archetype:archPick });
         refImgs = useProd?S.productImgs:[];
@@ -729,7 +755,7 @@ async function runGenerate(){
       prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:($('facyAngle')?$('facyAngle').value.trim():'')};
+      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:($('facyAngle')?$('facyAngle').value.trim():''), brain:brainId};
       await idbPut(rec);   // persisted FIRST — the image can never be lost even if the placeholder card is gone
       const _el=$(id);
       if(_el){ _el.outerHTML=cardHTML(rec); }
@@ -817,7 +843,20 @@ async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)
 async function idbGet(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').get(id); rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
-function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${scoreBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
+function versionBarHTML(rec, versions){
+  if(!versions || versions.length<2) return '';
+  const root = versions[0].parent || versions[0].id;
+  const curIdx = versions.findIndex(v=>v.id===rec.id);
+  const dots = versions.map((v,i)=>`<button onclick="showVersion('${root}',${i})" title="Version ${i+1}${i===versions.length-1?' (latest)':''}" style="cursor:pointer;border:none;background:none;padding:0 2px;font-size:12px;line-height:1;color:${i===curIdx?'#CF102D':'#bbb'}">●</button>`).join('');
+  const prev=Math.max(0,curIdx-1), next=Math.min(versions.length-1,curIdx+1);
+  return `<div class="verbar" style="grid-column:1/-1;display:flex;align-items:center;gap:6px;margin:0 0 4px;font-size:11px;font-weight:700;color:#8a63d2">
+    <button onclick="showVersion('${root}',${prev})" ${curIdx===0?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===0?'opacity:.4':''}">◀</button>
+    <span title="This creative has ${versions.length} saved versions — nothing is lost">🗂 v${curIdx+1} / ${versions.length}</span>
+    <span style="letter-spacing:1px">${dots}</span>
+    <button onclick="showVersion('${root}',${next})" ${curIdx===versions.length-1?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===versions.length-1?'opacity:.4':''}">▶</button>
+  </div>`;
+}
+function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${scoreBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
@@ -834,6 +873,9 @@ function cardHTML(rec){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.
    ${rec.sentToFacy
      ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Sent to Facy — click to send again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Sent to Facy</button>`
      : `<button class="markybtn" id="facy-${rec.id}" title="Send this image straight to Facy — queues it as a Facebook ad (no download needed)" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Send to Facy</button>`}
+   ${rec.sentToDrive
+     ? `<button class="markybtn pushed" id="drive-${rec.id}" title="In the Media Buyer Drive queue — click to send again" onclick="sendToDrive('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ In Drive</button>`
+     : `<button class="markybtn" id="drive-${rec.id}" title="Send this image to the Media Buyer Google Drive folder" onclick="sendToDrive('${rec.id}')" style="background:#0a7cff;color:#fff;border-color:#0a7cff">📁 Send to Drive</button>`}
    </div>
    <div id="vidwrap-${rec.id}">${videoBlockHTML(rec)}</div></div>`; }
 
@@ -1988,6 +2030,42 @@ async function sendToFacy(cardId){
     toast('🚀 Sent straight to Facy — building automatically, no other tab needed');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
 }
+/* ═══ VERSION SWITCH — flip a version-stacked card to a chosen version (nothing is ever lost) ═══ */
+function showVersion(rootId, idx){ verOpen[rootId]=idx; renderGallery(curSku); }
+/* ═══ SEND TO GOOGLE DRIVE → MEDIA BUYER — uploads to the Supabase ad-images bucket and queues a row
+   in `drive_queue`; a tiny server-side drainer (drive_pull.py) moves queued rows into the Media Buyer
+   Drive folder. Belt-and-braces: always mirrors to a same-origin IndexedDB inbox (lc_drive) too. ═══ */
+function driveIdbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('lc_drive',1);
+  r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('kv')) r.result.createObjectStore('kv'); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+function driveIdbGet(k){ return driveIdbOpen().then(db=>new Promise((res,rej)=>{ const t=db.transaction('kv','readonly').objectStore('kv').get(k); t.onsuccess=()=>res(t.result); t.onerror=()=>rej(t.error); })); }
+function driveIdbSet(k,v){ return driveIdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
+async function sendToDrive(cardId){
+  const card=$(cardId); if(!card){ alert('No card.'); return; }
+  let img; try{ img=await compositeCard(cardId); }catch(_){ img=card.querySelector('img')?.src; }
+  if(!img){ alert('No image on this card.'); return; }
+  const btn=$('drive-'+cardId);
+  const sku=card.getAttribute('data-sku')||curSku;
+  const label=(card.querySelector('.t')?.textContent||'').trim();
+  if(btn){ btn.disabled=true; btn.textContent='📁 uploading…'; }
+  let publicUrl='';
+  try{ publicUrl=await facyUploadImage(img, cardId); }catch(_){ /* bucket upload failed — keep local inbox */ }
+  // attempt the Supabase queue row (ok if the table doesn't exist yet — local inbox still captures it)
+  let queued=false;
+  if(publicUrl){
+    try{
+      const row=[{ sku:sku||'multi', creative_name:label||cardId, image_url:publicUrl, folder:'Media Buyer', status:'pending' }];
+      const res=await fetch(FACY_SUPA_URL+'/rest/v1/drive_queue',{method:'POST',
+        headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(row)});
+      queued=res.ok;
+    }catch(_){}
+  }
+  try{ const inbox=(await driveIdbGet('lc_drive_inbox'))||[]; inbox.push({ imageDataUrl:img, imageUrl:publicUrl, sku, label, folder:'Media Buyer', ts:Date.now(), id:cardId, queued }); await driveIdbSet('lc_drive_inbox', inbox); }catch(_){}
+  try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToDrive=true; st.put(r); } }; }catch(_){}
+  if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ In Drive'; btn.title='Queued to the Media Buyer Drive folder — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; btn.disabled=false; }
+  toast(queued?'📁 Queued to the Media Buyer Drive folder':'📁 Saved to the Drive queue (will sync to Media Buyer)');
+}
 function galleryOrderKey(sku){ return 'de_order_'+sku+'_'+curPtype; }   // drag order scoped per formula tab + product type
 function saveGalleryOrder(sku){ const ids=[...$('output').querySelectorAll('.card')].map(c=>c.id); localStorage.setItem(galleryOrderKey(sku), JSON.stringify(ids)); }
 function formatGroupLabel(tag){
@@ -1996,29 +2074,108 @@ function formatGroupLabel(tag){
   if(tag==='v20-archetype-proof') return 'v20 Proof Strip';
   return tag.replace(/[-_]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 }
+/* ═══ FORMAT (brain) INFERENCE — so existing + CLI-imported records (which never stored a `brain`
+   field) are still filterable. Returns a brain id or null. Order: explicit rec.brain → angle===id →
+   name/keyword match in label/angle/brief. ═══ */
+let _brainMatchCache=null;
+function _brainMatchers(){
+  if(_brainMatchCache) return _brainMatchCache;
+  _brainMatchCache=(BRAINS||[]).map(b=>{
+    // build the set of lowercase needles that identify this brain in free text
+    const needles=new Set();
+    needles.add(b.id);
+    const nm=(b.name||'').toLowerCase();
+    if(nm){ needles.add(nm); nm.split(/[\/—–-]/).forEach(p=>{ p=p.trim(); if(p.length>=4) needles.add(p); }); }
+    return { id:b.id, needles:[...needles].filter(Boolean) };
+  });
+  return _brainMatchCache;
+}
+function brainOf(rec){
+  if(!rec) return null;
+  if(rec.brain) return rec.brain;
+  if(rec.angle){ const hit=(BRAINS||[]).find(b=>b.id===rec.angle); if(hit) return hit.id; }
+  const hay=((rec.angle||'')+' '+(rec.label||'')+' '+(rec.brief||'')).toLowerCase();
+  if(!hay.trim()) return null;
+  for(const m of _brainMatchers()){
+    for(const n of m.needles){ if(n.length>=4 && hay.includes(n)) return m.id; }
+  }
+  return null;
+}
+/* ═══ VERSION STACKING — records that are edits/sizes of a source carry rec.parent = the root id,
+   so every version of a creative groups into ONE card with a v1/v2/v3 switcher and nothing is lost. ═══ */
+function rootOf(rec){ let r=rec, seen=0; while(r && r.parent && seen<20){ const p=_recById&&_recById[r.parent]; if(!p) return r.parent; r=p; seen++; } return r?r.id:(rec&&rec.id); }
+let _recById={};
+function matchesSearch(rec){
+  if(!galSearchText) return true;
+  const q=galSearchText.toLowerCase();
+  const bn=(()=>{ const id=brainOf(rec); const b=(BRAINS||[]).find(x=>x.id===id); return b?b.name:''; })();
+  return ((rec.label||'')+' '+(rec.brief||'')+' '+(rec.angle||'')+' '+bn).toLowerCase().includes(q);
+}
+function galleryBarHTML(sku, formats){
+  // formats: [{id,name,count}] present for this sku+ptype. Chips filter the feed; search box free-filters.
+  const activeName=galFmtFilter ? (((BRAINS||[]).find(b=>b.id===galFmtFilter)||{}).name||formatGroupLabel(galFmtFilter)) : null;
+  const chips = formats.map(f=>`<button class="galchip${galFmtFilter===f.id?' on':''}" onclick="setFmtFilter('${f.id}')" title="Show only ${f.name} images">${f.name} · ${f.count}</button>`).join('');
+  return `<div id="galBar" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
+    <input id="galSearch" type="text" placeholder="🔎 Search images… (headline, format, brief)" value="${(galSearchText||'').replace(/"/g,'&quot;')}" oninput="onGalSearch(this.value)" style="flex:1 1 220px;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px">
+    <button class="galchip${!galFmtFilter?' on':''}" onclick="setFmtFilter(null)" title="Show every format">All${galFmtFilter?'':' ✓'}</button>
+    ${chips}
+    ${galFmtFilter||galSearchText?`<button class="galchip clear" onclick="clearGalFilters()" title="Clear filters" style="background:#fff;border-color:#CF102D;color:#CF102D">✕ Clear${activeName?' · '+activeName:''}</button>`:''}
+  </div>`;
+}
+let _galSearchTimer=null;
+function onGalSearch(v){ galSearchText=v; clearTimeout(_galSearchTimer); _galSearchTimer=setTimeout(()=>{ const a=document.activeElement; renderGallery(curSku); const el=$('galSearch'); if(el&&a&&a.id==='galSearch'){ el.focus(); el.setSelectionRange(el.value.length,el.value.length); } },180); }
+function setFmtFilter(id){ galFmtFilter=id; curBrain=id||curBrain; renderGallery(curSku); }
+function clearGalFilters(){ galFmtFilter=null; galSearchText=''; renderGallery(curSku); }
 async function renderGallery(sku){
   if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
   const all=await idbBySku(sku);
-  const recs=all.filter(r=>ptypeOf(r)===curPtype);   // untagged legacy = toothpaste, never hidden
-  const saved=JSON.parse(localStorage.getItem(galleryOrderKey(sku)) || localStorage.getItem('de_order_'+sku) || 'null');   // legacy order fallback
+  let recs=all.filter(r=>ptypeOf(r)===curPtype);   // untagged legacy = toothpaste, never hidden
+  _recById={}; for(const r of recs) _recById[r.id]=r;
+  // ── VERSION STACKING: collapse every version of a creative (edits/sizes carry rec.parent) into one
+  //    root. The card shows a chosen version (newest by default) with a v1/v2/v3 switcher. ──
+  const versionsByRoot=new Map();
+  for(const r of recs){ const root=rootOf(r); if(!versionsByRoot.has(root)) versionsByRoot.set(root, []); versionsByRoot.get(root).push(r); }
+  for(const list of versionsByRoot.values()) list.sort((a,b)=>a.ts-b.ts);   // v1=oldest … vN=newest
+  window._versionsByRoot=versionsByRoot;
+  // one representative per root = the chosen/newest version
+  let reps=[...versionsByRoot.entries()].map(([root,list])=>{
+    const idx = (root in verOpen) ? Math.min(verOpen[root], list.length-1) : list.length-1;
+    return { rep:list[idx], list, root };
+  });
+  // ── FORMAT CHIPS: counts per brain across ALL reps (before filtering) so chips never vanish ──
+  const fmtCount=new Map();
+  for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
+  const formats=[...fmtCount.entries()].map(([id,count])=>({ id, name:(((BRAINS||[]).find(b=>b.id===id)||{}).name||formatGroupLabel(id)), count }))
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  // ── APPLY FILTERS (format + search) ──
+  let visReps=reps.filter(({rep})=>{
+    if(galFmtFilter && brainOf(rep)!==galFmtFilter) return false;
+    if(galSearchText && !matchesSearch(rep)) return false;
+    return true;
+  });
+  // ── ORDER (saved drag order, else newest-first by rep.ts) ──
+  const saved=JSON.parse(localStorage.getItem(galleryOrderKey(sku)) || localStorage.getItem('de_order_'+sku) || 'null');
   if(saved && saved.length){ const pos=new Map(saved.map((id,i)=>[id,i]));
-    // known cards keep the saved drag order; new (unsaved) cards float to the top, newest first
-    recs.sort((a,b)=>{ const pa=pos.has(a.id)?pos.get(a.id):-1, pb=pos.has(b.id)?pos.get(b.id):-1; return pa!==pb ? pa-pb : b.ts-a.ts; });
-  } else { recs.sort((a,b)=>b.ts-a.ts); }
+    visReps.sort((a,b)=>{ const pa=pos.has(a.rep.id)?pos.get(a.rep.id):-1, pb=pos.has(b.rep.id)?pos.get(b.rep.id):-1; return pa!==pb ? pa-pb : b.rep.ts-a.rep.ts; });
+  } else { visReps.sort((a,b)=>b.rep.ts-a.rep.ts); }
   const nm=curSku==='multi'&&sku==='multi'?'Multi-SKU':(SKUS[sku]?.name||sku);
+  const bar=galleryBarHTML(sku, formats);
   if(!recs.length){
-    $('output').innerHTML = `<div class="empty">No ${PTYPE_LABEL[curPtype]||curPtype} images for ${nm} yet${all.length?` — ${all.length} on other product-type pills`:''}. Upload a packshot + pick a strategy → Generate.</div>`;
+    $('output').innerHTML = bar + `<div class="empty">No ${PTYPE_LABEL[curPtype]||curPtype} images for ${nm} yet${all.length?` — ${all.length} on other product-type pills`:''}. Upload a packshot + pick a strategy → Generate.</div>`;
+  } else if(!visReps.length){
+    $('output').innerHTML = bar + `<div class="empty">No images match this filter${galFmtFilter?` · format “${((BRAINS||[]).find(b=>b.id===galFmtFilter)||{}).name||galFmtFilter}”`:''}${galSearchText?` · “${galSearchText}”`:''}. <a href="javascript:clearGalFilters()" style="color:#CF102D">Clear filters</a>.</div>`;
+  } else if(galFmtFilter || galSearchText){
+    // filtered → flat grid (no format-folder headers; the filter IS the grouping)
+    $('output').innerHTML = bar + visReps.map(({rep,list})=>cardHTML(rep,list)).join('');
   } else {
-    // GROUP BY FORMAT (rec.angle) so imported batches (tournament formats, Aditya matrix, proof
-    // strip, future spreadsheet batches) never dump into one undifferentiated pile — each format
-    // gets its own labelled section, like a folder, while still sharing the drag-reorder grid.
-    const groups = new Map();   // insertion order = General first, then first-seen order
-    for(const r of recs){ const key=r.angle||''; if(!groups.has(key)) groups.set(key, []); groups.get(key).push(r); }
+    // unfiltered → group into format folders (by rec.angle), same as before, now version-collapsed
+    const groups = new Map();
+    for(const vr of visReps){ const key=vr.rep.angle||''; if(!groups.has(key)) groups.set(key, []); groups.get(key).push(vr); }
     const keys = [...groups.keys()].sort((a,b)=> a===''?-1 : b===''?1 : formatGroupLabel(a).localeCompare(formatGroupLabel(b)));
-    $('output').innerHTML = keys.map(key=>{
+    $('output').innerHTML = bar + keys.map(key=>{
       const list=groups.get(key); const label=formatGroupLabel(key);
       const header = key==='' ? '' : `<div class="fmt-group-header" style="grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin:14px 0 2px;padding-top:10px;border-top:1px solid var(--line)">📁 ${label} · ${list.length}</div>`;
-      return header + list.map(cardHTML).join('');
+      return header + list.map(({rep,list:vl})=>cardHTML(rep,vl)).join('');
     }).join('');
   }
   // re-show any render that was still in-flight when he switched away — its live promise will replace this placeholder when it lands
@@ -2034,12 +2191,12 @@ function callGeminiEdit(imgDataUrl, instruction){
   const aspectRatio=(MODES[curMode].ar||'4:5').split(' ')[0];
   return E.editImage({ imgDataUrl, instruction, refImgs, sku:curSku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio });
 }
-let _editSrc=null, _editRefs=[], _editSrcLabel='', _editSrcBrief='', _editSrcAngle='';   // carry the source card's format label + creative brief + angle through the edit
+let _editSrc=null, _editRefs=[], _editSrcLabel='', _editSrcBrief='', _editSrcAngle='', _editSrcBrain='', _editSrcParent=null;   // carry the source card's format label + creative brief + angle + brain + version-root through the edit
 async function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
   _editSrc=src; _editRefs=[];
-  try{ const _sr=await idbGet(cardId); _editSrcLabel=_sr?.label||''; _editSrcBrief=_sr?.brief||''; _editSrcAngle=_sr?.angle||''; }catch(e){ _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; }   // inherit format keyword + brief + angle so Send-to-Facy stays in context
+  try{ const _sr=await idbGet(cardId); _editSrcLabel=_sr?.label||''; _editSrcBrief=_sr?.brief||''; _editSrcAngle=_sr?.angle||''; _editSrcBrain=_sr?.brain||brainOf(_sr)||''; _editSrcParent=(_sr&&(_sr.parent||_sr.id))||cardId; }catch(e){ _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=cardId; }   // inherit format keyword + brief + angle + brain + version-root so Send-to-Facy stays in context AND the edit stacks as a new version
   renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
@@ -2055,8 +2212,8 @@ function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image — or drag &amp; drop / paste it here</div>`; }
   renderEditSizePreview();   // keep the mini preview beside Apply edit in sync with the loaded image
 }
-function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; renderEditSrc(); }); }
-function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; renderEditSrc(); }; r.readAsDataURL(file); }
+function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=null; renderEditSrc(); }); }
+function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=null; renderEditSrc(); }; r.readAsDataURL(file); }
 function editDragOver(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline='2px solid #6d5efc'; }
 function editDragLeave(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; }
 function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; const f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) _fileToEditSrc(f); }
@@ -2115,7 +2272,7 @@ async function applyEdit(){
       (async ()=>{
         try{
           const url=await callGeminiEditRefs(src, instruction, [key]);
-          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||''};
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:_editSrcParent||null};
           await finishEditCard(id, rec);
         }catch(e){ markCardFailed(id, e.message); }
       })();
@@ -2147,7 +2304,7 @@ async function applyEdit(){
     (async()=>{
       try{
         const url=await callGeminiEditRefs(src, instr, refKeys);
-        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||''};
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:_editSrcParent||null};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
@@ -2424,7 +2581,7 @@ async function makeSizes(cardId){
         const url=await E.editImage({ imgDataUrl:src,
           instruction:'REFRAME this finished ad to a '+ratio+' canvas ('+label+'). Keep EVERY element identical — same product rendering, headline text word-for-word, colours, badges and style. Recompose the layout gracefully for the new shape (extend the background naturally to fill; restack text zones if needed). Never crop off the product or any text.',
           refImgs:[], sku:rec.sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio:ratio });
-        const nrec={id:'g'+Date.now()+'_sz'+i, sku:rec.sku, mode, ptype:ptypeOf(rec), label:(rec.label||'')+' · '+label, ts:Date.now(), url, fav:false, brief:rec.brief||'', angle:rec.angle||''};
+        const nrec={id:'g'+Date.now()+'_sz'+i, sku:rec.sku, mode, ptype:ptypeOf(rec), label:(rec.label||'')+' · '+label, ts:Date.now(), url, fav:false, brief:rec.brief||'', angle:rec.angle||'', brain:rec.brain||brainOf(rec)||null};
         await finishEditCard(id, nrec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
