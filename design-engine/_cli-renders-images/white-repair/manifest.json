@@ -1,5 +1,85 @@
 [
   {
+    "id": "gwhiterepair_0",
+    "filename": "c1-coffee-cup-bench.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C1 — Coffee Cup Bench",
+    "brief": "Takeaway coffee cup on a bathroom bench next to the real LACALUT WHITE & REPAIR tube (German pack). Morning light. No teeth or mouths shown. Small supporting tagline beneath: \"Brushing twice a day doesn't always shift it.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_1",
+    "filename": "c2-cafe-chalkboard-sign.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C2 — Cafe Chalkboard Sign",
+    "brief": "Cafe chalkboard sign, handwritten chalk lettering, coffee machine blurred behind, showing the headline. Real LACALUT WHITE & REPAIR tube (German pack) photo composited in the bottom corner — do not AI-generate the tube, use the exact reference.",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_2",
+    "filename": "c3-flatlay-drinks.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C3 — Flat Lay Drinks",
+    "brief": "A coffee cup, a cup of tea and a glass of red wine lined up on a kitchen bench, with the real LACALUT WHITE & REPAIR tube (German pack) at the end of the row. Small supporting tagline beneath: \"All 3 leave surface stains.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_3",
+    "filename": "c4-old-brush-vs-tube.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C4 — Old Brush vs Tube",
+    "brief": "A worn-out, splayed old toothbrush lying next to the real LACALUT WHITE & REPAIR tube (German pack) on a clean bench. Small supporting tagline beneath: \"Try a gentle polish instead.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_4",
+    "filename": "c5-tried-everything-list.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C5 — Tried Everything List",
+    "brief": "Handwritten list on lined notepad paper titled \"Things I've tried\", showing the headline items. No crosses or 'doesn't work' marks. Below the list, the real LACALUT WHITE & REPAIR tube (German pack) photo. Small supporting tagline beneath: \"1 thing I hadn't: a German toothpaste with no peroxide.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_5",
+    "filename": "c6-drawer-strips.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C6 — Drawer Strips",
+    "brief": "A bathroom drawer half open. Inside: a half-used box of plain, unbranded whitening strips (no logos, no competitor packs). On the bench above, the real LACALUT WHITE & REPAIR tube (German pack). Small supporting tagline beneath: \"No peroxide in this one.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_6",
+    "filename": "c7-supermarket-aisle.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C7 — Supermarket Aisle",
+    "brief": "Blurred supermarket toothpaste aisle in the background (no brand names or packs readable). In the foreground, a hand holding the real LACALUT WHITE & REPAIR tube (German pack). Small supporting tagline beneath: \"This one comes off a German pharmacy shelf.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_7",
+    "filename": "c8-emoji-smile-contrast.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C8 — Emoji Smile Contrast",
+    "brief": "Clean white card with two big emojis side by side: a closed-mouth smile and a big toothy grin. Headline text above the emojis. Real LACALUT WHITE & REPAIR tube (German pack) photo bottom right. No real people, no teeth photos, no before/after. Small supporting tagline beneath: \"It's the colour, not the shape.\"",
+    "angle": ""
+  },
+  {
     "id": "g1790952150205_8",
     "filename": "c9-phone-editing-slider.png",
     "sku": "white-repair",
@@ -7,6 +87,16 @@
     "ptype": "toothpaste",
     "label": "WHITE&REPAIR C9 — Phone Editing Slider",
     "brief": "Phone screen mock-up of a generic photo-editing app (no real app branding) with a slider labelled \"Teeth\" being dragged. No face or teeth shown, no before/after. Real LACALUT WHITE & REPAIR tube (German pack) photo beside the phone. Small supporting tagline beneath: \"There's an easier way.\"",
+    "angle": ""
+  },
+  {
+    "id": "gwhiterepair_9",
+    "filename": "c10-two-camp-cups.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE&REPAIR C10 — Two-Camp Cups",
+    "brief": "Two identical coffee cups side by side. Left label: \"SMILES WITH TEETH\". Right label: \"SMILES WITH LIPS CLOSED\". Bottom band with the real LACALUT WHITE & REPAIR tube (German pack) photo and the stat line. Small supporting tagline beneath: \"1,000,000,000+ LACALUT tubes sold in 60+ countries\".",
     "angle": ""
   }
 ]

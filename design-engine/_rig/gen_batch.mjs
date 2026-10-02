@@ -77,8 +77,21 @@ for (let i = 0; i < ads.length; i++) {
   } catch (e) { console.log('FAIL', e.message); }
 }
 
-fs.writeFileSync(path.join(IMPORT_OUT, 'manifest.json'), JSON.stringify(manifest, null, 2));
-console.log('\nWrote ' + manifest.length + ' manifest entries -> ' + IMPORT_OUT);
+// MERGE, never clobber: when re-rendering a subset (ADS=... filter) or re-running a batch,
+// load the existing manifest and upsert by filename so we never nuke entries we didn't touch
+// this run. (Overwriting was the bug that truncated flora/sensitivity/white-repair to 1 entry.)
+const manifestPath = path.join(IMPORT_OUT, 'manifest.json');
+let finalManifest = manifest;
+if (fs.existsSync(manifestPath)) {
+  let prior = [];
+  try { prior = JSON.parse(fs.readFileSync(manifestPath, 'utf8')); } catch (e) { prior = []; }
+  const byFile = new Map(prior.map(e => [e.filename, e]));
+  for (const e of manifest) byFile.set(e.filename, e);   // new/re-rendered entries win
+  // drop any entry whose image file no longer exists on disk
+  finalManifest = [...byFile.values()].filter(e => fs.existsSync(path.join(IMPORT_OUT, e.filename)));
+}
+fs.writeFileSync(manifestPath, JSON.stringify(finalManifest, null, 2));
+console.log('\nWrote ' + finalManifest.length + ' manifest entries (' + manifest.length + ' this run) -> ' + IMPORT_OUT);
 
 execSync('node ' + JSON.stringify(path.join(DE, '_rig', 'update_cli_index.mjs')), { cwd: DE, stdio: 'inherit' });
 console.log('Commit + push this repo and the live engine auto-loads it on next refresh — no button, no picker.');

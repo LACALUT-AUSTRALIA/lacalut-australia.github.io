@@ -1,5 +1,105 @@
 [
   {
+    "id": "gflora_0",
+    "filename": "c1-mask-trap-flatlay.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C1 — Mask Trap Flat Lay",
+    "brief": "Overhead flat lay on a white bathroom bench, split down the middle. Left half: a messy pile of mint tins, gum packets, loose wrappers and a travel mouthwash. Right half: the real LACALUT FLORA toothpaste tube (German pack), neat, nothing else. Small supporting tagline beneath the headline, under the right half: \"2 steps. Morning and night.\"",
+    "angle": ""
+  },
+  {
+    "id": "gflora_1",
+    "filename": "c2-myth-vs-fact.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C2 — Myth vs Fact",
+    "brief": "Clean 2-panel card. Top panel, grey background: the MYTH line. Bottom panel, LACALUT red background: the FACT line. Real LACALUT FLORA tube (German pack) photo bottom right corner.",
+    "angle": ""
+  },
+  {
+    "id": "gflora_2",
+    "filename": "c3-whiteboard-sign.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C3 — Whiteboard Sign",
+    "brief": "Office kitchen whiteboard, handwritten marker, slightly messy, native feel, with the headline written on it. Real LACALUT FLORA tube (German pack) photo composited on the bench below the whiteboard — do not AI-generate the pack, use the exact reference.",
+    "angle": ""
+  },
+  {
+    "id": "gflora_3",
+    "filename": "c4-text-thread.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C4 — Text Thread",
+    "brief": "An iMessage/WhatsApp chat screenshot, plain, no branding in the thread, showing this exact exchange: Friend: \"you coming up for the presentation?\" Me: \"2 min\" Me: \"gum, mint, quick sip of water first\" Friend: \"every single time lol\". Bottom band of the image: real LACALUT FLORA tube (German pack) photo. Small supporting tagline beneath: \"Less prep. More talking.\"",
+    "angle": ""
+  },
+  {
+    "id": "gflora_4",
+    "filename": "c5-office-dropin.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C5 — Office Drop-In",
+    "brief": "Candid, slightly imperfect photo of an office: one person seated at a desk, a colleague leaning over their shoulder to look at the screen, both laughing. Natural light, no studio polish. Real LACALUT FLORA tube (German pack) photo small, bottom right. Headline text small, top left, like a caption.",
+    "angle": ""
+  },
+  {
+    "id": "gflora_5",
+    "filename": "c6-notes-checklist.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C6 — Notes Checklist",
+    "brief": "A Notes app checklist screenshot, yellow header, showing this exact checklist: \"before talking to anyone — [ ] sip of water [ ] mint [ ] cupped-hand check [ ] stand half a step back\". Below the note, a clean white card with the real LACALUT FLORA tube (German pack) photo. Small supporting tagline beneath: \"Or: paste + rinse. Morning + night.\"",
+    "angle": ""
+  },
+  {
+    "id": "gflora_6",
+    "filename": "c7-diagram-mouth.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C7 — Diagram",
+    "brief": "Simple hand-drawn marker sketch of a smiling mouth on a notepad — playful, NOT a medical or anatomical illustration. A toothbrush icon with an arrow labelled \"teeth\". A rinse cup icon with a bigger arrow labelled \"the rest of your mouth\". Real LACALUT FLORA tube (German pack) photo bottom right.",
+    "angle": ""
+  },
+  {
+    "id": "gflora_7",
+    "filename": "c8-sticky-note-mirror.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C8 — Mirror Sticky Note",
+    "brief": "Bathroom mirror with a yellow sticky note, handwritten with the headline. Real LACALUT FLORA tube (German pack) photo on the sink below the mirror.",
+    "angle": ""
+  },
+  {
+    "id": "gflora_8",
+    "filename": "c9-usual-vs-flora-routine.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C9 — Routine Comparison",
+    "brief": "2-column comparison card, real LACALUT FLORA tube (German pack) photo in column 2. No brand names, no logos of other products, no ticks or crosses implying other products fail — plain text columns only.",
+    "angle": ""
+  },
+  {
+    "id": "gflora_9",
+    "filename": "c10-tried-everything-list.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C10 — Tried Everything List",
+    "brief": "Handwritten list on lined notepad paper showing the headline items. Below the list, the real LACALUT FLORA tube (German pack) photo. No crosses or \"doesn't work\" labels on the list items. Small supporting tagline beneath: \"1 thing I hadn't: a German routine made since 1925.\"",
+    "angle": ""
+  },
+  {
     "id": "g1790951834082_10",
     "filename": "c11-credibility-hero.png",
     "sku": "flora",
@@ -7,6 +107,16 @@
     "ptype": "toothpaste",
     "label": "FLORA C11 — Credibility Hero",
     "brief": "Hero shot of the real LACALUT FLORA tube (German pack) on a clean neutral background. 3 stat callouts arranged around the product, each pulling one line from the headline. Small supporting tagline beneath: \"Now in Australian pharmacies.\"",
+    "angle": ""
+  },
+  {
+    "id": "gflora_11",
+    "filename": "c12-skepticism-bubble.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C12 — Skepticism Bubble",
+    "brief": "Big white speech bubble on a soft blue background containing the headline as a question. Answer card underneath, with the real LACALUT FLORA tube (German pack) photo on it. Small supporting tagline beneath: \"No. It's a 2-part routine. Paste + matched rinse. Made in Germany since 1925. 30-day returns.\"",
     "angle": ""
   }
 ]
