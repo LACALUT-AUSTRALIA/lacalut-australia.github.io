@@ -1306,26 +1306,33 @@ async function autoImportCliRenders(){
     const idxRes = await fetch('./_cli-renders-images/_index.json', { cache: 'no-store' });
     if(!idxRes.ok) return;
     const batches = await idxRes.json();
-    let imported = 0;
+    let imported = 0, toastEl = null;
     for(const b of batches){
       try{
         const mf = await fetch('./_cli-renders-images/'+b+'/manifest.json', { cache: 'no-store' });
         if(!mf.ok) continue;
         const manifest = await mf.json();
-        for(const m of manifest){
+        const fresh = [];
+        for(const m of manifest){ if(!(await idbGet(m.id))) fresh.push(m); }   // dedup check first, fast
+        if(!fresh.length) continue;
+        if(!toastEl) toastEl = toast('🖼️ Loading new renders… 0/'+fresh.length, true);
+        let done = 0, batchImported = 0;
+        await Promise.all(fresh.map(async m=>{
           try{
-            if(await idbGet(m.id)) continue;   // already imported
             const imgRes = await fetch('./_cli-renders-images/'+b+'/'+m.filename, { cache: 'no-store' });
-            if(!imgRes.ok) continue;
+            if(!imgRes.ok) return;
             const blob = await imgRes.blob();
             const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
             const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'' };
-            await idbPut(rec); imported++;
+            await idbPut(rec); imported++; batchImported++;
           }catch(e){ console.error('auto-import failed for', m, e); }
-        }
+          finally{ done++; if(toastEl) toastEl.textContent = '🖼️ Loading new renders… '+done+'/'+fresh.length; }
+        }));
+        if(batchImported) renderGallery(curSku);   // repaint after EVERY batch, not just at the very end — no stale views while later batches are still loading
       }catch(e){ console.error('auto-import batch failed', b, e); }
     }
-    if(imported){ renderGallery(curSku); toast('🖼️ Auto-loaded '+imported+' new render(s)'); }
+    if(imported){ renderGallery(curSku); const msg='🖼️ Auto-loaded '+imported+' new render(s)'; if(toastEl){ toastEl.textContent=msg; clearTimeout(toastEl._h); toastEl._h=setTimeout(()=>toastEl.style.opacity='0',2200); } else toast(msg); }
+    else if(toastEl) toastEl.remove();
   }catch(e){ /* no _index.json yet, or offline — manual 🖼️ Load Image Renders button still works */ }
 }
 
@@ -1792,10 +1799,13 @@ function moveOptions(curSkuOfCard, curPtypeOfCard){
   o.push('<option value="multi|">🎁 Multi-SKU</option>');
   return o.join('');
 }
-function toast(msg){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'); t.id='lc_toast';
+function toast(msg, persist){ let t=$('lc_toast'); if(!t){ t=document.createElement('div'); t.id='lc_toast';
   t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .2s;box-shadow:0 4px 16px rgba(0,0,0,.25)';
   document.body.appendChild(t); }
-  t.textContent=msg; t.style.opacity='1'; clearTimeout(t._h); t._h=setTimeout(()=>t.style.opacity='0',2200); }
+  t.textContent=msg; t.style.opacity='1'; clearTimeout(t._h);
+  if(persist) t.remove=function(){ this.style.opacity='0'; setTimeout(()=>{ if(this.parentNode) this.parentNode.removeChild(this); },200); };
+  else t._h=setTimeout(()=>t.style.opacity='0',2200);
+  return t; }
 async function moveGen(id,target){
   if(!target) return;
   const [tsku, tptype] = target.split('|');   // "aktiv|mouthwash"  ·  "multi|" (form unchanged)
