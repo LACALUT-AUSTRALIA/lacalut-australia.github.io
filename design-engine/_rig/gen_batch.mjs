@@ -10,6 +10,7 @@
 //          "🖼️ Load Image Renders" button to import straight into the Gallery, Edit-ready.
 import fs from 'fs';
 import path from 'path';
+import { execSync } from 'child_process';
 
 const DE = path.resolve(import.meta.dirname, '..');
 const batchName = process.argv[2];
@@ -72,4 +73,6 @@ for (let i = 0; i < ads.length; i++) {
 
 fs.writeFileSync(path.join(IMPORT_OUT, 'manifest.json'), JSON.stringify(manifest, null, 2));
 console.log('\nWrote ' + manifest.length + ' manifest entries -> ' + IMPORT_OUT);
-console.log('In the live engine: click "🖼️ Load Image Renders" and pick this folder.');
+
+execSync('node ' + JSON.stringify(path.join(DE, '_rig', 'update_cli_index.mjs')), { cwd: DE, stdio: 'inherit' });
+console.log('Commit + push this repo and the live engine auto-loads it on next refresh — no button, no picker.');

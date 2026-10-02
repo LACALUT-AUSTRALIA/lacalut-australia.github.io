@@ -87,7 +87,7 @@
 </head>
 <body>
 <header>
-  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v20 winner-layouts</span></small></div>
+  <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v21 auto-import</span></small></div>
   <div class="spacer"></div>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
@@ -1295,6 +1295,38 @@ async function importCliImageRenders(){
   }
   renderGallery(curSku);
   toast(imported? ('🖼️ Imported '+imported+' image(s)'+(skipped?(' · '+skipped+' already present'):'')+' — check the gallery') : (skipped? '✅ All already imported' : '⚠️ Nothing imported'));
+}
+
+// Zero-click counterpart to importCliImageRenders(): runs on every page load, fetches
+// _cli-renders-images/_index.json (rebuilt automatically by _rig/gen_batch.mjs each run) and
+// pulls in any batch's manifest + images straight from the live site — no folder picker, no button.
+// Dedupes against IndexedDB by id, so re-running on every load is cheap once a batch is in.
+async function autoImportCliRenders(){
+  try{
+    const idxRes = await fetch('./_cli-renders-images/_index.json', { cache: 'no-store' });
+    if(!idxRes.ok) return;
+    const batches = await idxRes.json();
+    let imported = 0;
+    for(const b of batches){
+      try{
+        const mf = await fetch('./_cli-renders-images/'+b+'/manifest.json', { cache: 'no-store' });
+        if(!mf.ok) continue;
+        const manifest = await mf.json();
+        for(const m of manifest){
+          try{
+            if(await idbGet(m.id)) continue;   // already imported
+            const imgRes = await fetch('./_cli-renders-images/'+b+'/'+m.filename, { cache: 'no-store' });
+            if(!imgRes.ok) continue;
+            const blob = await imgRes.blob();
+            const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
+            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'' };
+            await idbPut(rec); imported++;
+          }catch(e){ console.error('auto-import failed for', m, e); }
+        }
+      }catch(e){ console.error('auto-import batch failed', b, e); }
+    }
+    if(imported){ renderGallery(curSku); toast('🖼️ Auto-loaded '+imported+' new render(s)'); }
+  }catch(e){ /* no _index.json yet, or offline — manual 🖼️ Load Image Renders button still works */ }
 }
 
 /* ── ffmpeg.wasm loader (single-threaded core — no COOP/COEP needed; lazy, ~31MB one-off) ── */
@@ -2555,7 +2587,7 @@ if($('archSel') && window.LAYOUT_ARCHETYPES){
   window.LAYOUT_ARCHETYPES.forEach(a=>$('archSel').insertAdjacentHTML('beforeend',`<option value="${a.id}">${a.name} · ${a.styleFamily}</option>`));
   try{ const v=localStorage.getItem('de_arch'); if(v && [...$('archSel').options].some(o=>o.value===v)) $('archSel').value=v; }catch(_){}
 }
-migratePtype().then(()=>renderGallery(curSku));   // tag legacy gens as toothpaste first, then paint the gallery
+migratePtype().then(()=>renderGallery(curSku)).then(()=>autoImportCliRenders());   // tag legacy gens, paint gallery, then auto-pull any new CLI renders — zero clicks
 loadRefLib().then(seedPacks).then(loadProdSlots).then(()=>{ loadProductImgs(); renderSlots(); renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // refs → seed German packs → load saved slot photos → fill slots + restore Image/Video mode
 $('advNeg').addEventListener('change',renderNeg);
 </script>

@@ -1,0 +1,802 @@
+[
+  {
+    "id": "gexist1279082899",
+    "filename": "gexist1279082899.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Anatomy Graphic",
+    "brief": "",
+    "angle": "anatomy-graphic"
+  },
+  {
+    "id": "gexist512087123",
+    "filename": "gexist512087123.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Australia Day",
+    "brief": "",
+    "angle": "australia-day"
+  },
+  {
+    "id": "gexist1594821510",
+    "filename": "gexist1594821510.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · B2b Partner Trade",
+    "brief": "",
+    "angle": "b2b-partner-trade"
+  },
+  {
+    "id": "gexist979292501",
+    "filename": "gexist979292501.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Back To School",
+    "brief": "",
+    "angle": "back-to-school"
+  },
+  {
+    "id": "gexist2000047146",
+    "filename": "gexist2000047146.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Before After",
+    "brief": "",
+    "angle": "before-after"
+  },
+  {
+    "id": "gexist1896947901",
+    "filename": "gexist1896947901.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Benefit First",
+    "brief": "",
+    "angle": "benefit-first"
+  },
+  {
+    "id": "gexist64463827",
+    "filename": "gexist64463827.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Bold Headliner",
+    "brief": "",
+    "angle": "bold-headliner"
+  },
+  {
+    "id": "gexist518062991",
+    "filename": "gexist518062991.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Caption Guess This",
+    "brief": "",
+    "angle": "caption-guess-this"
+  },
+  {
+    "id": "gexist64368162",
+    "filename": "gexist64368162.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Chat Text Message",
+    "brief": "",
+    "angle": "chat-text-message"
+  },
+  {
+    "id": "gexist2069614301",
+    "filename": "gexist2069614301.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Chinese New Year",
+    "brief": "",
+    "angle": "chinese-new-year"
+  },
+  {
+    "id": "gexist2019361875",
+    "filename": "gexist2019361875.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Christmas Festive",
+    "brief": "",
+    "angle": "christmas-festive"
+  },
+  {
+    "id": "gexist1150192322",
+    "filename": "gexist1150192322.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Christmas Festive",
+    "brief": "",
+    "angle": "christmas-festive"
+  },
+  {
+    "id": "gexist1859204551",
+    "filename": "gexist1859204551.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Dental Health Week World Oral Health Day",
+    "brief": "",
+    "angle": "dental-health-week-world-oral-health-day"
+  },
+  {
+    "id": "gexist1602854517",
+    "filename": "gexist1602854517.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Did You Know Fact",
+    "brief": "",
+    "angle": "did-you-know-fact"
+  },
+  {
+    "id": "gexist944919808",
+    "filename": "gexist944919808.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Easter",
+    "brief": "",
+    "angle": "easter"
+  },
+  {
+    "id": "gexist1436156974",
+    "filename": "gexist1436156974.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Emotional",
+    "brief": "",
+    "angle": "emotional"
+  },
+  {
+    "id": "gexist144752642",
+    "filename": "gexist144752642.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Emotional",
+    "brief": "",
+    "angle": "emotional"
+  },
+  {
+    "id": "gexist107907329",
+    "filename": "gexist107907329.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Eofy Black Friday",
+    "brief": "",
+    "angle": "eofy-black-friday"
+  },
+  {
+    "id": "gexist1388481249",
+    "filename": "gexist1388481249.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Exploded Reveal",
+    "brief": "",
+    "angle": "exploded-reveal"
+  },
+  {
+    "id": "gexist1655169839",
+    "filename": "gexist1655169839.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Faq Ask The Expert",
+    "brief": "",
+    "angle": "faq-ask-the-expert"
+  },
+  {
+    "id": "gexist846529396",
+    "filename": "gexist846529396.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Father S Day",
+    "brief": "",
+    "angle": "father-s-day"
+  },
+  {
+    "id": "gexist1837471966",
+    "filename": "gexist1837471966.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Fear Hook",
+    "brief": "",
+    "angle": "fear-hook"
+  },
+  {
+    "id": "gexist1037797984",
+    "filename": "gexist1037797984.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Fear Hook",
+    "brief": "",
+    "angle": "fear-hook"
+  },
+  {
+    "id": "gexist243950081",
+    "filename": "gexist243950081.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Fill In The Blank",
+    "brief": "",
+    "angle": "fill-in-the-blank"
+  },
+  {
+    "id": "gexist1010304799",
+    "filename": "gexist1010304799.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Founder Heritage Story",
+    "brief": "",
+    "angle": "founder-heritage-story"
+  },
+  {
+    "id": "gexist1662491431",
+    "filename": "gexist1662491431.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Halloween",
+    "brief": "",
+    "angle": "halloween"
+  },
+  {
+    "id": "gexist413791342",
+    "filename": "gexist413791342.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Hot Take Unpopular Opinion",
+    "brief": "",
+    "angle": "hot-take-unpopular-opinion"
+  },
+  {
+    "id": "gexist1620713620",
+    "filename": "gexist1620713620.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · How To Routine",
+    "brief": "",
+    "angle": "how-to-routine"
+  },
+  {
+    "id": "gexist127552366",
+    "filename": "gexist127552366.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Ingredient Spotlight",
+    "brief": "",
+    "angle": "ingredient-spotlight"
+  },
+  {
+    "id": "gexist57874015",
+    "filename": "gexist57874015.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Lifestyle",
+    "brief": "",
+    "angle": "lifestyle"
+  },
+  {
+    "id": "gexist254931275",
+    "filename": "gexist254931275.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Lifestyle",
+    "brief": "",
+    "angle": "lifestyle"
+  },
+  {
+    "id": "gexist1912084077",
+    "filename": "gexist1912084077.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Listicle",
+    "brief": "",
+    "angle": "listicle"
+  },
+  {
+    "id": "gexist1322048748",
+    "filename": "gexist1322048748.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Listicle",
+    "brief": "",
+    "angle": "listicle"
+  },
+  {
+    "id": "gexist2000206830",
+    "filename": "gexist2000206830.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Melbourne Cup",
+    "brief": "",
+    "angle": "melbourne-cup"
+  },
+  {
+    "id": "gexist1947400210",
+    "filename": "gexist1947400210.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Meme Humour",
+    "brief": "",
+    "angle": "meme-humour"
+  },
+  {
+    "id": "gexist825101274",
+    "filename": "gexist825101274.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Meme Humour",
+    "brief": "",
+    "angle": "meme-humour"
+  },
+  {
+    "id": "gexist89207735",
+    "filename": "gexist89207735.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Money Back Dare",
+    "brief": "",
+    "angle": "money-back-dare"
+  },
+  {
+    "id": "gexist884441141",
+    "filename": "gexist884441141.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Money Back Dare",
+    "brief": "",
+    "angle": "money-back-dare"
+  },
+  {
+    "id": "gexist1512000874",
+    "filename": "gexist1512000874.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Mother S Day",
+    "brief": "",
+    "angle": "mother-s-day"
+  },
+  {
+    "id": "gexist2041438069",
+    "filename": "gexist2041438069.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Myth Vs Fact",
+    "brief": "",
+    "angle": "myth-vs-fact"
+  },
+  {
+    "id": "gexist711194230",
+    "filename": "gexist711194230.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Myth Vs Fact",
+    "brief": "",
+    "angle": "myth-vs-fact"
+  },
+  {
+    "id": "gexist624136678",
+    "filename": "gexist624136678.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · New Year Resolution",
+    "brief": "",
+    "angle": "new-year-resolution"
+  },
+  {
+    "id": "gexist556599683",
+    "filename": "gexist556599683.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Packaging Hero",
+    "brief": "",
+    "angle": "packaging-hero"
+  },
+  {
+    "id": "gexist2056627134",
+    "filename": "gexist2056627134.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Packaging Hero",
+    "brief": "",
+    "angle": "packaging-hero"
+  },
+  {
+    "id": "gexist1240885325",
+    "filename": "gexist1240885325.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Pop Culture News Jack",
+    "brief": "",
+    "angle": "pop-culture-news-jack"
+  },
+  {
+    "id": "gexist930723159",
+    "filename": "gexist930723159.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Post It Note",
+    "brief": "",
+    "angle": "post-it-note"
+  },
+  {
+    "id": "gexist1605390432",
+    "filename": "gexist1605390432.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Pov When You",
+    "brief": "",
+    "angle": "pov-when-you"
+  },
+  {
+    "id": "gexist1566100704",
+    "filename": "gexist1566100704.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Pov When You",
+    "brief": "",
+    "angle": "pov-when-you"
+  },
+  {
+    "id": "gexist664428853",
+    "filename": "gexist664428853.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Press Editorial",
+    "brief": "",
+    "angle": "press-editorial"
+  },
+  {
+    "id": "gexist655722074",
+    "filename": "gexist655722074.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Problem Vs Solution",
+    "brief": "",
+    "angle": "problem-vs-solution"
+  },
+  {
+    "id": "gexist640387091",
+    "filename": "gexist640387091.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Quote Proverb",
+    "brief": "",
+    "angle": "quote-proverb"
+  },
+  {
+    "id": "gexist1586171266",
+    "filename": "gexist1586171266.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Quote Proverb",
+    "brief": "",
+    "angle": "quote-proverb"
+  },
+  {
+    "id": "gexist313489124",
+    "filename": "gexist313489124.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Rate Your Routine",
+    "brief": "",
+    "angle": "rate-your-routine"
+  },
+  {
+    "id": "gexist2118674075",
+    "filename": "gexist2118674075.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Review Screenshot",
+    "brief": "",
+    "angle": "review-screenshot"
+  },
+  {
+    "id": "gexist356136920",
+    "filename": "gexist356136920.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Scarcity Restock Alert",
+    "brief": "",
+    "angle": "scarcity-restock-alert"
+  },
+  {
+    "id": "gexist1932116705",
+    "filename": "gexist1932116705.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Science Ingredient",
+    "brief": "",
+    "angle": "science-ingredient"
+  },
+  {
+    "id": "gexist1450509936",
+    "filename": "gexist1450509936.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Sexy Provocative",
+    "brief": "",
+    "angle": "sexy-provocative"
+  },
+  {
+    "id": "gexist213595207",
+    "filename": "gexist213595207.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Social Proof Wall",
+    "brief": "",
+    "angle": "social-proof-wall"
+  },
+  {
+    "id": "gexist259322005",
+    "filename": "gexist259322005.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Sports Event Flex",
+    "brief": "",
+    "angle": "sports-event-flex"
+  },
+  {
+    "id": "gexist285600835",
+    "filename": "gexist285600835.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Stat Big Number",
+    "brief": "",
+    "angle": "stat-big-number"
+  },
+  {
+    "id": "gexist138124721",
+    "filename": "gexist138124721.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Stat Big Number",
+    "brief": "",
+    "angle": "stat-big-number"
+  },
+  {
+    "id": "gexist59593301",
+    "filename": "gexist59593301.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Testimonial Review Spotlight",
+    "brief": "",
+    "angle": "testimonial-review-spotlight"
+  },
+  {
+    "id": "gexist1522285020",
+    "filename": "gexist1522285020.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · This Or That",
+    "brief": "",
+    "angle": "this-or-that"
+  },
+  {
+    "id": "gexist767722693",
+    "filename": "gexist767722693.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Trust Proof",
+    "brief": "",
+    "angle": "trust-proof"
+  },
+  {
+    "id": "gexist1876455442",
+    "filename": "gexist1876455442.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Ugc Holding Product",
+    "brief": "",
+    "angle": "ugc-holding-product"
+  },
+  {
+    "id": "gexist1141237312",
+    "filename": "gexist1141237312.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Ugc Selfie",
+    "brief": "",
+    "angle": "ugc-selfie"
+  },
+  {
+    "id": "gexist1705374963",
+    "filename": "gexist1705374963.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Ugc Shelfie",
+    "brief": "",
+    "angle": "ugc-shelfie"
+  },
+  {
+    "id": "gexist239509174",
+    "filename": "gexist239509174.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Tournament · Valentine S Day",
+    "brief": "",
+    "angle": "valentine-s-day"
+  },
+  {
+    "id": "gexist946004310",
+    "filename": "gexist946004310.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · Aditya Billboard",
+    "brief": "",
+    "angle": "aditya-matrix"
+  },
+  {
+    "id": "gexist187323788",
+    "filename": "gexist187323788.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · Aditya Feel Contrast",
+    "brief": "",
+    "angle": "aditya-matrix"
+  },
+  {
+    "id": "gexist1776624134",
+    "filename": "gexist1776624134.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · Aditya Night Morning",
+    "brief": "",
+    "angle": "aditya-matrix"
+  },
+  {
+    "id": "gexist493686151",
+    "filename": "gexist493686151.jpg",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · Aditya Reviews Hype",
+    "brief": "",
+    "angle": "aditya-matrix"
+  },
+  {
+    "id": "gexist1922377782",
+    "filename": "gexist1922377782.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Bold Editorial Hook",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist1866287978",
+    "filename": "gexist1866287978.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Classic Offer Poster",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist877134655",
+    "filename": "gexist877134655.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Comic Reveal Banner",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist670269557",
+    "filename": "gexist670269557.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Mechanism Infographic",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist1365342662",
+    "filename": "gexist1365342662.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Postit Flatlay",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist19126104",
+    "filename": "gexist19126104.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Problem Crush Splash",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist1215993440",
+    "filename": "gexist1215993440.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Quote Testimonial Card",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  },
+  {
+    "id": "gexist214380061",
+    "filename": "gexist214380061.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "v20 Proof Strip · Steps Price Stack",
+    "brief": "",
+    "angle": "v20-archetype-proof"
+  }
+]
