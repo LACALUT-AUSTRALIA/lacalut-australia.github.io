@@ -499,7 +499,7 @@ function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes(
   if(KEYS.gemini){ b.className='kbadge ok'; b.textContent='✓ '+mdl; } else { b.className='kbadge no'; b.textContent='⚠ No Gemini key'; } }
 
 /* ═══ ACTIONS ═══ */
-function pickSku(k){ curSku=k; curPtype=getPtype(k); if(k!=='multi') loadProductImgs(); renderPtypes(); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); }
+function pickSku(k){ curSku=k; curPtype=getPtype(k); if(k!=='multi') loadProductImgs(); renderPtypes(); renderTabs(); renderSlots(); renderNeg(); renderTitle(); renderGallery(k); renderFmtLib(); }
 function pickMode(m){ curMode=m; try{ localStorage.setItem('de_mode',m); }catch(_){} renderModes(); renderEditModes(); renderTitle(); }
 
 /* ═══ SETTINGS PERSISTENCE — brief/render/qty survive an Image↔Video switch AND a page refresh ═══ */
