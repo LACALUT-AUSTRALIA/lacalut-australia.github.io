@@ -248,7 +248,7 @@
     }
 
     let p = `Professional graphic-designed ${m.label} for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
-    p += `STRICT brand colours — ${g.colours||s.palette}. `;
+    p += `STRICT brand colours — ${g.colours||s.palette}. These colour/hex names (navy, red, gold, teal, etc.) are internal styling instructions for fills and accents ONLY — never print a colour name, hex code or palette label as literal on-image text, and never invent a sub-brand or product-line name (e.g. "LACALUT Navy") from a colour word. The only brand name in the image is "LACALUT ${s.name}". `;
     if(brain){
       p += `CREATIVE STRATEGY — "${brain.name}": `;
       brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p += `${d} — ${v}. `; });
