@@ -1331,7 +1331,7 @@ async function importCliImageRenders(){
       if(existing){ skipped++; continue; }   // never clobber/duplicate on re-import
       const blob = await files[m.filename].getFile();
       const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
-      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'' };
+      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null };
       await idbPut(rec); imported++;
     }catch(e){ console.error('import failed for', m, e); }
   }
@@ -1365,7 +1365,7 @@ async function autoImportCliRenders(){
             if(!imgRes.ok) return;
             const blob = await imgRes.blob();
             const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
-            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'' };
+            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null };
             await idbPut(rec); imported++; batchImported++;
           }catch(e){ console.error('auto-import failed for', m, e); }
           finally{ done++; if(toastEl) toastEl.textContent = '🖼️ Loading new renders… '+done+'/'+fresh.length; }

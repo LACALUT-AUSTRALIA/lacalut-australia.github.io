@@ -1,0 +1,50 @@
+[
+  {
+    "id": "gaditya_0",
+    "filename": "c1-reviews-hype.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · C1 Reviews Hype",
+    "brief": "",
+    "angle": "aditya-reviews-hype",
+    "brain": null,
+    "ts": 2000
+  },
+  {
+    "id": "gaditya_1",
+    "filename": "c2-billboard.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · C2 Billboard",
+    "brief": "",
+    "angle": "aditya-billboard",
+    "brain": null,
+    "ts": 2001
+  },
+  {
+    "id": "gaditya_2",
+    "filename": "c3-burns-vs-tightens.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · C3 Burns Vs Tightens",
+    "brief": "",
+    "angle": "aditya-feel-contrast",
+    "brain": null,
+    "ts": 2002
+  },
+  {
+    "id": "gaditya_3",
+    "filename": "c4-night-morning.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Aditya Matrix · C4 Night Morning",
+    "brief": "",
+    "angle": "aditya-night-morning",
+    "brain": null,
+    "ts": 2003
+  }
+]

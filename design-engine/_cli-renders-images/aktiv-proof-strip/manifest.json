@@ -1,0 +1,98 @@
+[
+  {
+    "id": "gproof_0",
+    "filename": "bold-editorial-hook.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Bold Editorial Hook",
+    "brief": "",
+    "angle": "bold-editorial-hook",
+    "brain": null,
+    "ts": 1000
+  },
+  {
+    "id": "gproof_1",
+    "filename": "classic-offer-poster.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Classic Offer Poster",
+    "brief": "",
+    "angle": "classic-offer-poster",
+    "brain": null,
+    "ts": 1001
+  },
+  {
+    "id": "gproof_2",
+    "filename": "comic-reveal-banner.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Comic Reveal Banner",
+    "brief": "",
+    "angle": "comic-reveal-banner",
+    "brain": null,
+    "ts": 1002
+  },
+  {
+    "id": "gproof_3",
+    "filename": "mechanism-infographic.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Mechanism Infographic",
+    "brief": "",
+    "angle": "mechanism-infographic",
+    "brain": null,
+    "ts": 1003
+  },
+  {
+    "id": "gproof_4",
+    "filename": "postit-flatlay.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Postit Flatlay",
+    "brief": "",
+    "angle": "postit-flatlay",
+    "brain": null,
+    "ts": 1004
+  },
+  {
+    "id": "gproof_5",
+    "filename": "problem-crush-splash.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Problem Crush Splash",
+    "brief": "",
+    "angle": "problem-crush-splash",
+    "brain": null,
+    "ts": 1005
+  },
+  {
+    "id": "gproof_6",
+    "filename": "quote-testimonial-card.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Quote Testimonial Card",
+    "brief": "",
+    "angle": "quote-testimonial-card",
+    "brain": null,
+    "ts": 1006
+  },
+  {
+    "id": "gproof_7",
+    "filename": "steps-price-stack.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Proof Strip · Steps Price Stack",
+    "brief": "",
+    "angle": "steps-price-stack",
+    "brain": null,
+    "ts": 1007
+  }
+]

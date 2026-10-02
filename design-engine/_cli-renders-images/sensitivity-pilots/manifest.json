@@ -1,0 +1,41 @@
+[
+  {
+    "id": "gsenspilot_0",
+    "filename": "c1-iced-water-v0pilot.png",
+    "sku": "sensitive",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Sensitivity C1 — Iced Water Straw (v1 pilot)",
+    "brief": "",
+    "angle": "",
+    "brain": null,
+    "parent": "gsensitivity_0",
+    "ts": 100
+  },
+  {
+    "id": "gsenspilot_1",
+    "filename": "c2-hot-tap-v0pilot.png",
+    "sku": "sensitive",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Sensitivity C2 — Hot Tap Toothbrush (v1 pilot)",
+    "brief": "",
+    "angle": "",
+    "brain": null,
+    "parent": "gsensitivity_1",
+    "ts": 101
+  },
+  {
+    "id": "gsenspilot_2",
+    "filename": "c3-bite-vs-lick-v0pilot.png",
+    "sku": "sensitive",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "Sensitivity C3 — Bite vs Lick (v1 pilot)",
+    "brief": "",
+    "angle": "",
+    "brain": null,
+    "parent": "gsensitivity_2",
+    "ts": 102
+  }
+]
