@@ -867,8 +867,7 @@ function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
-   <button class="iconbtn" title="Generate video — animate this into a 5–8s clip" onclick="openVideo('${rec.id}')">🎬</button>
-   <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad" onclick="makeSizes('${rec.id}')">📐</button>
+   <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
