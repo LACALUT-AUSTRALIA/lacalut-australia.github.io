@@ -2115,11 +2115,12 @@ function brainOf(rec){
 /* ═══ COLLECTION / BATCH tag — which named set a creative belongs to, so Quan can isolate the
    Aditya Creative Matrix (36) or the Format-Test Library (80) from his own ad-hoc generations.
    Durable field rec.collection when present (set in manifests); else inferred from the label. ═══ */
-const COLLECTIONS={ aditya:{label:'Aditya Matrix', icon:'⭐', colour:'#CF102D'}, 'format-test':{label:'Format Tests', icon:'🧪', colour:'#0a7cff'} };
+const COLLECTIONS={ aditya:{label:'Aditya Matrix', icon:'⭐', colour:'#CF102D'}, 'format-test':{label:'Format Tests', icon:'🧪', colour:'#0a7cff'}, edited:{label:'Edited', icon:'✏️', colour:'#8a63d2'} };
 function collectionOf(rec){
   if(!rec) return null;
-  if(rec.collection && COLLECTIONS[rec.collection]) return rec.collection;
   const L=rec.label||'';
+  if(/·\s*edited\s*$/i.test(L)) return 'edited';   // any edited output → its own folder, regardless of source collection
+  if(rec.collection && COLLECTIONS[rec.collection]) return rec.collection;
   if(/^(FLORA|Sensitivity|WHITE\s*&\s*REPAIR)\s+C\d+/i.test(L) || /aditya\s*matrix/i.test(L) || rec.angle==='aditya-matrix') return 'aditya';
   if(/^Tournament\b/i.test(L) || /^v20\s*Proof\s*Strip/i.test(L)) return 'format-test';
   return null;
@@ -2200,7 +2201,7 @@ async function renderGallery(sku){
   // ── COLLECTION CHIPS: counts per named batch (Aditya Matrix / Format Tests) across ALL reps ──
   const collCount=new Map();
   for(const {rep} of reps){ const c=collectionOf(rep); if(!c) continue; collCount.set(c,(collCount.get(c)||0)+1); }
-  const collections=['aditya','format-test'].filter(c=>collCount.get(c)).map(c=>({ id:c, name:COLLECTIONS[c].label, icon:COLLECTIONS[c].icon, colour:COLLECTIONS[c].colour, count:collCount.get(c) }));
+  const collections=['aditya','format-test','edited'].filter(c=>collCount.get(c)).map(c=>({ id:c, name:COLLECTIONS[c].label, icon:COLLECTIONS[c].icon, colour:COLLECTIONS[c].colour, count:collCount.get(c) }));
   // ── APPLY FILTERS (collection + format + search) ──
   let visReps=reps.filter(({rep})=>{
     if(galCollectionFilter && collectionOf(rep)!==galCollectionFilter) return false;
