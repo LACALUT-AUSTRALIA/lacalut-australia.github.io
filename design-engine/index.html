@@ -2047,11 +2047,13 @@ function driveIdbSet(k,v){ return driveIdbOpen().then(db=>new Promise((res,rej)=
 // Upload the card image straight into the ad-images bucket under the `drive-media-buyer/` prefix —
 // that prefix IS the queue (no table needed). design-engine/cli/drive_pull.py lists it, uploads each
 // file into the Media Buyer Drive folder, then moves it to `drive-done/`.
-async function driveUploadBlob(blob, cardId, sku, label){
+async function driveUploadBlob(blob, cardId, sku, label, coll){
   const mime=blob.type||'image/png';
   const ext=mime==='image/jpeg'?'jpg':(mime==='image/webp'?'webp':'png');
   const safe=(s)=>(s||'').replace(/[^A-Za-z0-9._ -]/g,'_').trim().slice(0,80);
-  const fn='drive-media-buyer/'+safe((sku?sku+' - ':'')+(label||cardId))+'__'+cardId+'-'+Date.now()+'.'+ext;
+  // __col-<collection>__ tag lets drive_pull.py route Aditya Matrix creatives into their own subfolder tree.
+  const colTag='__col-'+((coll||'none').replace(/[^a-z-]/gi,'').toLowerCase()||'none');
+  const fn='drive-media-buyer/'+safe((sku?sku+' - ':'')+(label||cardId))+colTag+'__'+cardId+'-'+Date.now()+'.'+ext;
   const up=await fetch(FACY_SUPA_URL+'/storage/v1/object/ad-images/'+encodeURI(fn),{method:'POST',
     headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':mime,'x-upsert':'true'},
     body:blob});
@@ -2065,8 +2067,8 @@ function dataUrlToBlob(dataUrl){
   for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
   return new Blob([arr],{type:mime});
 }
-async function driveQueueUpload(dataUrl, cardId, sku, label){
-  return driveUploadBlob(dataUrlToBlob(dataUrl), cardId, sku, label);
+async function driveQueueUpload(dataUrl, cardId, sku, label, coll){
+  return driveUploadBlob(dataUrlToBlob(dataUrl), cardId, sku, label, coll);
 }
 async function sendToDrive(cardId){
   const card=$(cardId); if(!card){ alert('No card.'); return; }
@@ -2075,13 +2077,14 @@ async function sendToDrive(cardId){
   const btn=$('drive-'+cardId);
   const sku=card.getAttribute('data-sku')||curSku;
   const label=(card.querySelector('.t')?.textContent||'').trim();
+  const coll=collectionOf(await getRec(cardId))||'none';   // which collection → drives the Drive subfolder
   if(btn){ btn.disabled=true; btn.textContent='📁 uploading…'; }
   let queued=false, publicUrl='';
   try{
     let blob;
     if(/^data:/.test(img)){ blob=dataUrlToBlob(img); }       // freshly generated → base64 data URL
     else { const r=await fetch(img); if(!r.ok) throw new Error('HTTP '+r.status); blob=await r.blob(); }  // imported/recovered → remote/relative/blob URL
-    publicUrl=await driveUploadBlob(blob, cardId, sku, label); queued=true;
+    publicUrl=await driveUploadBlob(blob, cardId, sku, label, coll); queued=true;
   }catch(e){ console.error('drive upload failed', e); }
   try{ const inbox=(await driveIdbGet('lc_drive_inbox'))||[]; inbox.push({ imageUrl:publicUrl, sku, label, folder:'Media Buyer', ts:Date.now(), id:cardId, queued }); await driveIdbSet('lc_drive_inbox', inbox); }catch(_){}
   // Only mark the card "In Drive" if the upload genuinely queued — never show a false green on failure.

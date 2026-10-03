@@ -79,28 +79,56 @@ drv=build("drive","v3",credentials=creds)
 # Each queued filename is "<sku> - <label>__<cardid>-<ts>.png", so the leading token
 # before " - " is the SKU key. We drop the image into a per-SKU subfolder of Media
 # Buyer (created on first use) instead of the flat root. Unknown/no SKU -> root.
+# SKU-key -> subfolder name. Media Buyer ROOT uses mixed-case; the ADITYA MATRIX tree uses ALL-CAPS
+# (that's how Quan named the folders Aditya has access to), so each tree gets its own name map.
 SKU_FOLDER={
     "aktiv":"AKTIV", "aktiv-herbal":"AKTIV Herbal", "flora":"FLORA",
     "sensitive":"Sensitive", "white-repair":"White & Repair", "multi":"Multi-SKU",
 }
+ADITYA_SKU_FOLDER={
+    "aktiv":"AKTIV", "aktiv-herbal":"HERBAL", "flora":"FLORA",
+    "sensitive":"SENSITIVE", "white-repair":"WHITE & REPAIR", "multi":"MULTI-SKU",
+}
 _folder_cache={}
-def subfolder_id(sku):
-    fname=SKU_FOLDER.get(sku)
-    if not fname: return FOLDER_ID            # unknown sku -> keep in Media Buyer root (never lose a file)
-    if fname in _folder_cache: return _folder_cache[fname]
+def _find_or_create(name, parent):
+    key=(parent, name)
+    if key in _folder_cache: return _folder_cache[key]
+    safe=name.replace("'", r"\'")
     q=("mimeType='application/vnd.google-apps.folder' and trashed=false "
-       f"and name='{fname}' and '{FOLDER_ID}' in parents")
+       f"and name='{safe}' and '{parent}' in parents")
     res=drv.files().list(q=q, fields="files(id,name)", supportsAllDrives=True,
             includeItemsFromAllDrives=True, pageSize=1).execute().get("files",[])
     fid=res[0]["id"] if res else drv.files().create(
-            body={"name":fname,"mimeType":"application/vnd.google-apps.folder","parents":[FOLDER_ID]},
+            body={"name":name,"mimeType":"application/vnd.google-apps.folder","parents":[parent]},
             fields="id", supportsAllDrives=True).execute()["id"]
-    _folder_cache[fname]=fid
+    _folder_cache[key]=fid
     return fid
+
+# Resolve the "ADITYA MATRIX" parent once (match by name, case-insensitive) — reuse the folder Quan
+# already shares with Aditya; never create a second one. None if it isn't there yet.
+_aditya_parent=None
+def aditya_parent():
+    global _aditya_parent
+    if _aditya_parent is not None: return _aditya_parent or None
+    kids=drv.files().list(q=f"'{FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+            fields="files(id,name)", supportsAllDrives=True, includeItemsFromAllDrives=True, pageSize=200).execute().get("files",[])
+    for k in kids:
+        if "aditya matrix" in k["name"].lower(): _aditya_parent=k["id"]; return _aditya_parent
+    _aditya_parent=""; return None
 
 def sku_of(name):
     tok=name.split(" - ",1)[0].strip().lower() if " - " in name else ""
     return tok if tok in SKU_FOLDER else ""
+
+def target_folder(coll, sku):
+    # Aditya Matrix creatives -> ADITYA MATRIX / <CAPS SKU>; everything else -> Media Buyer / <SKU>.
+    if coll=="aditya":
+        ap=aditya_parent()
+        if ap:
+            fn=ADITYA_SKU_FOLDER.get(sku)
+            return (_find_or_create(fn, ap), "ADITYA MATRIX/"+fn) if fn else (ap, "ADITYA MATRIX")
+    fn=SKU_FOLDER.get(sku)
+    return (_find_or_create(fn, FOLDER_ID), fn) if fn else (FOLDER_ID, "(root)")
 
 rows=list_queue()
 if not rows:
@@ -111,14 +139,16 @@ for r in rows:
     name=r["name"]
     try:
         data=download(name)
-        drive_name=re.sub(r'__[a-z0-9]+-\d+(?=\.\w+$)','', name)   # strip the __<cardid>-<ts> suffix
+        mcol=re.search(r'__col-([a-z-]+)__', name); coll=mcol.group(1) if mcol else ""
+        drive_name=re.sub(r'__col-[a-z-]+(?=__)','', name)          # drop the collection tag
+        drive_name=re.sub(r'__[a-z0-9]+-\d+(?=\.\w+$)','', drive_name)   # strip the __<cardid>-<ts> suffix
         sku=sku_of(drive_name)
-        parent=subfolder_id(sku)
+        parent,where=target_folder(coll, sku)
         media=MediaIoBaseUpload(io.BytesIO(data), mimetype="image/png", resumable=False)
         f=drv.files().create(body={"name":drive_name,"parents":[parent]}, media_body=media,
               fields="id,name", supportsAllDrives=True).execute()
         move_done(name); ok+=1
-        print(f"  OK  [{SKU_FOLDER.get(sku,'(root)')}]  {drive_name}  -> {f['id']}")
+        print(f"  OK  [{where}]  {drive_name}  -> {f['id']}")
     except Exception as e:
         print(f"  FAIL {name}: {e}")
-print(f"Done — {ok}/{len(rows)} synced into per-SKU folders in Media Buyer.")
+print(f"Done — {ok}/{len(rows)} synced into Media Buyer (Aditya Matrix creatives routed to ADITYA MATRIX/<SKU>).")
