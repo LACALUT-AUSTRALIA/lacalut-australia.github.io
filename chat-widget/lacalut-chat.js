@@ -22,7 +22,7 @@
 
   // ── Live-chat persona ────────────────────────────────────────────────────────
   // Overridable via chat_config keys agent_name / agent_avatar.
-  var AGENT_AVATAR = 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/lacalut-chat-avatar-lucy.png?v=1790555890';
+  var AGENT_AVATAR = 'https://lacalut-australia.github.io/chat-widget/chat-avatar-lucy-v2.jpg?v=20261004-0131';
   var AGENT_NAME = 'Lucy';
 
   // ── Product recommendation cards ─────────────────────────────────────────────
