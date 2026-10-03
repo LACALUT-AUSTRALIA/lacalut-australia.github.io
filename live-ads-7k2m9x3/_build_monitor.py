@@ -59,8 +59,12 @@ for a in ads:
     dt = parse_dt(a.get("created_time", ""))
     a["_age"] = (now - dt.astimezone(timezone.utc)).days if dt else None
     a["_built"] = dt.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m") if dt else "?"
-    t = thumbs.get(aid, {})
-    a["_thumb"] = t.get("thumb") or t.get("img") or ""
+    # prefer locally-downloaded thumbnail (Meta CDN URLs expire + block referrers)
+    if os.path.exists(os.path.join(SP, "thumbs", aid + ".jpg")):
+        a["_thumb"] = f"thumbs/{aid}.jpg"
+    else:
+        t = thumbs.get(aid, {})
+        a["_thumb"] = t.get("thumb") or t.get("img") or ""
 
 running, stuck, tested, losers, nodeliv = [], [], [], [], []
 for a in ads:
