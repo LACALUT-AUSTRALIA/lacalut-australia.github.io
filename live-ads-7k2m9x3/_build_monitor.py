@@ -272,27 +272,23 @@ win_spend = sum(w["_s90"] for w in winners)
 win_rev = sum(w["_rev"] for w in winners)
 ADS_ACT = "2157906551266386"
 
-def win_card(a):
+def win_row(a):
     label, col = product_of(a)
     tcls, tlbl = win_tier(a["_roas"] or 0)
     th = a["_thumb"]
-    img = f'<img loading="lazy" src="{esc(th)}" alt="">' if th else '<div class="noimg">no preview</div>'
+    img = f'<img class="th th-sm" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-sm th-empty"></span>'
     link = f'https://adsmanager.facebook.com/adsmanager/manage/ads?act={ADS_ACT}&selected_ad_ids={esc(a["id"])}'
-    return f'''<article class="wcard t-{tcls}" data-wp="{esc(label.lower())}" style="--pc:{col}">
-<div class="wmedia">{img}</div>
-<div class="wbody">
-<div class="wtop"><span class="wchip" style="--pc:{col}">{esc(label)}</span><span class="wtier t-{tcls}">{tlbl}</span></div>
-<h3 class="wh">{esc(a["name"])}</h3>
-<div class="wroasrow"><span class="wroas">{(a["_roas"] or 0):.2f}<span class="wx">×</span></span><span class="wroaslbl">ROAS</span>
-<span class="wmetrics"><b>{money(a["_s90"])}</b> spent &middot; <b>{a["_pc"]}</b> purch &middot; <b>{money(a["_rev"])}</b> rev</span></div>
-<dl class="wloc">
-<div><dt>Campaign</dt><dd>{esc(a["campaign"])}</dd></div>
-<div><dt>Ad set</dt><dd>{esc(a["adset"])}</dd></div>
-<div><dt>Ad name (search in Ads Manager)</dt><dd class="adname">{esc(a["name"])}</dd></div>
-</dl>
-<a class="wlink" href="{link}" target="_blank" rel="noopener">Open in Ads Manager &#8599;</a>
-</div>
-</article>'''
+    return f'''<tr class="winrow" data-wp="{esc(label.lower())}">
+<td class="adtd"><div class="adc">{img}<span class="adname">{esc(a["name"])}</span></div></td>
+<td class="c"><span class="wchip" style="--pc:{col}">{esc(label)}</span></td>
+<td class="c"><span class="wtier t-{tcls}">{tlbl}</span></td>
+<td class="c camp"><div>{esc(a["campaign"])}</div><div class="mut">{esc(a["adset"])}</div></td>
+<td class="num">{roas_badge(a["_roas"])}</td>
+<td class="num">{money(a["_s90"])}</td>
+<td class="num">{money(a["_rev"])}</td>
+<td class="num">{a["_pc"] or '<span class="mut">0</span>'}</td>
+<td class="c"><a class="wlink" href="{link}" target="_blank" rel="noopener">Open &#8599;</a></td>
+</tr>'''
 
 _wp_seen, win_products = set(), []
 for w in winners:
@@ -301,7 +297,7 @@ for w in winners:
         _wp_seen.add(label); win_products.append((label, col))
 win_pills = '<button class="wfilter wall" data-wf="__all" aria-pressed="true">All products</button>' + "".join(
     f'<button class="wfilter" data-wf="{esc(l.lower())}" style="--pc:{c}">{esc(l)}</button>' for l, c in win_products)
-win_cards_html = "".join(win_card(w) for w in winners)
+win_rows_html = "".join(win_row(w) for w in winners)
 winners_section = f'''
 <section class="sec winsec">
 <h2>&#11088; Proven winners &mdash; ready to re-run <span class="count">{len(winners)}</span></h2>
@@ -313,7 +309,9 @@ winners_section = f'''
 <div class="wstat"><b>${win_rev:,.0f}</b><span>Combined revenue</span></div>
 </div>
 <div class="wfilters">{win_pills}</div>
-<div class="wgrid">{win_cards_html}</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Ad</th><th>Product</th><th>Tier</th><th>Campaign / ad set</th><th>ROAS 90d</th><th>Spend 90d</th><th>Rev 90d</th><th>Purch.</th><th></th></tr></thead>
+<tbody>{win_rows_html}</tbody></table></div>
 </section>''' if winners else ""
 
 # ── BY FUNNEL STAGE — compact per-stage summary strip (Cold / MOF / BOF) ──
@@ -504,6 +502,9 @@ table.rollup{min-width:720px}
 .wloc dd.adname{color:var(--ink);font-weight:600}
 .wlink{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none}
 .wlink:hover{text-decoration:underline}
+.winrow .wlink{margin-top:0;white-space:nowrap}
+.winrow .wchip,.winrow .wtier{white-space:nowrap}
+.winrow td.adtd{min-width:260px}
 @media(max-width:620px){.wgrid{grid-template-columns:1fr}.wcard{grid-template-columns:1fr}.wmedia{aspect-ratio:16/10}.wloc div{grid-template-columns:1fr}.wmetrics{margin-left:0;flex-basis:100%}}
 </style>"""
 
@@ -583,7 +584,7 @@ function apply(){{
   if(!act)counts.forEach(function(el,i){{el.textContent=orig[i]}});
 }}
 [q,t,c,st].forEach(function(el){{el.addEventListener('input',apply)}});
-var wf=[].slice.call(document.querySelectorAll('.wfilter')),wc=[].slice.call(document.querySelectorAll('.wcard'));
+var wf=[].slice.call(document.querySelectorAll('.wfilter')),wc=[].slice.call(document.querySelectorAll('.winrow'));
 wf.forEach(function(b){{b.addEventListener('click',function(){{
   var f=b.getAttribute('data-wf');
   wf.forEach(function(x){{x.setAttribute('aria-pressed',x===b?'true':'false')}});
