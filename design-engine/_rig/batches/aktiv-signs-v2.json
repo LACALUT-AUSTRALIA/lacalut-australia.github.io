@@ -1,0 +1,87 @@
+{
+  "sku": "aktiv",
+  "packSku": "aktiv",
+  "format": "sign",
+  "mode": "social",
+  "aspect": "1:1",
+  "bothProducts": false,
+  "ads": [
+    {
+      "id": "t01-road-sign",
+      "headline": "German Gum Care — This Way.",
+      "signType": "a green-and-white DIRECTIONAL ROAD SIGN / highway guide sign mounted on a pole against sky",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t01-road-sign"
+    },
+    {
+      "id": "t02-street-sign",
+      "headline": "The Gum-Care Germans Trust.",
+      "signType": "a bright illuminated SHOP SIGN mounted above a pharmacy on a busy city street at dusk",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t02-street-sign"
+    },
+    {
+      "id": "t03-bulletin",
+      "headline": "Firmer-Feeling Gums, Daily.",
+      "signType": "a printed flyer pinned to a cork COMMUNITY BULLETIN BOARD among other pinned notes",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t03-bulletin"
+    },
+    {
+      "id": "t04-skywriting",
+      "headline": "Love Your Gums.",
+      "signType": "white SKYWRITING smoke letters spelling a message across a clear blue sky",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t04-skywriting"
+    },
+    {
+      "id": "t05-tshirt",
+      "headline": "Ask Me About My Gums.",
+      "signType": "bold graphics printed across the front of a T-SHIRT worn by a real everyday person",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t05-tshirt"
+    },
+    {
+      "id": "t06-screensaver",
+      "headline": "Your Daily Gum-Care Reminder.",
+      "signType": "a desktop computer monitor on a desk showing the message as a bold full-screen SCREENSAVER",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t06-screensaver"
+    },
+    {
+      "id": "t07-sandwich-worn",
+      "headline": "Your Gums Called. They Want German.",
+      "signType": "a SANDWICH-BOARD sign worn over the shoulders of a person standing on a city footpath",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t07-sandwich-worn"
+    },
+    {
+      "id": "t08-vehicle",
+      "headline": "German Pharmacy Gum Care, Delivered.",
+      "signType": "large vinyl GRAPHICS and lettering wrapped across the side of a parked delivery VAN",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t08-vehicle"
+    },
+    {
+      "id": "t09-bumper",
+      "headline": "I Love Firm Gums.",
+      "signType": "a BUMPER STICKER on the back of a car in traffic, shot close-up",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t09-bumper"
+    },
+    {
+      "id": "t10-greeting-card",
+      "headline": "Thinking Of Your Gums.",
+      "signType": "the printed front of a GREETING CARD standing open on a table",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t10-greeting-card"
+    },
+    {
+      "id": "t11-cake",
+      "headline": "Happy, Firm Gums.",
+      "signType": "a message piped in icing on top of a decorated CAKE on a plate",
+      "brief": "Photoreal candid scene. Small LACALUT AKTIV tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "label": "AKTIV SIGN t11-cake"
+    }
+  ]
+}

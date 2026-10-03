@@ -45,6 +45,8 @@ if (!PACK) { console.error('No packshot for packSku="' + packSku + '" (expected 
 // tube AND the bottle together (the prompt tells the model to use either if both won't fit).
 const MW = window.LAC_PACKS[packSku + '_mw_bottle'] || null;
 const PRODUCT_IMGS = (batch.bothProducts !== false && MW) ? [PACK, MW] : [PACK];
+// Aspect ratio for the batch (default 4:5 feed portrait; set "1:1" for square, "9:16" for story).
+const AR = batch.aspect || '4:5';
 const BANS = [...new Set([...(E.GLOBAL_BAN || []), ...((E.SKUS[sku] || {}).ban || [])])];
 
 // Verbatim copy of index.html's HARD_RULES global (13 non-SKU-specific craft rules — CTA pill,
@@ -66,7 +68,7 @@ for (let i = 0; i < ads.length; i++) {
     const brain = isSign
       ? { name: 'AI Sign', cat: 'Sign', dims: [], prom: 'cameo' }
       : { name: 'Media Buyer Brief', cat: 'Custom', dims: [], prom: ad.prom || 'hero' };
-    let prompt = E.buildPrompt({ sku, mode, brain, brief: ad.brief, headline: ad.headline, signType: ad.signType, useProd: true, archetype: ad.archetype || null, advNeg: true });
+    let prompt = E.buildPrompt({ sku, mode, brain, brief: ad.brief, headline: ad.headline, signType: ad.signType, aspectRatio: isSign ? AR : undefined, useProd: true, archetype: ad.archetype || null, advNeg: true });
     if (!isSign) {
       process.stdout.write('one-upping… ');
       prompt = await E.oneUpImagePrompt({ basePrompt: prompt, bans: BANS, aspectRatio: '4:5', apiKey: KEY });
@@ -82,7 +84,7 @@ for (let i = 0; i < ads.length; i++) {
     process.stdout.write('rendering… ');
     const url = await E.callGemini({
       prompt, productImgs: isSign ? PRODUCT_IMGS : [PACK], styleImgs: [],
-      render: 'photoreal', model: 'gemini-3-pro-image-preview', apiKey: KEY, aspectRatio: '4:5'
+      render: 'photoreal', model: 'gemini-3-pro-image-preview', apiKey: KEY, aspectRatio: isSign ? AR : '4:5'
     });
     const filename = ad.id + '.png';
     const buf = Buffer.from(url.split(',')[1], 'base64');
