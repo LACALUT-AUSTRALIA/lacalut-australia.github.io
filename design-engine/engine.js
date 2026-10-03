@@ -298,7 +298,7 @@
         } else if(prom === 'cameo'){
           p += `PRODUCT PROMINENCE — CAMEO (mandatory): the IDEA/GRAPHIC CONCEPT is the ad; the product appears only as a small, sharp cameo in a lower corner near the CTA — roughly logo-sized, NO MORE than ~10% of the frame. The concept owns the canvas, the pack just signs it. NEVER a big centred product hero. `;
         } else {
-          p += `Product packaging LARGE and dominant${(fmtLayout||arch)?' exactly where the layout structure above places it':' — lower ~55% as the clear hero'}. Even in this product-hero composition, a small CTA pill (e.g. "Shop Now") MUST still sit in a bottom corner — it never competes with the product's dominance, it just signs off the ad; a hero shot with no CTA is an incomplete ad, not a cleaner one. `;
+          p += `Product packaging LARGE and dominant${(fmtLayout||arch)?' exactly where the layout structure above places it':' — lower ~55% as the clear hero'}. Even in this product-hero composition, a small CTA pill (e.g. "Shop Now") MUST still sit in a bottom corner — it never competes with the product's dominance, it just signs off the ad; a hero shot with no CTA is an incomplete ad, not a cleaner one. NEVER render the literal words "CTA" or "call to action" as visible text anywhere in the image — the button shows real copy only (e.g. "Shop Now"). `;
         }
         p += `Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
         p += `CRITICAL PRODUCT FIDELITY: the tube/bottle CAP is ALWAYS WHITE — never red, navy, blue, green or any coloured cap. Reproduce the real packaging exactly, white cap included. `;
@@ -329,7 +329,7 @@
     const m = MODES[mode];
     const bans = [...new Set([...GLOBAL_BAN, ...(opts.bans || [])])];
     let p = `Professional graphic-designed ${m.label} for LACALUT (premium German pharmacy oral-care brand) featuring MULTIPLE products together — ${names.length} products: ${names.join(', ')}. `;
-    p += `AD, NOT A POST (hard rule): this is a PAID Meta direct-response ad for cold traffic — it must stop the scroll AND sell: customer-first hook, one clear cosmetic feel-benefit payoff, and a clear CTA pill; NEVER an organic-social layout and NEVER 'save/share/follow/comment' language. CTA PILL (mandatory): exactly ONE clear button-style CTA pill in a brand colour (e.g. 'Shop Now') always appears — never omit it, never more than one. `;
+    p += `AD, NOT A POST (hard rule): this is a PAID Meta direct-response ad for cold traffic — it must stop the scroll AND sell: customer-first hook, one clear cosmetic feel-benefit payoff, and a clear CTA pill; NEVER an organic-social layout and NEVER 'save/share/follow/comment' language. CTA PILL (mandatory): exactly ONE clear button-style CTA pill in a brand colour (e.g. 'Shop Now') always appears — never omit it, never more than one. NEVER render the literal words "CTA" or "call to action" as visible text anywhere in the image — the button shows real copy only (e.g. "Shop Now"); a supporting tagline is printed as plain words with NO "CTA:" label in front of it. `;
     p += `STRICT brand colours — dominant LACALUT red #CF102D + navy #004A88, clean premium palette (each product may keep its own accent). `;
     p += `Arrange all ${names.length} products together as ONE cohesive premium hero composition — a "range line-up" / family shot: every product clearly visible, evenly balanced and distinct, none obscured or merged. `;
     if(brain){
