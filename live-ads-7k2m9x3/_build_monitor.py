@@ -130,6 +130,17 @@ def comp_badge(a):
         return f'<span class="pill pill-bad" title="{why}">breach</span>'
     return '<span class="mut">&mdash;</span>'
 
+def ad_type(a):
+    import re as _re
+    nm = (a["name"] + " " + a["adset"]).lower()
+    if _re.search(r"crsl|carousel", nm): return "carousel"
+    if _re.search(r"vid|video", nm): return "video"
+    return "image"
+
+def row_attrs(a):
+    key = esc((a["name"] + " " + a["campaign"] + " " + a["adset"]).lower())
+    return f'data-s="{key}" data-t="{ad_type(a)}"'
+
 def adcell(a):
     th = a["_thumb"]
     img = f'<img class="th" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-empty"></span>'
@@ -138,7 +149,7 @@ def adcell(a):
 def metric_row(a, status_txt="", status_cls=""):
     days = f"{a['_age']}d" if a["_age"] is not None else "—"
     stat = f'<td class="c sub"><span class="dot {status_cls}"></span>{esc(status_txt)}</td>' if status_txt else ""
-    return f"""<tr>
+    return f"""<tr {row_attrs(a)}>
 <td class="adtd">{adcell(a)}</td>
 <td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 {stat}
@@ -174,7 +185,7 @@ for a in stuck:
     age = f"{a['_age']}d ago" if a["_age"] is not None else "?"
     th = a["_thumb"]
     img = f'<img class="th" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-empty"></span>'
-    rows_stuck.append(f"""<tr>
+    rows_stuck.append(f"""<tr {row_attrs(a)}>
 <td class="adtd"><div class="adc">{img}<span class="adname">{esc(a['name'])}</span></div></td>
 <td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 <td class="c sub">{esc(a['effective_status'])}</td>
@@ -185,7 +196,7 @@ rows_nodeliv = []
 for a in nodeliv:
     th = a["_thumb"]
     img = f'<img class="th th-sm" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-sm th-empty"></span>'
-    rows_nodeliv.append(f"""<tr>
+    rows_nodeliv.append(f"""<tr {row_attrs(a)}>
 <td class="adtd"><div class="adc">{img}<span class="adname">{esc(a['name'])}</span></div></td>
 <td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 <td class="c sub">{esc(a['effective_status'])}</td>
@@ -193,6 +204,9 @@ for a in nodeliv:
 </tr>""")
 
 gen = now.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m/%Y %H:%M AEDT")
+
+campaigns = sorted({a["campaign"] for a in ads if a.get("campaign")})
+camp_opts = "".join(f'<option value="{esc(c.lower())}">{esc(c)}</option>' for c in campaigns)
 
 stuck_section = ""
 if rows_stuck:
@@ -230,6 +244,10 @@ header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-be
 h1{font-size:24px;margin:0;letter-spacing:-.3px}
 h1 .sw{color:var(--brand)}
 .stamp{color:var(--sub);font-size:13px}
+.fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 4px;padding:12px 14px;background:var(--thbg);border:1px solid var(--line);border-radius:14px}
+.fbar input,.fbar select{font:14px inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 12px}
+.fbar input{flex:1;min-width:220px}
+.fbar .fcount{color:var(--thtext);font-weight:700;font-size:13px;white-space:nowrap}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:18px 0 30px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
 .kpi .lbl{color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
@@ -275,6 +293,13 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 <div class="stamp">Refreshed {gen} &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
 </header>
 
+<div class="fbar">
+<input id="fq" type="search" placeholder="Search ads, campaigns, ad sets&hellip;">
+<select id="ft"><option value="">All types</option><option value="image">Image</option><option value="video">Video</option><option value="carousel">Carousel</option></select>
+<select id="fc"><option value="">All campaigns</option>{camp_opts}</select>
+<span class="fcount" id="fn"></span>
+</div>
+
 <div class="cards">
 <div class="kpi"><div class="lbl">Running (active)</div><div class="val">{len(running)}</div></div>
 <div class="kpi"><div class="lbl">Built, not launched</div><div class="val {'bad' if stuck else 'good'}">{len(stuck)}</div></div>
@@ -309,6 +334,28 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 {table(rows_losers, status_col=True)}
 </section>
 
+<script>
+(function(){{
+var q=document.getElementById('fq'),t=document.getElementById('ft'),c=document.getElementById('fc'),n=document.getElementById('fn');
+var rows=[].slice.call(document.querySelectorAll('tr[data-s]'));
+var counts=[].slice.call(document.querySelectorAll('h2 .count'));
+var orig=counts.map(function(el){{return el.textContent}});
+function apply(){{
+  var s=q.value.toLowerCase().trim(),ty=t.value,ca=c.value,shown=0;
+  rows.forEach(function(r){{
+    var ok=(!s||r.getAttribute('data-s').indexOf(s)>-1)&&(!ty||r.getAttribute('data-t')===ty)&&(!ca||r.getAttribute('data-s').indexOf(ca)>-1);
+    r.style.display=ok?'':'none'; if(ok)shown++;
+  }});
+  document.querySelectorAll('section.sec').forEach(function(sec){{
+    var vis=sec.querySelectorAll('tr[data-s]:not([style*="none"])').length;
+    var pill=sec.querySelector('h2 .count'); if(pill)pill.textContent=vis;
+  }});
+  n.textContent=(s||ty||ca)?shown+' of '+rows.length+' ads':'';
+  if(!s&&!ty&&!ca)counts.forEach(function(el,i){{el.textContent=orig[i]}});
+}}
+[q,t,c].forEach(function(el){{el.addEventListener('input',apply)}});
+}})();
+</script>
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
 </div>"""
 
