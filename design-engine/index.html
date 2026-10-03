@@ -715,7 +715,7 @@ async function runGenerate(){
     const id='c'+Date.now()+i;
     const _ar=S.ar.split(' ')[0].replace(':','/');
     pendingImgGens.push({id, sku:S.isMulti?'multi':S.curSku, ptype:S.genPtype, ar:_ar});   // track it so a mode/tab switch never drops the in-flight render
-    if(curTop==='image') $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${_ar}"><div class="meta"><span class="t">⏳ rendering…</span></div></div>`);
+    if(curTop==='image') insertCardTop(`<div class="card" id="${id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${_ar}"><div class="meta"><span class="t">⏳ rendering…</span></div></div>`);
     try{
       const rsel=S.render;
       const rmode = rsel==='mixed' ? (i%2===0?'photoreal':'graphical') : rsel;
@@ -764,7 +764,7 @@ async function runGenerate(){
       await idbPut(rec);   // persisted FIRST — the image can never be lost even if the placeholder card is gone
       const _el=$(id);
       if(_el){ _el.outerHTML=cardHTML(rec); }
-      else if(curTop==='image' && rec.sku===curSku && ptypeOf(rec)===genPtype){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }
+      else if(curTop==='image' && rec.sku===curSku && ptypeOf(rec)===genPtype){ insertCardTop(cardHTML(rec)); }
       // else: safely in IndexedDB — it appears the moment he returns to this product tab (renderGallery pulls it)
       (TOURN_ACTIVE?scoreCreative(rec.id):autoPolish(rec.id)).catch(()=>{});   // auto-score + AUTO-POLISH every fresh render (tournament judges RAW brain quality — no polish)
     }catch(e){ markCardFailed(id, e.message); }
@@ -2192,6 +2192,8 @@ function onGalSearch(v){ galSearchText=v; clearTimeout(_galSearchTimer); _galSea
 function setFmtFilter(id){ galFmtFilter=id; galCollectionFilter=null; curBrain=id||curBrain; renderGallery(curSku); }
 function setCollectionFilter(id){ galCollectionFilter=(galCollectionFilter===id?null:id); galFmtFilter=null; renderGallery(curSku); }
 function clearGalFilters(){ galFmtFilter=null; galCollectionFilter=null; galSearchText=''; renderGallery(curSku); }
+// New cards (generates, edits, resizes) drop into the TOP of the GRID — below the filter bar, never above it.
+function insertCardTop(html){ const out=$('output'); const bar=$('galBar'); if(bar&&bar.parentNode===out){ bar.insertAdjacentHTML('afterend', html); } else { out.insertAdjacentHTML('afterbegin', html); } }
 async function renderGallery(sku){
   if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
   const all=await idbBySku(sku);
@@ -2248,7 +2250,7 @@ async function renderGallery(sku){
   // re-show any render that was still in-flight when he switched away — its live promise will replace this placeholder when it lands
   pendingImgGens.filter(p=>p.sku===sku && p.ptype===curPtype && !$(p.id)).forEach(p=>{
     const emp=$('output').querySelector('.empty'); if(emp) emp.remove();
-    $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${p.id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${p.ar}"><div class="meta"><span class="t">⏳ rendering…</span></div></div>`);
+    insertCardTop(`<div class="card" id="${p.id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${p.ar}"><div class="meta"><span class="t">⏳ rendering…</span></div></div>`);
   }); }
 
 /* ═══ DESCRIBE AN EDIT (image-to-image via Gemini) ═══ */
@@ -2313,7 +2315,7 @@ async function finishEditCard(id, rec){
   scoreCreative(rec.id).catch(()=>{});                 // auto-score every finished edit (fire-and-forget)
   const el=$(id);
   if(el){ el.outerHTML=cardHTML(rec); return; }        // placeholder still on screen
-  if(rec.sku===curSku && ptypeOf(rec)===curPtype && !$(rec.id)){ $('output').insertAdjacentHTML('afterbegin', cardHTML(rec)); }  // back on its tab+pill
+  if(rec.sku===curSku && ptypeOf(rec)===curPtype && !$(rec.id)){ insertCardTop(cardHTML(rec)); }  // back on its tab+pill
   else { toast('✅ '+((SKUS[rec.sku]&&SKUS[rec.sku].name)||rec.sku)+' image ready — see its SKU tab'); }
 }
 function dismissCard(id){ const el=$(id); if(el) el.remove(); }
@@ -2335,11 +2337,11 @@ async function applyEdit(){
       const sku=(key.split('_')[0])||curSku;
       const nm=(SKUS[sku]&&SKUS[sku].name)||sku;
       const id='eb'+Date.now()+'_'+i;
-      $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ ${nm}…</span></div></div>`);
+      insertCardTop(`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ ${nm}…</span></div></div>`);
       (async ()=>{
         try{
           const url=await callGeminiEditRefs(src, instruction, [key]);
-          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:_editSrcParent||null};
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:null};
           await finishEditCard(id, rec);
         }catch(e){ markCardFailed(id, e.message); }
       })();
@@ -2367,11 +2369,11 @@ async function applyEdit(){
   for(let i=0;i<qty;i++){
     const instr=instruction+(qty>1?(VARY[i]||VARY[i%VARY.length]).replace(/VARIATION \d+ of N/,'VARIATION '+(i+1)+' of '+qty):'');
     const id='e'+Date.now()+'_'+i;
-    $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…${qty>1?' ('+(i+1)+'/'+qty+')':''}</span></div></div>`);
+    insertCardTop(`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">✏️ editing…${qty>1?' ('+(i+1)+'/'+qty+')':''}</span></div></div>`);
     (async()=>{
       try{
         const url=await callGeminiEditRefs(src, instr, refKeys);
-        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:_editSrcParent||null};
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:null};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
@@ -2644,7 +2646,7 @@ async function makeSizes(cardId){
   toast('📐 Building Story 9:16 + Square 1:1 — no need to wait');
   SIZE_TARGETS.forEach(([ratio,mode,label],i)=>{
     const id='sz'+Date.now()+'_'+i;
-    $('output').insertAdjacentHTML('afterbegin',`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">📐 ${label}…</span></div></div>`);
+    insertCardTop(`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">📐 ${label}…</span></div></div>`);
     (async ()=>{
       try{
         const url=await E.editImage({ imgDataUrl:src,
