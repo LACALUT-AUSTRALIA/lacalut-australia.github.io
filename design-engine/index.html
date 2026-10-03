@@ -2209,17 +2209,10 @@ async function renderGallery(sku){
   const all=await idbBySku(sku);
   let recs=all.filter(r=>ptypeOf(r)===curPtype);   // untagged legacy = toothpaste, never hidden
   _recById={}; for(const r of recs) _recById[r.id]=r;
-  // ── VERSION STACKING: collapse every version of a creative (edits/sizes carry rec.parent) into one
-  //    root. The card shows a chosen version (newest by default) with a v1/v2/v3 switcher. ──
-  const versionsByRoot=new Map();
-  for(const r of recs){ const root=rootOf(r); if(!versionsByRoot.has(root)) versionsByRoot.set(root, []); versionsByRoot.get(root).push(r); }
-  for(const list of versionsByRoot.values()) list.sort((a,b)=>a.ts-b.ts);   // v1=oldest … vN=newest
-  window._versionsByRoot=versionsByRoot;
-  // one representative per root = the chosen/newest version
-  let reps=[...versionsByRoot.entries()].map(([root,list])=>{
-    const idx = (root in verOpen) ? Math.min(verOpen[root], list.length-1) : list.length-1;
-    return { rep:list[idx], list, root };
-  });
+  // ── NO VERSION STACKING (removed 04/10/2026 per Quan): every record — original, edit, resize — is its
+  //    own standalone card, shown side by side so he can compare and delete the one he doesn't want. ──
+  window._versionsByRoot=null;
+  let reps=recs.map(r=>({ rep:r, list:[r], root:r.id }));   // list:[r] → versionBarHTML renders nothing (needs ≥2)
   // ── FORMAT CHIPS: counts per brain across ALL reps (before filtering) so chips never vanish ──
   const fmtCount=new Map();
   for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
