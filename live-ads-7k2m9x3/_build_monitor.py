@@ -197,24 +197,26 @@ gen = now.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m/%Y %H:%M AED
 stuck_section = ""
 if rows_stuck:
     stuck_section = f"""
+<section class="sec">
 <h2>Built but not launched <span class="count">{len(stuck)}</span></h2>
 <p class="note">Created in the last {RECENT_DAYS} days, not archived, zero spend in the last 7 days. These are sitting idle.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Ad</th><th>Campaign / ad set</th><th>Status</th><th>Built</th></tr></thead>
 <tbody>{''.join(rows_stuck)}</tbody>
-</table></div>"""
+</table></div></section>"""
 else:
-    stuck_section = '<h2>Built but not launched <span class="count">0</span></h2><p class="note">Nothing stuck. Every recently-built ad is live or spending.</p>'
+    stuck_section = '<section class="sec"><h2>Built but not launched <span class="count">0</span></h2><p class="note">Nothing stuck. Every recently-built ad is live or spending.</p></section>'
 
 nodeliv_section = ""
 if rows_nodeliv:
     nodeliv_section = f"""
+<section class="sec">
 <h2>Never delivered <span class="count">{len(nodeliv)}</span></h2>
 <p class="note">Built more than {RECENT_DAYS} days ago, zero spend in the last 90 days. Untested — not winners, not losers.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Ad</th><th>Campaign / ad set</th><th>Status</th><th>Built</th></tr></thead>
 <tbody>{''.join(rows_nodeliv)}</tbody>
-</table></div>"""
+</table></div></section>"""
 
 STYLE = """<style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--brand:#0B5394;--accent:#1c7ed6;--good:#1a7f45;--goodbg:#e7f6ec;--mid:#8a6d00;--midbg:#fbf3d6;--bad:#a4122b;--badbg:#fbe4e8;--live:#1a7f45;--warn:#b8860b;--stuck:#a4122b;--thbg:#e3edf8;--thtext:#0B5394;}
@@ -233,14 +235,16 @@ h1 .sw{color:var(--brand)}
 .kpi .lbl{color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
 .kpi .val{font-size:30px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
 .kpi .val.good{color:var(--good)}.kpi .val.bad{color:var(--bad)}
+section.sec{position:relative}
+section.sec h2{position:sticky;top:0;z-index:6;background:var(--bg);margin:26px 0 0;padding:12px 0 8px;min-height:48px;box-sizing:border-box}
 h2{font-size:18px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
 h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;padding:2px 11px;font-weight:600}
 h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}}
+@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
 table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px}
-thead th{position:sticky;top:0;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
+thead th{position:sticky;top:48px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
 tbody tr:last-child td{border-bottom:0}
@@ -279,23 +283,31 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title>{STYLE}
 <div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">{t_pc}</div></div>
 </div>
 
+<section class="sec">
 <h2>Running ads <span class="count">{len(running)}</span></h2>
 <p class="note">Status ACTIVE in Meta, sorted by 7-day spend. All metrics are last 90 days. CAC = spend &divide; purchases. Freq = avg times each person saw it.</p>
 {table(rows_running, status_col=True)}
+</section>
 {stuck_section}
 
+<section class="sec">
 <h2>Previously tested (paused) <span class="count">{len(tested_real)}</span></h2>
 <p class="note"><b>Only ads marked <span class="pill pill-good">OK</span> (or unscreened) are re-launch candidates.</b> Ads marked <span class="pill pill-bad">breach</span> were paused for compliance (disease claims, before/after, competitor comparison) &mdash; do NOT relaunch or recreate them, whatever their ROAS. Flagged ads are sorted to the bottom of this table. Hover a badge for the reason.</p>
 {table(rows_tested, status_col=True)}
+</section>
 
+<section class="sec">
 <h2>Barely tested &mdash; under ${LOSER_MIN_SPEND:.0f} spend <span class="count">{len(tested_micro)}</span></h2>
 <p class="note">Too little spend to trust the numbers &mdash; a 35x ROAS on $1.45 is one lucky sale, not a winner. Treat these as untested. Sorted by ROAS for curiosity only.</p>
 {table(rows_micro, status_col=True)}
+</section>
 {nodeliv_section}
 
+<section class="sec">
 <h2 class="losers">Proven losers &mdash; do NOT recreate <span class="count">{len(losers)}</span></h2>
 <p class="note">Spent ${LOSER_MIN_SPEND:.0f}+ in the last 90 days with ROAS under {LOSER_ROAS:.1f}. Sorted by money burned. These angles/creatives failed with real budget &mdash; avoid making more of the same. A <span class="pill pill-bad">breach</span> badge means it was also non-compliant.</p>
 {table(rows_losers, status_col=True)}
+</section>
 
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
 </div>"""

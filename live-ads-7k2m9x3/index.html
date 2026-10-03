@@ -15,14 +15,16 @@ h1 .sw{color:var(--brand)}
 .kpi .lbl{color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
 .kpi .val{font-size:30px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
 .kpi .val.good{color:var(--good)}.kpi .val.bad{color:var(--bad)}
+section.sec{position:relative}
+section.sec h2{position:sticky;top:0;z-index:6;background:var(--bg);margin:26px 0 0;padding:12px 0 8px;min-height:48px;box-sizing:border-box}
 h2{font-size:18px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
 h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;padding:2px 11px;font-weight:600}
 h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}}
+@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
 table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px}
-thead th{position:sticky;top:0;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
+thead th{position:sticky;top:48px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
 tbody tr:last-child td{border-bottom:0}
@@ -48,7 +50,7 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
-<div class="stamp">Refreshed 03/10/2026 11:59 AEDT &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
+<div class="stamp">Refreshed 03/10/2026 12:01 AEDT &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
 </header>
 
 <div class="cards">
@@ -59,6 +61,7 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">602</div></div>
 </div>
 
+<section class="sec">
 <h2>Running ads <span class="count">24</span></h2>
 <p class="note">Status ACTIVE in Meta, sorted by 7-day spend. All metrics are last 90 days. CAC = spend &divide; purchases. Freq = avg times each person saw it.</p>
 <div class="tablewrap"><table>
@@ -352,7 +355,9 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <td class="num">1.1</td>
 <td class="num">0.00%</td>
 </tr></tbody></table></div>
+</section>
 
+<section class="sec">
 <h2>Built but not launched <span class="count">3</span></h2>
 <p class="note">Created in the last 21 days, not archived, zero spend in the last 7 days. These are sitting idle.</p>
 <div class="tablewrap"><table>
@@ -373,8 +378,9 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <td class="c sub">ADSET_PAUSED</td>
 <td class="c sub">built 5d ago</td>
 </tr></tbody>
-</table></div>
+</table></div></section>
 
+<section class="sec">
 <h2>Previously tested (paused) <span class="count">115</span></h2>
 <p class="note"><b>Only ads marked <span class="pill pill-good">OK</span> (or unscreened) are re-launch candidates.</b> Ads marked <span class="pill pill-bad">breach</span> were paused for compliance (disease claims, before/after, competitor comparison) &mdash; do NOT relaunch or recreate them, whatever their ROAS. Flagged ads are sorted to the bottom of this table. Hover a badge for the reason.</p>
 <div class="tablewrap"><table>
@@ -1760,7 +1766,9 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <td class="num">1.7</td>
 <td class="num">2.64%</td>
 </tr></tbody></table></div>
+</section>
 
+<section class="sec">
 <h2>Barely tested &mdash; under $50 spend <span class="count">114</span></h2>
 <p class="note">Too little spend to trust the numbers &mdash; a 35x ROAS on $1.45 is one lucky sale, not a winner. Treat these as untested. Sorted by ROAS for curiosity only.</p>
 <div class="tablewrap"><table>
@@ -3134,7 +3142,9 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <td class="num">1.0</td>
 <td class="num">0.00%</td>
 </tr></tbody></table></div>
+</section>
 
+<section class="sec">
 <h2>Never delivered <span class="count">47</span></h2>
 <p class="note">Built more than 21 days ago, zero spend in the last 90 days. Untested — not winners, not losers.</p>
 <div class="tablewrap"><table>
@@ -3375,8 +3385,9 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <td class="c sub">WITH_ISSUES</td>
 <td class="c sub">built 15/01</td>
 </tr></tbody>
-</table></div>
+</table></div></section>
 
+<section class="sec">
 <h2 class="losers">Proven losers &mdash; do NOT recreate <span class="count">13</span></h2>
 <p class="note">Spent $50+ in the last 90 days with ROAS under 0.7. Sorted by money burned. These angles/creatives failed with real budget &mdash; avoid making more of the same. A <span class="pill pill-bad">breach</span> badge means it was also non-compliant.</p>
 <div class="tablewrap"><table>
@@ -3538,6 +3549,7 @@ footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 <td class="num">1.5</td>
 <td class="num">1.40%</td>
 </tr></tbody></table></div>
+</section>
 
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; 316 ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
 </div>
