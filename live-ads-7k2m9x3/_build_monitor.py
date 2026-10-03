@@ -124,8 +124,7 @@ def metric_row(a, status_txt="", status_cls=""):
     stat = f'<td class="c sub"><span class="dot {status_cls}"></span>{esc(status_txt)}</td>' if status_txt else ""
     return f"""<tr>
 <td class="adtd">{adcell(a)}</td>
-<td class="c">{esc(a['campaign'])}</td>
-<td class="c">{esc(a['adset'])}</td>
+<td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 {stat}
 <td class="c sub">{a['_built']}<span class="mut"> · {days}</span></td>
 <td class="num">{money(a['_s90'])}</td>
@@ -136,7 +135,7 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="num">{numf(a['_ctr'], '.2f', '%')}</td>
 </tr>"""
 
-HEAD = """<tr><th>Ad</th><th>Campaign</th><th>Ad set</th>{st}<th>Built · age</th><th>Spend 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
+HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Built · age</th><th>Spend 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
 
 def table(rows, status_col=False):
     return f"""<div class="tablewrap"><table>
@@ -159,8 +158,7 @@ for a in stuck:
     img = f'<img class="th" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-empty"></span>'
     rows_stuck.append(f"""<tr>
 <td class="adtd"><div class="adc">{img}<span class="adname">{esc(a['name'])}</span></div></td>
-<td class="c">{esc(a['campaign'])}</td>
-<td class="c">{esc(a['adset'])}</td>
+<td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 <td class="c sub">{esc(a['effective_status'])}</td>
 <td class="c sub">built {age}</td>
 </tr>""")
@@ -171,8 +169,7 @@ for a in nodeliv:
     img = f'<img class="th th-sm" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-sm th-empty"></span>'
     rows_nodeliv.append(f"""<tr>
 <td class="adtd"><div class="adc">{img}<span class="adname">{esc(a['name'])}</span></div></td>
-<td class="c">{esc(a['campaign'])}</td>
-<td class="c">{esc(a['adset'])}</td>
+<td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 <td class="c sub">{esc(a['effective_status'])}</td>
 <td class="c sub">built {a['_built']}</td>
 </tr>""")
@@ -185,7 +182,7 @@ if rows_stuck:
 <h2>Built but not launched <span class="count">{len(stuck)}</span></h2>
 <p class="note">Created in the last {RECENT_DAYS} days, not archived, zero spend in the last 7 days. These are sitting idle.</p>
 <div class="tablewrap"><table>
-<thead><tr><th>Ad</th><th>Campaign</th><th>Ad set</th><th>Status</th><th>Built</th></tr></thead>
+<thead><tr><th>Ad</th><th>Campaign / ad set</th><th>Status</th><th>Built</th></tr></thead>
 <tbody>{''.join(rows_stuck)}</tbody>
 </table></div>"""
 else:
@@ -197,7 +194,7 @@ if rows_nodeliv:
 <h2>Never delivered <span class="count">{len(nodeliv)}</span></h2>
 <p class="note">Built more than {RECENT_DAYS} days ago, zero spend in the last 90 days. Untested — not winners, not losers.</p>
 <div class="tablewrap"><table>
-<thead><tr><th>Ad</th><th>Campaign</th><th>Ad set</th><th>Status</th><th>Built</th></tr></thead>
+<thead><tr><th>Ad</th><th>Campaign / ad set</th><th>Status</th><th>Built</th></tr></thead>
 <tbody>{''.join(rows_nodeliv)}</tbody>
 </table></div>"""
 
@@ -223,7 +220,7 @@ h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;p
 h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-table{border-collapse:collapse;width:100%;min-width:980px;font-size:14px}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:14px}
 thead th{text-align:left;color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
@@ -231,7 +228,10 @@ tbody tr:last-child td{border-bottom:0}
 td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 td.c{color:var(--sub);font-size:13px}
 td.sub{font-size:12.5px;white-space:nowrap}
-td.adtd{min-width:260px}
+td.adtd{min-width:230px;max-width:330px}
+td.camp{max-width:260px}
+td.camp div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+td.camp .mut{font-size:12px}
 .adc{display:flex;align-items:center;gap:10px}
 .adname{font-size:13.5px;line-height:1.35}
 .th{width:56px;height:56px;min-width:56px;border-radius:8px;object-fit:cover;background:var(--line);border:1px solid var(--line)}
