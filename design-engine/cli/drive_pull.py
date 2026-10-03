@@ -75,6 +75,33 @@ creds=Credentials.from_authorized_user_file(os.path.expanduser("~/gmail_api/toke
         ["https://www.googleapis.com/auth/drive"])
 drv=build("drive","v3",credentials=creds)
 
+# ── SKU → subfolder routing ───────────────────────────────────────────────────
+# Each queued filename is "<sku> - <label>__<cardid>-<ts>.png", so the leading token
+# before " - " is the SKU key. We drop the image into a per-SKU subfolder of Media
+# Buyer (created on first use) instead of the flat root. Unknown/no SKU -> root.
+SKU_FOLDER={
+    "aktiv":"AKTIV", "aktiv-herbal":"AKTIV Herbal", "flora":"FLORA",
+    "sensitive":"Sensitive", "white-repair":"White & Repair", "multi":"Multi-SKU",
+}
+_folder_cache={}
+def subfolder_id(sku):
+    fname=SKU_FOLDER.get(sku)
+    if not fname: return FOLDER_ID            # unknown sku -> keep in Media Buyer root (never lose a file)
+    if fname in _folder_cache: return _folder_cache[fname]
+    q=("mimeType='application/vnd.google-apps.folder' and trashed=false "
+       f"and name='{fname}' and '{FOLDER_ID}' in parents")
+    res=drv.files().list(q=q, fields="files(id,name)", supportsAllDrives=True,
+            includeItemsFromAllDrives=True, pageSize=1).execute().get("files",[])
+    fid=res[0]["id"] if res else drv.files().create(
+            body={"name":fname,"mimeType":"application/vnd.google-apps.folder","parents":[FOLDER_ID]},
+            fields="id", supportsAllDrives=True).execute()["id"]
+    _folder_cache[fname]=fid
+    return fid
+
+def sku_of(name):
+    tok=name.split(" - ",1)[0].strip().lower() if " - " in name else ""
+    return tok if tok in SKU_FOLDER else ""
+
 rows=list_queue()
 if not rows:
     print("Drive queue empty — nothing to sync."); sys.exit(0)
@@ -85,11 +112,13 @@ for r in rows:
     try:
         data=download(name)
         drive_name=re.sub(r'__[a-z0-9]+-\d+(?=\.\w+$)','', name)   # strip the __<cardid>-<ts> suffix
+        sku=sku_of(drive_name)
+        parent=subfolder_id(sku)
         media=MediaIoBaseUpload(io.BytesIO(data), mimetype="image/png", resumable=False)
-        f=drv.files().create(body={"name":drive_name,"parents":[FOLDER_ID]}, media_body=media,
+        f=drv.files().create(body={"name":drive_name,"parents":[parent]}, media_body=media,
               fields="id,name", supportsAllDrives=True).execute()
         move_done(name); ok+=1
-        print(f"  OK  {drive_name}  -> {f['id']}")
+        print(f"  OK  [{SKU_FOLDER.get(sku,'(root)')}]  {drive_name}  -> {f['id']}")
     except Exception as e:
         print(f"  FAIL {name}: {e}")
-print(f"Done — {ok}/{len(rows)} synced to the Media Buyer folder.")
+print(f"Done — {ok}/{len(rows)} synced into per-SKU folders in Media Buyer.")
