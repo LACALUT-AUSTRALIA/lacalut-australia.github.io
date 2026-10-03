@@ -1,0 +1,6 @@
+[
+  { "id": "grecov_choose_where_it_hurts", "filename": "choose-where-it-hurts.png", "sku": "sensitive", "mode": "social", "ptype": "toothpaste", "label": "Choose Where It Hurts (recovered ad-asset)", "angle": "", "collection": null },
+  { "id": "grecov_cold_drinks_flinch", "filename": "sensitive-cold-drinks-flinch-v2.jpg", "sku": "sensitive", "mode": "social", "ptype": "toothpaste", "label": "Cold Drinks Flinch v2 (recovered ad-asset)", "angle": "", "collection": null },
+  { "id": "grecov_6m_journey", "filename": "6m-journey-v2.jpg", "sku": "white", "mode": "social", "ptype": "toothpaste", "label": "6-Month Journey v2 (recovered ad-asset)", "angle": "", "collection": null },
+  { "id": "grecov_whatever_smile_needs", "filename": "whatever-your-smile-needs.png", "sku": "multi", "mode": "social", "ptype": "toothpaste", "label": "Whatever Your Smile Needs (recovered ad-asset)", "angle": "", "collection": null }
+]

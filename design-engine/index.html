@@ -861,7 +861,7 @@ function versionBarHTML(rec, versions){
     <button onclick="showVersion('${root}',${next})" ${curIdx===versions.length-1?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===versions.length-1?'opacity:.4':''}">▶</button>
   </div>`;
 }
-function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
+function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}${sizeBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
@@ -2129,6 +2129,13 @@ function collectionBadgeHTML(rec){
   const c=collectionOf(rec); if(!c) return '';
   const m=COLLECTIONS[c];
   return `<span title="Part of the ${m.label} collection" style="position:absolute;top:7px;left:7px;z-index:3;background:${m.colour};color:#fff;font-size:10px;font-weight:800;letter-spacing:.3px;padding:3px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.3)">${m.icon} ${m.label}</span>`;
+}
+// Size badge — shows the aspect ratio of each card (4:5 / 9:16 / 1:1 / 16:9) so you can
+// tell placements apart at a glance. Nothing is hidden — this labels, never filters.
+function sizeBadgeHTML(rec){
+  const m=MODES[rec.mode]||MODES['social'];
+  const ratio=(m.ar||'4:5').split(' ')[0];   // "4:5 portrait" → "4:5"
+  return `<span title="${m.label} · ${m.dims}" style="position:absolute;bottom:7px;right:7px;z-index:3;background:rgba(0,0,0,.72);color:#fff;font-size:10px;font-weight:800;letter-spacing:.3px;padding:3px 7px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.3)">${ratio}</span>`;
 }
 /* ═══ VERSION STACKING — records that are edits/sizes of a source carry rec.parent = the root id,
    so every version of a creative groups into ONE card with a v1/v2/v3 switcher and nothing is lost. ═══ */
