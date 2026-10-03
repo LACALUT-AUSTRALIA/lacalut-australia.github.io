@@ -1,0 +1,62 @@
+[
+  {
+    "id": "g1791034644128_0",
+    "filename": "s1-billboard.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV SIGN S1 - Billboard",
+    "brief": "Bright daylight, realistic highway with cars, the billboard dominant and crystal sharp. Small LACALUT AKTIV tube + mouthwash bottle lockup in the billboard's bottom corner.",
+    "angle": ""
+  },
+  {
+    "id": "g1791034662377_1",
+    "filename": "s2-warning.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV SIGN S2 - Warning Sign",
+    "brief": "The word WARNING huge across the top in heavy black caps on yellow, the rest of the message below in bold black. Gritty realistic metal texture. Small LACALUT AKTIV tube + mouthwash bottle at the bottom of the sign.",
+    "angle": ""
+  },
+  {
+    "id": "g1791034684078_2",
+    "filename": "s3-postit.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV SIGN S3 - Post-it on Screen",
+    "brief": "Real laptop on a desk, screen glow behind, the post-it in sharp focus with bold handwritten marker text. LACALUT AKTIV tube + mouthwash bottle sitting small beside the laptop.",
+    "angle": ""
+  },
+  {
+    "id": "g1791034705409_3",
+    "filename": "s4-notification.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV SIGN S4 - Phone Notification",
+    "brief": "Realistic phone lock screen held in hand, time and battery at top, the LACALUT notification banner bold and legible. A small LACALUT AKTIV tube + mouthwash bottle visible on a surface behind the phone.",
+    "angle": ""
+  },
+  {
+    "id": "g1791034726817_4",
+    "filename": "s5-tattoo.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV SIGN S5 - Back Tattoo",
+    "brief": "Candid real photo from behind, natural skin and lighting, the tattoo text large, crisp and easy to read. LACALUT AKTIV tube + mouthwash bottle resting small on a bench in the background.",
+    "angle": ""
+  },
+  {
+    "id": "g1791034748174_5",
+    "filename": "s6-forehead.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV SIGN S6 - Forehead",
+    "brief": "Candid close-up of a believable everyday Australian, slight smile, the forehead text bold and clearly legible. Hold the message very short so it fits large across the forehead.",
+    "angle": ""
+  }
+]

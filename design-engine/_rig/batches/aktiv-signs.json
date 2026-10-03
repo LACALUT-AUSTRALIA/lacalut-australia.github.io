@@ -1,0 +1,50 @@
+{
+  "sku": "aktiv",
+  "packSku": "aktiv",
+  "format": "sign",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "s1-billboard",
+      "headline": "Your Gums Deserve The German One.",
+      "signType": "a huge roadside BILLBOARD beside a busy city highway, shot from the road with traffic below and sky behind",
+      "brief": "Bright daylight, realistic highway with cars, the billboard dominant and crystal sharp. Small LACALUT AKTIV tube + mouthwash bottle lockup in the billboard's bottom corner.",
+      "label": "AKTIV SIGN S1 - Billboard"
+    },
+    {
+      "id": "s2-warning",
+      "headline": "WARNING: Most Toothpaste Forgets Your Gums.",
+      "signType": "a weathered yellow-and-black INDUSTRIAL WARNING / caution metal sign, distressed with rust and scratches, bolted to a wall",
+      "brief": "The word WARNING huge across the top in heavy black caps on yellow, the rest of the message below in bold black. Gritty realistic metal texture. Small LACALUT AKTIV tube + mouthwash bottle at the bottom of the sign.",
+      "label": "AKTIV SIGN S2 - Warning Sign"
+    },
+    {
+      "id": "s3-postit",
+      "headline": "Brush For Your Gums, Not Just Your Teeth.",
+      "signType": "a bright yellow POST-IT NOTE stuck on the corner of a laptop screen, handwritten in marker",
+      "brief": "Real laptop on a desk, screen glow behind, the post-it in sharp focus with bold handwritten marker text. LACALUT AKTIV tube + mouthwash bottle sitting small beside the laptop.",
+      "label": "AKTIV SIGN S3 - Post-it on Screen"
+    },
+    {
+      "id": "s4-notification",
+      "headline": "100 Years Of German Pharmacy Gum Care.",
+      "signType": "a push NOTIFICATION banner popping up at the top of a phone lock screen, bold notification title text",
+      "brief": "Realistic phone lock screen held in hand, time and battery at top, the LACALUT notification banner bold and legible. A small LACALUT AKTIV tube + mouthwash bottle visible on a surface behind the phone.",
+      "label": "AKTIV SIGN S4 - Phone Notification"
+    },
+    {
+      "id": "s5-tattoo",
+      "headline": "Firm, Cared-For Gums.",
+      "signType": "bold lettering TATTOOED across the upper BACK of a person photographed from behind in a natural candid setting",
+      "brief": "Candid real photo from behind, natural skin and lighting, the tattoo text large, crisp and easy to read. LACALUT AKTIV tube + mouthwash bottle resting small on a bench in the background.",
+      "label": "AKTIV SIGN S5 - Back Tattoo"
+    },
+    {
+      "id": "s6-forehead",
+      "headline": "German Gum Care.",
+      "signType": "a few words written across the FOREHEAD of a person, candid close-up portrait in a real everyday setting",
+      "brief": "Candid close-up of a believable everyday Australian, slight smile, the forehead text bold and clearly legible. Hold the message very short so it fits large across the forehead.",
+      "label": "AKTIV SIGN S6 - Forehead"
+    }
+  ]
+}

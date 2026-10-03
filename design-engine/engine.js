@@ -219,6 +219,10 @@
     const salesLike = brain && ['Sales','Social Proof','Story'].includes(brain.cat);
     const isUGC = brain && brain.cat === 'UGC';
     const isChat = brain && /chat|text message/i.test(brain.name);
+    // AI SIGN CREATIVE (NHB "AI Sign Creatives" doctrine) — an organic real-world SIGN carries the
+    // whole message as text; the scene makes it look like a real photo, not an ad. Text swaps freely;
+    // the graphic stays. Like chat, it bypasses ALL generic headline/badge/CTA scaffolding below.
+    const isSign = brain && (brain.cat === 'Sign' || /\bsign\b/i.test(brain.name || ''));
     // Format owns the frame: when the brain carries its own Layout dim, the generic template
     // mandates (pack lower-third hero, mandatory badge stack) step aside — they were flattening
     // every format into the same headline-top / tube-bottom / three-badges ad.
@@ -245,6 +249,40 @@
       cp += `All chat text in ENGLISH (Australian English), casual and natural like real friends texting. Keep the product's own printed packaging text unchanged. `;
       cp += `${m.ar} aspect ratio, clean flat messaging-app UI, crisp legible typography, no spelling errors on any text.`;
       return cp;
+    }
+
+    // ═══ AI SIGN CREATIVE — organic real-world sign that IS the message ═══
+    if(isSign){
+      const SIGN_TYPES = [
+        'a large roadside BILLBOARD beside a busy highway',
+        'a yellow diamond ROAD SIGN / street warning sign on a post',
+        'an illuminated SIGN above a shop or pharmacy on a busy street',
+        'an orange INDUSTRIAL WARNING / caution sign bolted to a wall',
+        'a yellow POST-IT NOTE stuck on a laptop screen or bathroom mirror',
+        'a flyer / card pinned to a cork BULLETIN BOARD',
+        'white SKYWRITING / words formed in the clouds against blue sky',
+        'bold graphics printed across the front of a T-SHIRT someone is wearing',
+        'a push NOTIFICATION / banner popping up on a phone lock screen',
+        'a wooden SANDWICH-BOARD A-frame sign on a footpath outside a cafe',
+        'vinyl GRAPHICS / lettering on the side of a parked van',
+        'a BUMPER STICKER on the back of a car in traffic',
+        'the printed front of a GREETING CARD standing on a table',
+        'a message piped in icing on top of a decorated CAKE',
+        'bold lettering TATTOOED across the upper BACK of a person photographed from behind in a natural candid setting',
+        'a few words written across the FOREHEAD of a person, candid close-up portrait in a real everyday setting'
+      ];
+      const signType = opts.signType || SIGN_TYPES[Math.floor(Math.random()*SIGN_TYPES.length)];
+      let sp = `Create a PHOTOREALISTIC, natural-looking photo in which ${signType} prominently displays a short written message. This is an "AI sign" ad: it must look like a REAL candid photograph someone snapped, NOT a designed advertisement — the realism is what makes it scroll-stopping. `;
+      sp += `THE MESSAGE ON THE SIGN (exact wording, the single hero element — HUGE, bold, perfectly legible, filling most of the sign): "${opts.headline || (brief || 'Your gums will thank you')}". `;
+      sp += `TYPOGRAPHY IS EVERYTHING (the #1 rule): the message text must be MASSIVE, thick and ultra-high-contrast — readable in a SPLIT SECOND on a small mobile feed thumbnail WITHOUT zooming, so the viewer gets an instant "aha" the moment they see it. Err on the side of TOO BIG. Keep it to a few words on one short line (or two at most) so each word stays enormous; never cram in small text. The written message is the WHOLE point of the image. Australian English. `;
+      sp += `BRANDING + PRODUCT (organic, small): show the real German LACALUT ${s.name} product(s) resting naturally and SMALL somewhere in the scene (true-to-life size, white cap, accurate packaging exactly as the reference images) — e.g. on a bench, a car dash, a hand, beside the sign. When TWO product references are attached (the toothpaste tube AND the mouthwash bottle), include BOTH together as a small natural pairing in the frame, correctly proportioned to each other; if they cannot both fit believably, show EITHER the mouthwash bottle OR the toothpaste tube — never force it. A small "LACALUT ${s.name}" logo may also sit in a corner of the sign. NEVER a big floating studio product hero, NEVER more than a small cameo — the product is a quiet signature, the written message is the hero. `;
+      sp += `STRICTLY NO advertising scaffolding: NO separate overlay headline banner floating over the photo, NO benefit badges, NO trust chips, NO guarantee seals, NO "Shop Now" / CTA button, NO studio backdrop, NO glowing product podium — the ONLY text in the whole image is the message written ON the sign itself. `;
+      sp += `SCENE REALISM: believable real-world setting, natural lighting and perspective, authentic textures and depth of field, slight real-world imperfection — it must pass as a genuine photograph. If people appear, they are believable everyday Australians, photoreal, never plastic AI faces. `;
+      if(brief) sp += `Art-director note (priority) for the scene: ${brief}. `;
+      sp += `CLAIM LOCK: the message must be about LACALUT ${s.name}'s own real job only — ${s.say}. Never borrow another LACALUT product's angle (no whitening unless White & Repair, no fresh-breath unless Flora, no sensitivity unless Sensitive, no herbal/botanical unless Aktiv Herbal). `;
+      if(advNeg) sp += `STRICT COMPLIANCE — never show or write any of these words/claims anywhere: ${bans.join(', ')}. `;
+      sp += `Keep any of the product's own printed packaging text unchanged and softly out of focus. ${m.ar} aspect ratio, crisp legible sign typography, no spelling errors on any text.`;
+      return sp;
     }
 
     let p = `Professional graphic-designed ${m.label} for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
