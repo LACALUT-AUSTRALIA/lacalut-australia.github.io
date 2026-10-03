@@ -2626,6 +2626,8 @@ async function runClone(){
 const SIZE_TARGETS=[ ['9:16','ad','Story 9:16'], ['1:1','listing','Square 1:1'] ];
 async function makeSizes(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
+  // Spend guard — this fires 2 paid AI re-renders. Confirm so a mis-click never burns credits.
+  if(!confirm('📐 Auto-resize will GENERATE 2 new AI images (Story 9:16 + Square 1:1) and costs credits.\n\nProceed?')) return;
   const rec=await idbGet(cardId); if(!rec){ alert('No card.'); return; }
   let src; try{ src=await compositeCard(cardId); }catch(_){ src=rec.url; }
   toast('📐 Building Story 9:16 + Square 1:1 — no need to wait');
