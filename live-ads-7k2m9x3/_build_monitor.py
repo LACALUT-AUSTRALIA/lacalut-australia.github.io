@@ -89,8 +89,11 @@ for a in ads:
 
 running.sort(key=lambda x: x["_s7"], reverse=True)
 stuck.sort(key=lambda x: (x["_age"] if x["_age"] is not None else 999))
-# proven performers (real spend) ranked by ROAS first, then low-spend tests by spend
-tested.sort(key=lambda x: (x["_comp"] != "flagged", x["_s90"] >= LOSER_MIN_SPEND, x["_roas"] or 0, x["_s90"]), reverse=True)
+tested_real = [a for a in tested if a["_s90"] >= LOSER_MIN_SPEND]
+tested_micro = [a for a in tested if a["_s90"] < LOSER_MIN_SPEND]
+# compliant first, then best ROAS
+tested_real.sort(key=lambda x: (x["_comp"] != "flagged", x["_roas"] or 0), reverse=True)
+tested_micro.sort(key=lambda x: (x["_comp"] != "flagged", x["_roas"] or 0, x["_s90"]), reverse=True)
 losers.sort(key=lambda x: x["_s90"], reverse=True)  # biggest money-burners first
 nodeliv.sort(key=lambda x: (x["_age"] if x["_age"] is not None else 999))
 
@@ -162,7 +165,8 @@ for a in running:
     dcls = "dot-live" if a["_s7"] > 0 else "dot-warn"
     rows_running.append(metric_row(a, deliver, dcls))
 
-rows_tested = [metric_row(a, a["effective_status"].replace("_", " ").lower(), "dot-warn") for a in tested]
+rows_tested = [metric_row(a, a["effective_status"].replace("_", " ").lower(), "dot-warn") for a in tested_real]
+rows_micro = [metric_row(a, a["effective_status"].replace("_", " ").lower(), "dot-warn") for a in tested_micro]
 rows_losers = [metric_row(a, a["effective_status"].replace("_", " ").lower(), "dot-stuck") for a in losers]
 
 rows_stuck = []
@@ -280,9 +284,13 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title>{STYLE}
 {table(rows_running, status_col=True)}
 {stuck_section}
 
-<h2>Previously tested (paused) <span class="count">{len(tested)}</span></h2>
+<h2>Previously tested (paused) <span class="count">{len(tested_real)}</span></h2>
 <p class="note"><b>Only ads marked <span class="pill pill-good">OK</span> (or unscreened) are re-launch candidates.</b> Ads marked <span class="pill pill-bad">breach</span> were paused for compliance (disease claims, before/after, competitor comparison) &mdash; do NOT relaunch or recreate them, whatever their ROAS. Flagged ads are sorted to the bottom of this table. Hover a badge for the reason.</p>
 {table(rows_tested, status_col=True)}
+
+<h2>Barely tested &mdash; under ${LOSER_MIN_SPEND:.0f} spend <span class="count">{len(tested_micro)}</span></h2>
+<p class="note">Too little spend to trust the numbers &mdash; a 35x ROAS on $1.45 is one lucky sale, not a winner. Treat these as untested. Sorted by ROAS for curiosity only.</p>
+{table(rows_micro, status_col=True)}
 {nodeliv_section}
 
 <h2 class="losers">Proven losers &mdash; do NOT recreate <span class="count">{len(losers)}</span></h2>
