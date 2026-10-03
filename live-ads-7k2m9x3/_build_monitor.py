@@ -20,6 +20,7 @@ ads = load("ads_all.json", [])
 ins90 = load("insights90.json", [])
 ins7 = load("insights7.json", [])
 thumbs = load("thumbs.json", {})
+compliance = load("compliance.json", {})
 
 def imap(rows):
     m = {}
@@ -59,6 +60,9 @@ for a in ads:
     dt = parse_dt(a.get("created_time", ""))
     a["_age"] = (now - dt.astimezone(timezone.utc)).days if dt else None
     a["_built"] = dt.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m") if dt else "?"
+    cp = compliance.get(aid, {})
+    a["_comp"] = cp.get("c", "unscreened")
+    a["_compwhy"] = cp.get("why", "")
     # prefer locally-downloaded thumbnail (Meta CDN URLs expire + block referrers)
     if os.path.exists(os.path.join(SP, "thumbs", aid + ".jpg")):
         a["_thumb"] = f"thumbs/{aid}.jpg"
@@ -86,7 +90,7 @@ for a in ads:
 running.sort(key=lambda x: x["_s7"], reverse=True)
 stuck.sort(key=lambda x: (x["_age"] if x["_age"] is not None else 999))
 # proven performers (real spend) ranked by ROAS first, then low-spend tests by spend
-tested.sort(key=lambda x: (x["_s90"] >= LOSER_MIN_SPEND, x["_roas"] or 0, x["_s90"]), reverse=True)
+tested.sort(key=lambda x: (x["_comp"] != "flagged", x["_s90"] >= LOSER_MIN_SPEND, x["_roas"] or 0, x["_s90"]), reverse=True)
 losers.sort(key=lambda x: x["_s90"], reverse=True)  # biggest money-burners first
 nodeliv.sort(key=lambda x: (x["_age"] if x["_age"] is not None else 999))
 
@@ -114,6 +118,15 @@ def numf(v, fmt, suffix=""):
         return '<span class="mut">—</span>'
     return format(v, fmt) + suffix
 
+def comp_badge(a):
+    c = a["_comp"]
+    if c == "cleared":
+        return '<span class="pill pill-good" title="On the approved compliant launch list">OK</span>'
+    if c == "flagged":
+        why = esc(a["_compwhy"])
+        return f'<span class="pill pill-bad" title="{why}">breach</span>'
+    return '<span class="mut">&mdash;</span>'
+
 def adcell(a):
     th = a["_thumb"]
     img = f'<img class="th" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-empty"></span>'
@@ -127,6 +140,7 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 {stat}
 <td class="c sub">{a['_built']}<span class="mut"> · {days}</span></td>
+<td class="c">{comp_badge(a)}</td>
 <td class="num">{money(a['_s90'])}</td>
 <td class="num">{roas_badge(a['_roas'])}</td>
 <td class="num">{a['_pc'] or '<span class="mut">0</span>'}</td>
@@ -135,7 +149,7 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="num">{numf(a['_ctr'], '.2f', '%')}</td>
 </tr>"""
 
-HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Built · age</th><th>Spend 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
+HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Built · age</th><th>Compliant</th><th>Spend 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
 
 def table(rows, status_col=False):
     return f"""<div class="tablewrap"><table>
@@ -266,12 +280,12 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title>{STYLE}
 {stuck_section}
 
 <h2>Previously tested (paused) <span class="count">{len(tested)}</span></h2>
-<p class="note">Had spend in the last 90 days, currently not running, ROAS &ge; {LOSER_ROAS:.1f} or under ${LOSER_MIN_SPEND:.0f} tested. Sorted best ROAS first &mdash; the top of this list is re-launch material.</p>
+<p class="note"><b>Only ads marked <span class="pill pill-good">OK</span> (or unscreened) are re-launch candidates.</b> Ads marked <span class="pill pill-bad">breach</span> were paused for compliance (disease claims, before/after, competitor comparison) &mdash; do NOT relaunch or recreate them, whatever their ROAS. Flagged ads are sorted to the bottom of this table. Hover a badge for the reason.</p>
 {table(rows_tested, status_col=True)}
 {nodeliv_section}
 
 <h2 class="losers">Proven losers &mdash; do NOT recreate <span class="count">{len(losers)}</span></h2>
-<p class="note">Spent ${LOSER_MIN_SPEND:.0f}+ in the last 90 days with ROAS under {LOSER_ROAS:.1f}. Sorted by money burned. These angles/creatives failed with real budget &mdash; avoid making more of the same.</p>
+<p class="note">Spent ${LOSER_MIN_SPEND:.0f}+ in the last 90 days with ROAS under {LOSER_ROAS:.1f}. Sorted by money burned. These angles/creatives failed with real budget &mdash; avoid making more of the same. A <span class="pill pill-bad">breach</span> badge means it was also non-compliant.</p>
 {table(rows_losers, status_col=True)}
 
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
