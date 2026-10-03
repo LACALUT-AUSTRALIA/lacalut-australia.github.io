@@ -2239,15 +2239,11 @@ async function renderGallery(sku){
     // filtered → flat grid (no format-folder headers; the filter IS the grouping)
     $('output').innerHTML = bar + visReps.map(({rep,list})=>cardHTML(rep,list)).join('');
   } else {
-    // unfiltered → group into format folders (by rec.angle), same as before, now version-collapsed
-    const groups = new Map();
-    for(const vr of visReps){ const key=vr.rep.angle||''; if(!groups.has(key)) groups.set(key, []); groups.get(key).push(vr); }
-    const keys = [...groups.keys()].sort((a,b)=> a===''?-1 : b===''?1 : formatGroupLabel(a).localeCompare(formatGroupLabel(b)));
-    $('output').innerHTML = bar + keys.map(key=>{
-      const list=groups.get(key); const label=formatGroupLabel(key);
-      const header = key==='' ? '' : `<div class="fmt-group-header" style="grid-column:1/-1;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin:14px 0 2px;padding-top:10px;border-top:1px solid var(--line)">📁 ${label} · ${list.length}</div>`;
-      return header + list.map(({rep,list:vl})=>cardHTML(rep,vl)).join('');
-    }).join('');
+    // unfiltered → flat grid, strictly newest-first (most recently generated at the top, descending to
+    // oldest). The old alphabetical format-folder grouping pushed new creatives in late-alphabet formats
+    // (e.g. "This-or-That") down the page; Quan wants strict chronological order. Browse by format via
+    // the format chips (that applies the filtered flat grid above).
+    $('output').innerHTML = bar + visReps.map(({rep,list})=>cardHTML(rep,list)).join('');
   }
   // re-show any render that was still in-flight when he switched away — its live promise will replace this placeholder when it lands
   pendingImgGens.filter(p=>p.sku===sku && p.ptype===curPtype && !$(p.id)).forEach(p=>{
