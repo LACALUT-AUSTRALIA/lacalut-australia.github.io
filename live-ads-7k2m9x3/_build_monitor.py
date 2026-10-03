@@ -137,9 +137,34 @@ def ad_type(a):
     if _re.search(r"vid|video", nm): return "video"
     return "image"
 
+def stage_of(a):
+    nm = (a.get("campaign", "") + " " + a.get("adset", "")).lower()
+    if any(k in nm for k in ("bof", "retarget", "back in stock", "back-in-stock", "cart", "dpa", "catalog")):
+        return "bof"
+    if any(k in nm for k in ("mof", "warm", "engager")):
+        return "mof"
+    if any(k in nm for k in ("tof", "cold", "broad", "prospect", "testing", "scaling")):
+        return "cold"
+    return "unassigned"
+
+STAGE_LABEL = {"cold": "Cold / TOF", "mof": "MOF / Warm", "bof": "BOF / Retarget", "unassigned": "Unassigned"}
+
+def verdict(a):
+    st = (a.get("effective_status") or "").upper()
+    r = a["_roas"] or 0
+    live = st == "ACTIVE"
+    if live and r >= 3:                       v = ("scale", "&#128640; Scale")
+    elif live and r >= 1.5:                    v = ("keep", "&#9989; Keep")
+    elif live and a["_s90"] >= 50:             v = ("zombie", "&#129503; Zombie")
+    elif (not live) and r >= 1.5 and a["_s90"] > 0: v = ("recycle", "&#9851; Recycle")
+    elif (not live) and r < 1.5 and a["_s90"] >= 50: v = ("dead", "&#9904; Dead")
+    else:
+        return '<span class="mut">&mdash;</span>'
+    return f'<span class="vb v-{v[0]}">{v[1]}</span>'
+
 def row_attrs(a):
     key = esc((a["name"] + " " + a["campaign"] + " " + a["adset"]).lower())
-    return f'data-s="{key}" data-t="{ad_type(a)}"'
+    return f'data-s="{key}" data-t="{ad_type(a)}" data-stage="{stage_of(a)}"'
 
 def adcell(a):
     th = a["_thumb"]
@@ -153,9 +178,11 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="adtd">{adcell(a)}</td>
 <td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
 {stat}
+<td class="c">{verdict(a)}</td>
 <td class="c sub">{a['_built']}<span class="mut"> · {days}</span></td>
 <td class="c">{comp_badge(a)}</td>
 <td class="num">{money(a['_s90'])}</td>
+<td class="num">{money(a['_rev'])}</td>
 <td class="num">{roas_badge(a['_roas'])}</td>
 <td class="num">{a['_pc'] or '<span class="mut">0</span>'}</td>
 <td class="num">{money(a['_cac'], dash_zero=False)}</td>
@@ -163,7 +190,7 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="num">{numf(a['_ctr'], '.2f', '%')}</td>
 </tr>"""
 
-HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Built · age</th><th>Compliant</th><th>Spend 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
+HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th>Spend 90d</th><th>Rev 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
 
 def table(rows, status_col=False):
     return f"""<div class="tablewrap"><table>
@@ -202,6 +229,152 @@ for a in nodeliv:
 <td class="c sub">{esc(a['effective_status'])}</td>
 <td class="c sub">built {a['_built']}</td>
 </tr>""")
+
+# ── PROVEN WINNERS — ready to re-run (card section, ported from the winners artifact) ──
+WIN_ROAS_MIN = 1.5      # breakeven (true COGS breakeven ~1.5x)
+WIN_SPEND_MIN = 30.0    # enough 90d spend to mean something
+PRODUCTS = [
+    ("White & Repair", "#6E59C7", ("white", "repair", "hydroxyapatite", " hap")),
+    ("Herbal",         "#7A8B2A", ("herbal",)),
+    ("Multi-SKU",      "#C77F2A", ("multi", "3-sku", "3 sku", "chooser", "find your formula", "range", "gift", "bundle")),
+    ("Sensitive",      "#2E6FB0", ("sensitive",)),
+    ("Flora",          "#1E8C64", ("flora",)),
+    ("AKTIV",          "#C8102E", ("aktiv",)),
+]
+def product_of(a):
+    nm = (a["name"] + " " + a.get("adset", "")).lower()
+    for label, col, keys in PRODUCTS:   # order matters: Herbal/Multi before AKTIV
+        if any(k in nm for k in keys):
+            return label, col
+    return "Other", "#5B6472"
+
+_seen = {}
+for a in ads:
+    if (a.get("effective_status") or "").upper() in ARCHIVED:
+        continue
+    if a["_comp"] == "flagged":          # never re-run a compliance breach
+        continue
+    r = a["_roas"] or 0
+    if r < WIN_ROAS_MIN or a["_s90"] < WIN_SPEND_MIN or a["_pc"] < 1:
+        continue
+    key = a["name"].strip().lower()
+    if key not in _seen or r > (_seen[key]["_roas"] or 0):
+        _seen[key] = a
+winners = sorted(_seen.values(), key=lambda x: x["_roas"] or 0, reverse=True)
+
+def win_tier(r):
+    if r >= 3: return "strong", "Strong winner"
+    if r >= 2: return "solid", "Solid winner"
+    return "test", "Tested winner"
+
+win_strong = sum(1 for w in winners if (w["_roas"] or 0) >= 3)
+win_spend = sum(w["_s90"] for w in winners)
+win_rev = sum(w["_rev"] for w in winners)
+ADS_ACT = "2157906551266386"
+
+def win_card(a):
+    label, col = product_of(a)
+    tcls, tlbl = win_tier(a["_roas"] or 0)
+    th = a["_thumb"]
+    img = f'<img loading="lazy" src="{esc(th)}" alt="">' if th else '<div class="noimg">no preview</div>'
+    link = f'https://adsmanager.facebook.com/adsmanager/manage/ads?act={ADS_ACT}&selected_ad_ids={esc(a["id"])}'
+    return f'''<article class="wcard t-{tcls}" data-wp="{esc(label.lower())}" style="--pc:{col}">
+<div class="wmedia">{img}</div>
+<div class="wbody">
+<div class="wtop"><span class="wchip" style="--pc:{col}">{esc(label)}</span><span class="wtier t-{tcls}">{tlbl}</span></div>
+<h3 class="wh">{esc(a["name"])}</h3>
+<div class="wroasrow"><span class="wroas">{(a["_roas"] or 0):.2f}<span class="wx">×</span></span><span class="wroaslbl">ROAS</span>
+<span class="wmetrics"><b>{money(a["_s90"])}</b> spent &middot; <b>{a["_pc"]}</b> purch &middot; <b>{money(a["_rev"])}</b> rev</span></div>
+<dl class="wloc">
+<div><dt>Campaign</dt><dd>{esc(a["campaign"])}</dd></div>
+<div><dt>Ad set</dt><dd>{esc(a["adset"])}</dd></div>
+<div><dt>Ad name (search in Ads Manager)</dt><dd class="adname">{esc(a["name"])}</dd></div>
+</dl>
+<a class="wlink" href="{link}" target="_blank" rel="noopener">Open in Ads Manager &#8599;</a>
+</div>
+</article>'''
+
+_wp_seen, win_products = set(), []
+for w in winners:
+    label, col = product_of(w)
+    if label not in _wp_seen:
+        _wp_seen.add(label); win_products.append((label, col))
+win_pills = '<button class="wfilter wall" data-wf="__all" aria-pressed="true">All products</button>' + "".join(
+    f'<button class="wfilter" data-wf="{esc(l.lower())}" style="--pc:{c}">{esc(l)}</button>' for l, c in win_products)
+win_cards_html = "".join(win_card(w) for w in winners)
+winners_section = f'''
+<section class="sec winsec">
+<h2>&#11088; Proven winners &mdash; ready to re-run <span class="count">{len(winners)}</span></h2>
+<p class="note">Compliant creatives above breakeven (ROAS &ge; {WIN_ROAS_MIN:g}&times;) with real spend (&ge; ${WIN_SPEND_MIN:g}) in the last 90 days, deduped to the best instance of each, ranked by ROAS. Breaches are excluded &mdash; never re-run those. Pick what to switch on under the new testing structure.</p>
+<div class="wstats">
+<div class="wstat"><b>{len(winners)}</b><span>Winning creatives</span></div>
+<div class="wstat"><b>{win_strong}</b><span>Strong (&ge;3&times; ROAS)</span></div>
+<div class="wstat"><b>${win_spend:,.0f}</b><span>Combined spend (90d)</span></div>
+<div class="wstat"><b>${win_rev:,.0f}</b><span>Combined revenue</span></div>
+</div>
+<div class="wfilters">{win_pills}</div>
+<div class="wgrid">{win_cards_html}</div>
+</section>''' if winners else ""
+
+# ── BY FUNNEL STAGE — compact per-stage summary strip (Cold / MOF / BOF) ──
+STAGES = ["cold", "mof", "bof"]
+stage_stats = {s: {"sp": 0.0, "rev": 0.0, "win": 0, "n": 0} for s in STAGES}
+for a in ads:
+    if (a.get("effective_status") or "").upper() in ARCHIVED:
+        continue
+    s = stage_of(a)
+    if s in stage_stats:
+        stage_stats[s]["sp"] += a["_s90"]; stage_stats[s]["rev"] += a["_rev"]; stage_stats[s]["n"] += 1
+for w in winners:
+    s = stage_of(w)
+    if s in stage_stats:
+        stage_stats[s]["win"] += 1
+
+def stage_card(s):
+    d = stage_stats[s]
+    ro = (d["rev"] / d["sp"]) if d["sp"] else 0
+    cls = "good" if ro >= 1.5 else ("bad" if d["sp"] else "")
+    return (f'<div class="stcard st-{s}"><div class="stlbl">{STAGE_LABEL[s]}</div>'
+            f'<div class="strow"><span class="stroas {cls}">{ro:.2f}x</span><span class="stx">ROAS 90d</span></div>'
+            f'<div class="stsub">${d["sp"]:,.0f} spent &middot; {d["win"]} winner{"" if d["win"]==1 else "s"} &middot; {d["n"]} ads</div></div>')
+
+stage_section = (f'''
+<section class="sec">
+<h2>By funnel stage <span class="count">{sum(1 for s in STAGES if stage_stats[s]["n"])}</span></h2>
+<p class="note">Every delivering ad grouped by the audience temperature it ran to (read from campaign + ad set names). Use the <b>Stage</b> filter in the bar above to drill any section to one stage.</p>
+<div class="ststrip">{''.join(stage_card(s) for s in STAGES)}</div>
+</section>''')
+
+# ── BY CAMPAIGN — rollup table (the aggregation the ad-level tables lack) ──
+camp_roll = {}
+for a in ads:
+    if (a.get("effective_status") or "").upper() in ARCHIVED:
+        continue
+    c = a["campaign"] or "(no campaign)"
+    d = camp_roll.setdefault(c, {"sp": 0.0, "rev": 0.0, "pc": 0, "n": 0, "live": 0})
+    d["sp"] += a["_s90"]; d["rev"] += a["_rev"]; d["pc"] += a["_pc"]; d["n"] += 1
+    if (a.get("effective_status") or "").upper() == "ACTIVE":
+        d["live"] += 1
+camp_roll_rows = sorted(camp_roll.items(), key=lambda kv: kv[1]["sp"], reverse=True)
+
+def camp_roll_row(c, d):
+    ro = (d["rev"] / d["sp"]) if d["sp"] else None
+    cac = (d["sp"] / d["pc"]) if d["pc"] else None
+    pc_cell = str(d["pc"]) if d["pc"] else '<span class="mut">0</span>'
+    return (f'<tr><td class="c camp"><div>{esc(c)}</div><div class="mut">{d["live"]} live &middot; {d["n"]} ads</div></td>'
+            f'<td class="num">{money(d["sp"])}</td><td class="num">{money(d["rev"])}</td>'
+            f'<td class="num">{roas_badge(ro)}</td>'
+            f'<td class="num">{pc_cell}</td>'
+            f'<td class="num">{money(cac, dash_zero=False)}</td></tr>')
+
+campaign_section = (f'''
+<section class="sec">
+<h2>By campaign <span class="count">{len(camp_roll_rows)}</span></h2>
+<p class="note">Account rolled up to campaign level &mdash; spend, revenue, blended ROAS and CPA across all non-archived ads (last 90 days), sorted by spend.</p>
+<div class="tablewrap"><table class="rollup">
+<thead><tr><th>Campaign</th><th>Spend 90d</th><th>Rev 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th></tr></thead>
+<tbody>{''.join(camp_roll_row(c, d) for c, d in camp_roll_rows)}</tbody>
+</table></div></section>''' if camp_roll_rows else "")
 
 gen = now.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m/%Y %H:%M AEDT")
 
@@ -261,7 +434,7 @@ h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 @media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
-table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:1080px;font-size:14px}
 thead th{position:sticky;top:112px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
@@ -284,6 +457,54 @@ td.camp .mut{font-size:12px}
 .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
 .pill-good{background:var(--goodbg);color:var(--good)}.pill-mid{background:var(--midbg);color:var(--mid)}.pill-bad{background:var(--badbg);color:var(--bad)}.pill-none{background:var(--line);color:var(--sub)}
 footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
+.vb{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.v-scale{background:var(--goodbg);color:var(--good)}.v-keep{background:#e9f0f8;color:var(--accent)}
+.v-zombie{background:var(--badbg);color:var(--bad)}.v-recycle{background:var(--midbg);color:var(--mid)}.v-dead{background:var(--line);color:var(--sub)}
+:root[data-theme=dark] .v-keep,@media (prefers-color-scheme:dark){.v-keep{background:#132535}}
+.ststrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:4px 0 10px}
+.stcard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--sc,var(--accent));border-radius:14px;padding:14px 16px}
+.st-cold{--sc:#2f6db4}.st-mof{--sc:#c98a22}.st-bof{--sc:#e0245e}
+.stlbl{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--sub);font-weight:700}
+.strow{display:flex;align-items:baseline;gap:8px;margin-top:4px}
+.stroas{font-size:28px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.stroas.good{color:var(--good)}.stroas.bad{color:var(--bad)}
+.stx{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub)}
+.stsub{font-size:12.5px;color:var(--sub);margin-top:4px}
+table.rollup{min-width:720px}
+.winsec h2{color:var(--brand)}
+.wstats{display:flex;flex-wrap:wrap;gap:22px;margin:4px 0 14px}
+.wstat b{display:block;font-size:22px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+.wstat span{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--sub)}
+.wfilters{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px}
+.wfilter{font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:5px 12px;border-radius:999px;border:1px solid var(--line);border-left:3px solid var(--pc,var(--brand));background:var(--card);color:var(--sub)}
+.wfilter[aria-pressed=true]{background:var(--pc,var(--brand));color:#fff;border-color:var(--pc,var(--brand))}
+.wfilter.wall{border-left-color:var(--brand)}.wfilter.wall[aria-pressed=true]{background:var(--brand);border-color:var(--brand)}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:14px}
+.wcard{display:grid;grid-template-columns:150px 1fr;background:var(--card);border:1px solid var(--line);border-left:5px solid var(--tc,var(--sub));border-radius:14px;overflow:hidden}
+.wcard.t-strong{--tc:var(--good)}.wcard.t-solid{--tc:var(--mid)}.wcard.t-test{--tc:var(--sub)}
+.wmedia{background:#0c0e12;aspect-ratio:1;overflow:hidden}
+.wmedia img{width:100%;height:100%;object-fit:cover;display:block}
+.wmedia .noimg{display:flex;align-items:center;justify-content:center;height:100%;color:#6b7280;font-size:12px}
+.wbody{padding:13px 15px;min-width:0}
+.wtop{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.wchip{font-size:11px;font-weight:700;color:#fff;background:var(--pc);padding:3px 9px;border-radius:999px}
+.wtier{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.wtier.t-strong{color:var(--good)}.wtier.t-solid{color:var(--mid)}.wtier.t-test{color:var(--sub)}
+.wh{font-size:15px;line-height:1.25;margin:0 0 8px}
+.wroasrow{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;padding:8px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:9px}
+.wroas{font-size:25px;font-weight:800;line-height:1;letter-spacing:-.03em;color:var(--tc);font-variant-numeric:tabular-nums}
+.wroas .wx{font-size:14px;font-weight:600}
+.wroaslbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--sub)}
+.wmetrics{font-size:12px;color:var(--sub);margin-left:auto;font-variant-numeric:tabular-nums}
+.wmetrics b{color:var(--ink);font-weight:700}
+.wloc{margin:0;display:grid;gap:5px}
+.wloc div{display:grid;grid-template-columns:200px 1fr;gap:10px;align-items:baseline}
+.wloc dt{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub);margin:0}
+.wloc dd{margin:0;font-size:12px;color:var(--sub);font-family:ui-monospace,Menlo,Consolas,monospace;word-break:break-word}
+.wloc dd.adname{color:var(--ink);font-weight:600}
+.wlink{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--accent);text-decoration:none}
+.wlink:hover{text-decoration:underline}
+@media(max-width:620px){.wgrid{grid-template-columns:1fr}.wcard{grid-template-columns:1fr}.wmedia{aspect-ratio:16/10}.wloc div{grid-template-columns:1fr}.wmetrics{margin-left:0;flex-basis:100%}}
 </style>"""
 
 html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
@@ -297,6 +518,7 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 <input id="fq" type="search" placeholder="Search ads, campaigns, ad sets&hellip;">
 <select id="ft"><option value="">All types</option><option value="image">Image</option><option value="video">Video</option><option value="carousel">Carousel</option></select>
 <select id="fc"><option value="">All campaigns</option>{camp_opts}</select>
+<select id="fs"><option value="">All stages</option><option value="cold">Cold / TOF</option><option value="mof">MOF / Warm</option><option value="bof">BOF / Retarget</option><option value="unassigned">Unassigned</option></select>
 <span class="fcount" id="fn"></span>
 </div>
 
@@ -304,9 +526,14 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 <div class="kpi"><div class="lbl">Running (active)</div><div class="val">{len(running)}</div></div>
 <div class="kpi"><div class="lbl">Built, not launched</div><div class="val {'bad' if stuck else 'good'}">{len(stuck)}</div></div>
 <div class="kpi"><div class="lbl">Spend (7d)</div><div class="val">${t_sp:,.0f}</div></div>
+<div class="kpi"><div class="lbl">Revenue (7d)</div><div class="val">${t_rev:,.0f}</div></div>
 <div class="kpi"><div class="lbl">Blended ROAS (7d)</div><div class="val {'good' if b_roas>=1 else 'bad'}">{b_roas:.2f}x</div></div>
 <div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">{t_pc}</div></div>
 </div>
+
+{winners_section}
+{stage_section}
+{campaign_section}
 
 <section class="sec">
 <h2>Running ads <span class="count">{len(running)}</span></h2>
@@ -336,24 +563,32 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 
 <script>
 (function(){{
-var q=document.getElementById('fq'),t=document.getElementById('ft'),c=document.getElementById('fc'),n=document.getElementById('fn');
+var q=document.getElementById('fq'),t=document.getElementById('ft'),c=document.getElementById('fc'),st=document.getElementById('fs'),n=document.getElementById('fn');
 var rows=[].slice.call(document.querySelectorAll('tr[data-s]'));
 var counts=[].slice.call(document.querySelectorAll('h2 .count'));
 var orig=counts.map(function(el){{return el.textContent}});
 function apply(){{
-  var s=q.value.toLowerCase().trim(),ty=t.value,ca=c.value,shown=0;
+  var s=q.value.toLowerCase().trim(),ty=t.value,ca=c.value,stg=st.value,shown=0;
   rows.forEach(function(r){{
-    var ok=(!s||r.getAttribute('data-s').indexOf(s)>-1)&&(!ty||r.getAttribute('data-t')===ty)&&(!ca||r.getAttribute('data-s').indexOf(ca)>-1);
+    var ok=(!s||r.getAttribute('data-s').indexOf(s)>-1)&&(!ty||r.getAttribute('data-t')===ty)&&(!ca||r.getAttribute('data-s').indexOf(ca)>-1)&&(!stg||r.getAttribute('data-stage')===stg);
     r.style.display=ok?'':'none'; if(ok)shown++;
   }});
   document.querySelectorAll('section.sec').forEach(function(sec){{
+    var all=sec.querySelectorAll('tr[data-s]'); if(!all.length)return;
     var vis=sec.querySelectorAll('tr[data-s]:not([style*="none"])').length;
     var pill=sec.querySelector('h2 .count'); if(pill)pill.textContent=vis;
   }});
-  n.textContent=(s||ty||ca)?shown+' of '+rows.length+' ads':'';
-  if(!s&&!ty&&!ca)counts.forEach(function(el,i){{el.textContent=orig[i]}});
+  var act=(s||ty||ca||stg);
+  n.textContent=act?shown+' of '+rows.length+' ads':'';
+  if(!act)counts.forEach(function(el,i){{el.textContent=orig[i]}});
 }}
-[q,t,c].forEach(function(el){{el.addEventListener('input',apply)}});
+[q,t,c,st].forEach(function(el){{el.addEventListener('input',apply)}});
+var wf=[].slice.call(document.querySelectorAll('.wfilter')),wc=[].slice.call(document.querySelectorAll('.wcard'));
+wf.forEach(function(b){{b.addEventListener('click',function(){{
+  var f=b.getAttribute('data-wf');
+  wf.forEach(function(x){{x.setAttribute('aria-pressed',x===b?'true':'false')}});
+  wc.forEach(function(cd){{cd.style.display=(f==='__all'||cd.getAttribute('data-wp')===f)?'':'none'}});
+}})}});
 }})();
 </script>
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
