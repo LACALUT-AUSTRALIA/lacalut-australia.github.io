@@ -268,7 +268,7 @@ td.camp .mut{font-size:12px}
 footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 </style>"""
 
-html_body = f"""<title>LACALUT Live Ads Monitor</title>{STYLE}
+html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230866FF'/%3E%3Ctext x='32' y='45' font-size='38' font-family='Arial,sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E%E2%88%9E%3C/text%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
