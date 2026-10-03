@@ -233,7 +233,7 @@ td.camp{max-width:260px}
 td.camp div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
 td.camp .mut{font-size:12px}
 .adc{display:flex;align-items:center;gap:10px}
-.adname{font-size:13.5px;line-height:1.35}
+.adname{font-size:13.5px;line-height:1.35;word-break:break-word;overflow-wrap:anywhere}
 .th{width:56px;height:56px;min-width:56px;border-radius:8px;object-fit:cover;background:var(--line);border:1px solid var(--line)}
 .th-sm{width:40px;height:40px;min-width:40px}
 .th-empty{display:inline-block}
