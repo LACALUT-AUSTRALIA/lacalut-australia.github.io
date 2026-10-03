@@ -363,6 +363,16 @@ async function migratePtype(){ try{ const db=await idb();
     t.oncomplete=res; t.onerror=res; });
 }catch(e){} }
 
+// One-time: un-stack existing EDIT records (id ends _edit, or label "· edited") so the ORIGINAL
+// re-appears as its own standalone card beside the edit. Non-destructive — only clears rec.parent,
+// never deletes. Guarded so it runs once.
+async function migrateUnstackEdits(){ try{ if(localStorage.getItem('de_unstacked_edits')==='1') return; const db=await idb();
+  await new Promise(res=>{ const t=db.transaction('gens','readwrite'); const rq=t.objectStore('gens').openCursor();
+    rq.onsuccess=()=>{ const c=rq.result; if(!c) return; const r=c.value; const isEdit=(r&&r.parent)&&((/_edit$/.test(r.id||''))||/·\s*edited/i.test(r.label||'')); if(isEdit){ r.parent=null; c.update(r); } c.continue(); };
+    t.oncomplete=res; t.onerror=res; });
+  localStorage.setItem('de_unstacked_edits','1');
+}catch(e){} }
+
 /* ═══ RENDER ═══ */
 function renderTabs(){
   $('tabs').innerHTML = Object.entries(SKUS).map(([k,v])=>
@@ -2825,7 +2835,7 @@ if($('archSel') && window.LAYOUT_ARCHETYPES){
   window.LAYOUT_ARCHETYPES.forEach(a=>$('archSel').insertAdjacentHTML('beforeend',`<option value="${a.id}">${a.name} · ${a.styleFamily}</option>`));
   try{ const v=localStorage.getItem('de_arch'); if(v && [...$('archSel').options].some(o=>o.value===v)) $('archSel').value=v; }catch(_){}
 }
-migratePtype().then(()=>renderGallery(curSku)).then(()=>autoImportCliRenders());   // tag legacy gens, paint gallery, then auto-pull any new CLI renders — zero clicks
+migratePtype().then(()=>migrateUnstackEdits()).then(()=>renderGallery(curSku)).then(()=>autoImportCliRenders());   // tag legacy gens, un-stack existing edits so originals show, paint gallery, then auto-pull any new CLI renders — zero clicks
 loadRefLib().then(seedPacks).then(loadProdSlots).then(()=>{ loadProductImgs(); renderSlots(); renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // refs → seed German packs → load saved slot photos → fill slots + restore Image/Video mode
 $('advNeg').addEventListener('change',renderNeg);
 </script>
