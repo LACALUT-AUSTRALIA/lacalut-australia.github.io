@@ -8,6 +8,7 @@ window.BRAND_BRAIN = {
     "Trusted in 60+ countries", "German-engineered formula", "Pharmacy-grade care"
   ],
   tone: "Premium German engineering meets warm Aussie plain-talk. Confident specialist, never shouty pharmacy-discount. Cosmetic FEEL language only (feels firmer / fresher / cared-for) — never medical outcomes.",
+  productRule: "PRODUCT RULE (standing, always): show BOTH this SKU's mouthwash bottle AND its toothpaste tube together in the frame whenever the composition allows, correctly proportioned to each other and to the scene. If both genuinely cannot fit believably, show EITHER the mouthwash bottle OR the toothpaste tube — but NEVER zero product. The products stay a small, natural, accurate cameo (real packaging, white cap) — never a giant studio hero. When two product references are attached, use BOTH; only drop one when there is truly no room.",
   banned: "bleeding, gingivitis, periodontitis, gum disease, infection, inflamed, clinical, medicinal, heals, cures, treats (therapeutic), repairs gums, percentages, #1/No.1/best, WHO/TGA logos, timed results ('in X days/hours'), microbiome, bacteria/bacterial, pH-balance/pH-balancing, flora (as a biological/scientific term — fine only as the LACALUT FLORA product name), any invented scientific/biological mechanism-of-action language not printed on the real pack.",
   angles: {
     "aktiv": [
@@ -59,6 +60,7 @@ window.brandBrainInjection = function(sku){
   return '\n\nBRAND BRAIN (persistent LACALUT knowledge — always true):'
     + '\nTRUST LINES (only ever use these): ' + B.trust.join(' · ')
     + '\nTONE: ' + B.tone
+    + (B.productRule ? '\n' + B.productRule : '')
     + '\nNEVER (hard compliance): ' + B.banned
     + (ang.length ? '\nPROVEN ANGLES for this range (pick or evolve ONE, never mash several): ' + ang.map((a,i)=>(i+1)+') '+a).join(' ') : '');
 };

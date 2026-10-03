@@ -4,83 +4,82 @@
   "format": "sign",
   "mode": "social",
   "aspect": "1:1",
-  "bothProducts": false,
   "ads": [
     {
       "id": "t01-road-sign",
-      "headline": "Natural Gum Care — This Way.",
+      "headline": "Natural Gum Care \u00e2\u20ac\u201d This Way.",
       "signType": "a green-and-white DIRECTIONAL ROAD SIGN / highway guide sign mounted on a pole against sky",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t01-road-sign"
     },
     {
       "id": "t02-street-sign",
       "headline": "Where Germany Buys Herbal.",
       "signType": "a bright illuminated SHOP SIGN mounted above a pharmacy on a busy city street at dusk",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t02-street-sign"
     },
     {
       "id": "t03-bulletin",
       "headline": "9 Herbs For Your Gums.",
       "signType": "a printed flyer pinned to a cork COMMUNITY BULLETIN BOARD among other pinned notes",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t03-bulletin"
     },
     {
       "id": "t04-skywriting",
       "headline": "Go Herbal.",
       "signType": "white SKYWRITING smoke letters spelling a message across a clear blue sky",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t04-skywriting"
     },
     {
       "id": "t05-tshirt",
       "headline": "Powered By 9 Herbs.",
       "signType": "bold graphics printed across the front of a T-SHIRT worn by a real everyday person",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t05-tshirt"
     },
     {
       "id": "t06-screensaver",
       "headline": "Your Herbal Gum-Care Reminder.",
       "signType": "a desktop computer monitor on a desk showing the message as a bold full-screen SCREENSAVER",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t06-screensaver"
     },
     {
       "id": "t07-sandwich-worn",
       "headline": "Swap Harsh For Herbal.",
       "signType": "a SANDWICH-BOARD sign worn over the shoulders of a person standing on a city footpath",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t07-sandwich-worn"
     },
     {
       "id": "t08-vehicle",
       "headline": "German Herbal Gum Care, Delivered.",
       "signType": "large vinyl GRAPHICS and lettering wrapped across the side of a parked delivery VAN",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t08-vehicle"
     },
     {
       "id": "t09-bumper",
       "headline": "I Love Herbal.",
       "signType": "a BUMPER STICKER on the back of a car in traffic, shot close-up",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t09-bumper"
     },
     {
       "id": "t10-greeting-card",
       "headline": "Naturally Thinking Of You.",
       "signType": "the printed front of a GREETING CARD standing open on a table",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t10-greeting-card"
     },
     {
       "id": "t11-cake",
       "headline": "Naturally Firm Gums.",
       "signType": "a message piped in icing on top of a decorated CAKE on a plate",
-      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits — the SIGN and its message are the hero.",
+      "brief": "Photoreal candid scene. Small LACALUT HERBAL tube may appear as a tiny natural cameo only if it fits \u00e2\u20ac\u201d the SIGN and its message are the hero.",
       "label": "HERBAL SIGN t11-cake"
     }
   ]
