@@ -233,9 +233,10 @@ h2{font-size:18px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
 h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;padding:2px 11px;font-weight:600}
 h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
-.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-table{border-collapse:collapse;width:100%;min-width:900px;font-size:14px}
-thead th{text-align:left;color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px}
+thead th{position:sticky;top:0;z-index:5;background:var(--card);text-align:left;color:var(--sub);font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
 tbody tr:last-child td{border-bottom:0}
