@@ -1,0 +1,50 @@
+{
+  "sku": "flora",
+  "packSku": "flora",
+  "format": "sign",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "s1-billboard",
+      "headline": "Bad Breath Stops Here.",
+      "signType": "a huge roadside BILLBOARD beside a busy city highway, shot from the road with traffic below and sky behind",
+      "brief": "Bright daylight, realistic highway with cars, the billboard dominant and crystal sharp. Small LACALUT Flora tube in the billboard bottom corner.",
+      "label": "FLORA SIGN S1"
+    },
+    {
+      "id": "s2-warning",
+      "headline": "WARNING: Mints Only Hide Bad Breath.",
+      "signType": "a weathered yellow-and-black INDUSTRIAL WARNING / caution metal sign, distressed with rust and scratches, bolted to a wall",
+      "brief": "The word WARNING huge across the top in heavy black caps on yellow, the rest of the message below in bold black. Gritty realistic metal. Small LACALUT Flora tube at the bottom of the sign.",
+      "label": "FLORA SIGN S2"
+    },
+    {
+      "id": "s3-postit",
+      "headline": "Fix Breath At The Source, Not With Mints.",
+      "signType": "a bright yellow POST-IT NOTE stuck on a bathroom mirror, handwritten in marker",
+      "brief": "Real bathroom mirror with soft reflection, morning light, the post-it in sharp focus with bold handwritten marker text. LACALUT Flora tube sitting small on the vanity.",
+      "label": "FLORA SIGN S3"
+    },
+    {
+      "id": "s4-notification",
+      "headline": "German Fresh-Breath Science, Daily.",
+      "signType": "a push NOTIFICATION banner popping up at the top of a phone lock screen, bold notification title text",
+      "brief": "Realistic phone lock screen held in hand, time and battery at top, the LACALUT notification banner bold and legible. A small LACALUT Flora tube on a surface behind the phone.",
+      "label": "FLORA SIGN S4"
+    },
+    {
+      "id": "s5-tattoo",
+      "headline": "Fresh Breath That Lasts.",
+      "signType": "bold lettering TATTOOED across the upper BACK of a person photographed from behind in a natural candid setting",
+      "brief": "Candid real photo from behind, natural skin and lighting, the tattoo text large, crisp and easy to read. LACALUT Flora tube resting small on a bench in the background.",
+      "label": "FLORA SIGN S5"
+    },
+    {
+      "id": "s6-forehead",
+      "headline": "Fresh Breath.",
+      "signType": "a few words written across the FOREHEAD of a person, candid close-up portrait in a real everyday setting",
+      "brief": "Candid close-up of a believable everyday Australian, slight smile, the forehead text bold and clearly legible. Hold the message very short so it fits large across the forehead.",
+      "label": "FLORA SIGN S6"
+    }
+  ]
+}

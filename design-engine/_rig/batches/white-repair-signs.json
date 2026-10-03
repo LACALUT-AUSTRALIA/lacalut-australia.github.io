@@ -1,0 +1,50 @@
+{
+  "sku": "white-repair",
+  "packSku": "white-repair",
+  "format": "sign",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "s1-billboard",
+      "headline": "Lift Everyday Stains.",
+      "signType": "a huge roadside BILLBOARD beside a busy city highway, shot from the road with traffic below and sky behind",
+      "brief": "Bright daylight, realistic highway with cars, the billboard dominant and crystal sharp. Small LACALUT White & Repair tube in the billboard bottom corner.",
+      "label": "WHITE & REPAIR SIGN S1"
+    },
+    {
+      "id": "s2-warning",
+      "headline": "WARNING: Coffee Stains Add Up.",
+      "signType": "a weathered yellow-and-black INDUSTRIAL WARNING / caution metal sign, distressed with rust and scratches, bolted to a wall",
+      "brief": "The word WARNING huge across the top in heavy black caps on yellow, the rest of the message below in bold black. Gritty realistic metal. Small LACALUT White & Repair tube at the bottom of the sign.",
+      "label": "WHITE & REPAIR SIGN S2"
+    },
+    {
+      "id": "s3-postit",
+      "headline": "Brighter Teeth, The Gentle Way.",
+      "signType": "a bright yellow POST-IT NOTE stuck on a bathroom mirror, handwritten in marker",
+      "brief": "Real bathroom mirror with soft reflection, morning light, the post-it in sharp focus with bold handwritten marker text. LACALUT White & Repair tube sitting small on the vanity.",
+      "label": "WHITE & REPAIR SIGN S3"
+    },
+    {
+      "id": "s4-notification",
+      "headline": "German Whitening That's Enamel-Kind.",
+      "signType": "a push NOTIFICATION banner popping up at the top of a phone lock screen, bold notification title text",
+      "brief": "Realistic phone lock screen held in hand, time and battery at top, the LACALUT notification banner bold and legible. A small LACALUT White & Repair tube on a surface behind the phone.",
+      "label": "WHITE & REPAIR SIGN S4"
+    },
+    {
+      "id": "s5-tattoo",
+      "headline": "Whiter, The German Way.",
+      "signType": "bold lettering TATTOOED across the upper BACK of a person photographed from behind in a natural candid setting",
+      "brief": "Candid real photo from behind, natural skin and lighting, the tattoo text large, crisp and easy to read. LACALUT White & Repair tube resting small on a bench in the background.",
+      "label": "WHITE & REPAIR SIGN S5"
+    },
+    {
+      "id": "s6-forehead",
+      "headline": "Brighter Smile.",
+      "signType": "a few words written across the FOREHEAD of a person, candid close-up portrait in a real everyday setting",
+      "brief": "Candid close-up of a believable everyday Australian, slight smile, the forehead text bold and clearly legible. Hold the message very short so it fits large across the forehead.",
+      "label": "WHITE & REPAIR SIGN S6"
+    }
+  ]
+}

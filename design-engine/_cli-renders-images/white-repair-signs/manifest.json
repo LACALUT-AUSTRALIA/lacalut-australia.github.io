@@ -1,0 +1,62 @@
+[
+  {
+    "id": "g1791036025145_0",
+    "filename": "s1-billboard.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE & REPAIR SIGN S1",
+    "brief": "Bright daylight, realistic highway with cars, the billboard dominant and crystal sharp. Small LACALUT White & Repair tube in the billboard bottom corner.",
+    "angle": ""
+  },
+  {
+    "id": "g1791036044209_1",
+    "filename": "s2-warning.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE & REPAIR SIGN S2",
+    "brief": "The word WARNING huge across the top in heavy black caps on yellow, the rest of the message below in bold black. Gritty realistic metal. Small LACALUT White & Repair tube at the bottom of the sign.",
+    "angle": ""
+  },
+  {
+    "id": "g1791036063571_2",
+    "filename": "s3-postit.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE & REPAIR SIGN S3",
+    "brief": "Real bathroom mirror with soft reflection, morning light, the post-it in sharp focus with bold handwritten marker text. LACALUT White & Repair tube sitting small on the vanity.",
+    "angle": ""
+  },
+  {
+    "id": "g1791036084528_3",
+    "filename": "s4-notification.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE & REPAIR SIGN S4",
+    "brief": "Realistic phone lock screen held in hand, time and battery at top, the LACALUT notification banner bold and legible. A small LACALUT White & Repair tube on a surface behind the phone.",
+    "angle": ""
+  },
+  {
+    "id": "g1791036105162_4",
+    "filename": "s5-tattoo.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE & REPAIR SIGN S5",
+    "brief": "Candid real photo from behind, natural skin and lighting, the tattoo text large, crisp and easy to read. LACALUT White & Repair tube resting small on a bench in the background.",
+    "angle": ""
+  },
+  {
+    "id": "g1791036123764_5",
+    "filename": "s6-forehead.png",
+    "sku": "white-repair",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "WHITE & REPAIR SIGN S6",
+    "brief": "Candid close-up of a believable everyday Australian, slight smile, the forehead text bold and clearly legible. Hold the message very short so it fits large across the forehead.",
+    "angle": ""
+  }
+]

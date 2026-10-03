@@ -1,0 +1,62 @@
+[
+  {
+    "id": "g1791035787714_0",
+    "filename": "s1-billboard.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA SIGN S1",
+    "brief": "Bright daylight, realistic highway with cars, the billboard dominant and crystal sharp. Small LACALUT Flora tube in the billboard bottom corner.",
+    "angle": ""
+  },
+  {
+    "id": "g1791035806602_1",
+    "filename": "s2-warning.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA SIGN S2",
+    "brief": "The word WARNING huge across the top in heavy black caps on yellow, the rest of the message below in bold black. Gritty realistic metal. Small LACALUT Flora tube at the bottom of the sign.",
+    "angle": ""
+  },
+  {
+    "id": "g1791035825698_2",
+    "filename": "s3-postit.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA SIGN S3",
+    "brief": "Real bathroom mirror with soft reflection, morning light, the post-it in sharp focus with bold handwritten marker text. LACALUT Flora tube sitting small on the vanity.",
+    "angle": ""
+  },
+  {
+    "id": "g1791035844208_3",
+    "filename": "s4-notification.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA SIGN S4",
+    "brief": "Realistic phone lock screen held in hand, time and battery at top, the LACALUT notification banner bold and legible. A small LACALUT Flora tube on a surface behind the phone.",
+    "angle": ""
+  },
+  {
+    "id": "g1791035866376_4",
+    "filename": "s5-tattoo.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA SIGN S5",
+    "brief": "Candid real photo from behind, natural skin and lighting, the tattoo text large, crisp and easy to read. LACALUT Flora tube resting small on a bench in the background.",
+    "angle": ""
+  },
+  {
+    "id": "g1791035885839_5",
+    "filename": "s6-forehead.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA SIGN S6",
+    "brief": "Candid close-up of a believable everyday Australian, slight smile, the forehead text bold and clearly legible. Hold the message very short so it fits large across the forehead.",
+    "angle": ""
+  }
+]
