@@ -1,0 +1,5 @@
+[
+  { "id": "gpilotv3_iced_water", "filename": "iced-water-v3.png", "sku": "sensitive", "mode": "social", "ptype": "toothpaste", "label": "Pilot v3 — Creative 1: Iced Water Straw (REALISM FIX)", "angle": "", "collection": null },
+  { "id": "gpilotv3_hot_tap", "filename": "hot-tap-v2.png", "sku": "sensitive", "mode": "social", "ptype": "toothpaste", "label": "Pilot v3 — Creative 2: Hot Tap Toothbrush (BOLD TYPE)", "angle": "", "collection": null },
+  { "id": "gpilotv3_bite_vs_lick", "filename": "bite-vs-lick-v2.png", "sku": "sensitive", "mode": "social", "ptype": "toothpaste", "label": "Pilot v3 — Creative 3: Bite vs Lick (BOLD TYPE)", "angle": "", "collection": null }
+]
