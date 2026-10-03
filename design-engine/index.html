@@ -2047,18 +2047,26 @@ function driveIdbSet(k,v){ return driveIdbOpen().then(db=>new Promise((res,rej)=
 // Upload the card image straight into the ad-images bucket under the `drive-media-buyer/` prefix —
 // that prefix IS the queue (no table needed). design-engine/cli/drive_pull.py lists it, uploads each
 // file into the Media Buyer Drive folder, then moves it to `drive-done/`.
-async function driveQueueUpload(dataUrl, cardId, sku, label){
-  const parts=dataUrl.split(','); const mime=(parts[0].match(/:([^;]+);/)||[])[1]||'image/png';
-  const ext=mime==='image/jpeg'?'jpg':'png';
-  const bin=atob(parts[1]); const arr=new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+async function driveUploadBlob(blob, cardId, sku, label){
+  const mime=blob.type||'image/png';
+  const ext=mime==='image/jpeg'?'jpg':(mime==='image/webp'?'webp':'png');
   const safe=(s)=>(s||'').replace(/[^A-Za-z0-9._ -]/g,'_').trim().slice(0,80);
   const fn='drive-media-buyer/'+safe((sku?sku+' - ':'')+(label||cardId))+'__'+cardId+'-'+Date.now()+'.'+ext;
   const up=await fetch(FACY_SUPA_URL+'/storage/v1/object/ad-images/'+encodeURI(fn),{method:'POST',
     headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':mime,'x-upsert':'true'},
-    body:new Blob([arr],{type:mime})});
+    body:blob});
   if(!up.ok){ const e=await up.json().catch(()=>({})); throw new Error(e.message||('HTTP '+up.status)); }
   return FACY_SUPA_URL+'/storage/v1/object/public/ad-images/'+encodeURI(fn);
+}
+// data: URL → Blob (freshly generated cards)
+function dataUrlToBlob(dataUrl){
+  const parts=dataUrl.split(','); const mime=(parts[0].match(/:([^;]+);/)||[])[1]||'image/png';
+  const bin=atob(parts[1]); const arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:mime});
+}
+async function driveQueueUpload(dataUrl, cardId, sku, label){
+  return driveUploadBlob(dataUrlToBlob(dataUrl), cardId, sku, label);
 }
 async function sendToDrive(cardId){
   const card=$(cardId); if(!card){ alert('No card.'); return; }
@@ -2069,9 +2077,12 @@ async function sendToDrive(cardId){
   const label=(card.querySelector('.t')?.textContent||'').trim();
   if(btn){ btn.disabled=true; btn.textContent='📁 uploading…'; }
   let queued=false, publicUrl='';
-  if(/^data:/.test(img)){
-    try{ publicUrl=await driveQueueUpload(img, cardId, sku, label); queued=true; }catch(e){ console.error('drive upload failed', e); }
-  }
+  try{
+    let blob;
+    if(/^data:/.test(img)){ blob=dataUrlToBlob(img); }       // freshly generated → base64 data URL
+    else { const r=await fetch(img); if(!r.ok) throw new Error('HTTP '+r.status); blob=await r.blob(); }  // imported/recovered → remote/relative/blob URL
+    publicUrl=await driveUploadBlob(blob, cardId, sku, label); queued=true;
+  }catch(e){ console.error('drive upload failed', e); }
   try{ const inbox=(await driveIdbGet('lc_drive_inbox'))||[]; inbox.push({ imageUrl:publicUrl, sku, label, folder:'Media Buyer', ts:Date.now(), id:cardId, queued }); await driveIdbSet('lc_drive_inbox', inbox); }catch(_){}
   try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToDrive=true; st.put(r); } }; }catch(_){}
   if(btn){ btn.className='markybtn pushed'; btn.textContent=queued?'✅ In Drive':'⚠ Retry Drive'; btn.title=queued?'Queued for the Media Buyer Drive folder — syncs automatically':'Upload failed — click to retry'; btn.style.background=queued?'#16a34a':'#d9822b'; btn.style.color='#fff'; btn.style.borderColor=queued?'#16a34a':'#d9822b'; btn.disabled=false; }
