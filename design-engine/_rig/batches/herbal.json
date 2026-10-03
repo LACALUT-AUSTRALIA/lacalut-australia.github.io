@@ -1,0 +1,42 @@
+{
+  "sku": "aktiv-herbal",
+  "packSku": "herbal",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "c1-spa-ritual",
+      "headline": "Brushing That Feels Like a Spa",
+      "brief": "Serene spa-bathroom morning scene as the hero: soft diffused daylight, calming forest-green and white palette, a stone vanity with the real LACALUT HERBAL toothpaste tube (German pack, white cap) resting naturally beside fresh sage sprigs, chamomile flowers and a few green leaves with water dew. Lifestyle mood, a quiet botanical ritual. Product sits naturally in the scene at true size, not a giant floating hero. One short supporting tagline under the headline: \"A Calm, Botanical Clean Every Morning.\" One contrasting CTA pill (gold or red) bottom corner.",
+      "prom": "secondary",
+      "label": "HERBAL C1 - Spa Aromatherapy Ritual"
+    },
+    {
+      "id": "c2-german-heritage",
+      "headline": "Germany's Herbal Gum Secret",
+      "brief": "Premium apothecary-heritage composition: the real LACALUT HERBAL tube (German pack, white cap) standing as the dominant hero on an aged apothecary shelf backdrop, dried botanicals and amber glass jars softly out of focus behind it, deep forest-green tones with warm gold #C9A227 accents. A gold heritage medal/ribbon badge reading \"German Pharmacy Since 1925\". Sub-headline: \"9 Medicinal Herbs, Pharmacy-Crafted.\" Contrasting red or gold CTA pill on a slight slant.",
+      "prom": "hero",
+      "label": "HERBAL C2 - German Heritage Authority"
+    },
+    {
+      "id": "c3-harsh-vs-botanical",
+      "headline": "Harsh Foam Or Real Botanicals?",
+      "brief": "Bold split-frame comparison. Left half: cold clinical white, a sterile foamy chemical toothpaste look, grey and lifeless. Right half: lush living forest-green botanical world with fresh sage, chamomile and green leaves, and the real LACALUT HERBAL tube (German pack, white cap) standing as the clear hero resolution on this side. The green/botanical right side obviously wins. Sub-headline on the right: \"Gum Care The Natural Way.\" Contrasting CTA pill bottom-right.",
+      "prom": "hero",
+      "label": "HERBAL C3 - Harsh vs Botanical Split"
+    },
+    {
+      "id": "c4-nine-herbs-flatlay",
+      "headline": "9 Botanicals. One Fresh Mouth.",
+      "brief": "Clean overhead flat-lay on a soft white-and-green surface: the real LACALUT HERBAL tube (German pack, white cap) centred, encircled by neatly arranged fresh botanicals - sage leaves, chamomile flowers, myrrh, mint sprigs and green stems - each a small distinct cluster like a natural ingredient chart. High contrast, crisp, premium editorial feel. Sub-headline: \"A Special German Herbal Formula.\" Single contrasting CTA pill in a lower corner.",
+      "prom": "hero",
+      "label": "HERBAL C4 - Nine Herbs Ingredient Flat-Lay"
+    },
+    {
+      "id": "c5-feel-good-smile",
+      "headline": "Gums You Can Feel Good About",
+      "brief": "Warm authentic lifestyle close-up: a real, believable everyday Australian adult with a natural confident smile and healthy natural-looking skin, soft morning light, calm botanical-green tones. The real LACALUT HERBAL tube (German pack, white cap) placed small and natural in the lower corner near the CTA, not dominating. Candid, aspirational, feel-good. Sub-headline: \"Naturally Cared-For, Every Day.\" One contrasting CTA pill near the product.",
+      "prom": "secondary",
+      "label": "HERBAL C5 - Feel-Good Outcome Smile"
+    }
+  ]
+}

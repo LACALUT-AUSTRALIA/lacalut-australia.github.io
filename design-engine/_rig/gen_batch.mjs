@@ -19,6 +19,10 @@ if (!batchName) { console.error('Usage: node _rig/gen_batch.mjs <batch-name>'); 
 const batchFile = path.join(DE, '_rig', 'batches', batchName + '.json');
 const batch = JSON.parse(fs.readFileSync(batchFile, 'utf8'));
 const { sku, mode = 'social', ads } = batch;
+// packSku: optional override for the packshot key when it differs from the strategy SKU key
+// (e.g. SKU config is "aktiv-herbal" but the real packshot is stored as "herbal_toothpaste").
+// Defaults to sku so every existing batch keeps working unchanged.
+const packSku = batch.packSku || sku;
 
 const REVIEW_OUT = path.join(DE, '_rig', 'winner-ads', batchName);
 const IMPORT_OUT = path.join(DE, '_cli-renders-images', batchName);
@@ -35,8 +39,8 @@ eval(fs.readFileSync(path.join(DE, 'engine.js'), 'utf8'));
 eval(fs.readFileSync(path.join(DE, 'brand-brain.js'), 'utf8'));
 eval(fs.readFileSync(path.join(DE, 'packs-seed.js'), 'utf8'));
 const E = window.LacalutEngine;
-const PACK = window.LAC_PACKS[sku + '_toothpaste'];
-if (!PACK) { console.error('No packshot for sku="' + sku + '" (expected key "' + sku + '_toothpaste")'); process.exit(1); }
+const PACK = window.LAC_PACKS[packSku + '_toothpaste'];
+if (!PACK) { console.error('No packshot for packSku="' + packSku + '" (expected key "' + packSku + '_toothpaste")'); process.exit(1); }
 const BANS = [...new Set([...(E.GLOBAL_BAN || []), ...((E.SKUS[sku] || {}).ban || [])])];
 
 // Verbatim copy of index.html's HARD_RULES global (13 non-SKU-specific craft rules — CTA pill,
