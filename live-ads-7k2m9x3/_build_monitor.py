@@ -244,7 +244,7 @@ header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-be
 h1{font-size:24px;margin:0;letter-spacing:-.3px}
 h1 .sw{color:var(--brand)}
 .stamp{color:var(--sub);font-size:13px}
-.fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 4px;padding:12px 14px;background:var(--thbg);border:1px solid var(--line);border-radius:14px}
+.fbar{position:sticky;top:0;z-index:9;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 4px;padding:12px 14px;background:var(--thbg);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .fbar input,.fbar select{font:14px inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 12px}
 .fbar input{flex:1;min-width:220px}
 .fbar .fcount{color:var(--thtext);font-weight:700;font-size:13px;white-space:nowrap}
@@ -254,7 +254,7 @@ h1 .sw{color:var(--brand)}
 .kpi .val{font-size:30px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
 .kpi .val.good{color:var(--good)}.kpi .val.bad{color:var(--bad)}
 section.sec{position:relative}
-section.sec h2{position:sticky;top:0;z-index:6;background:var(--bg);margin:26px 0 0;padding:12px 0 8px;min-height:48px;box-sizing:border-box}
+section.sec h2{position:sticky;top:64px;z-index:6;background:var(--bg);margin:26px 0 0;padding:12px 0 8px;min-height:48px;box-sizing:border-box}
 h2{font-size:18px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
 h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;padding:2px 11px;font-weight:600}
 h2.losers .count{background:var(--bad)}
@@ -262,7 +262,7 @@ h2.losers .count{background:var(--bad)}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 @media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
 table{border-collapse:separate;border-spacing:0;width:100%;min-width:900px;font-size:14px}
-thead th{position:sticky;top:48px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
+thead th{position:sticky;top:112px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
 tbody tr:last-child td{border-bottom:0}
@@ -286,7 +286,7 @@ td.camp .mut{font-size:12px}
 footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 </style>"""
 
-html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230866FF'/%3E%3Ctext x='32' y='45' font-size='38' font-family='Arial,sans-serif' font-weight='bold' fill='white' text-anchor='middle'%3E%E2%88%9E%3C/text%3E%3C/svg%3E">{STYLE}
+html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
