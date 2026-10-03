@@ -13,8 +13,19 @@
 #
 # RUN:  python design-engine/cli/drive_pull.py      (schedule it every few min for near-instant sync)
 import socket, os, sys, io, re, json, urllib.request, urllib.parse
+# This PC's default (IPv6) resolver cannot resolve the Supabase host at all (gaierror 11002),
+# so forcing IPv4 is not enough — we must bypass DNS entirely for that host. Pin it to the known
+# Cloudflare IP (override via .env SUPABASE_IP if it ever rotates). SNI + cert still use the real
+# hostname from the URL, so TLS stays valid (same trick as `curl --resolve`). googleapis resolves
+# fine, so leave every other host to normal (IPv4-filtered) resolution.
+SUPA_HOST = "bfzvxxcsfxvgeblnkqne.supabase.co"
 _orig = socket.getaddrinfo
-socket.getaddrinfo = lambda h,*a,**k:[r for r in _orig(h,*a,**k) if r[0]==socket.AF_INET]
+def _getaddrinfo(host, *a, **k):
+    if host == SUPA_HOST:
+        port = a[0] if a else 443
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', (_SUPA_IP, port))]
+    return [r for r in _orig(host, *a, **k) if r[0] == socket.AF_INET]
+socket.getaddrinfo = _getaddrinfo
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
@@ -35,6 +46,7 @@ def _env(*paths):
 # Secrets live in the OneDrive .env (same one wrapup_project.py reads); ~/.env is a fallback.
 ENV=_env("C:/Users/conta/OneDrive/Documents/Claude Code/.env", os.path.expanduser("~/.env"))
 KEY=ENV.get("SUPABASE_SERVICE_ROLE_KEY","").strip()
+_SUPA_IP=ENV.get("SUPABASE_IP","172.64.149.246").strip()   # used by the DNS-bypass patch above
 FOLDER_ID=ENV.get("DRIVE_MEDIA_BUYER_FOLDER_ID","1GzMliHuCfzVcozN0_zAfANo8q01Hf0UA").strip()
 if not KEY: sys.exit("Missing SUPABASE_SERVICE_ROLE_KEY in ~/.env")
 

@@ -2084,7 +2084,8 @@ async function sendToDrive(cardId){
     publicUrl=await driveUploadBlob(blob, cardId, sku, label); queued=true;
   }catch(e){ console.error('drive upload failed', e); }
   try{ const inbox=(await driveIdbGet('lc_drive_inbox'))||[]; inbox.push({ imageUrl:publicUrl, sku, label, folder:'Media Buyer', ts:Date.now(), id:cardId, queued }); await driveIdbSet('lc_drive_inbox', inbox); }catch(_){}
-  try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToDrive=true; st.put(r); } }; }catch(_){}
+  // Only mark the card "In Drive" if the upload genuinely queued — never show a false green on failure.
+  try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToDrive=queued; st.put(r); } }; }catch(_){}
   if(btn){ btn.className='markybtn pushed'; btn.textContent=queued?'✅ In Drive':'⚠ Retry Drive'; btn.title=queued?'Queued for the Media Buyer Drive folder — syncs automatically':'Upload failed — click to retry'; btn.style.background=queued?'#16a34a':'#d9822b'; btn.style.color='#fff'; btn.style.borderColor=queued?'#16a34a':'#d9822b'; btn.disabled=false; }
   toast(queued?'📁 Sent to the Media Buyer Drive folder (syncs automatically)':'⚠ Drive upload failed — click to retry');
 }
