@@ -16,6 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
+import { execSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -135,10 +136,12 @@ async function cmdRender(){
   const pack = packshotFor(sku, form);
   if (!pack) { console.error(C.red + `No packshot for ${sku}/${form} in LAC_PACKS` + C.r); process.exit(1); }
   const aspectRatio = flag('ar', '9:16');
+  const MODEL_ALIAS = { kling:'FAL_KLING', seedance:'FAL_SEEDANCE', veo:'VEO3', veo3:'VEO3' };
+  const forceModel = (() => { const m = flag('model', ''); return m ? (MODEL_ALIAS[m.toLowerCase()] || m) : null; })();
 
   const scenes = sb.scenes || [];
   const targets = onlyScene ? [parseInt(onlyScene, 10) - 1] : scenes.map((_, i) => i);
-  const engineKey = E.videoEngineForStyle(style);
+  const engineKey = E.videoEngineForStyle(style, forceModel);
   const est = E.videoCostEstimate({ model: engineKey, seconds: 8 });
   console.log(`${C.cyn}${C.b}🎬 Rendering${C.r} ${sku} · ${style} → engine ${C.b}${engineKey}${C.r} · ${targets.length} scene(s) · ~US$${(est.usd * targets.length).toFixed(2)}`);
 
@@ -152,7 +155,8 @@ async function cmdRender(){
     if (!sc) { console.log(C.ylw + `  scene ${idx + 1} not found, skipping` + C.r); continue; }
     process.stdout.write(`${C.gry}  S${idx + 1}: `);
     const r = await E.renderScene({
-      sku, scene: sc, storyboard: sb, style, aspectRatio,
+      sku, scene: sc, storyboard: sb, style, aspectRatio, forceModel,
+      index: idx, total: scenes.length, allowMultiPack: !!meta.allowMultiPack,
       refImgs: [pack], refImgDataUrl: pack, worldStill, prevStill: worldStill,
       apiKey: GEMINI, falKey: FAL,
       onProgress: m => process.stdout.write(m + ' · ')
@@ -166,6 +170,27 @@ async function cmdRender(){
       if (m) fs.writeFileSync(path.join(outDir, `${slug}.s${idx + 1}.still.png`), Buffer.from(m[1], 'base64'));
     }
     console.log(`${C.grn}✓ saved ${(buf.length / 1e6).toFixed(1)}MB → ${path.basename(mp4)}${C.r}`);
+
+    // 🛡️ PROOF GATE — after the FIRST scene of a full render, QC it and ABORT the rest if it fails.
+    // Caps a doomed concept at ONE scene (~US$0.90) instead of burning the whole ad. The $18 lesson (27/09):
+    // never render all scenes before proving one holds. Skipped for single --scene runs and when --no-gate.
+    const gateOff = argv.includes('--no-gate') || onlyScene;
+    if (!gateOff && idx === targets[0] && targets.length > 1) {
+      const minScore = parseInt(flag('min', '6'), 10) || 6;
+      const qc = path.resolve(process.env.HOME || 'C:/Users/conta', '.claude/scripts/gemini_watch_video.py');
+      try {
+        process.stdout.write(`${C.cyn}  🛡️ proof-gate QC on S${idx + 1}…${C.r} `);
+        const out = execSync(`python "${qc}" "${mp4}" "Rate this AI video ad clip for a German toothpaste brand out of 10 for whether it is SHIPPABLE: product/label crisp and correct, no melting/morphing/collapsing objects, no mangled hands, no garbled/mirrored text. End with a line exactly like 'SCORE: N/10'."`,
+          { encoding: 'utf8', timeout: 180000, stdio: ['ignore', 'pipe', 'ignore'] });
+        const mm = out.match(/SCORE:\s*(\d+)\s*\/\s*10/i);
+        const score = mm ? parseInt(mm[1], 10) : null;
+        if (score === null) { console.log(`${C.ylw}QC unreadable — continuing (not blocking on a QC glitch)${C.r}`); }
+        else if (score < minScore) {
+          console.log(`${C.red}${C.b}✗ S${idx + 1} scored ${score}/10 (< ${minScore}) — ABORTING remaining ${targets.length - 1} scene(s) to save spend. Fix the concept, then re-render.${C.r}`);
+          break;
+        } else { console.log(`${C.grn}✓ S${idx + 1} ${score}/10 — gate passed, rendering the rest.${C.r}`); }
+      } catch (e) { console.log(`${C.ylw}QC step errored (${(e.message||'').slice(0,60)}) — continuing without gate${C.r}`); }
+    }
   }
   console.log(`${C.grn}${C.b}Done.${C.r} ${C.gry}mp4(s) in ${outDir}${C.r}`);
 }

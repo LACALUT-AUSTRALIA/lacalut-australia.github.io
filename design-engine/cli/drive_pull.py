@@ -121,34 +121,68 @@ def sku_of(name):
     return tok if tok in SKU_FOLDER else ""
 
 def target_folder(coll, sku):
-    # Aditya Matrix creatives -> ADITYA MATRIX / <CAPS SKU>; everything else -> Media Buyer / <SKU>.
-    if coll=="aditya":
-        ap=aditya_parent()
-        if ap:
-            fn=ADITYA_SKU_FOLDER.get(sku)
-            return (_find_or_create(fn, ap), "ADITYA MATRIX/"+fn) if fn else (ap, "ADITYA MATRIX")
+    # EVERYTHING files under ADITYA MATRIX / <CAPS SKU> — that's the folder Quan shares with Aditya,
+    # so every Send-to-Drive creative lands in its SKU subfolder there (not the Media Buyer root).
+    ap=aditya_parent()
+    if ap:
+        fn=ADITYA_SKU_FOLDER.get(sku)
+        return (_find_or_create(fn, ap), "ADITYA MATRIX/"+fn) if fn else (ap, "ADITYA MATRIX")
+    # ADITYA MATRIX folder missing (shouldn't happen) -> fall back to per-SKU under Media Buyer root.
     fn=SKU_FOLDER.get(sku)
     return (_find_or_create(fn, FOLDER_ID), fn) if fn else (FOLDER_ID, "(root)")
 
-rows=list_queue()
-if not rows:
-    print("Drive queue empty — nothing to sync."); sys.exit(0)
-print(f"Syncing {len(rows)} image(s) -> Media Buyer Drive folder {FOLDER_ID}")
-ok=0
-for r in rows:
-    name=r["name"]
-    try:
-        data=download(name)
-        mcol=re.search(r'__col-([a-z-]+)__', name); coll=mcol.group(1) if mcol else ""
-        drive_name=re.sub(r'__col-[a-z-]+(?=__)','', name)          # drop the collection tag
-        drive_name=re.sub(r'__[a-z0-9]+-\d+(?=\.\w+$)','', drive_name)   # strip the __<cardid>-<ts> suffix
-        sku=sku_of(drive_name)
-        parent,where=target_folder(coll, sku)
-        media=MediaIoBaseUpload(io.BytesIO(data), mimetype="image/png", resumable=False)
-        f=drv.files().create(body={"name":drive_name,"parents":[parent]}, media_body=media,
-              fields="id,name", supportsAllDrives=True).execute()
-        move_done(name); ok+=1
-        print(f"  OK  [{where}]  {drive_name}  -> {f['id']}")
-    except Exception as e:
-        print(f"  FAIL {name}: {e}")
-print(f"Done — {ok}/{len(rows)} synced into Media Buyer (Aditya Matrix creatives routed to ADITYA MATRIX/<SKU>).")
+def sync_once():
+    rows=list_queue()
+    if not rows:
+        return 0, 0
+    print(f"Syncing {len(rows)} image(s) -> ADITYA MATRIX / <SKU>")
+    ok=0
+    for r in rows:
+        name=r["name"]
+        try:
+            data=download(name)
+            mcol=re.search(r'__col-([a-z-]+)__', name); coll=mcol.group(1) if mcol else ""
+            drive_name=re.sub(r'__col-[a-z-]+(?=__)','', name)          # drop the collection tag
+            drive_name=re.sub(r'__[a-z0-9]+-\d+(?=\.\w+$)','', drive_name)   # strip the __<cardid>-<ts> suffix
+            sku=sku_of(drive_name)
+            parent,where=target_folder(coll, sku)
+            media=MediaIoBaseUpload(io.BytesIO(data), mimetype="image/png", resumable=False)
+            f=drv.files().create(body={"name":drive_name,"parents":[parent]}, media_body=media,
+                  fields="id,name", supportsAllDrives=True).execute()
+            move_done(name); ok+=1
+            print(f"  OK  [{where}]  {drive_name}  -> {f['id']}")
+        except Exception as e:
+            print(f"  FAIL {name}: {e}")
+    print(f"Done — {ok}/{len(rows)} synced into ADITYA MATRIX / <SKU>.")
+    return ok, len(rows)
+
+if __name__=="__main__":
+    # --watch [seconds]: poll the queue continuously for near-real-time sync (default 10s).
+    # Default (no flag): one-shot drain then exit (used by the scheduled fallback).
+    if "--watch" in sys.argv:
+        import time
+        iv=10
+        try: iv=int(sys.argv[sys.argv.index("--watch")+1])
+        except (ValueError, IndexError): pass
+        # pythonw.exe has no console, so mirror all output to a logfile next to this script.
+        try:
+            _lp=os.path.join(os.path.dirname(os.path.abspath(__file__)),"drive_sync.log")
+            sys.stdout=sys.stderr=open(_lp,"a",encoding="utf-8",buffering=1)
+        except OSError: pass
+        # Single-instance guard: bind a fixed localhost port. If it's taken, another watcher is
+        # already running (e.g. Startup launched one after a manual start) -> exit quietly.
+        # A socket lock self-clears on process death, so there are no stale lockfiles.
+        try:
+            _lock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            _lock.bind(("127.0.0.1", 50573)); _lock.listen(1)
+        except OSError:
+            print("[watch] another watcher already holds the lock — exiting", flush=True); sys.exit(0)
+        print(f"[watch] polling the Drive queue every {iv}s — Ctrl+C to stop", flush=True)
+        while True:
+            try: sync_once()
+            except Exception as e: print(f"[watch] cycle error: {e}", flush=True)
+            sys.stdout.flush()
+            time.sleep(iv)
+    else:
+        n,_=sync_once()
+        if n==0 and _==0: print("Drive queue empty — nothing to sync.")
