@@ -110,6 +110,33 @@ def pull_thumbs():
     json.dump(existing, open(path, "w", encoding="utf-8"))
     print(f"  wrote thumbs.json: {len(existing)} entries (+{added} new)")
 
+def pull_texts():
+    # Pull every ad's actual COPY (headline + body + link text) so the compliance
+    # classifier scans the real wording, not just the ad name. {ad_id: "combined text"}.
+    fields = ("id,creative{body,title,asset_feed_spec{bodies,titles,descriptions},"
+              "object_story_spec{link_data{message,name,description,caption},"
+              "video_data{message,title,link_description}}}")
+    url = f"{GRAPH}/{ACCT}/ads?fields={fields}&limit=300&access_token={urllib.parse.quote(TOK)}"
+    out = {}
+    for a in get_all(url):
+        cr = a.get("creative") or {}
+        parts = [cr.get("body", ""), cr.get("title", "")]
+        afs = cr.get("asset_feed_spec") or {}
+        for coll in ("bodies", "titles", "descriptions"):
+            for it in (afs.get(coll) or []):
+                parts.append(it.get("text", ""))
+        oss = cr.get("object_story_spec") or {}
+        for blk in ("link_data", "video_data"):
+            d = oss.get(blk) or {}
+            for k in ("message", "name", "description", "caption", "title", "link_description"):
+                if d.get(k):
+                    parts.append(d[k])
+        txt = " ".join(p for p in parts if p).strip()
+        if txt:
+            out[a["id"]] = txt
+    json.dump(out, open(os.path.join(SP, "ad_texts.json"), "w", encoding="utf-8"), ensure_ascii=False)
+    print(f"  wrote ad_texts.json: {len(out)} ads with copy")
+
 def write(name, data):
     p = os.path.join(SP, name)
     json.dump(data, open(p, "w", encoding="utf-8"))
@@ -121,4 +148,5 @@ if __name__ == "__main__":
     write("insights90.json", pull_insights("last_90d"))
     write("insights7.json", pull_insights("last_7d"))
     pull_thumbs()
-    print("Done. Next:  python _fetch_thumbs.py && python _build_monitor.py")
+    pull_texts()
+    print("Done. Next:  python _classify_compliance.py && python _fetch_thumbs.py && python _build_monitor.py")

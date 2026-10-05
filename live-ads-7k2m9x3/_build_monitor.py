@@ -125,12 +125,20 @@ def numf(v, fmt, suffix=""):
     return format(v, fmt) + suffix
 
 def comp_badge(a):
+    # Aditya 05/10: any ad that SPENT money must show a definitive compliant-or-not
+    # verdict here — never a blank "—". Automated scan of the ad name + live copy
+    # against the AICIS breach patterns (disease/therapeutic/clinical/before-after/
+    # competitor). It reads the COPY, not the image — an image-level breach needs the
+    # separate image-compliance audit.
     c = a["_comp"]
-    if c == "cleared":
-        return '<span class="pill pill-good" title="On the approved compliant launch list">OK</span>'
+    spent = (a.get("_s90") or 0) > 0
     if c == "flagged":
         why = esc(a["_compwhy"])
-        return f'<span class="pill pill-bad" title="{why}">breach</span>'
+        return f'<span class="pill pill-bad" title="Copy breach: {why}">&#9888; Breach</span>'
+    if c == "cleared":
+        return '<span class="pill pill-good" title="On the approved compliant launch list">&#9989; OK</span>'
+    if spent:   # no breach found in name/copy, and it spent → definitive pass
+        return '<span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span>'
     return '<span class="mut">&mdash;</span>'
 
 def ad_type(a):
