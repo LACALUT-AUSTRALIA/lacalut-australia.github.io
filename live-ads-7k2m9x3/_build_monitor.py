@@ -51,6 +51,9 @@ for a in ads:
     a["_roas"] = r90.get("roas")
     a["_pc"] = int(r90.get("purchase_conversions") or 0)
     a["_rev"] = float(r90.get("purchase_conversion_value") or 0)
+    a["_roas7"] = r7.get("roas")                                   # RECENT (7d) performance
+    a["_pc7"] = int(r7.get("purchase_conversions") or 0)
+    a["_rev7"] = float(r7.get("purchase_conversion_value") or 0)
     a["_cac"] = (a["_s90"] / a["_pc"]) if a["_pc"] else None
     imp = float(r90.get("impressions") or 0)
     reach = float(r90.get("reach") or 0)
@@ -230,9 +233,14 @@ for a in nodeliv:
 <td class="c sub">built {a['_built']}</td>
 </tr>""")
 
-# ── PROVEN WINNERS — ready to re-run (card section, ported from the winners artifact) ──
-WIN_ROAS_MIN = 1.5      # breakeven (true COGS breakeven ~1.5x)
-WIN_SPEND_MIN = 30.0    # enough 90d spend to mean something
+# ── PROVEN WINNERS — HOLDING AT SCALE (last 7 days) ───────────────────────────
+# Quan 05/10: the old 90d/$30 filter listed ads that looked great at tiny spend
+# but crashed the moment they were scaled. A real "ready to run" winner must still
+# be profitable NOW, at real spend. So judge on the LAST 7 DAYS:
+#   7d ROAS >= breakeven (1.5x)  AND  7d spend >= $150  AND  >=1 purchase (7d).
+WIN_ROAS_MIN = 1.5      # true COGS breakeven ~1.5x — measured on the last 7 days
+WIN_SPEND_MIN = 50.0    # real recent spend (last 7d). $50 catches proven ads running at
+                        # modest budget; raise to 150 for only the at-full-scale winners.
 PRODUCTS = [
     ("White & Repair", "#6E59C7", ("white", "repair", "hydroxyapatite", " hap")),
     ("Herbal",         "#7A8B2A", ("herbal",)),
@@ -254,39 +262,44 @@ for a in ads:
         continue
     if a["_comp"] == "flagged":          # never re-run a compliance breach
         continue
-    r = a["_roas"] or 0
-    if r < WIN_ROAS_MIN or a["_s90"] < WIN_SPEND_MIN or a["_pc"] < 1:
+    r = a["_roas7"] or 0                 # judge on RECENT 7d ROAS, not inflated 90d
+    if r < WIN_ROAS_MIN or a["_s7"] < WIN_SPEND_MIN or a["_pc7"] < 1:
         continue
     key = a["name"].strip().lower()
-    if key not in _seen or r > (_seen[key]["_roas"] or 0):
+    if key not in _seen or r > (_seen[key]["_roas7"] or 0):
         _seen[key] = a
-winners = sorted(_seen.values(), key=lambda x: x["_roas"] or 0, reverse=True)
+winners = sorted(_seen.values(), key=lambda x: x["_roas7"] or 0, reverse=True)
 
 def win_tier(r):
     if r >= 3: return "strong", "Strong winner"
     if r >= 2: return "solid", "Solid winner"
     return "test", "Tested winner"
 
-win_strong = sum(1 for w in winners if (w["_roas"] or 0) >= 3)
-win_spend = sum(w["_s90"] for w in winners)
-win_rev = sum(w["_rev"] for w in winners)
+win_strong = sum(1 for w in winners if (w["_roas7"] or 0) >= 3)
+win_spend = sum(w["_s7"] for w in winners)
+win_rev = sum(w["_rev7"] for w in winners)
 ADS_ACT = "2157906551266386"
 
 def win_row(a):
     label, col = product_of(a)
-    tcls, tlbl = win_tier(a["_roas"] or 0)
+    tcls, tlbl = win_tier(a["_roas7"] or 0)
     th = a["_thumb"]
     img = f'<img class="th th-sm" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-sm th-empty"></span>'
     link = f'https://adsmanager.facebook.com/adsmanager/manage/ads?act={ADS_ACT}&selected_ad_ids={esc(a["id"])}'
+    st = (a.get("effective_status") or "").upper()
+    live = st == "ACTIVE"
+    stlbl = "LIVE" if live else "PAUSED"
+    stbg = "#1A7F37" if live else "#B4540A"
+    stchip = f'<span style="background:{stbg};color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;letter-spacing:.3px;vertical-align:middle">{stlbl}</span>'
     return f'''<tr class="winrow" data-wp="{esc(label.lower())}">
-<td class="adtd"><div class="adc">{img}<span class="adname">{esc(a["name"])}</span></div></td>
+<td class="adtd"><div class="adc">{img}<span class="adname">{esc(a["name"])}</span> {stchip}</div></td>
 <td class="c"><span class="wchip" style="--pc:{col}">{esc(label)}</span></td>
 <td class="c"><span class="wtier t-{tcls}">{tlbl}</span></td>
 <td class="c camp"><div>{esc(a["campaign"])}</div><div class="mut">{esc(a["adset"])}</div></td>
-<td class="num">{roas_badge(a["_roas"])}</td>
-<td class="num">{money(a["_s90"])}</td>
-<td class="num">{money(a["_rev"])}</td>
-<td class="num">{a["_pc"] or '<span class="mut">0</span>'}</td>
+<td class="num">{roas_badge(a["_roas7"])}</td>
+<td class="num">{money(a["_s7"])}</td>
+<td class="num">{money(a["_rev7"])}</td>
+<td class="num">{a["_pc7"] or '<span class="mut">0</span>'}</td>
 <td class="c"><a class="wlink" href="{link}" target="_blank" rel="noopener">Open &#8599;</a></td>
 </tr>'''
 
@@ -300,17 +313,17 @@ win_pills = '<button class="wfilter wall" data-wf="__all" aria-pressed="true">Al
 win_rows_html = "".join(win_row(w) for w in winners)
 winners_section = f'''
 <section class="sec winsec">
-<h2>&#11088; Proven winners &mdash; ready to re-run <span class="count">{len(winners)}</span></h2>
-<p class="note">Compliant creatives above breakeven (ROAS &ge; {WIN_ROAS_MIN:g}&times;) with real spend (&ge; ${WIN_SPEND_MIN:g}) in the last 90 days, deduped to the best instance of each, ranked by ROAS. Breaches are excluded &mdash; never re-run those. Pick what to switch on under the new testing structure.</p>
+<h2>&#11088; Proven winners &mdash; profitable NOW (last 7 days) <span class="count">{len(winners)}</span></h2>
+<p class="note">Only creatives still profitable right now at real spend: 7-day ROAS &ge; {WIN_ROAS_MIN:g}&times; (true COGS breakeven) AND &ge; ${WIN_SPEND_MIN:g} spent in the last 7 days AND at least one purchase. Deduped to the best instance of each, ranked by 7-day ROAS. Compliance breaches excluded. This deliberately drops the ads that looked great at tiny spend but crashed when scaled &mdash; and note how many below are PAUSED (good creatives switched off while weaker ones kept spending).</p>
 <div class="wstats">
-<div class="wstat"><b>{len(winners)}</b><span>Winning creatives</span></div>
-<div class="wstat"><b>{win_strong}</b><span>Strong (&ge;3&times; ROAS)</span></div>
-<div class="wstat"><b>${win_spend:,.0f}</b><span>Combined spend (90d)</span></div>
-<div class="wstat"><b>${win_rev:,.0f}</b><span>Combined revenue</span></div>
+<div class="wstat"><b>{len(winners)}</b><span>Holding at scale</span></div>
+<div class="wstat"><b>{win_strong}</b><span>Strong (&ge;3&times; 7d ROAS)</span></div>
+<div class="wstat"><b>${win_spend:,.0f}</b><span>Combined spend (7d)</span></div>
+<div class="wstat"><b>${win_rev:,.0f}</b><span>Combined revenue (7d)</span></div>
 </div>
 <div class="wfilters">{win_pills}</div>
 <div class="tablewrap"><table>
-<thead><tr><th>Ad</th><th>Product</th><th>Tier</th><th>Campaign / ad set</th><th>ROAS 90d</th><th>Spend 90d</th><th>Rev 90d</th><th>Purch.</th><th></th></tr></thead>
+<thead><tr><th>Ad</th><th>Product</th><th>Tier</th><th>Campaign / ad set</th><th>ROAS 7d</th><th>Spend 7d</th><th>Rev 7d</th><th>Purch. 7d</th><th></th></tr></thead>
 <tbody>{win_rows_html}</tbody></table></div>
 </section>''' if winners else ""
 
