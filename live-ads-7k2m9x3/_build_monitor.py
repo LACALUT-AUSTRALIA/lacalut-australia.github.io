@@ -400,6 +400,55 @@ campaign_section = (f'''
 <tbody>{''.join(camp_roll_row(c, d) for c, d in camp_roll_rows)}</tbody>
 </table></div></section>''' if camp_roll_rows else "")
 
+# ── COMPLIANCE — every ad that spent money: compliant or not (Aditya 05/10) ──
+spenders = [a for a in ads if a["_s90"] > 0]
+spenders.sort(key=lambda x: (x["_comp"] != "flagged", -x["_s90"]))  # breaches first, biggest spend first
+comp_nc = [a for a in spenders if a["_comp"] == "flagged"]
+comp_nc_spend = sum(a["_s90"] for a in comp_nc)
+comp_ok_spend = sum(a["_s90"] for a in spenders) - comp_nc_spend
+
+def comp_verdict_cell(a):
+    if a["_comp"] == "flagged":
+        return '<span class="pill pill-bad">&#10060; NON-COMPLIANT</span>'
+    if a["_comp"] == "cleared":
+        return '<span class="pill pill-good">&#9989; Compliant</span>'
+    return '<span class="pill pill-good">&#9989; Compliant</span>'
+
+def comp_reason(a):
+    if a["_comp"] == "flagged":
+        return esc(a["_compwhy"])
+    if a["_comp"] == "cleared":
+        return '<span class="mut">approved compliant list</span>'
+    return '<span class="mut">no breach detected in name/copy</span>'
+
+comp_rows = ""
+for a in spenders:
+    st = (a.get("effective_status") or "").replace("_", " ")
+    comp_rows += f'''<tr {row_attrs(a)}>
+<td class="adtd">{adcell(a)}</td>
+<td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
+<td class="c sub">{esc(st.lower())}</td>
+<td class="num">{money(a['_s90'])}</td>
+<td class="num">{roas_badge(a['_roas'])}</td>
+<td class="c">{comp_verdict_cell(a)}</td>
+<td class="c" style="max-width:280px">{comp_reason(a)}</td>
+</tr>'''
+
+compliance_section = f'''
+<section class="sec">
+<h2>&#9878;&#65039; Compliance &mdash; every ad that spent money <span class="count">{len(spenders)}</span></h2>
+<p class="note">All {len(spenders)} ads with spend in the last 90 days, screened against the AICIS cosmetic-only breach patterns (disease/therapeutic claims, clinical/authority, before-after, competitor comparison) on ad name + live copy. Copy-level only &mdash; image breaches need the separate image audit. Non-compliant ads listed first, biggest spend first. (16 deleted ads with ~$1,040 combined spend no longer exist in the account and can&rsquo;t be screened.) <a class="wlink" href="spend_compliance.csv" download>Download CSV &#8595;</a></p>
+<div class="wstats">
+<div class="wstat"><b class="shbad">{len(comp_nc)}</b><span>Non-compliant ads</span></div>
+<div class="wstat"><b class="shbad">${comp_nc_spend:,.0f}</b><span>Spend on breaches (90d)</span></div>
+<div class="wstat"><b>{len(spenders)-len(comp_nc)}</b><span>Compliant ads</span></div>
+<div class="wstat"><b>${comp_ok_spend:,.0f}</b><span>Compliant spend (90d)</span></div>
+</div>
+<div class="tablewrap"><table>
+<thead><tr><th>Ad</th><th>Campaign / ad set</th><th>Status</th><th>Spend 90d</th><th>ROAS 90d</th><th>Compliant?</th><th>Reason</th></tr></thead>
+<tbody>{comp_rows}</tbody></table></div>
+</section>'''
+
 # ── STORE HEALTH — Shopify monthly CVR + revenue (Quan 05/10: "very important") ──
 store = load("store_monthly.json", None)
 store_section = ""
@@ -425,6 +474,21 @@ if store:
 <div class="shmonths">{mcols}</div>
 </div>
 </section>'''
+
+# refreshed CSV copy of the compliance table, downloadable from the page
+import csv as _csv
+with open(os.path.join(SP, "spend_compliance.csv"), "w", newline="", encoding="utf-8-sig") as _f:
+    _w = _csv.writer(_f)
+    _w.writerow(["Ad Name", "Ad ID", "Status", "Campaign", "Ad Set", "Spend 90d (AUD)", "ROAS 90d", "Compliant?", "Reason"])
+    for a in spenders:
+        if a["_comp"] == "flagged":
+            vd, why = "NON-COMPLIANT", a["_compwhy"]
+        elif a["_comp"] == "cleared":
+            vd, why = "Compliant", "approved compliant list"
+        else:
+            vd, why = "Compliant", "no breach detected in name/copy"
+        _w.writerow([a["name"], a["id"], a.get("effective_status", ""), a["campaign"], a["adset"],
+                     round(a["_s90"], 2), round(a["_roas"] or 0, 2), vd, why])
 
 gen = now.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m/%Y %H:%M AEDT")
 
@@ -467,7 +531,15 @@ header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-be
 h1{font-size:24px;margin:0;letter-spacing:-.3px}
 h1 .sw{color:var(--brand)}
 .stamp{color:var(--sub);font-size:13px}
-.fbar{position:sticky;top:0;z-index:9;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 4px;padding:12px 14px;background:var(--thbg);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.tabs{position:sticky;top:0;z-index:11;display:flex;gap:7px;overflow-x:auto;background:var(--bg);padding:10px 0;margin:0 0 2px;scrollbar-width:thin}
+.tabbtn{font:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--sub);display:inline-flex;align-items:center;gap:7px}
+.tabbtn[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:#fff}
+.tabbtn .tcount{background:var(--thbg);color:var(--thtext);border-radius:999px;font-size:11px;padding:1px 7px;font-variant-numeric:tabular-nums}
+.tabbtn[aria-pressed=true] .tcount{background:rgba(255,255,255,.25);color:#fff}
+.tabbtn.tb-bad .tcount{background:var(--badbg);color:var(--bad)}
+.tabbtn.tb-bad[aria-pressed=true] .tcount{background:rgba(255,255,255,.25);color:#fff}
+.shbad{color:var(--bad)}
+.fbar{position:sticky;top:54px;z-index:9;display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 4px;padding:12px 14px;background:var(--thbg);border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .fbar input,.fbar select{font:14px inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 12px}
 .fbar input{flex:1;min-width:220px}
 .fbar .fcount{color:var(--thtext);font-weight:700;font-size:13px;white-space:nowrap}
@@ -477,7 +549,7 @@ h1 .sw{color:var(--brand)}
 .kpi .val{font-size:30px;font-weight:700;margin-top:4px;letter-spacing:-.5px}
 .kpi .val.good{color:var(--good)}.kpi .val.bad{color:var(--bad)}
 section.sec{position:relative}
-section.sec h2{position:sticky;top:64px;z-index:6;background:var(--bg);margin:26px 0 0;padding:12px 0 8px;min-height:48px;box-sizing:border-box}
+section.sec h2{position:sticky;top:118px;z-index:6;background:var(--bg);margin:26px 0 0;padding:12px 0 8px;min-height:48px;box-sizing:border-box}
 h2{font-size:18px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}
 h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;padding:2px 11px;font-weight:600}
 h2.losers .count{background:var(--bad)}
@@ -485,7 +557,7 @@ h2.losers .count{background:var(--bad)}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 @media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
 table{border-collapse:separate;border-spacing:0;width:100%;min-width:1080px;font-size:14px}
-thead th{position:sticky;top:112px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
+thead th{position:sticky;top:166px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
 tbody tr:last-child td{border-bottom:0}
@@ -573,12 +645,67 @@ table.rollup{min-width:720px}
 @media(max-width:620px){.wgrid{grid-template-columns:1fr}.wcard{grid-template-columns:1fr}.wmedia{aspect-ratio:16/10}.wloc div{grid-template-columns:1fr}.wmetrics{margin-left:0;flex-basis:100%}}
 </style>"""
 
+running_section = f"""
+<section class="sec">
+<h2>Running ads <span class="count">{len(running)}</span></h2>
+<p class="note">Status ACTIVE in Meta, sorted by 7-day spend. <b>ROAS 7d = how it's doing NOW</b>; ROAS 90d / spend / rev are last 90 days. Verdict is based on the 7d number &mdash; an ACTIVE ad with no recent spend shows <b>Recycle</b> (proven history, currently idle), never Scale. CAC = spend &divide; purchases. Freq = avg times each person saw it.</p>
+{table(rows_running, status_col=True)}
+</section>"""
+
+tested_section = f"""
+<section class="sec">
+<h2>Previously tested (paused) <span class="count">{len(tested_real)}</span></h2>
+<p class="note"><b>Only ads marked <span class="pill pill-good">OK</span> (or unscreened) are re-launch candidates.</b> Ads marked <span class="pill pill-bad">breach</span> were paused for compliance (disease claims, before/after, competitor comparison) &mdash; do NOT relaunch or recreate them, whatever their ROAS. Flagged ads are sorted to the bottom of this table. Hover a badge for the reason.</p>
+{table(rows_tested, status_col=True)}
+</section>"""
+
+micro_section = f"""
+<section class="sec">
+<h2>Barely tested &mdash; under ${LOSER_MIN_SPEND:.0f} spend <span class="count">{len(tested_micro)}</span></h2>
+<p class="note">Too little spend to trust the numbers &mdash; a 35x ROAS on $1.45 is one lucky sale, not a winner. Treat these as untested. Sorted by ROAS for curiosity only.</p>
+{table(rows_micro, status_col=True)}
+</section>"""
+
+losers_section = f"""
+<section class="sec">
+<h2 class="losers">Proven losers &mdash; do NOT recreate <span class="count">{len(losers)}</span></h2>
+<p class="note">Spent ${LOSER_MIN_SPEND:.0f}+ in the last 90 days with ROAS under {LOSER_ROAS:.1f}. Sorted by money burned. These angles/creatives failed with real budget &mdash; avoid making more of the same. A <span class="pill pill-bad">breach</span> badge means it was also non-compliant.</p>
+{table(rows_losers, status_col=True)}
+</section>"""
+
+if not nodeliv_section:
+    nodeliv_section = '<section class="sec"><h2>Never delivered <span class="count">0</span></h2><p class="note">Nothing here.</p></section>'
+
+# ── TABS — one view at a time, no endless scrolling (Quan 05/10) ──
+TABS = [
+    ("winners",    "&#11088; Winners",          len(winners),            winners_section or '<section class="sec"><p class="note">No current winners at scale.</p></section>'),
+    ("compliance", "&#9878;&#65039; Compliance", len(comp_nc),           compliance_section),
+    ("running",    "&#9654;&#65039; Running",    len(running),            running_section),
+    ("store",      "&#128722; Store",            None,                    store_section),
+    ("campaigns",  "&#128202; Campaigns",        len(camp_roll_rows),     stage_section + campaign_section),
+    ("stuck",      "&#128679; Not launched",     len(stuck),              stuck_section),
+    ("tested",     "&#9208;&#65039; Tested (paused)", len(tested_real),   tested_section),
+    ("micro",      "&#128300; Barely tested",    len(tested_micro),       micro_section),
+    ("nodeliv",    "&#128683; Never delivered",  len(nodeliv),            nodeliv_section),
+    ("losers",     "&#128128; Losers",           len(losers),             losers_section),
+]
+TABS = [t for t in TABS if t[3]]
+tab_btns = "".join(
+    f'<button class="tabbtn{" tb-bad" if tid == "compliance" else ""}" data-tab="{tid}" aria-pressed="{"true" if i == 0 else "false"}">{lbl}'
+    + (f'<span class="tcount">{cnt}</span>' if cnt is not None else "") + "</button>"
+    for i, (tid, lbl, cnt, _) in enumerate(TABS))
+tab_panes = "".join(
+    f'<div class="tabpane" data-pane="{tid}"{"" if i == 0 else " hidden"}>{content}</div>'
+    for i, (tid, lbl, cnt, content) in enumerate(TABS))
+
 html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
 <div class="stamp">Refreshed {gen} &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
 </header>
+
+<nav class="tabs">{tab_btns}</nav>
 
 <div class="fbar">
 <input id="fq" type="search" placeholder="Search ads, campaigns, ad sets&hellip;">
@@ -597,37 +724,23 @@ html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><li
 <div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">{t_pc}</div></div>
 </div>
 
-{store_section}
-{winners_section}
-{stage_section}
-{campaign_section}
+{tab_panes}
 
-<section class="sec">
-<h2>Running ads <span class="count">{len(running)}</span></h2>
-<p class="note">Status ACTIVE in Meta, sorted by 7-day spend. <b>ROAS 7d = how it's doing NOW</b>; ROAS 90d / spend / rev are last 90 days. Verdict is based on the 7d number — an ACTIVE ad with no recent spend shows <b>Recycle</b> (proven history, currently idle), never Scale. CAC = spend &divide; purchases. Freq = avg times each person saw it.</p>
-{table(rows_running, status_col=True)}
-</section>
-{stuck_section}
-
-<section class="sec">
-<h2>Previously tested (paused) <span class="count">{len(tested_real)}</span></h2>
-<p class="note"><b>Only ads marked <span class="pill pill-good">OK</span> (or unscreened) are re-launch candidates.</b> Ads marked <span class="pill pill-bad">breach</span> were paused for compliance (disease claims, before/after, competitor comparison) &mdash; do NOT relaunch or recreate them, whatever their ROAS. Flagged ads are sorted to the bottom of this table. Hover a badge for the reason.</p>
-{table(rows_tested, status_col=True)}
-</section>
-
-<section class="sec">
-<h2>Barely tested &mdash; under ${LOSER_MIN_SPEND:.0f} spend <span class="count">{len(tested_micro)}</span></h2>
-<p class="note">Too little spend to trust the numbers &mdash; a 35x ROAS on $1.45 is one lucky sale, not a winner. Treat these as untested. Sorted by ROAS for curiosity only.</p>
-{table(rows_micro, status_col=True)}
-</section>
-{nodeliv_section}
-
-<section class="sec">
-<h2 class="losers">Proven losers &mdash; do NOT recreate <span class="count">{len(losers)}</span></h2>
-<p class="note">Spent ${LOSER_MIN_SPEND:.0f}+ in the last 90 days with ROAS under {LOSER_ROAS:.1f}. Sorted by money burned. These angles/creatives failed with real budget &mdash; avoid making more of the same. A <span class="pill pill-bad">breach</span> badge means it was also non-compliant.</p>
-{table(rows_losers, status_col=True)}
-</section>
-
+<script>
+(function(){{
+var btns=[].slice.call(document.querySelectorAll('.tabbtn'));
+var panes=[].slice.call(document.querySelectorAll('.tabpane'));
+function show(id){{
+  btns.forEach(function(b){{b.setAttribute('aria-pressed',b.getAttribute('data-tab')===id?'true':'false')}});
+  panes.forEach(function(p){{p.hidden=p.getAttribute('data-pane')!==id}});
+  try{{history.replaceState(null,'','#'+id)}}catch(e){{}}
+  window.scrollTo(0,0);
+}}
+btns.forEach(function(b){{b.addEventListener('click',function(){{show(b.getAttribute('data-tab'))}})}});
+var h=(location.hash||'').replace('#','');
+if(h&&panes.some(function(p){{return p.getAttribute('data-pane')===h}}))show(h);
+}})();
+</script>
 <script>
 (function(){{
 var q=document.getElementById('fq'),t=document.getElementById('ft'),c=document.getElementById('fc'),st=document.getElementById('fs'),n=document.getElementById('fn');
