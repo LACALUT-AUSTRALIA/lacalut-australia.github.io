@@ -4,10 +4,12 @@
   "aktiv-signs-v2",
   "all-existing-aktiv",
   "flora",
+  "flora-c9",
   "flora-signs",
   "flora-signs-v2",
   "herbal",
   "herbal-signs",
+  "likelihood-aktiv",
   "recovered-ad-assets",
   "sensitive-signs",
   "sensitive-signs-v2",
@@ -15,5 +17,6 @@
   "sensitivity-pilot-v3",
   "sensitivity-pilots",
   "white-repair",
-  "white-repair-signs"
+  "white-repair-signs",
+  "white-repair-signs-v2"
 ]
