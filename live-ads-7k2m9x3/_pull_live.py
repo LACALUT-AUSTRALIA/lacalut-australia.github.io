@@ -89,6 +89,27 @@ def pull_insights(preset):
         })
     return out
 
+def pull_thumbs():
+    # Merge each ad's creative thumbnail URL into thumbs.json (preserve existing so
+    # an ad whose URL has since expired keeps its previously-downloaded local copy).
+    path = os.path.join(SP, "thumbs.json")
+    try:
+        existing = json.load(open(path, encoding="utf-8"))
+    except Exception:
+        existing = {}
+    fields = "id,creative{thumbnail_url,image_url}"
+    url = f"{GRAPH}/{ACCT}/ads?fields={fields}&limit=400&access_token={urllib.parse.quote(TOK)}"
+    added = 0
+    for a in get_all(url):
+        cr = a.get("creative") or {}
+        turl = cr.get("thumbnail_url") or cr.get("image_url")
+        if turl:
+            if a["id"] not in existing:
+                added += 1
+            existing[a["id"]] = {"thumb": turl}
+    json.dump(existing, open(path, "w", encoding="utf-8"))
+    print(f"  wrote thumbs.json: {len(existing)} entries (+{added} new)")
+
 def write(name, data):
     p = os.path.join(SP, name)
     json.dump(data, open(p, "w", encoding="utf-8"))
@@ -99,4 +120,5 @@ if __name__ == "__main__":
     write("ads_all.json", pull_ads())
     write("insights90.json", pull_insights("last_90d"))
     write("insights7.json", pull_insights("last_7d"))
-    print("Done. Now run:  python _build_monitor.py")
+    pull_thumbs()
+    print("Done. Next:  python _fetch_thumbs.py && python _build_monitor.py")

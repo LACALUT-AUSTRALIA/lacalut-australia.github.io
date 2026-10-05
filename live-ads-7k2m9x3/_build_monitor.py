@@ -153,14 +153,18 @@ def stage_of(a):
 STAGE_LABEL = {"cold": "Cold / TOF", "mof": "MOF / Warm", "bof": "BOF / Retarget", "unassigned": "Unassigned"}
 
 def verdict(a):
+    # Judge DELIVERING ads on RECENT (7d) ROAS — the only honest "is it working now".
+    # An ad that is ACTIVE in Meta but spent $0 in 7d is NOT scaling; it's idle →
+    # judge it on 90d history (Recycle if proven, else Dead), never Scale/Keep.
     st = (a.get("effective_status") or "").upper()
-    r = a["_roas"] or 0
-    live = st == "ACTIVE"
-    if live and r >= 3:                       v = ("scale", "&#128640; Scale")
-    elif live and r >= 1.5:                    v = ("keep", "&#9989; Keep")
-    elif live and a["_s90"] >= 50:             v = ("zombie", "&#129503; Zombie")
-    elif (not live) and r >= 1.5 and a["_s90"] > 0: v = ("recycle", "&#9851; Recycle")
-    elif (not live) and r < 1.5 and a["_s90"] >= 50: v = ("dead", "&#9904; Dead")
+    r90 = a["_roas"] or 0
+    r7 = a["_roas7"] or 0
+    delivering = st == "ACTIVE" and a["_s7"] > 0
+    if delivering and r7 >= 3:                        v = ("scale", "&#128640; Scale")
+    elif delivering and r7 >= 1.5:                    v = ("keep", "&#9989; Keep")
+    elif delivering and a["_s7"] >= 50:               v = ("zombie", "&#129503; Zombie")
+    elif r90 >= 1.5 and a["_s90"] > 0:                v = ("recycle", "&#9851; Recycle")
+    elif r90 < 1.5 and a["_s90"] >= 50:               v = ("dead", "&#9904; Dead")
     else:
         return '<span class="mut">&mdash;</span>'
     return f'<span class="vb v-{v[0]}">{v[1]}</span>'
@@ -186,6 +190,7 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="c">{comp_badge(a)}</td>
 <td class="num">{money(a['_s90'])}</td>
 <td class="num">{money(a['_rev'])}</td>
+<td class="num">{roas_badge(a['_roas7'])}</td>
 <td class="num">{roas_badge(a['_roas'])}</td>
 <td class="num">{a['_pc'] or '<span class="mut">0</span>'}</td>
 <td class="num">{money(a['_cac'], dash_zero=False)}</td>
@@ -193,7 +198,7 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="num">{numf(a['_ctr'], '.2f', '%')}</td>
 </tr>"""
 
-HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th>Spend 90d</th><th>Rev 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
+HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th>Spend 90d</th><th>Rev 90d</th><th>ROAS 7d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
 
 def table(rows, status_col=False):
     return f"""<div class="tablewrap"><table>
@@ -551,7 +556,7 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 
 <section class="sec">
 <h2>Running ads <span class="count">{len(running)}</span></h2>
-<p class="note">Status ACTIVE in Meta, sorted by 7-day spend. All metrics are last 90 days. CAC = spend &divide; purchases. Freq = avg times each person saw it.</p>
+<p class="note">Status ACTIVE in Meta, sorted by 7-day spend. <b>ROAS 7d = how it's doing NOW</b>; ROAS 90d / spend / rev are last 90 days. Verdict is based on the 7d number — an ACTIVE ad with no recent spend shows <b>Recycle</b> (proven history, currently idle), never Scale. CAC = spend &divide; purchases. Freq = avg times each person saw it.</p>
 {table(rows_running, status_col=True)}
 </section>
 {stuck_section}
