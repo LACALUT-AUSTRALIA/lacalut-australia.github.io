@@ -555,9 +555,10 @@ h2 .count{background:var(--brand);color:#fff;border-radius:20px;font-size:13px;p
 h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
+
 table{border-collapse:separate;border-spacing:0;width:100%;min-width:1080px;font-size:14px}
 thead th{position:sticky;top:166px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
+@media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tbody tr:nth-child(even) td{background:rgba(127,127,127,.045)}
 tbody tr:last-child td{border-bottom:0}
