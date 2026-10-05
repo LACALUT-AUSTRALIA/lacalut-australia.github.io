@@ -1,0 +1,18 @@
+{
+  "source": "Shopify Sidekick — Online Store channel, total sales, AUD",
+  "pulled": "05/10/2026",
+  "overall": {"cvr": 5.47, "revenue": 742053.61, "label": "1 Jan – 5 Oct 2026"},
+  "note": "October is partial (1–5 only). Shopify session-calculation changed 21 Sep — Sep/Oct CVR not directly comparable to earlier months.",
+  "months": [
+    {"m": "Jan", "cvr": 4.98, "rev": 20243.75},
+    {"m": "Feb", "cvr": 4.07, "rev": 17554.94},
+    {"m": "Mar", "cvr": 4.69, "rev": 37729.36},
+    {"m": "Apr", "cvr": 5.00, "rev": 84393.98},
+    {"m": "May", "cvr": 6.46, "rev": 205712.87},
+    {"m": "Jun", "cvr": 7.47, "rev": 110176.36},
+    {"m": "Jul", "cvr": 4.49, "rev": 48495.30},
+    {"m": "Aug", "cvr": 4.77, "rev": 67276.27},
+    {"m": "Sep", "cvr": 5.05, "rev": 134384.67},
+    {"m": "Oct*", "cvr": 4.22, "rev": 16086.11}
+  ]
+}

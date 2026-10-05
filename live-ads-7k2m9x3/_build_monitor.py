@@ -400,6 +400,32 @@ campaign_section = (f'''
 <tbody>{''.join(camp_roll_row(c, d) for c, d in camp_roll_rows)}</tbody>
 </table></div></section>''' if camp_roll_rows else "")
 
+# ── STORE HEALTH — Shopify monthly CVR + revenue (Quan 05/10: "very important") ──
+store = load("store_monthly.json", None)
+store_section = ""
+if store:
+    mx = max(m["rev"] for m in store["months"]) or 1
+    def cvr_cls(v):
+        return "good" if v >= 5 else ("mid" if v >= 4 else "bad")
+    mcols = ""
+    for m in store["months"]:
+        h = max(6, round(74 * m["rev"] / mx))
+        rev_lbl = f"${m['rev']/1000:,.0f}k" if m["rev"] >= 1000 else f"${m['rev']:,.0f}"
+        mcols += (f'<div class="shm" title="{esc(m["m"])}: CVR {m["cvr"]:.2f}% &middot; ${m["rev"]:,.2f}">'
+                  f'<div class="shcvr sh-{cvr_cls(m["cvr"])}">{m["cvr"]:.2f}%</div>'
+                  f'<div class="shbarw"><div class="shbar" style="height:{h}px"></div></div>'
+                  f'<div class="shrev">{rev_lbl}</div><div class="shmon">{esc(m["m"])}</div></div>')
+    ov = store["overall"]
+    store_section = f'''
+<section class="sec">
+<h2>&#128722; Store health &mdash; Shopify CVR &amp; revenue by month <span class="count">{len(store["months"])}</span></h2>
+<p class="note">Online Store channel, total sales (AUD), source: Shopify &middot; pulled {esc(store["pulled"])}. {esc(store["note"])} The number ads ultimately answer to: traffic we buy &times; this conversion rate.</p>
+<div class="shwrap">
+<div class="shoverall"><b>{ov["cvr"]:.2f}%</b><span>CVR &middot; {esc(ov["label"])}</span><b class="shrevtot">${ov["revenue"]:,.0f}</b><span>Online Store revenue</span></div>
+<div class="shmonths">{mcols}</div>
+</div>
+</section>'''
+
 gen = now.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m/%Y %H:%M AEDT")
 
 campaigns = sorted({a["campaign"] for a in ads if a.get("campaign")})
@@ -531,10 +557,23 @@ table.rollup{min-width:720px}
 .winrow .wlink{margin-top:0;white-space:nowrap}
 .winrow .wchip,.winrow .wtier{white-space:nowrap}
 .winrow td.adtd{min-width:260px}
+.shwrap{display:flex;gap:18px;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;overflow-x:auto}
+.shoverall{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:150px;padding-right:18px;border-right:1px solid var(--line)}
+.shoverall b{font-size:26px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--brand)}
+.shoverall b.shrevtot{font-size:20px;margin-top:8px;color:var(--ink)}
+.shoverall span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
+.shmonths{display:flex;gap:6px;flex:1;align-items:flex-end}
+.shm{flex:1;min-width:52px;text-align:center}
+.shcvr{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.sh-good{color:var(--good)}.sh-mid{color:var(--mid)}.sh-bad{color:var(--bad)}
+.shbarw{display:flex;align-items:flex-end;justify-content:center;height:74px}
+.shbar{width:70%;max-width:34px;background:linear-gradient(180deg,var(--accent),var(--brand));border-radius:5px 5px 0 0}
+.shrev{font-size:11px;color:var(--ink);font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.shmon{font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
 @media(max-width:620px){.wgrid{grid-template-columns:1fr}.wcard{grid-template-columns:1fr}.wmedia{aspect-ratio:16/10}.wloc div{grid-template-columns:1fr}.wmetrics{margin-left:0;flex-basis:100%}}
 </style>"""
 
-html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
+html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
@@ -558,6 +597,7 @@ html_body = f"""<title>LACALUT Live Ads Monitor</title><link rel="icon" href="da
 <div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">{t_pc}</div></div>
 </div>
 
+{store_section}
 {winners_section}
 {stage_section}
 {campaign_section}

@@ -1,4 +1,4 @@
-<title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"><style>
+<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"><style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--brand:#0B5394;--accent:#1c7ed6;--good:#1a7f45;--goodbg:#e7f6ec;--mid:#8a6d00;--midbg:#fbf3d6;--bad:#a4122b;--badbg:#fbe4e8;--live:#1a7f45;--warn:#b8860b;--stuck:#a4122b;--thbg:#e3edf8;--thtext:#0B5394;}
 @media (prefers-color-scheme:dark){:root{--bg:#0e1116;--card:#171b22;--ink:#e8eaed;--sub:#9aa3af;--line:#262c36;--brand:#6fb3ff;--accent:#4da3ff;--goodbg:#10301d;--midbg:#332b0c;--badbg:#36121b;--thbg:#15233a;--thtext:#8fc1ff;}}
 :root[data-theme=light]{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--goodbg:#e7f6ec;--midbg:#fbf3d6;--badbg:#fbe4e8;--thbg:#e3edf8;--thtext:#0B5394;}
@@ -100,12 +100,25 @@ table.rollup{min-width:720px}
 .winrow .wlink{margin-top:0;white-space:nowrap}
 .winrow .wchip,.winrow .wtier{white-space:nowrap}
 .winrow td.adtd{min-width:260px}
+.shwrap{display:flex;gap:18px;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;overflow-x:auto}
+.shoverall{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:150px;padding-right:18px;border-right:1px solid var(--line)}
+.shoverall b{font-size:26px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--brand)}
+.shoverall b.shrevtot{font-size:20px;margin-top:8px;color:var(--ink)}
+.shoverall span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
+.shmonths{display:flex;gap:6px;flex:1;align-items:flex-end}
+.shm{flex:1;min-width:52px;text-align:center}
+.shcvr{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:4px}
+.sh-good{color:var(--good)}.sh-mid{color:var(--mid)}.sh-bad{color:var(--bad)}
+.shbarw{display:flex;align-items:flex-end;justify-content:center;height:74px}
+.shbar{width:70%;max-width:34px;background:linear-gradient(180deg,var(--accent),var(--brand));border-radius:5px 5px 0 0}
+.shrev{font-size:11px;color:var(--ink);font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
+.shmon{font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
 @media(max-width:620px){.wgrid{grid-template-columns:1fr}.wcard{grid-template-columns:1fr}.wmedia{aspect-ratio:16/10}.wloc div{grid-template-columns:1fr}.wmetrics{margin-left:0;flex-basis:100%}}
 </style>
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
-<div class="stamp">Refreshed 05/10/2026 20:30 AEDT &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
+<div class="stamp">Refreshed 05/10/2026 22:27 AEDT &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
 </header>
 
 <div class="fbar">
@@ -125,6 +138,15 @@ table.rollup{min-width:720px}
 <div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">415</div></div>
 </div>
 
+
+<section class="sec">
+<h2>&#128722; Store health &mdash; Shopify CVR &amp; revenue by month <span class="count">10</span></h2>
+<p class="note">Online Store channel, total sales (AUD), source: Shopify &middot; pulled 05/10/2026. October is partial (1–5 only). Shopify session-calculation changed 21 Sep — Sep/Oct CVR not directly comparable to earlier months. The number ads ultimately answer to: traffic we buy &times; this conversion rate.</p>
+<div class="shwrap">
+<div class="shoverall"><b>5.47%</b><span>CVR &middot; 1 Jan – 5 Oct 2026</span><b class="shrevtot">$742,054</b><span>Online Store revenue</span></div>
+<div class="shmonths"><div class="shm" title="Jan: CVR 4.98% &middot; $20,243.75"><div class="shcvr sh-mid">4.98%</div><div class="shbarw"><div class="shbar" style="height:7px"></div></div><div class="shrev">$20k</div><div class="shmon">Jan</div></div><div class="shm" title="Feb: CVR 4.07% &middot; $17,554.94"><div class="shcvr sh-mid">4.07%</div><div class="shbarw"><div class="shbar" style="height:6px"></div></div><div class="shrev">$18k</div><div class="shmon">Feb</div></div><div class="shm" title="Mar: CVR 4.69% &middot; $37,729.36"><div class="shcvr sh-mid">4.69%</div><div class="shbarw"><div class="shbar" style="height:14px"></div></div><div class="shrev">$38k</div><div class="shmon">Mar</div></div><div class="shm" title="Apr: CVR 5.00% &middot; $84,393.98"><div class="shcvr sh-good">5.00%</div><div class="shbarw"><div class="shbar" style="height:30px"></div></div><div class="shrev">$84k</div><div class="shmon">Apr</div></div><div class="shm" title="May: CVR 6.46% &middot; $205,712.87"><div class="shcvr sh-good">6.46%</div><div class="shbarw"><div class="shbar" style="height:74px"></div></div><div class="shrev">$206k</div><div class="shmon">May</div></div><div class="shm" title="Jun: CVR 7.47% &middot; $110,176.36"><div class="shcvr sh-good">7.47%</div><div class="shbarw"><div class="shbar" style="height:40px"></div></div><div class="shrev">$110k</div><div class="shmon">Jun</div></div><div class="shm" title="Jul: CVR 4.49% &middot; $48,495.30"><div class="shcvr sh-mid">4.49%</div><div class="shbarw"><div class="shbar" style="height:17px"></div></div><div class="shrev">$48k</div><div class="shmon">Jul</div></div><div class="shm" title="Aug: CVR 4.77% &middot; $67,276.27"><div class="shcvr sh-mid">4.77%</div><div class="shbarw"><div class="shbar" style="height:24px"></div></div><div class="shrev">$67k</div><div class="shmon">Aug</div></div><div class="shm" title="Sep: CVR 5.05% &middot; $134,384.67"><div class="shcvr sh-good">5.05%</div><div class="shbarw"><div class="shbar" style="height:48px"></div></div><div class="shrev">$134k</div><div class="shmon">Sep</div></div><div class="shm" title="Oct*: CVR 4.22% &middot; $16,086.11"><div class="shcvr sh-mid">4.22%</div><div class="shbarw"><div class="shbar" style="height:6px"></div></div><div class="shrev">$16k</div><div class="shmon">Oct*</div></div></div>
+</div>
+</section>
 
 <section class="sec winsec">
 <h2>&#11088; Proven winners &mdash; profitable NOW (last 7 days) <span class="count">5</span></h2>
@@ -607,7 +629,7 @@ table.rollup{min-width:720px}
 <td class="adtd"><div class="adc"><img class="th" src="thumbs/120252266754650229.jpg" loading="lazy" alt=""><span class="adname">Aktiv · edited</span></div></td>
 <td class="c camp"><div>TOF | Testing</div><div class="mut">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</div></td>
 <td class="c sub">ADSET_PAUSED</td>
-<td class="c sub">built 7d ago</td>
+<td class="c sub">built 8d ago</td>
 </tr></tbody>
 </table></div></section>
 
@@ -711,7 +733,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>MAIN | TOF</div><div class="mut">Herbal</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>campaign paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">16/09<span class="mut"> · 18d</span></td>
+<td class="c sub">16/09<span class="mut"> · 19d</span></td>
 <td class="c"><span class="pill pill-good" title="On the approved compliant launch list">&#9989; OK</span></td>
 <td class="num">$131</td>
 <td class="num">$445</td>
@@ -816,7 +838,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Testing</div><div class="mut">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>adset paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">10/09<span class="mut"> · 24d</span></td>
+<td class="c sub">10/09<span class="mut"> · 25d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$147</td>
 <td class="num">$355</td>
@@ -906,7 +928,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Testing</div><div class="mut">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">10/09<span class="mut"> · 24d</span></td>
+<td class="c sub">10/09<span class="mut"> · 25d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$180</td>
 <td class="num">$398</td>
@@ -1011,7 +1033,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>MAIN | TOF</div><div class="mut">Herbal</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">16/09<span class="mut"> · 18d</span></td>
+<td class="c sub">16/09<span class="mut"> · 19d</span></td>
 <td class="c"><span class="pill pill-good" title="On the approved compliant launch list">&#9989; OK</span></td>
 <td class="num">$106</td>
 <td class="num">$215</td>
@@ -1731,7 +1753,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>MAIN | TOF</div><div class="mut">Herbal</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="vb v-dead">&#9904; Dead</span></td>
-<td class="c sub">16/09<span class="mut"> · 18d</span></td>
+<td class="c sub">16/09<span class="mut"> · 19d</span></td>
 <td class="c"><span class="pill pill-good" title="On the approved compliant launch list">&#9989; OK</span></td>
 <td class="num">$52</td>
 <td class="num">$51</td>
@@ -2106,7 +2128,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Scaling</div><div class="mut">All Products | Advantage+ | Broad AU | Net-New</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">17/08<span class="mut"> · 48d</span></td>
+<td class="c sub">17/08<span class="mut"> · 49d</span></td>
 <td class="c"><span class="pill pill-bad" title="Copy breach: disease claim; bleeding gums = therapeutic; clinical/authority claim">&#9888; Breach</span></td>
 <td class="num">$1,535</td>
 <td class="num">$3,761</td>
@@ -2211,7 +2233,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Scaling</div><div class="mut">All Products | Advantage+ | Broad AU | Net-New</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">17/08<span class="mut"> · 48d</span></td>
+<td class="c sub">17/08<span class="mut"> · 49d</span></td>
 <td class="c"><span class="pill pill-bad" title="Copy breach: disease claim; bleeding gums = therapeutic; treat/heal/cure; clinical/authority claim">&#9888; Breach</span></td>
 <td class="num">$1,828</td>
 <td class="num">$3,336</td>
@@ -2519,7 +2541,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Scaling</div><div class="mut">All Products | Advantage+ | Broad AU | Net-New</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>adset paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">17/08<span class="mut"> · 48d</span></td>
+<td class="c sub">17/08<span class="mut"> · 49d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$38</td>
 <td class="num">$76</td>
@@ -2534,7 +2556,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Testing</div><div class="mut">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="vb v-recycle">&#9851; Recycle</span></td>
-<td class="c sub">10/09<span class="mut"> · 24d</span></td>
+<td class="c sub">10/09<span class="mut"> · 25d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$45</td>
 <td class="num">$88</td>
@@ -2639,7 +2661,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Scaling</div><div class="mut">All Products | Advantage+ | Broad AU | Net-New</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>adset paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">17/08<span class="mut"> · 48d</span></td>
+<td class="c sub">17/08<span class="mut"> · 49d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$25</td>
 <td class="num"><span class="mut">—</span></td>
@@ -2849,7 +2871,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Testing</div><div class="mut">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">10/09<span class="mut"> · 24d</span></td>
+<td class="c sub">10/09<span class="mut"> · 25d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$5.71</td>
 <td class="num"><span class="mut">—</span></td>
@@ -2924,7 +2946,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Testing</div><div class="mut">AKTIV | Heritage Statics R1 | Broad AU | PAUSED</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">10/09<span class="mut"> · 24d</span></td>
+<td class="c sub">10/09<span class="mut"> · 25d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num">$2.52</td>
 <td class="num"><span class="mut">—</span></td>
@@ -3734,7 +3756,7 @@ table.rollup{min-width:720px}
 <td class="c camp"><div>TOF | Scaling</div><div class="mut">All Products | Advantage+ | Broad AU | Net-New</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">17/08<span class="mut"> · 48d</span></td>
+<td class="c sub">17/08<span class="mut"> · 49d</span></td>
 <td class="c"><span class="pill pill-bad" title="Copy breach: therapeutic">&#9888; Breach</span></td>
 <td class="num">$6.52</td>
 <td class="num"><span class="mut">—</span></td>
