@@ -1,0 +1,80 @@
+{
+  "canvasRatio": "1:1",
+  "styleFamily": "flat-graphic",
+  "gridDNA": "A vibrant gradient background serves as the base, overlaid with scattered, angled product images acting as a textured backdrop. A dominant, multi-line headline is centrally placed, followed by two stacked, pill-shaped action steps, a concise body text block, and a large, distinct price offer anchored within a rounded white container at the bottom.",
+  "zones": [
+    {
+      "role": "background",
+      "position": "full-bleed",
+      "sizePct": 100,
+      "align": "none",
+      "treatment": "gradient (pink to purple) with scattered, angled product images",
+      "note": "Product images are semi-transparent and serve as visual texture rather than focal points."
+    },
+    {
+      "role": "headline",
+      "position": "top-center, starting 25% from top",
+      "sizePct": 25,
+      "align": "center",
+      "treatment": "bold, uppercase, white text",
+      "note": "Multi-line, stacked for impact, occupying significant vertical space."
+    },
+    {
+      "role": "offer",
+      "position": "mid-center, starting 55% from top",
+      "sizePct": 4,
+      "align": "center",
+      "treatment": "white text on a rounded-rectangle (pill) background, dark purple",
+      "note": "First step-by-step instruction or benefit, acting as a callout."
+    },
+    {
+      "role": "offer",
+      "position": "mid-center, starting 60% from top, directly below the first offer pill",
+      "sizePct": 4,
+      "align": "center",
+      "treatment": "white text on a rounded-rectangle (pill) background, dark purple",
+      "note": "Second step-by-step instruction or benefit, reinforcing the process."
+    },
+    {
+      "role": "body",
+      "position": "mid-center, starting 68% from top",
+      "sizePct": 6,
+      "align": "center",
+      "treatment": "white text, regular weight",
+      "note": "Concise summary of the value proposition, positioned below the offers."
+    },
+    {
+      "role": "other",
+      "position": "bottom-center, starting 78% from top",
+      "sizePct": 17,
+      "align": "center",
+      "treatment": "rounded-rectangle, solid white fill",
+      "note": "A prominent container that anchors the main price offer at the bottom."
+    },
+    {
+      "role": "price",
+      "position": "bottom-center, starting 82% from top, inside white container",
+      "sizePct": 6,
+      "align": "center",
+      "treatment": "large, bold, gradient text (purple to pink)",
+      "note": "The primary call to action, highly prominent and visually distinct within its container."
+    }
+  ],
+  "typeScale": "headline (total) ~25% of canvas height, offer pill text ~4%, body text (total) ~6%, price text ~6%",
+  "colourBlocking": "Full-bleed gradient background (pink-purple). White text for headline, offers, and body. Dark purple rounded-rectangle pills. Large white rounded rectangle at the bottom for the price, which itself uses a gradient.",
+  "hierarchy": [
+    "headline",
+    "price",
+    "offer",
+    "body",
+    "background"
+  ],
+  "negativeSpace": "Minimal negative space, but the large headline and the white price block create strong visual anchors. The scattered background products allow the central text elements to stand out, and the space around the pills and body text provides necessary breathing room.",
+  "eyePath": "Headline (top-center) -> Offer pills (mid-center) -> Body text (mid-center) -> Price (bottom-center).",
+  "whyItWins": "The layout wins by using a bold, attention-grabbing headline, clear step-by-step offers, and a highly prominent, contrasting price block to guide the user directly to the value proposition and call to action.",
+  "productPresence": "cameo",
+  "humanPresence": "none",
+  "textDensity": "moderate",
+  "id": "hismile-1398794972317562-30-aug-2026",
+  "sourceFile": "hismile_1398794972317562_30-Aug-2026.png"
+}

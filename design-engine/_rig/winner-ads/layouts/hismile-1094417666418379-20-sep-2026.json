@@ -1,0 +1,100 @@
+{
+  "canvasRatio": "9:16",
+  "styleFamily": "illustration",
+  "gridDNA": "A vertical stack of distinct content blocks: a large top section with a prominent headline, hero product illustration, and a multi-step process diagram; a middle section featuring a horizontal product array with an offer callout; and a bottom section with a three-column instructional grid.",
+  "zones": [
+    {
+      "role": "headline",
+      "position": "top-left, starting 6% from top, 10% from left",
+      "sizePct": 6,
+      "align": "left",
+      "treatment": "bold, sans-serif, black, none, uppercase",
+      "note": "Dominant brand name at the top of the canvas."
+    },
+    {
+      "role": "product",
+      "position": "mid-left, starting 19.5% from top, 14% from left",
+      "sizePct": 9,
+      "align": "left",
+      "treatment": "line art illustration, white fill",
+      "note": "Primary product bottle illustration, vertically oriented."
+    },
+    {
+      "role": "offer",
+      "position": "overlapping main product, top-left of product, starting 25% from top, 7% from left",
+      "sizePct": 1,
+      "align": "centre",
+      "treatment": "circular shape, solid red fill, white bold text, uppercase",
+      "note": "High-contrast circular badge highlighting a key offer."
+    },
+    {
+      "role": "body",
+      "position": "on the main product illustration, mid-left, starting 31% from top, 21% from left",
+      "sizePct": 2,
+      "align": "left",
+      "treatment": "small, black text",
+      "note": "Product features and details integrated onto the hero product illustration."
+    },
+    {
+      "role": "other",
+      "position": "top-right, starting 19.5% from top, 55.5% from left",
+      "sizePct": 11,
+      "align": "left",
+      "treatment": "line art illustration, white fill",
+      "note": "Multi-step visual guide demonstrating product usage, including a human element."
+    },
+    {
+      "role": "offer",
+      "position": "mid-canvas, starting 54.6% from top, 14% from left",
+      "sizePct": 2,
+      "align": "left",
+      "treatment": "bold, black, uppercase",
+      "note": "Secondary offer headline acting as a visual divider."
+    },
+    {
+      "role": "product",
+      "position": "mid-canvas, below offer headline, starting 58.6% from top, 14% from left",
+      "sizePct": 9,
+      "align": "left",
+      "treatment": "simplified product illustrations, horizontal row, includes multiplier",
+      "note": "Visual representation of the bundled product quantity."
+    },
+    {
+      "role": "body",
+      "position": "bottom-mid, starting 74.2% from top, 14% from left",
+      "sizePct": 9,
+      "align": "centre",
+      "treatment": "3-column grid, each with an icon and short text",
+      "note": "Step-by-step instructions with corresponding icons."
+    },
+    {
+      "role": "caption",
+      "position": "bottom, starting 92.2% from top, 7% from left",
+      "sizePct": 5,
+      "align": "left",
+      "treatment": "very small, light grey text",
+      "note": "Legal disclaimers and fine print."
+    }
+  ],
+  "typeScale": "headline ~8% of canvas height, offer headline ~2.3%, badge text ~2%, instructional text ~1.5%, fine print ~0.8%",
+  "colourBlocking": "The entire canvas is a stark white background, providing maximum contrast for black line art illustrations and text, with a single vibrant red circular badge serving as a high-impact accent color.",
+  "hierarchy": [
+    "headline",
+    "offer (Year Supply Bundle badge)",
+    "product (main bottle)",
+    "offer (BUY 3, GET 5 FREE)",
+    "other (process illustration)",
+    "product (array of bottles)",
+    "body (instructional grid)",
+    "body (product features on bottle)",
+    "caption (fine print)"
+  ],
+  "negativeSpace": "Ample white space surrounds all major elements, particularly in the top half and between sections, allowing each visual and text block to breathe and stand out without clutter, emphasizing clarity and focus.",
+  "eyePath": "Headline -> Year Supply Bundle badge -> Main Product -> Process Illustration (pour -> swish) -> Offer Headline (BUY 3, GET 5 FREE) -> Product Array -> Instructional Grid (left to right).",
+  "whyItWins": "The clear, illustrative, and segmented layout effectively communicates the product, its benefits, and a compelling offer through a logical visual flow, making complex information digestible.",
+  "productPresence": "hero",
+  "humanPresence": "face-crop",
+  "textDensity": "moderate",
+  "id": "hismile-1094417666418379-20-sep-2026",
+  "sourceFile": "hismile_1094417666418379_20-Sep-2026.png"
+}

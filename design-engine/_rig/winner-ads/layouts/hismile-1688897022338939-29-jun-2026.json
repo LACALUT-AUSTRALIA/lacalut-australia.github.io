@@ -1,0 +1,89 @@
+{
+  "canvasRatio": "1:1",
+  "styleFamily": "flat-graphic",
+  "gridDNA": "A central, large, rounded-rectangle container with a soft gradient background, featuring a prominent testimonial quote and a circular human portrait and logo anchored at the bottom-left.",
+  "zones": [
+    {
+      "role": "background",
+      "position": "full-bleed",
+      "sizePct": 100,
+      "align": "none",
+      "treatment": "soft gradient from light blue to light purple",
+      "note": "provides a subtle, modern backdrop"
+    },
+    {
+      "role": "other",
+      "position": "centred, occupying ~90% width and height",
+      "sizePct": 81,
+      "align": "centre",
+      "treatment": "solid white with rounded corners, subtle drop shadow/inner glow effect",
+      "note": "frames the testimonial content, creating focus"
+    },
+    {
+      "role": "other",
+      "position": "top-left within container, starting ~6% from top, 8% from left",
+      "sizePct": 1,
+      "align": "left",
+      "treatment": "large, bold, white quotation marks",
+      "note": "visually signals a direct quote"
+    },
+    {
+      "role": "headline",
+      "position": "top-left within container, below quote-device, starting ~18% from top, 10% from left",
+      "sizePct": 25,
+      "align": "left",
+      "treatment": "dark grey/black, bold, mixed case, sans-serif",
+      "note": "the primary message of the testimonial"
+    },
+    {
+      "role": "offer",
+      "position": "embedded within headline, starting ~35% from top, 10% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "dark grey/black, bold, mixed case, sans-serif, contained within a light grey/white rounded pill background",
+      "note": "draws attention to the key benefit/statistic"
+    },
+    {
+      "role": "human",
+      "position": "bottom-right within container, starting ~60% from top, 60% from left",
+      "sizePct": 3,
+      "align": "centre",
+      "treatment": "circular headshot, white stroke border",
+      "note": "adds a personal, trustworthy face to the testimonial"
+    },
+    {
+      "role": "proof",
+      "position": "bottom-left within container, starting ~65% from top, 10% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "dark grey/black, mixed case, sans-serif, name bolder than title",
+      "note": "identifies the person giving the testimonial"
+    },
+    {
+      "role": "logo",
+      "position": "bottom-left within container, starting ~80% from top, 10% from left",
+      "sizePct": 1,
+      "align": "left",
+      "treatment": "brand-specific logo, colour",
+      "note": "identifies the company associated with the testimonial"
+    }
+  ],
+  "typeScale": "headline ~12% of canvas height, proof name ~4%, proof title ~2.5%",
+  "colourBlocking": "The canvas is dominated by a soft gradient background. A large, central white rounded rectangle contains all primary content. Text is dark, with one specific element highlighted by a light pill background. The human portrait adds a natural skin tone and clothing.",
+  "hierarchy": [
+    "headline",
+    "human",
+    "offer",
+    "proof",
+    "logo",
+    "other (quote-device)"
+  ],
+  "negativeSpace": "Ample negative space within the white container, especially around the quote and between the quote and the bottom elements. This allows the text and human face to breathe and stand out, making the ad feel clean and uncluttered.",
+  "eyePath": "Quote device -> Headline (main text) -> Highlighted offer -> Human face (smile) -> Proof (name) -> Logo.",
+  "whyItWins": "This layout wins by clearly presenting a strong, quantifiable benefit from a credible human source within a clean, focused design, leveraging social proof and a clear value proposition.",
+  "productPresence": "none",
+  "humanPresence": "face-crop",
+  "textDensity": "moderate",
+  "id": "hismile-1688897022338939-29-jun-2026",
+  "sourceFile": "hismile_1688897022338939_29-Jun-2026.png"
+}

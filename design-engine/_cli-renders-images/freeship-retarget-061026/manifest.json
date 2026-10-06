@@ -1,42 +1,32 @@
 [
-  {
-    "id": "g1791283296340_0",
-    "filename": "r1-cart-waiting.png",
-    "sku": "aktiv",
-    "mode": "social",
-    "ptype": "toothpaste",
-    "label": "RETARGET R1 — Cart Still Waiting",
-    "brief": "A shopping cart icon motif rendered as a premium 3D illustration holding the real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle, soft spotlight on deep navy gradient. A big bold banner strip beneath the headline: \"FREE shipping over $50\". Small supporting tagline: \"Finish checkout tonight.\"",
-    "angle": "freeship-retarget-061026"
-  },
-  {
-    "id": "g1791283344214_1",
-    "filename": "r2-one-more-tube.png",
-    "sku": "aktiv",
-    "mode": "social",
-    "ptype": "toothpaste",
-    "label": "RETARGET R2 — One More Tube Maths",
-    "brief": "Clean cart-maths visual on a bright white studio background: a simple equation laid out left-to-right with large price chips — a shopping cart chip labelled \"$38.50\", a plus sign, the real LACALUT AKTIV tube (German pack) with a chip \"$13.95\", an equals sign, then a bold green stamp \"FREE SHIPPING\". Real AKTIV mouthwash bottle standing at the far right edge. High contrast, extra large type.",
-    "angle": "freeship-retarget-061026"
-  },
-  {
-    "id": "g1791283392019_2",
-    "filename": "r3-shipping-covered.png",
-    "sku": "aktiv",
-    "mode": "social",
-    "ptype": "toothpaste",
-    "label": "RETARGET R3 — Shipping Covered Flatlay",
-    "brief": "Premium flat-lay from above on warm timber: real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle together centre frame, a small cardboard shipping box with plain tape beside them (no invented logos on the box). A bold banner strip: \"FREE shipping on orders over $50\". Small supporting tagline: \"Spend $50, shipping's on us.\"",
-    "angle": "freeship-retarget-061026"
-  },
-  {
-    "id": "g1791283438644_3",
-    "filename": "r4-social-proof.png",
-    "sku": "aktiv",
-    "mode": "social",
-    "ptype": "toothpaste",
-    "label": "RETARGET R4 — Social Proof + Freeship Strip",
-    "brief": "Social-proof card: a large row of five gold stars at top, the real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle as the hero duo on a soft light-grey studio background. NO written customer quotes or invented review text anywhere — stars and the headline only. A bold contrasting banner strip along the bottom: \"FREE shipping over $50\".",
-    "angle": "freeship-retarget-061026"
-  }
+ {
+  "id": "g1791283296340_0",
+  "filename": "r1-cart-waiting.png",
+  "sku": "aktiv",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "RETARGET R1 \u2014 Cart Still Waiting",
+  "brief": "A shopping cart icon motif rendered as a premium 3D illustration holding the real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle, soft spotlight on deep navy gradient. A big bold banner strip beneath the headline: \"FREE shipping over $50\". Small supporting tagline: \"Finish checkout tonight.\"",
+  "angle": "freeship-retarget-061026"
+ },
+ {
+  "id": "g1791283392019_2",
+  "filename": "r3-shipping-covered.png",
+  "sku": "aktiv",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "RETARGET R3 \u2014 Shipping Covered Flatlay",
+  "brief": "Premium flat-lay from above on warm timber: real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle together centre frame, a small cardboard shipping box with plain tape beside them (no invented logos on the box). A bold banner strip: \"FREE shipping on orders over $50\". Small supporting tagline: \"Spend $50, shipping's on us.\"",
+  "angle": "freeship-retarget-061026"
+ },
+ {
+  "id": "g1791283438644_3",
+  "filename": "r4-social-proof.png",
+  "sku": "aktiv",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "RETARGET R4 \u2014 Social Proof + Freeship Strip",
+  "brief": "Social-proof card: a large row of five gold stars at top, the real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle as the hero duo on a soft light-grey studio background. NO written customer quotes or invented review text anywhere \u2014 stars and the headline only. A bold contrasting banner strip along the bottom: \"FREE shipping over $50\".",
+  "angle": "freeship-retarget-061026"
+ }
 ]
