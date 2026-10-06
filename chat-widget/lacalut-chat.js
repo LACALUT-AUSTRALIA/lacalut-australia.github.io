@@ -245,6 +245,60 @@
         { label: 'LACALUT', reply: "Flattering! 😄 It was actually Colgate, in jars, from 1873. LACALUT joined in 1925 — fashionably late, impeccably German 🇩🇪" },
         { label: 'Some pharmacist?', reply: "Honestly, half of dental history IS 'some pharmacist' 😄 Officially it was Colgate in 1873 — jars, not tubes. LACALUT arrived in 1925 with German precision 🇩🇪" },
       ] },
+    { id: 'quizsaliva', q: '🤤 How much saliva will you make in a lifetime?',
+      buttons: [
+        { label: 'A bathtub', reply: "Think bigger 😄 Around 25,000 LITRES — enough to fill two swimming pools 🏊 And it's your mouth's built-in rinse cycle, working around the clock." },
+        { label: 'Two swimming pools', reply: "Correct — and slightly horrifying 🏆 About 25,000 litres over a lifetime. It's your mouth's natural rinse cycle, so keep it flowing 😄" },
+        { label: "I don't want to know", reply: "Too late — two swimming pools' worth 🏊😅 On the bright side, saliva is your mouth's own rinse cycle. Nature's mouthwash!" },
+      ] },
+    { id: 'quizsnail', q: '🐌 Pop quiz: which animal has the MOST teeth?',
+      buttons: [
+        { label: 'Shark 🦈', reply: "Great guess — but it's the humble garden snail 🐌 Up to 14,000 microscopic teeth on a ribbon-like tongue. You have 32. Spoil them 😄" },
+        { label: 'Crocodile 🐊', reply: "Nope — the garden snail 🐌 Around 14,000 tiny teeth! You get 32 for life, which is excellent news for your toothpaste budget 😄" },
+        { label: 'A snail?!', reply: "You beauty — correct 🏆 Up to 14,000 microscopic teeth on a snail. Your 32 suddenly feel very manageable, right? 😄" },
+      ] },
+    { id: 'quiznarwhal', q: '🦄 True or false: the narwhal’s famous horn is actually a TOOTH?',
+      buttons: [
+        { label: 'True', reply: "Correct 🏆 That 3-metre 'unicorn horn' is one giant spiral tooth 🦄 Imagine the toothbrush. Yours are easier — two minutes, twice a day 😄" },
+        { label: 'False', reply: "It's true! The narwhal's horn is one enormous spiral tooth — up to 3 metres long 🦄 Suddenly flossing doesn't seem so hard, does it? 😄" },
+      ] },
+    { id: 'quizwashington', q: '🪵 Were George Washington’s famous dentures really made of wood?',
+      buttons: [
+        { label: 'Of course', reply: "History's biggest dental myth 😄 They were actually ivory, metal and real teeth — never wood. Moral of the story: keep your originals 😉" },
+        { label: 'Sounds fake', reply: "Sharp instincts 🏆 Total myth — they were ivory, metal and real teeth. Either way: look after your originals, replacements have never been fun 😄" },
+      ] },
+    { id: 'quizbirth', q: '👶 True or false: your teeth started forming BEFORE you were born?',
+      buttons: [
+        { label: 'True', reply: "Correct 🏆 Baby teeth start forming in the womb — you've literally been growing your smile since before day one. Worth looking after, right? 😄" },
+        { label: 'False', reply: "True, actually! Baby teeth start forming before birth 👶 Your smile has been in the works since before day one — treat it like the long-term project it is 😄" },
+      ] },
+    { id: 'quizenamelregrow', q: '🦷 Can tooth enamel grow back once it’s gone?',
+      buttons: [
+        { label: 'Yes, it heals', reply: "Sadly no — enamel has no living cells, so it can't regrow 😮 The good news: minerals like hydroxyapatite help strengthen what you have. That's why it's the hero of our WHITE & REPAIR ✨" },
+        { label: 'No, never', reply: "Correct 🏆 Enamel can't regrow — no living cells. Which is exactly why we're obsessed with hydroxyapatite: it helps remineralise and strengthen what you've got ✨" },
+      ] },
+    { id: 'quiztastebuds', q: '👅 Roughly how many taste buds are on your tongue right now?',
+      buttons: [
+        { label: 'About 100', reply: "Way more — around 10,000! 👅 And they refresh themselves every couple of weeks. A clean, fresh mouth keeps them doing their best work 😄" },
+        { label: 'About 10,000', reply: "Spot on 🏆 Roughly 10,000 taste buds, replaced every two weeks or so. All the more reason to keep their home sparkling clean 😄" },
+      ] },
+    { id: 'quizrome', q: '🏛️ What did ancient Romans use as mouthwash?',
+      buttons: [
+        { label: 'Wine', reply: "If only 😄 Brace yourself… imported URINE. The ammonia 'cleaned'. We've come a VERY long way — our mouthwash is considerably more pleasant 😅" },
+        { label: 'Salt water', reply: "Sensible guess — but no. Urine. Actual urine 😅 The ammonia did the 'cleaning'. Aren't you glad it's 2026? Our mouthwash tastes much better, promise." },
+        { label: 'Do I want to know?', reply: "No. (It was urine 😅) The Romans prized the ammonia. Count your blessings — and maybe our FLORA mouthwash — every single day 😄" },
+      ] },
+    { id: 'quizbarber', q: '💈 Pop quiz: who pulled teeth in medieval times?',
+      buttons: [
+        { label: 'The barber', reply: "Correct 🏆 One chair for a haircut AND a tooth-pulling 💈😬 The red-and-white barber pole? Blood and bandages. Modern oral care is a gift — use it 😄" },
+        { label: 'The blacksmith', reply: "Close enough to be scary — it was the barber 💈 Haircut, shave, tooth out, all one visit 😬 Two minutes of brushing suddenly feels like a luxury, right?" },
+      ] },
+    { id: 'quizcheese', q: '🧀 Which snack do dentists quietly love?',
+      buttons: [
+        { label: 'Cheese', reply: "Correct 🏆 Cheese helps balance the acids in your mouth after a meal — plus it's rich in calcium. Officially the most delicious oral-care tip we have 🧀😄" },
+        { label: 'Apples', reply: "Good answer — crunchy fruit helps too! But cheese is the quiet champion 🧀 It balances meal-time acids and brings calcium along. Dessert justified 😄" },
+        { label: 'Dark chocolate', reply: "We admire the optimism 😄 It's cheese 🧀 — it balances the acids after eating and carries calcium. Cheese board = self-care. You heard it here." },
+      ] },
   ];
 
   // Resolve the live opener list from config, falling back to the defaults.
@@ -319,10 +373,9 @@
       position: absolute; top: -9px; left: -9px;
       width: 22px; height: 22px; border-radius: 50%;
       background: #fff; border: 1px solid #e5e7eb; color: #9ca3af; cursor: pointer;
-      font-size: 11px; line-height: 1; display: none; align-items: center; justify-content: center;
+      font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     }
-    #lc-teaser:hover .lc-teaser-x { display: flex; }
     .lc-teaser-x:hover { color: #374151; }
     .lc-teaser-btns { display: flex; gap: 7px; margin-top: 9px; justify-content: flex-end; flex-wrap: wrap; }
     .lc-teaser-btn {
@@ -721,9 +774,12 @@
     });
     // Clicking anywhere else on the card just opens the chat.
     teaser.addEventListener('click', function () { removeTeaser(); toggle(); });
-    // Pause rotation while the visitor is reading / hovering.
+    // Pause rotation while the visitor is reading / hovering. On touch devices
+    // the first tap pauses rotation for good — mid-answer vanishing is the
+    // single most frustrating thing a teaser can do.
     teaser.addEventListener('mouseenter', function () { clearTimeout(teaserRotateTimer); });
     teaser.addEventListener('mouseleave', function () { scheduleTeaserRotate(); });
+    teaser.addEventListener('touchstart', function () { clearTimeout(teaserRotateTimer); }, { passive: true });
 
     playOpener(nextOpener(getOpeners()));
 
@@ -764,7 +820,7 @@
   }
 
   function scheduleTeaserRotate() {
-    var rotateMs = (parseInt(config.teaser_rotate_ms || '4500', 10) || 4500) * 2;
+    var rotateMs = (parseInt(config.teaser_rotate_ms || '4500', 10) || 4500) * 5;
     clearTimeout(teaserRotateTimer);
     teaserRotateTimer = setTimeout(function () {
       var qEl = document.getElementById('lc-teaser-q');
