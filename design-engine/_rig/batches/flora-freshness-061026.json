@@ -1,0 +1,54 @@
+{
+  "sku": "flora",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "f1-stop-thinking",
+      "headline": "The 18+ formula for breath you stop thinking about",
+      "brief": "Clean deep-green studio scene, premium and minimal. Real LACALUT FLORA toothpaste tube (German pack) and real FLORA mouthwash bottle together as the hero duo, slightly oversized, centre-right. Fresh mint leaves and a soft water splash accent. Small supporting tagline beneath the headline: \"All-day confidence, the German way.\"",
+      "prom": "hero",
+      "angle": "flora-freshness-061026",
+      "label": "FLORA F1 — Stop Thinking About It"
+    },
+    {
+      "id": "f2-coffee-garlic-handled",
+      "headline": "Coffee, garlic, long days — handled.",
+      "brief": "Lifestyle kitchen-bench flat-lay from above: espresso cup, garlic bulb and a work laptop corner arranged casually, with the real LACALUT FLORA tube (German pack) and FLORA mouthwash bottle together bottom-right as the answer to the mess. Warm daylight. Small supporting tagline: \"Made in Germany for over 100 years.\"",
+      "prom": "secondary",
+      "angle": "flora-freshness-061026",
+      "label": "FLORA F2 — Coffee Garlic Handled"
+    },
+    {
+      "id": "f3-germans-no-gum",
+      "headline": "Why Germans don't chew gum after lunch",
+      "brief": "Minimal bright white scene with a single small German flag colour accent stripe. Real LACALUT FLORA tube (German pack) and FLORA mouthwash bottle standing together as a confident duo, label-to-camera. Lots of clean negative space so the headline dominates. Small supporting tagline: \"Freshness engineered, not masked.\"",
+      "prom": "hero",
+      "angle": "flora-freshness-061026",
+      "label": "FLORA F3 — Germans No Gum"
+    },
+    {
+      "id": "f4-morning-breath",
+      "headline": "Morning breath meets German engineering",
+      "brief": "Sunrise bathroom scene, golden morning light through a window, soft steam. Real LACALUT FLORA tube (German pack) and FLORA mouthwash bottle together on a timber bathroom shelf, crisp and in focus against the soft scene. Small supporting tagline: \"Start the day already fresh.\"",
+      "prom": "secondary",
+      "angle": "flora-freshness-061026",
+      "label": "FLORA F4 — Morning Breath Engineering"
+    },
+    {
+      "id": "f5-fresh-is-formula",
+      "headline": "Fresh isn't a flavour. It's a formula.",
+      "brief": "Dramatic macro shot: real LACALUT FLORA mouthwash bottle mid-pour into a glass cap with a frozen green liquid swirl, the real FLORA tube (German pack) standing beside it. Dark teal studio background with a single bright mint-green light beam. Small supporting tagline: \"German precision in every rinse.\"",
+      "prom": "hero",
+      "angle": "flora-freshness-061026",
+      "label": "FLORA F5 — Fresh Is A Formula"
+    },
+    {
+      "id": "f6-hundred-years",
+      "headline": "100 years of German freshness, now in Australia",
+      "brief": "Premium heritage card look: softly blurred classic German factory facade backdrop in muted tones, elegant framing. Real LACALUT FLORA tube (German pack) and FLORA mouthwash bottle together front and centre, crisp. A large medal-style trust badge reading \"Since 1925\". Small supporting tagline: \"Trusted in 60+ countries.\"",
+      "prom": "hero",
+      "angle": "flora-freshness-061026",
+      "label": "FLORA F6 — 100 Years Now In Australia"
+    }
+  ]
+}
