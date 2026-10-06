@@ -1,0 +1,14 @@
+{
+  "sku": "aktiv",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "r2v3-one-more-tube",
+      "headline": "One more tube = FREE shipping",
+      "brief": "Studio product poster on a clean bright white seamless background. CENTRE OF FRAME: the real LACALUT AKTIV toothpaste tube (German pack, exactly as the reference packshot) standing upright, with the real AKTIV mouthwash bottle (exact reference) beside it. OVERLAID GRAPHIC TEXT, large and bold, arranged in one horizontal line across the middle: a navy rounded rectangle containing the text $38.50 cart, then a large plus symbol, then a navy rounded rectangle containing the text $13.95 tube, then a large equals symbol, then a green rounded rectangle containing the text FREE SHIPPING. These three rectangles and two symbols are flat 2D interface-style overlays floating in front of the scene, not physical objects. No people, no rooms, no furniture, no other numbers or price text anywhere else in the image.",
+      "prom": "secondary",
+      "angle": "freeship-retarget-061026",
+      "label": "RETARGET R2 V3 — One More Tube Maths"
+    }
+  ]
+}

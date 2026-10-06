@@ -1,0 +1,22 @@
+[
+  {
+    "id": "g1791283626253_0",
+    "filename": "r2v2-one-more-tube.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "RETARGET R2 V2 — One More Tube Maths",
+    "brief": "Bright white studio, flat graphic style: ONE single clean equation row of three large flat rounded price chips reading left to right exactly: first chip \"$38.50 cart\", a bold plus sign, second chip with the real LACALUT AKTIV tube (German pack, rendered exactly as the reference packshot) above it reading \"$13.95\", a bold equals sign, third chip in green reading \"FREE SHIPPING\". Each dollar amount appears EXACTLY ONCE in the whole image — never duplicated. The real AKTIV mouthwash bottle (exact reference packshot) stands at the right edge. Extra large type, high contrast, no other numbers anywhere.",
+    "angle": "freeship-retarget-061026"
+  },
+  {
+    "id": "g1791283714138_0",
+    "filename": "r2v3-one-more-tube.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "RETARGET R2 V3 — One More Tube Maths",
+    "brief": "Studio product poster on a clean bright white seamless background. CENTRE OF FRAME: the real LACALUT AKTIV toothpaste tube (German pack, exactly as the reference packshot) standing upright, with the real AKTIV mouthwash bottle (exact reference) beside it. OVERLAID GRAPHIC TEXT, large and bold, arranged in one horizontal line across the middle: a navy rounded rectangle containing the text $38.50 cart, then a large plus symbol, then a navy rounded rectangle containing the text $13.95 tube, then a large equals symbol, then a green rounded rectangle containing the text FREE SHIPPING. These three rectangles and two symbols are flat 2D interface-style overlays floating in front of the scene, not physical objects. No people, no rooms, no furniture, no other numbers or price text anywhere else in the image.",
+    "angle": "freeship-retarget-061026"
+  }
+]

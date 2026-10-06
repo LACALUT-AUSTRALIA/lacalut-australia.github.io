@@ -1,0 +1,38 @@
+{
+  "sku": "aktiv",
+  "mode": "social",
+  "ads": [
+    {
+      "id": "r1-cart-waiting",
+      "headline": "Your cart's still waiting",
+      "brief": "A shopping cart icon motif rendered as a premium 3D illustration holding the real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle, soft spotlight on deep navy gradient. A big bold banner strip beneath the headline: \"FREE shipping over $50\". Small supporting tagline: \"Finish checkout tonight.\"",
+      "prom": "hero",
+      "angle": "freeship-retarget-061026",
+      "label": "RETARGET R1 — Cart Still Waiting"
+    },
+    {
+      "id": "r2-one-more-tube",
+      "headline": "One more tube = FREE shipping",
+      "brief": "Clean cart-maths visual on a bright white studio background: a simple equation laid out left-to-right with large price chips — a shopping cart chip labelled \"$38.50\", a plus sign, the real LACALUT AKTIV tube (German pack) with a chip \"$13.95\", an equals sign, then a bold green stamp \"FREE SHIPPING\". Real AKTIV mouthwash bottle standing at the far right edge. High contrast, extra large type.",
+      "prom": "secondary",
+      "angle": "freeship-retarget-061026",
+      "label": "RETARGET R2 — One More Tube Maths"
+    },
+    {
+      "id": "r3-shipping-covered",
+      "headline": "We've covered your shipping",
+      "brief": "Premium flat-lay from above on warm timber: real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle together centre frame, a small cardboard shipping box with plain tape beside them (no invented logos on the box). A bold banner strip: \"FREE shipping on orders over $50\". Small supporting tagline: \"Spend $50, shipping's on us.\"",
+      "prom": "hero",
+      "angle": "freeship-retarget-061026",
+      "label": "RETARGET R3 — Shipping Covered Flatlay"
+    },
+    {
+      "id": "r4-social-proof",
+      "headline": "1,000+ five-star Aussie smiles",
+      "brief": "Social-proof card: a large row of five gold stars at top, the real LACALUT AKTIV tube (German pack) and real AKTIV mouthwash bottle as the hero duo on a soft light-grey studio background. NO written customer quotes or invented review text anywhere — stars and the headline only. A bold contrasting banner strip along the bottom: \"FREE shipping over $50\".",
+      "prom": "hero",
+      "angle": "freeship-retarget-061026",
+      "label": "RETARGET R4 — Social Proof + Freeship Strip"
+    }
+  ]
+}
