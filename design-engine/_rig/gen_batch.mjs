@@ -83,7 +83,10 @@ for (let i = 0; i < ads.length; i++) {
     }
     process.stdout.write('rendering… ');
     const url = await E.callGemini({
-      prompt, productImgs: isSign ? PRODUCT_IMGS : [PACK], styleImgs: [],
+      // Attach ALL real packshots (tube + mouthwash bottle) to EVERY render — not just signs.
+      // Previously non-sign ads got only [PACK] (the tube), so any ad showing the bottle made
+      // Gemini hallucinate/invent it → inconsistent wrong products + wasted render spend.
+      prompt, productImgs: PRODUCT_IMGS, styleImgs: [],
       render: 'photoreal', model: 'gemini-3-pro-image-preview', apiKey: KEY, aspectRatio: isSign ? AR : '4:5'
     });
     const filename = ad.id + '.png';
