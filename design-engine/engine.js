@@ -240,7 +240,7 @@
       cp += `Keep the conversation SHORT — only about 4 to 6 bubbles total — and each bubble to one short line or two, so every bubble can be rendered large; do NOT cram in many small messages. The bubbles and their text should fill most of the screen width. `;
       cp += `Text is high-contrast: dark text on grey received bubbles, white text on blue sent bubbles. `;
       if(brain) brain.dims.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) cp += `${d} — ${v}. `; });
-      if(brief) cp += `Art-director note (priority): ${brief}. `;
+      if(brief) cp += `Art-director note (priority): ${brief}. THE BRIEF IS LAW: when this note lists text elements (headline lines, benefit lines, badges, sub-captions, CTA), render EVERY ONE exactly as written - never drop, merge, shorten or simplify any listed element; the note OUTRANKS every generic layout or badges-optional suggestion in this prompt (a badge the note lists is MANDATORY). Only the compliance rules outrank this note. `;
       if(opts.headline) cp += `The conversation should naturally get across THIS message/topic — "${opts.headline}" — woven into the texts, never as an overlay headline. `;
       cp += `Include exactly ONE inline PHOTO-MESSAGE bubble showing the real LACALUT ${s.name} product (from the reference image) — like a friend texted a pic. Keep this photo SMALL — no more than about a quarter to a third of the screen height — so it never dominates or shrinks the text; the text bubbles are the hero, not the photo. White cap, real German packaging accurate; NOT a big studio hero. `;
       cp += `NO external headline, NO title banner, NO benefit badges, NO trust chips, NO logo watermark, NO call-to-action sticker — the whole message lives INSIDE the chat bubbles. `;
@@ -281,7 +281,7 @@
       sp += (window.BRAND_BRAIN && window.BRAND_BRAIN.productRule ? window.BRAND_BRAIN.productRule + ' ' : '');
       sp += `STRICTLY NO advertising scaffolding: NO separate overlay headline banner floating over the photo, NO benefit badges, NO trust chips, NO guarantee seals, NO "Shop Now" / CTA button, NO studio backdrop, NO glowing product podium — the ONLY text in the whole image is the message written ON the sign itself. `;
       sp += `SCENE REALISM: believable real-world setting, natural lighting and perspective, authentic textures and depth of field, slight real-world imperfection — it must pass as a genuine photograph. If people appear, they are believable everyday Australians, photoreal, never plastic AI faces. `;
-      if(brief) sp += `Art-director note (priority) for the scene: ${brief}. `;
+      if(brief) sp += `Art-director note (priority) for the scene: ${brief}. THE BRIEF IS LAW: when this note lists text elements (headline lines, benefit lines, badges, sub-captions, CTA), render EVERY ONE exactly as written - never drop, merge, shorten or simplify any listed element; the note OUTRANKS every generic layout or badges-optional suggestion in this prompt (a badge the note lists is MANDATORY). Only the compliance rules outrank this note. `;
       sp += `CLAIM LOCK: the message must be about LACALUT ${s.name}'s own real job only — ${s.say}. Never borrow another LACALUT product's angle (no whitening unless White & Repair, no fresh-breath unless Flora, no sensitivity unless Sensitive, no herbal/botanical unless Aktiv Herbal). `;
       if(advNeg) sp += `STRICT COMPLIANCE — never show or write any of these words/claims anywhere: ${bans.join(', ')}. `;
       sp += `PACK FINE-PRINT LOCK (mandatory): render any product cameo SMALL and slightly soft/out-of-focus so that NONE of the pack's printed body text or claims is legible — only the LACALUT brand name and variant read clearly; never let words like inflammation, bleeding, periodontitis or any health claim appear readable in English. ${signAr} aspect ratio, crisp legible sign typography, no spelling errors on any text.`;
@@ -312,7 +312,7 @@
         const bg=pickRand(g.backgrounds,1)[0]; if(bg) p += `Background scene: ${bg}. `;
       }
     }
-    if(brief) p += `Art-director note (priority): ${brief}. `;
+    if(brief) p += `Art-director note (priority): ${brief}. THE BRIEF IS LAW: when this note lists text elements (headline lines, benefit lines, badges, sub-captions, CTA), render EVERY ONE exactly as written - never drop, merge, shorten or simplify any listed element; the note OUTRANKS every generic layout or badges-optional suggestion in this prompt (a badge the note lists is MANDATORY). Only the compliance rules outrank this note. `;
     if(opts.headline) p += `TOPIC LOCK (highest priority): the MAIN on-image headline and all overlay text must convey THIS exact message/topic — "${opts.headline}". Do NOT substitute a different tip, fact or headline; everything written on the image must be consistent with it. `;
     if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
     p += `ALL overlay/design text — headline, labels, badges, captions — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (The product's own printed packaging text stays unchanged.) Keep it clean and uncluttered — no extra call-to-action stickers or badges unless specified. `;
@@ -585,6 +585,8 @@ Follow this ONE-UP LOOP internally before you answer:
 3. Each round, ask yourself: "Can I make this more visually arresting, more cinematic, more premium, more surprising, more emotionally charged, higher production value?" Push composition, scale, lighting, drama, colour, contrast, depth, implied motion, and the hero moment harder every time.
 4. Only stop at the ZENITH / PINNACLE — when it genuinely cannot get better without breaking a hard rule.
 5. Output ONLY that final pinnacle brief. Never show the drafts or your reasoning.
+
+NON-NEGOTIABLE PRESERVATION: every EXACT text element the base brief lists (each headline line, benefit line, badge title, sub-caption, CTA wording) must appear UNCHANGED in your final brief - one-upping applies to scene, lighting, composition and drama ONLY, never to removing, merging or rewording listed text or listed products. If the base brief lists four badges, your final brief lists the same four badges.
 
 DIVERGENCE (critical): this is ONE of many ads for this strategy — it MUST look clearly DIFFERENT from the others. Build the pinnacle AROUND the specific composition/camera lens and colour mood named in the base brief's VARIATION directive; do not override them with the obvious centred-hero look. A distinct, unexpected execution beats a generic "perfect" one — never collapse every render to the same single best idea.
 
