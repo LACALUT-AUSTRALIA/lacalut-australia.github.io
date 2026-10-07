@@ -133,6 +133,40 @@ def pull_thumbs():
     json.dump(existing, open(path, "w", encoding="utf-8"))
     print(f"  wrote thumbs.json: {len(existing)} entries (+{added} new)")
 
+def pull_big():
+    # Readable-size creative images for the hover/click zoom: big/{ad_id}.jpg (max 900px).
+    # Only missing files are downloaded; Meta CDN URLs expire, local copies don't.
+    import concurrent.futures, io
+    from PIL import Image
+    bigdir = os.path.join(SP, "big")
+    os.makedirs(bigdir, exist_ok=True)
+    have = {f[:-4] for f in os.listdir(bigdir) if f.endswith(".jpg")}
+    fields = "id,creative.thumbnail_width(1080).thumbnail_height(1080){thumbnail_url,image_url}"
+    url = f"{GRAPH}/{ACCT}/ads?fields={urllib.parse.quote(fields)}&limit=400&access_token={urllib.parse.quote(TOK)}"
+    todo = []
+    for a in get_all(url):
+        if a["id"] in have:
+            continue
+        cr = a.get("creative") or {}
+        src = cr.get("image_url") or cr.get("thumbnail_url")
+        if src:
+            todo.append((a["id"], src))
+
+    def grab(item):
+        aid, src = item
+        try:
+            req = urllib.request.Request(src, headers={"User-Agent": "Mozilla/5.0"})
+            im = Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=30).read())).convert("RGB")
+            im.thumbnail((900, 900))
+            im.save(os.path.join(bigdir, aid + ".jpg"), "JPEG", quality=80, optimize=True)
+            return "ok"
+        except Exception as e:
+            return f"err:{type(e).__name__}"
+
+    with concurrent.futures.ThreadPoolExecutor(12) as ex:
+        res = list(ex.map(grab, todo))
+    print(f"  big images: {res.count('ok')} new, {len(res) - res.count('ok')} failed, {len(have)} cached")
+
 def pull_texts():
     # Pull every ad's actual COPY (headline + body + link text) so the compliance
     # classifier scans the real wording, not just the ad name. {ad_id: "combined text"}.
@@ -172,6 +206,7 @@ if __name__ == "__main__":
     write("insights7.json", pull_insights("last_7d"))
     pull_daily()
     pull_thumbs()
+    pull_big()
     pull_texts()
     import _pull_meta_monthly
     _pull_meta_monthly.main()

@@ -21,7 +21,7 @@ try {
     if ($LASTEXITCODE -ne 0) { Log "build FAILED ($LASTEXITCODE)"; exit 1 }
 
     Set-Location $repo
-    git add live-ads-7k2m9x3/*.json live-ads-7k2m9x3/index.html live-ads-7k2m9x3/monitor.html live-ads-7k2m9x3/thumbs 2>$null
+    git add live-ads-7k2m9x3/*.json live-ads-7k2m9x3/index.html live-ads-7k2m9x3/monitor.html live-ads-7k2m9x3/thumbs live-ads-7k2m9x3/big 2>$null
     git diff --cached --quiet
     if ($LASTEXITCODE -eq 0) { Log "no changes"; exit 0 }
     git -c core.hooksPath=/dev/null commit -q -m "live-ads: auto refresh

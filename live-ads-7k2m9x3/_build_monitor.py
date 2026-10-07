@@ -1092,6 +1092,39 @@ GO.addEventListener('click',apply);X.addEventListener('click',clearRange);
 })();
 </script>"""
 
+ZOOM_HTML = r"""<style>
+img.th{cursor:zoom-in}
+#zpop{position:fixed;z-index:200;pointer-events:none;display:none;width:min(440px,60vw);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.28);padding:6px}
+#zpop img{display:block;width:100%;height:auto;border-radius:8px}
+#zbox{position:fixed;inset:0;z-index:300;display:none;background:rgba(10,12,16,.88);align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:16px;cursor:zoom-out}
+#zbox img{max-width:min(94vw,1000px);max-height:84vh;width:auto;height:auto;border-radius:10px;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#zbox .zcap{color:#fff;font-size:13px;max-width:94vw;text-align:center;word-break:break-word}
+#zbox .zx{position:absolute;top:12px;right:16px;color:#fff;font-size:30px;line-height:1;background:none;border:0;cursor:pointer}
+</style>
+<div id="zpop"><img alt=""></div>
+<div id="zbox" role="dialog" aria-label="Ad image"><button class="zx" aria-label="Close">&times;</button><img alt=""><div class="zcap"></div></div>
+<script>
+(function(){
+var pop=document.getElementById('zpop'),pimg=pop.querySelector('img');
+var box=document.getElementById('zbox'),bimg=box.querySelector('img'),cap=box.querySelector('.zcap');
+var hoverOK=window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches;
+function big(img){var s=img.getAttribute('src')||'';var m=s.match(/thumbs\/(\d+)\.jpg/);return m?'big/'+m[1]+'.jpg':s}
+function load(el,img){el.onerror=function(){el.onerror=null;el.src=img.getAttribute('src')};el.src=big(img)}
+function place(e){var w=pop.offsetWidth,h=pop.offsetHeight,x=e.clientX+18,y=e.clientY-h/2;
+  if(x+w>innerWidth-8)x=e.clientX-w-18;if(x<8)x=8;
+  if(y+h>innerHeight-8)y=innerHeight-h-8;if(y<8)y=8;pop.style.left=x+'px';pop.style.top=y+'px'}
+document.addEventListener('mouseover',function(e){var t=e.target;if(!hoverOK||!t.matches||!t.matches('img.th'))return;load(pimg,t);pop.style.display='block';place(e)});
+document.addEventListener('mousemove',function(e){if(pop.style.display==='block')place(e)});
+document.addEventListener('mouseout',function(e){if(e.target.matches&&e.target.matches('img.th'))pop.style.display='none'});
+document.addEventListener('click',function(e){var t=e.target;if(!t.matches||!t.matches('img.th'))return;
+  e.preventDefault();e.stopPropagation();pop.style.display='none';load(bimg,t);
+  var row=t.closest('tr,.wcard');var n=row&&row.querySelector('.adname');cap.textContent=n?n.textContent:'';
+  box.style.display='flex'},true);
+function close(){box.style.display='none';bimg.removeAttribute('src')}
+box.addEventListener('click',close);
+document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+})();
+</script>"""
 html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
@@ -1120,6 +1153,7 @@ html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"
 {DR_HTML}
 
 {tab_panes}
+{ZOOM_HTML}
 
 <script>
 (function(){{
