@@ -1,36 +1,35 @@
 ﻿Ad Name,Ad ID,Status,Campaign,Ad Set,Spend 90d (AUD),ROAS 90d,Compliant?,Reason
 Aktiv | Video | Mini Dentist Brushing | Rebuilt ($5.10 CPP on 3 purchases - validating) - ASC,120251625951140229,PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,1828.18,1.82,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; treat/heal/cure; clinical/authority claim
-SI - Week 1 vs Week 2,120246024212290229,PAUSED,MAIN | TOF,Aktiv - Original,1675.79,2.72,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; treat/heal/cure; before/after result
 Aktiv | Video | Zoom Out Healthy Gums | ASC copy of rebuilt winner - ASC,120251625953520229,PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,1534.75,2.45,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
-Aktiv | Image | Keep Natural Teeth (Since 1925) | Post ID (6.05x on low spend),120250521272760229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,1501.54,1.52,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic efficacy
+SI - Week 1 vs Week 2,120246024212290229,PAUSED,MAIN | TOF,Aktiv - Original,1526.3,2.71,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; treat/heal/cure; before/after result
+Aktiv | Image | Keep Natural Teeth (Since 1925) | Post ID (6.05x on low spend),120250521272760229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,1491.12,1.47,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic efficacy
 SI - Your Gums Were Bleeding,120246026845100229,PAUSED,MAIN | TOF,Aktiv - Original,1439.21,3.34,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; before/after result
-SI - Serious German Engineering,120245931114650229,PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,993.52,3.97,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
 3-SKU Chooser | Image | Find Your Formula | Graduated,120251816653310229,PAUSED,TOF | Scaling,TOF | Scaling | 3-SKU Chooser (7.4x),970.49,2.22,NON-COMPLIANT,bleeding gums = therapeutic
 IMG - White Repair Comparison,120251813371940229,ADSET_PAUSED,TOF | Testing,TOF | IMG | Broad AU | Comparison Statics,804.84,2.24,NON-COMPLIANT,competitor comparison
+SI - Serious German Engineering,120245931114650229,PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,796.84,3.48,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
 Aktiv | Video | Mini Dentist Brushing | Rebuilt ($5.10 CPP on 3 purchases - validating) - Graduated,120251701793560229,PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,685.45,1.75,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; treat/heal/cure; clinical/authority claim
 Aktiv | V4 Model,120251614188660229,PAUSED,BOF | Back In Stock,Aktiv | V4 Model | Engagers 365d | AU,656.5,3.28,NON-COMPLIANT,disease claim; bleeding gums = therapeutic
 VID - Aktiv Toothpaste TV Spot,120246004085520229,PAUSED,MAIN | TOF,Aktiv - Original,619.16,1.65,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
-Aktiv | Video | Mini Dentist Brushing | Rebuilt ($5.10 CPP on 3 purchases - validating),120250521582510229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,544.5,3.58,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 Aktiv | Video | Mini Dentist Brushing | Rebuilt ($5.10 CPP on 3 purchases - validating) | Graduated,120251816658710229,PAUSED,TOF | Scaling,TOF | Scaling | Aktiv Mini Dentist Video (3.8x),524.6,0.78,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
+Aktiv | Video | Mini Dentist Brushing | Rebuilt ($5.10 CPP on 3 purchases - validating),120250521582510229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,510.52,3.73,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 Aktiv | V1 Back in Stock,120251614178910229,PAUSED,BOF | Back In Stock,Aktiv | V1 Back in Stock | Engagers 365d | AU,500.64,2.75,NON-COMPLIANT,disease claim; bleeding gums = therapeutic
-Aktiv | Video | Zoom Out Healthy Gums | ASC copy of rebuilt winner,120250521581870229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,494.15,1.98,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
+Aktiv | Video | Zoom Out Healthy Gums | ASC copy of rebuilt winner,120250521581870229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,487.27,1.9,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
 Aktiv | V2 Bleeding Gums,120251614182140229,PAUSED,BOF | Back In Stock,Aktiv | V2 Bleeding Gums | Engagers 365d | AU,417.93,2.63,NON-COMPLIANT,disease claim; bleeding gums = therapeutic
 Aktiv | Image | S17 Inside the Formula | Statics R1,120250588593330229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,323.22,2.58,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
-Toothpaste Catalog | Carousel | Dynamic Product Ads | Auto from Shopify feed,120250521426810229,PAUSED,03 | DABA | Catalog | AU,Toothpaste Catalog | DABA | Broad AU,245.68,3.54,NON-COMPLIANT,disease claim
+Toothpaste Catalog | Carousel | Dynamic Product Ads | Auto from Shopify feed,120250521426810229,PAUSED,03 | DABA | Catalog | AU,Toothpaste Catalog | DABA | Broad AU,204.8,4.0,NON-COMPLIANT,disease claim
 SI - Your Gums Were Bleeding | LAL Top Spenders,120251811467900229,PAUSED,TOF | Testing,TOF | LAL 1% AU | Top Spenders | $20/day,201.88,1.39,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; before/after result
 SI - Your Gums Were Bleeding | LAL All Buyers,120251811461160229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Buyers | $20/day,190.84,1.83,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; before/after result
-"Aktiv | Video | TV Spot Search & Destroy | ASC copy, same Post ID",120250521319740229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,171.94,1.47,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
 SI - Your Gums Were Bleeding | LAL All Contacts,120251811487590229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Contacts (Buyers+Omnisend) | $20/day,166.65,2.44,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; before/after result
 VID - Aktiv UGC 916 Captioned,120251813375330229,PAUSED,TOF | Testing,TOF | VID | Broad AU | UGC,162.24,0.74,NON-COMPLIANT,bleeding gums = therapeutic; receding gums = therapeutic
-AKTIV_AustraliaArrival_IMG_NowAvailableInAustralia_PDP_V1_041026,120252374238600229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,123.41,0.41,NON-COMPLIANT,bleeding gums = therapeutic
+AKTIV_AustraliaArrival_IMG_NowAvailableInAustralia_PDP_V1_041026,120252374238600229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,129.5,0.49,NON-COMPLIANT,bleeding gums = therapeutic
 Aktiv | Image | S16 100 Years German Gum Care | Statics R1 - Graduated,120251862221060229,PAUSED,TOF | Scaling,TOF | Scaling | Aktiv 100 Years German Gum Care (6.2x),117.06,0.98,NON-COMPLIANT,bleeding gums = therapeutic
 IMG - Sensitive Comparison,120251813373550229,PAUSED,TOF | Testing,TOF | IMG | Broad AU | Comparison Statics,115.93,1.93,NON-COMPLIANT,competitor comparison
+"Aktiv | Video | TV Spot Search & Destroy | ASC copy, same Post ID",120250521319740229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,114.06,0.88,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
 SI - Week 1 vs Week 2 | LAL Top Spenders,120251811466590229,PAUSED,TOF | Testing,TOF | LAL 1% AU | Top Spenders | $20/day,89.56,3.65,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; treat/heal/cure; before/after result
 WARM | Sensitive Ingredient Hero,120251721333980229,PAUSED,BOF | Back In Stock,WARM | Sensitive Ingredient Hero | Engagers | $15/day,74.91,1.1,NON-COMPLIANT,treat/heal/cure
 IMG - Aktiv Comparison,120251813373090229,PAUSED,TOF | Testing,TOF | IMG | Broad AU | Comparison Statics,66.8,3.01,NON-COMPLIANT,bleeding gums = therapeutic; receding gums = therapeutic; competitor comparison
 Sensitive | Image | Ingredient Hero,120251682147840229,PAUSED,TOF | Testing,Sensitive | Ingredient Hero | Broad AU | $25/day,56.47,0,NON-COMPLIANT,treat/heal/cure
 Aktiv | Image | S01 Pink in the Sink | Statics R1,120250588574700229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,51.16,0.78,NON-COMPLIANT,bleeding gums = therapeutic
-SI - Treating Gums Since 1925,120245931647150229,PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,42.07,3.37,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; therapeutic efficacy
 SENSITIVE | Cold Drinks Flinch | Cold R1,120252013154170229,PAUSED,TOF | Testing,TOF | IMG | Broad AU | Sensitive Cold Drinks | $15/day,39.44,0,NON-COMPLIANT,treat/heal/cure
 Aktiv | Image | S08 Keep Every Tooth | Statics R1 - Test,120251701843030229,PAUSED,TOF | Testing,TEST | Outcome | S08 Keep Every Tooth | $10,34.14,0.77,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 SI - Week 1 vs Week 2 | LAL All Contacts,120251811477760229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Contacts (Buyers+Omnisend) | $20/day,34.0,1.12,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; treat/heal/cure; before/after result
@@ -52,27 +51,28 @@ Aktiv | Image | S05 Now in Australia | Statics R1 - Test,120251701831580229,PAUS
 Aktiv | Image | S14 Trade the Supermarket Tube | Statics R1 - Test,120251701867740229,PAUSED,TOF | Testing,TEST | Comparison | S14 Trade Supermarket | $10,27.96,0,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 SI - Week 1 vs Week 2 | LAL All Buyers,120251811460180229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Buyers | $20/day,27.09,1.19,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; treat/heal/cure; before/after result
 Aktiv | Image | S04 Aluminium Lactate Astringent | Statics R1 - Test,120251701830490229,PAUSED,TOF | Testing,TEST | Ingredient | S04 Aluminium Lactate | $10,26.95,0,NON-COMPLIANT,bleeding gums = therapeutic
-Aktiv | Image | Gum Disease #1 Tooth Loss | ASC copy of scaling winner,120250521318700229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,19.09,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim; therapeutic efficacy
 VID - Aktiv Toothpaste TV Spot | LAL All Contacts,120251811474400229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Contacts (Buyers+Omnisend) | $20/day,15.0,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
+Aktiv | Image | Gum Disease #1 Tooth Loss | ASC copy of scaling winner,120250521318700229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,13.78,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim; therapeutic efficacy
 3-SKU Chooser | Image | Find Your Formula - Scale,120251731624150229,PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,13.37,0,NON-COMPLIANT,bleeding gums = therapeutic
 BOF | 3-SKU Chooser,120251746376320229,PAUSED,BOF | Retargeting,Visited Site - Didn't convert,13.04,4.14,NON-COMPLIANT,bleeding gums = therapeutic
 SI - Serious German Engineering | LAL Top Spenders,120251810119010229,PAUSED,TOF | Testing,TOF | LAL 1% AU | Top Spenders | $20/day,11.09,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
+SI - Treating Gums Since 1925,120245931647150229,PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,10.73,4.52,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; therapeutic efficacy
 SI - Gingivits VS Healthy,120246648486410229,PAUSED,MAIN | TOF,Aktiv - Original,10.61,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; before/after result
-Aktiv | Carousel | Mini Dentist 14-Day Shift | Post ID ($9.28 CPP on 4 purchases - validating),120250521583900229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,9.75,6.38,NON-COMPLIANT,bleeding gums = therapeutic; treat/heal/cure
-Single Image Ad - Rebuild 2606,120249955497250229,PAUSED,MAIN | TOF,Seniors – Original (flexible) DO NOT Touch,8.76,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
 Aktiv | Image | S10 Patient Dentist Remembers | Statics R1,120250588585410229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,7.43,6.83,NON-COMPLIANT,disease claim
 VID - UGC 40's Woman | LAL Top Spenders,120251811470690229,PAUSED,TOF | Testing,TOF | LAL 1% AU | Top Spenders | $20/day,6.82,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
 Aktiv | Image | S06 70pct of Seniors | Statics R1,120250588580760229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,6.68,20.42,NON-COMPLIANT,disease claim
 VID - Zoom Out of Healthy Gums – Final,120246003800980229,PAUSED,MAIN | TOF,Aktiv - Original,6.61,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
 VID - Funky Music - ASC,120251625949570229,PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,6.52,0,NON-COMPLIANT,therapeutic
-Herbal | Video | Funky Music | ASC copy of testing candidate,120250521319230229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,5.51,0,NON-COMPLIANT,therapeutic
+Aktiv | Carousel | Mini Dentist 14-Day Shift | Post ID ($9.28 CPP on 4 purchases - validating),120250521583900229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,6.11,2.0,NON-COMPLIANT,bleeding gums = therapeutic; treat/heal/cure
 SI - Serious German Engineering | LAL All Buyers,120251810117350229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Buyers | $20/day,5.19,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
+Herbal | Video | Funky Music | ASC copy of testing candidate,120250521319230229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,4.21,0,NON-COMPLIANT,therapeutic
 BOF | Aktiv Mini Dentist,120251746377610229,PAUSED,BOF | Retargeting,Visited Site - Didn't convert,4.02,0,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 BOF | Aktiv S16 100 Years,120251746371080229,PAUSED,BOF | Retargeting,Visited Site - Didn't convert,3.87,0,NON-COMPLIANT,bleeding gums = therapeutic
 VID - Funky Music | LAL Top Spenders,120251810118810229,PAUSED,TOF | Testing,TOF | LAL 1% AU | Top Spenders | $20/day,3.58,0,NON-COMPLIANT,therapeutic
 MOF | Aktiv Mini Dentist,120251746369610229,PAUSED,MOF | Warm Engagers,MOF | Engagers 365d | AU,3.45,0,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 VID - Aktiv Toothpaste TV Spot | LAL All Buyers,120251811459350229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Buyers | $20/day,3.15,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; clinical/authority claim
 SI - Serious German Engineering | LAL All Contacts,120251810120380229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Contacts (Buyers+Omnisend) | $20/day,2.9,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
+Single Image Ad - Rebuild 2606,120249955497250229,PAUSED,MAIN | TOF,Seniors – Original (flexible) DO NOT Touch,2.88,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; clinical/authority claim; therapeutic efficacy
 SI - UGC 40's Woman,120246026981540229,PAUSED,MAIN | TOF,Aktiv - Original,2.8,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; therapeutic; before/after result
 MOF | 3-SKU Chooser,120251746368930229,PAUSED,MOF | Warm Engagers,MOF | Engagers 365d | AU,2.59,0,NON-COMPLIANT,bleeding gums = therapeutic
 VID - Funky Music | LAL All Buyers,120251810116290229,PAUSED,TOF | Testing,TOF | LAL 1% AU | All Buyers | $20/day,2.52,0,NON-COMPLIANT,therapeutic
@@ -90,16 +90,16 @@ SI - Serious German Engineering (clean URL),120251887632000229,PAUSED,MAIN | TOF
 Aktiv | Video | 7d08d | TOF Test,120251736814920229,PAUSED,TOF | Testing,Video | Testing | Broad AU | $15/day,0.04,0,NON-COMPLIANT,bleeding gums = therapeutic; therapeutic
 SI - Treating Gums Since 1925 (clean URL),120251887629850229,PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,0.01,0,NON-COMPLIANT,disease claim; bleeding gums = therapeutic; receding gums = therapeutic; therapeutic efficacy
 Aktiv | Iconic Gum Care | Back in Stock | Compliant v1 | COLD TOF,120252113947000229,CAMPAIGN_PAUSED,MAIN | TOF,Aktiv - Original,7711.3,1.27,Compliant,no breach detected in name/copy
-Multi-SKU | IMG | Choose Where It Hurts | A-Problem,120251923591080229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,5523.12,2.31,Compliant,no breach detected in name/copy
+Multi-SKU | IMG | Choose Where It Hurts | A-Problem,120251923591080229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,6445.17,2.22,Compliant,no breach detected in name/copy
 Aktiv | Image | Comparison | Compliant v1 — W1 MAIN TOF,120252170115130229,PAUSED,MAIN | TOF,Aktiv - Original,4354.11,1.09,Compliant,approved compliant list
-VID - UGC 40's Woman,120246046599190229,PAUSED,MAIN | TOF,Aktiv - Original,4005.45,1.61,Compliant,approved compliant list
 SI - Neutralize VSCs,120244717430770229,PAUSED,MAIN | TOF,Flora / Bad Breath,3924.46,1.39,Compliant,no breach detected in name/copy
+VID - UGC 40's Woman,120246046599190229,PAUSED,MAIN | TOF,Aktiv - Original,3732.02,1.53,Compliant,approved compliant list
 FLORA | 18+ Fresh Breath | RB2,120252133229820229,PAUSED,MAIN | TOF,Flora / Bad Breath,3140.56,1.51,Compliant,no breach detected in name/copy
-Dynamic Product Catalog Ad,120240885436560229,ACTIVE,BOF | Retargeting,Visited Site - Didn't convert,2210.08,1.75,Compliant,no breach detected in name/copy
+Dynamic Product Catalog Ad,120240885436560229,ACTIVE,BOF | Retargeting,Visited Site - Didn't convert,2756.27,1.78,Compliant,no breach detected in name/copy
 Aktiv | Video | UGC Chris v1 | Cosmetic MAIN,120252253506020229,PAUSED,MAIN | TOF,Aktiv - Original,1608.83,1.47,Compliant,no breach detected in name/copy
 SI - European Favourite Since 1925 (compliant),120251900885360229,CAMPAIGN_PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,1540.41,1.55,Compliant,no breach detected in name/copy
 AKTIV | Dentist Asked UGC | RB2,120252133228780229,PAUSED,MAIN | TOF,Aktiv - Original,1507.85,1.32,Compliant,no breach detected in name/copy
-VID - Funky Music,120246088640750229,PAUSED,MAIN | TOF,Herbal,1480.3,4.23,Compliant,approved compliant list
+VID - Funky Music,120246088640750229,PAUSED,MAIN | TOF,Herbal,1391.14,4.21,Compliant,approved compliant list
 Aktiv Herbal · edited,120252087826340229,PAUSED,MAIN | TOF,Herbal,1301.54,2.05,Compliant,approved compliant list
 White | Image | 6-Month Journey | Graduated,120251816654500229,PAUSED,TOF | Scaling,TOF | Scaling | White 6-Month Journey (5.6x),1204.91,1.7,Compliant,no breach detected in name/copy
 White | Image | Dual Action | Graduated,120251816651980229,CAMPAIGN_PAUSED,TOF | Scaling,TOF | Scaling | White Dual Action (7.8x),1153.82,2.68,Compliant,no breach detected in name/copy
@@ -112,8 +112,12 @@ Aktiv | Image | Vault | Compliant v1 — W1 MAIN TOF,120252170110990229,CAMPAIGN
 Aktiv | V3 Gold Benefit,120251614185810229,PAUSED,BOF | Back In Stock,Aktiv | V3 Gold Benefit | Engagers 365d | AU,760.7,2.95,Compliant,no breach detected in name/copy
 AKTIV | Mercedes of Toothpaste | Multi-Pack v1,120252132889950229,PAUSED,MAIN | TOF,Aktiv - Original,712.87,1.06,Compliant,no breach detected in name/copy
 White | Image | 15c Upgrade (Mercedes) | Graduated,120251816656120229,PAUSED,TOF | Scaling,TOF | Scaling | White Mercedes 15c (4.6x),707.94,0.47,Compliant,no breach detected in name/copy
+AKTIV_GermanHeritage_IMG_100YearsGermanGumCare_PDP_V1_041026,120252373399110229,ACTIVE,GermanysInvestment_AllProd_ABO_Acq_Aus_041026,Main01_AKTIV_Aus_Int_Toothpaste_2064_MF_IGMetaPlc_041026,687.88,0.68,Compliant,no breach detected in name/copy
 Herbal | Video | Funky Music — W1 MAIN TOF URL-fixed,120252170124110229,PAUSED,MAIN | TOF,Herbal,669.72,1.27,Compliant,no breach detected in name/copy
 Aktiv | Image | Iconic Gum Care | Back in Stock | Compliant v1,120252011634340229,PAUSED,BOF | Back In Stock,Aktiv | V4 Model | Engagers 365d | AU,635.44,1.72,Compliant,no breach detected in name/copy
+AKTIV_ReviewSceptic_IMG_ReviewsWereHype_PDP_V2AI_100226,120252357952280229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing05_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,574.96,1.6,Compliant,no breach detected in name/copy
+AKTIV_AntiGimmick_IMG_GoodbyeGumCareGimmicks_PDP_V1_100226,120252357874320229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing02_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,556.14,1.54,Compliant,no breach detected in name/copy
+AKTIV_FormulaScience_IMG_InsideGermanPharmacyFormula_PDP_V1_041026,120252373360930229,PAUSED,GermanysInvestment_AllProd_ABO_Acq_Aus_041026,Main01_AKTIV_Aus_Int_Toothpaste_2064_MF_IGMetaPlc_041026,551.25,0.91,Compliant,no breach detected in name/copy
 CLAUD IMG - Mercedes,120251958579810229,CAMPAIGN_PAUSED,MAIN | TOF,Aktiv - Original,500.7,1.34,Compliant,no breach detected in name/copy
 Aktiv Herbal · edited,120252081673820229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,489.33,2.49,Compliant,approved compliant list
 Aktiv | Image | S16 100 Years German Gum Care | Statics R1,120250588592740229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,476.99,6.01,Compliant,approved compliant list
@@ -125,49 +129,55 @@ AKTIV | Did You Know Gum Line | RB2,120252133228790229,PAUSED,MAIN | TOF,Aktiv -
 Multi-SKU | Choose Where It Hurts | 4 German Formulas,120252065633970229,PAUSED,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,361.56,2.18,Compliant,no breach detected in name/copy
 AKTIV | Back In Stock Model | RB2,120252133227370229,PAUSED,MAIN | TOF,Aktiv - Original,333.53,2.38,Compliant,no breach detected in name/copy
 MOF | White 6-Month Journey,120251746367070229,PAUSED,MOF | Warm Engagers,MOF | Engagers 365d | AU,329.4,1.54,Compliant,no breach detected in name/copy
-Herbal | Video | Funky Music | Rebuilt winner (50.9x unverified - validating),120250521315170229,PAUSED,TOF | Testing,Herbal | Testing | Broad AU | $15/day,313.4,5.16,Compliant,approved compliant list
+FLORA_MythBusting_IMG_StrongerMintMyth_BUNDLE_V1_041026,120252373973340229,PAUSED,CreativeTesting_FLORA_ABO_Acq_Aus_041026,Testing_FLORA_Aus_Broad_All_2064_MF_IGMetaPlc_041026,313.24,0.34,Compliant,no breach detected in name/copy
+FLORA_HabitReplacement_IMG_DontBuyAnotherPack_BUNDLE_V1_041026,120252374055790229,ACTIVE,CreativeTesting_FLORA_ABO_Acq_Aus_041026,Testing02_FLORA_Aus_Broad_All_2064_MF_IGMetaPlc_041026,312.02,2.09,Compliant,no breach detected in name/copy
 BOF | Herbal Funky,120251746378570229,PAUSED,BOF | Retargeting,Visited Site - Didn't convert,293.8,1.29,Compliant,no breach detected in name/copy
-AKTIV_ReviewSceptic_IMG_ReviewsWereHype_PDP_V2AI_100226,120252357952280229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing05_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,288.15,1.05,Compliant,no breach detected in name/copy
+Herbal | Video | Funky Music | Rebuilt winner (50.9x unverified - validating),120250521315170229,PAUSED,TOF | Testing,Herbal | Testing | Broad AU | $15/day,288.79,5.24,Compliant,approved compliant list
 SI - German Gum Care (compliant),120251900885660229,PAUSED,MAIN | TOF,Seniors – NEW Single Image Ads,285.23,3.95,Compliant,no breach detected in name/copy
 White | Image | 6-Month Journey — W1 MAIN TOF,120252170124850229,PAUSED,MAIN | TOF,White & Repair,284.88,1.22,Compliant,no breach detected in name/copy
-AKTIV_AntiGimmick_IMG_GoodbyeGumCareGimmicks_PDP_V1_100226,120252357874320229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing02_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,281.33,1.39,Compliant,no breach detected in name/copy
 White | Image | Dual Action — W1 MAIN TOF,120252170124670229,ADSET_PAUSED,MAIN | TOF,White & Repair,273.9,1.7,Compliant,no breach detected in name/copy
 SI - Stop Broadcasting Sulfur,120244706626530229,PAUSED,MAIN | TOF,Flora / Bad Breath,273.76,2.68,Compliant,approved compliant list
-AKTIV_GermanHeritage_IMG_100YearsGermanGumCare_PDP_V1_041026,120252373399110229,ACTIVE,GermanysInvestment_AllProd_ABO_Acq_Aus_041026,Main01_AKTIV_Aus_Int_Toothpaste_2064_MF_IGMetaPlc_041026,254.96,0.87,Compliant,no breach detected in name/copy
 Aktiv | Video | UGC 916 v2 | Cosmetic MAIN,120252207347310229,PAUSED,MAIN | TOF,Aktiv - Original,250.64,2.23,Compliant,no breach detected in name/copy
 Aktiv Herbal · Exploded Reveal · photoreal,120252103938940229,PAUSED,MAIN | TOF,Herbal,240.96,1.78,Compliant,approved compliant list
 AKTIV | Spiderman Super Gums | compliant 2026-09-14,120252064207700229,WITH_ISSUES,MAIN | TOF,Aktiv - Original,240.34,2.05,Compliant,no breach detected in name/copy
 Aktiv | Video | Blond Guy 24s | Cosmetic MAIN,120252272720070229,PAUSED,MAIN | TOF,Aktiv - Test (Video + Challenge),234.89,1.25,Compliant,no breach detected in name/copy
 Aktiv | Image | S16 100 Years German Gum Care | Statics R1 - Graduated,120251701793120229,ADSET_PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,222.5,1.92,Compliant,no breach detected in name/copy
-AKTIV_SensoryContrast_IMG_BurnsVsTightens_PDP_V1_100226,120252357912980229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing03_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,215.43,0.88,Compliant,no breach detected in name/copy
+AKTIV_SensoryContrast_IMG_BurnsVsTightens_PDP_V1_100226,120252357912980229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing03_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,215.43,1.25,Compliant,no breach detected in name/copy
 FLORA | Serious German Engineering | RB2,120252133229030229,PAUSED,MAIN | TOF,Flora / Bad Breath,213.17,1.75,Compliant,approved compliant list
 1. AKTIV_NightRoutine_IMG_SaveForBedtime_PDP_V1_100226,120252357936140229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing04_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,210.61,0.53,Compliant,no breach detected in name/copy
 Multi-SKU · Benefit First · 5 SKUs,120252106862120229,PAUSED,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,205.99,1.92,Compliant,approved compliant list
 IMG – Don't Let Bad Breath Win,120247827504070229,PAUSED,MAIN | TOF,Flora / Bad Breath,205.44,1.91,Compliant,approved compliant list
+AKTIV_ProductExperience_IMG_FreshTakeOnDailyGumCare_PDP_V1_061026,120252403393810229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing04_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,204.76,0.75,Compliant,no breach detected in name/copy
 White & Repair · edited,120252081682740229,PAUSED,TOF | Testing,White | German Engineered | Broad AU | $25/day,199.34,1.0,Compliant,approved compliant list
+AKTIV_CompleteOralCare_IMG_RegularToothpasteMissesGums_PDP_V1_061026,120252403365200229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing03_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,198.16,0.13,Compliant,no breach detected in name/copy
 Aktiv Herbal · Love It or Swap It Free / The Challenge · edited,120252265515140229,CAMPAIGN_PAUSED,MAIN | TOF,Herbal - Challenge Test,191.68,1.31,Compliant,no breach detected in name/copy
 VID - Aktiv UGC 916 v2 Captioned,120251813414850229,PAUSED,TOF | Testing,TOF | VID | Broad AU | UGC,190.69,3.16,Compliant,approved compliant list
 Sensitive · Bold Headliner · photoreal,120252101285550229,PAUSED,TOF | Testing,TOF | IMG | Broad AU | Sensitive Cold Drinks | $15/day,189.75,1.78,Compliant,approved compliant list
+AKTIV_ProductExperience_IMG_FreshTakeOnDailyGumCare_PDP_V1_051026,120252403246350229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,182.67,0.76,Compliant,no breach detected in name/copy
 AKTIV | Supermarket vs German | Heritage R1,120252009915370229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,180.4,2.21,Compliant,no breach detected in name/copy
+HERBAL_RoutineChallenge_IMG_14DayHerbalRoutine_PDP_V1_061026,120252404007490229,ACTIVE,CreativeTesting_HERBAL_ABO_Acq_Aus_061026,Testing02_HERBAL_Aus_Broad_All_2064_MF_IGMetaPlc_061026,178.09,1.36,Compliant,no breach detected in name/copy
+AKTIV_EarlyAction_IMG_DentistRemembers_PDP_V1_041026,120252373130070229,PAUSED,GermanysInvestment_AllProd_ABO_Acq_Aus_041026,Main01_AKTIV_Aus_Int_Toothpaste_2064_MF_IGMetaPlc_041026,177.36,0.45,Compliant,no breach detected in name/copy
 White & Repair · Premium Platform · photoreal,120252087817460229,ADSET_PAUSED,MAIN | TOF,White & Repair,165.27,2.56,Compliant,approved compliant list
 WARM | Sensitive Problem-Relief,120251721333280229,ADSET_PAUSED,BOF | Back In Stock,WARM | Sensitive Problem-Relief | Engagers | $15/day,162.19,0.68,Compliant,no breach detected in name/copy
 WARM | White Benefit Hero,120251721335710229,ADSET_PAUSED,BOF | Back In Stock,WARM | White Benefit Hero | Engagers | $15/day,160.9,1.28,Compliant,no breach detected in name/copy
 BOF | White 15c Mercedes,120251746375480229,PAUSED,BOF | Retargeting,Visited Site - Didn't convert,156.18,1.27,Compliant,no breach detected in name/copy
+AKTIV_FreshConfidence_IMG_DangerouslyKissable_PDP_V1_061026,120252403450150229,ACTIVE,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing06_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_061026,155.06,1.1,Compliant,no breach detected in name/copy
 White | Image | 6-Month Journey,120251616176800229,ACTIVE,TOF | Testing,White | 6M Journey | Test | $15/day,152.01,6.04,Compliant,no breach detected in name/copy
-AKTIV_EarlyAction_IMG_DentistRemembers_PDP_V1_041026,120252373130070229,PAUSED,GermanysInvestment_AllProd_ABO_Acq_Aus_041026,Main01_AKTIV_Aus_Int_Toothpaste_2064_MF_IGMetaPlc_041026,151.65,0.52,Compliant,no breach detected in name/copy
+HERBAL_GumCareRitual_IMG_FromNeglectedToNurtured_PDP_V1_061026,120252404007450229,ACTIVE,CreativeTesting_HERBAL_ABO_Acq_Aus_061026,Testing01_HERBAL_Aus_Broad_All_2064_MF_IGMetaPlc_061026,151.02,0.6,Compliant,no breach detected in name/copy
 White | Image | 15c Upgrade (Mercedes),120251616182560229,ACTIVE,TOF | Testing,White | Mercedes 15c | Test | $15/day,149.63,4.96,Compliant,no breach detected in name/copy
+AKTIV_DailyUpgrade_IMG_UpgradeYourGumCareRoutine_PDP_V1_061026,120252403555090229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing07_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_061026,147.84,0.22,Compliant,no breach detected in name/copy
 AKTIV | 15c Value | Heritage R1,120252009915390229,ADSET_PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,147.06,2.41,Compliant,no breach detected in name/copy
 White & Repair · Bold Headliner · photoreal,120252103420940229,PAUSED,TOF | Testing,White | German Engineered | Broad AU | $25/day,146.06,2.41,Compliant,approved compliant list
 AKTIV | Obsessed UGC | RB2,120252133228680229,CAMPAIGN_PAUSED,MAIN | TOF,Aktiv - Original,145.47,0.94,Compliant,no breach detected in name/copy
+HERBAL_NaturalGumCare_IMG_NaturesAnswerToGumCare_PDP_V1_061026,120252404007480229,ACTIVE,CreativeTesting_HERBAL_ABO_Acq_Aus_061026,Testing03_HERBAL_Aus_Broad_All_2064_MF_IGMetaPlc_061026,144.82,0.53,Compliant,no breach detected in name/copy
 MOF | White Dual Action,120251746366520229,ADSET_PAUSED,MOF | Warm Engagers,MOF | Engagers 365d | AU,143.84,2.04,Compliant,approved compliant list
 Aktiv · edited,120252087822400229,PAUSED,MAIN | TOF,Aktiv - Original,143.25,1.49,Compliant,no breach detected in name/copy
 AKTIV_ReviewSceptic_IMG_ReviewsWereHype_PDP_V1_100226,120252357615840229,PAUSED,CreativeTesting_AKTIV_ABO_Acq_Aus_031026,Testing_AKTIV_Aus_Broad_All_2064_MF_IGMetaPlc_031026,143.16,0.87,Compliant,no breach detected in name/copy
-AKTIV_FormulaScience_IMG_InsideGermanPharmacyFormula_PDP_V1_041026,120252373360930229,ACTIVE,GermanysInvestment_AllProd_ABO_Acq_Aus_041026,Main01_AKTIV_Aus_Int_Toothpaste_2064_MF_IGMetaPlc_041026,141.85,0.99,Compliant,no breach detected in name/copy
 White | Image | Hydroxyapatite - Whiten Without Peroxide,120251614215010229,ACTIVE,TOF | Testing,White | Hydroxyapatite | Test | $15/day,139.95,3.75,Compliant,no breach detected in name/copy
 Sensitive | German Authority,120251619452080229,ACTIVE,TOF | Testing,Sensitive | German Authority | Broad AU | $15/day,137.73,1.62,Compliant,no breach detected in name/copy
 Sensitive | Mercedes 15c,120251619453250229,ACTIVE,TOF | Testing,Sensitive | Mercedes 15c | Broad AU | $15/day,133.53,3.92,Compliant,approved compliant list
 Sensitive | Mercedes 15c → SCALING (3.9x),120251862212960229,ADSET_PAUSED,TOF | Scaling,Sensitive | Mercedes 15c | Broad AU | $15/day → SCALING (3.9x),133.1,0.22,Compliant,no breach detected in name/copy
-SI - Serious German Engineering,120244410306420229,PAUSED,MAIN | TOF,Flora / Bad Breath,132.49,4.95,Compliant,no breach detected in name/copy
+SI - Serious German Engineering,120244410306420229,PAUSED,MAIN | TOF,Flora / Bad Breath,132.49,3.33,Compliant,no breach detected in name/copy
 White | Image | German Authority,120251616180580229,ACTIVE,TOF | Testing,White | German Authority | Test | $15/day,132.27,3.29,Compliant,no breach detected in name/copy
 Aktiv Herbal · edited,120252104082670229,CAMPAIGN_PAUSED,MAIN | TOF,Herbal,130.59,3.41,Compliant,approved compliant list
 Sensitive | 14 Days,120251619450500229,PAUSED,TOF | Testing,Sensitive | 14 Days | Broad AU | $15/day,129.73,1.22,Compliant,no breach detected in name/copy
@@ -184,7 +194,7 @@ SI - Special Zinc Formula,120244734531380229,PAUSED,MAIN | TOF,Flora / Bad Breat
 AKTIV | 100 Years German Gum Care | RB2,120252133227160229,PAUSED,MAIN | TOF,Aktiv - Original,92.02,0.77,Compliant,no breach detected in name/copy
 Aktiv | Video | German Aussie UGC | Cosmetic MAIN,120252207351330229,PAUSED,MAIN | TOF,Aktiv - Original,90.22,0,Compliant,no breach detected in name/copy
 Sensitive · Money-Back Dare / The Challenge · photoreal,120252265285140229,PAUSED,MAIN | TOF,Sensitive - Challenge Test,85.83,0,Compliant,no breach detected in name/copy
-White & Repair · Premium Platform · photoreal,120252081682290229,ADSET_PAUSED,TOF | Testing,White | German Engineered | Broad AU | $25/day,85.76,2.36,Compliant,approved compliant list
+White & Repair · Premium Platform · photoreal,120252081682290229,ADSET_PAUSED,TOF | Testing,White | German Engineered | Broad AU | $25/day,85.76,3.06,Compliant,approved compliant list
 AKTIV | Trade The Supermarket Tube | RB2,120252133227400229,CAMPAIGN_PAUSED,MAIN | TOF,Aktiv - Original,77.95,0,Compliant,no breach detected in name/copy
 White | Image | Brush Repair Glow,120251700688260229,PAUSED,TOF | Testing,White | Brush Repair Glow | Broad AU | $25/day,76.53,0.66,Compliant,no breach detected in name/copy
 Sensitive · Premium Platform · photoreal,120252101278100229,ADSET_PAUSED,TOF | Testing,TOF | IMG | Broad AU | Sensitive Cold Drinks | $15/day,74.77,1.44,Compliant,no breach detected in name/copy
@@ -210,22 +220,22 @@ Aktiv | Video | Afro Woman 8s | Cosmetic MAIN,120252272721010229,CAMPAIGN_PAUSED
 SI - Stop Broadcasting Sulfur - With Male,120247827146710229,CAMPAIGN_PAUSED,MAIN | TOF,Flora / Bad Breath,46.35,0.87,Compliant,no breach detected in name/copy
 AKTIV | Vault 100 Years | Heritage R1,120252009915400229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,45.34,1.94,Compliant,no breach detected in name/copy
 White | Image | Hydroxyapatite — W1 MAIN TOF,120252170124450229,ADSET_PAUSED,MAIN | TOF,White & Repair,43.07,0.61,Compliant,no breach detected in name/copy
+Multi-SKU · Benefit First · 5 SKUs,120252081675630229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,42.99,0.93,Compliant,approved compliant list
 White | Image | Dual Action - Scale,120251731622670229,ADSET_PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,42.63,2.38,Compliant,no breach detected in name/copy
 Aktiv · Packaging Hero · photoreal,120252087820570229,PAUSED,MAIN | TOF,Aktiv - Original,39.73,0.66,Compliant,no breach detected in name/copy
 Aktiv | Image | S16 100 Years German Gum Care | Statics R1 - ASC,120251625945610229,ADSET_PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,38.17,1.99,Compliant,no breach detected in name/copy
+Multi-SKU · Lifestyle · 5 SKUs,120252106877550229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,36.25,0,Compliant,no breach detected in name/copy
 Flora · Bold Headliner · photoreal,120252107028770229,PAUSED,MAIN | TOF,Flora / Bad Breath,30.5,0,Compliant,approved compliant list
-Multi-SKU · Benefit First · 5 SKUs,120252081675630229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,29.38,1.37,Compliant,approved compliant list
-Multi-SKU · Lifestyle · 5 SKUs,120252106877550229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,25.24,0,Compliant,no breach detected in name/copy
 Aktiv | Image | S17 Inside the Formula | Statics R1 - ASC,120251625946410229,ADSET_PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,24.71,0,Compliant,no breach detected in name/copy
 AU JP | AKTIV Samurai | R1,120252012535580229,CAMPAIGN_PAUSED,AU | JP-Speakers | AKTIV Video Test,AU | Japanese-speakers | AKTIV | $10/day,22.8,0,Compliant,no breach detected in name/copy
 Aktiv | Image | S03 Dentist Flagged Your Gums | Statics R1,120250588579790229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,22.57,1.26,Compliant,no breach detected in name/copy
 AU ZH | AKTIV 100 Years Vault | R1,120252020965040229,CAMPAIGN_PAUSED,AU | Chinese-Speakers | AKTIV Static Test,AU | Chinese-speakers | AKTIV | $10/day,18.99,0,Compliant,no breach detected in name/copy
 Aktiv | Image | S05 Now in Australia | Statics R1,120250588580400229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,18.59,2.73,Compliant,no breach detected in name/copy
+Multi-SKU · Trust / Proof · 5 SKUs,120252106889390229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,17.93,3.88,Compliant,no breach detected in name/copy
 White | Image | 6-Month Journey - Scale,120251731622020229,ADSET_PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,16.95,0,Compliant,no breach detected in name/copy
 Aktiv · Did-You-Know / Fact · photoreal,120252101275190229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,16.76,2.48,Compliant,no breach detected in name/copy
 AU VI | AKTIV German Gum Care | R1,120252021559920229,CAMPAIGN_PAUSED,AU | Vietnamese-Speakers | AKTIV Static Test,AU | Vietnamese | AKTIV | $10/day,15.13,0,Compliant,no breach detected in name/copy
 Aktiv · edited,120252065529140229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,14.53,0,Compliant,no breach detected in name/copy
-Multi-SKU · Trust / Proof · 5 SKUs,120252106889390229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,14.12,0,Compliant,no breach detected in name/copy
 White & Repair · Chat / Text Message · photoreal,120252103414130229,ADSET_PAUSED,TOF | Testing,White | German Engineered | Broad AU | $25/day,14.05,0,Compliant,no breach detected in name/copy
 AU AR | AKTIV Vault | R1,120252021568820229,CAMPAIGN_PAUSED,AU | Arabic-Speakers | AKTIV Static Test,AU | Arabic | AKTIV | $10/day,13.74,0,Compliant,no breach detected in name/copy
 Sensitive · Benefit First · photoreal,120252081321000229,PAUSED,TOF | Testing,TOF | IMG | Broad AU | Sensitive Cold Drinks | $15/day,12.52,0,Compliant,no breach detected in name/copy
@@ -238,10 +248,10 @@ AU AR | AKTIV German Gum Care | R1,120252021569890229,CAMPAIGN_PAUSED,AU | Arabi
 Aktiv | Image | S02 Sensitive Mouth Gentle | Statics R1,120250588579160229,PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,7.16,7.09,Compliant,no breach detected in name/copy
 Aktiv · edited,120252065515310229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,7.05,3.52,Compliant,no breach detected in name/copy
 flora - The Social Distance [Facy test],120250330619130229,CAMPAIGN_PAUSED,MAIN | TOF,Flora / Bad Breath,6.87,0,Compliant,no breach detected in name/copy
+Multi-SKU · Trust / Proof · 5 SKUs,120252106889370229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,6.5,0,Compliant,no breach detected in name/copy
 AKTIV | Botanical Germany's Favourite | Heritage R1,120252009938140229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,5.71,0,Compliant,no breach detected in name/copy
 Aktiv | Image | S13 Why Pharmacies Chose Lactate | Statics R1,120250588587410229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,4.95,22.97,Compliant,no breach detected in name/copy
 Aktiv | Image | S12 Serious German Engineering | Statics R1,120250588586800229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,4.47,30.01,Compliant,no breach detected in name/copy
-Multi-SKU · Trust / Proof · 5 SKUs,120252106889370229,ACTIVE,TOF | Testing,Multi-SKU | Whatever Your Smile Needs | Broad AU | $50/day,3.87,0,Compliant,no breach detected in name/copy
 White | Image | 15c Upgrade (Mercedes) - Scale,120251731623340229,ADSET_PAUSED,TOF | Scaling,All Products | Advantage+ | Broad AU | Net-New,3.65,0,Compliant,no breach detected in name/copy
 AU VI | AKTIV Vault | R1,120252021557820229,CAMPAIGN_PAUSED,AU | Vietnamese-Speakers | AKTIV Static Test,AU | Vietnamese | AKTIV | $10/day,3.6,0,Compliant,no breach detected in name/copy
 AU VI | AKTIV Museum | R1,120252021555960229,CAMPAIGN_PAUSED,AU | Vietnamese-Speakers | AKTIV Static Test,AU | Vietnamese | AKTIV | $10/day,3.45,0,Compliant,no breach detected in name/copy
@@ -256,7 +266,6 @@ Aktiv | Image | S19 Serious Gum Engineering | Statics R1,120250588594340229,ADSE
 Aktiv | Image | S15 German Pharmacy Gum Formula | Statics R1,120250588591000229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,0.96,0,Compliant,no breach detected in name/copy
 AU AR | AKTIV Museum | R1,120252021563540229,CAMPAIGN_PAUSED,AU | Arabic-Speakers | AKTIV Static Test,AU | Arabic | AKTIV | $10/day,0.93,0,Compliant,no breach detected in name/copy
 Aktiv · Chat / Text Message · photoreal,120252084784250229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,0.89,0,Compliant,no breach detected in name/copy
-"Flora | Image | Stop Masking Start Neutralizing | ASC copy, same Post ID",120250521281070229,PAUSED,02 | SCALING | Pooled | AU,All Products | ASC Pool | Broad AU,0.77,0,Compliant,no breach detected in name/copy
 Aktiv | Image | S18 Active No Other Can Claim | Statics R1,120250588593920229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,0.74,0,Compliant,no breach detected in name/copy
 Aktiv · edited,120252081687880229,PAUSED,TOF | Testing,AKTIV | Heritage Statics R1 | Broad AU | PAUSED,0.71,0,Compliant,no breach detected in name/copy
 Aktiv | Image | S08 Keep Every Tooth | Statics R1,120250588583320229,ADSET_PAUSED,TOF | Testing,Aktiv | Testing | Broad AU | $100/day,0.69,0,Compliant,no breach detected in name/copy

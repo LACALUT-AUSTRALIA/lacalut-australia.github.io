@@ -340,6 +340,74 @@ winners_section = f'''
 <tbody>{win_rows_html}</tbody></table></div>
 </section>''' if winners else ""
 
+# ── ALL-TIME HALL OF FAME — best creatives EVER by lifetime ROAS (Quan 07/10) ──
+# Compliance is deliberately NOT filtered here: the point is to see what actually
+# converts so we build more of the same (a breach ad's ANGLE gets rebuilt compliant).
+insmax = load("insights_max.json", [])
+ads_by_id = {a["id"]: a for a in ads}
+HOF_SPEND_MIN, HOF_PURCH_MIN, HOF_TOP = 200.0, 5, 30
+_hof_seen = {}
+for r in insmax:
+    if r["spend"] < HOF_SPEND_MIN or r["purchase_conversions"] < HOF_PURCH_MIN:
+        continue
+    key = (r.get("ad_name") or r["ad_id"]).strip().lower()
+    if key not in _hof_seen or r["roas"] > _hof_seen[key]["roas"]:
+        _hof_seen[key] = r
+hof = sorted(_hof_seen.values(), key=lambda x: x["roas"], reverse=True)[:HOF_TOP]
+
+def hof_row(i, r):
+    a = ads_by_id.get(r["ad_id"])
+    nm = r.get("ad_name") or (a["name"] if a else r["ad_id"])
+    if a:
+        label, col = product_of(a)
+        camp = f'<div>{esc(a["campaign"])}</div><div class="mut">{esc(a["adset"])}</div>'
+        st = (a.get("effective_status") or "").upper()
+        cb = comp_badge(a)
+        th = a["_thumb"]
+    else:
+        label, col = product_of({"name": nm, "adset": ""})
+        camp, st, cb, th = '<span class="mut">(deleted)</span>', "DELETED", '<span class="mut">&mdash;</span>', ""
+        p = os.path.join(SP, "thumbs", r["ad_id"] + ".jpg")
+        if os.path.exists(p):
+            th = f'thumbs/{r["ad_id"]}.jpg'
+    img = f'<img class="th" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-empty"></span>'
+    live = st == "ACTIVE"
+    stbg = "#1A7F37" if live else ("#8B2635" if st == "DELETED" else "#B4540A")
+    stlbl = "LIVE" if live else ("DELETED" if st == "DELETED" else "PAUSED")
+    stchip = f'<span style="background:{stbg};color:#fff;font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;letter-spacing:.3px;vertical-align:middle">{stlbl}</span>'
+    link = f'https://adsmanager.facebook.com/adsmanager/manage/ads?act={ADS_ACT}&selected_ad_ids={esc(r["ad_id"])}'
+    medal = "&#129351;" if i == 1 else ("&#129352;" if i == 2 else ("&#129353;" if i == 3 else str(i)))
+    return f'''<tr class="winrow" data-wp="{esc(label.lower())}">
+<td class="c hofrank">{medal}</td>
+<td class="adtd"><div class="adc">{img}<span class="adname">{esc(nm)}</span> {stchip}</div></td>
+<td class="c"><span class="wchip" style="--pc:{col}">{esc(label)}</span></td>
+<td class="c camp">{camp}</td>
+<td class="num"><span class="pill pill-good hofroas">{r["roas"]:.2f}x</span></td>
+<td class="num">{money(r["spend"])}</td>
+<td class="num">{money(r["purchase_conversion_value"])}</td>
+<td class="num">{r["purchase_conversions"]}</td>
+<td class="c">{cb}</td>
+<td class="c"><a class="wlink" href="{link}" target="_blank" rel="noopener">Open &#8599;</a></td>
+</tr>'''
+
+hof_rows_html = "".join(hof_row(i + 1, r) for i, r in enumerate(hof))
+hof_spend = sum(r["spend"] for r in hof)
+hof_rev = sum(r["purchase_conversion_value"] for r in hof)
+hof_section = f'''
+<section class="sec winsec">
+<h2>&#127942; All-time Hall of Fame &mdash; best creatives ever (lifetime) <span class="count">{len(hof)}</span></h2>
+<p class="note">Every ad the account has ever run, ranked by LIFETIME ROAS &mdash; minimum ${HOF_SPEND_MIN:g} lifetime spend and {HOF_PURCH_MIN} purchases so tiny-spend flukes don&rsquo;t pollute the list. Compliance is shown but NOT filtered: this is the build-more-of-this list &mdash; a breach ad&rsquo;s winning ANGLE gets rebuilt compliant, never re-run as-is. Deduped by creative name (best instance kept).</p>
+<div class="wstats">
+<div class="wstat"><b>{len(hof)}</b><span>All-time winners</span></div>
+<div class="wstat"><b>${hof_spend:,.0f}</b><span>Combined lifetime spend</span></div>
+<div class="wstat"><b>${hof_rev:,.0f}</b><span>Combined lifetime revenue</span></div>
+<div class="wstat"><b>{(hof_rev/hof_spend if hof_spend else 0):.2f}x</b><span>Blended lifetime ROAS</span></div>
+</div>
+<div class="tablewrap"><table>
+<thead><tr><th>#</th><th>Ad</th><th>Product</th><th>Campaign / ad set</th><th>ROAS lifetime</th><th>Spend lifetime</th><th>Rev lifetime</th><th>Purch.</th><th>Compliant</th><th></th></tr></thead>
+<tbody>{hof_rows_html}</tbody></table></div>
+</section>''' if hof else ""
+
 # ── BY FUNNEL STAGE — compact per-stage summary strip (Cold / MOF / BOF) ──
 STAGES = ["cold", "mof", "bof"]
 stage_stats = {s: {"sp": 0.0, "rev": 0.0, "win": 0, "n": 0} for s in STAGES}
@@ -451,26 +519,49 @@ compliance_section = f'''
 
 # ── STORE HEALTH — Shopify monthly CVR + revenue (Quan 05/10: "very important") ──
 store = load("store_monthly.json", None)
+meta_monthly = load("meta_monthly.json", []) or []
+roas_by_m = {r["m"]: r for r in meta_monthly}
 store_section = ""
 if store:
     mx = max(m["rev"] for m in store["months"]) or 1
     def cvr_cls(v):
         return "good" if v >= 5 else ("mid" if v >= 4 else "bad")
-    mcols = ""
+    def roas_cls(v):
+        return "good" if v >= 2 else ("mid" if v >= 1.4 else "bad")
+    # spreadsheet-style strip: labelled rows (Month header / CVR / ROAS / Revenue) + bar chart beneath
+    mcols = ('<div class="shm shlbl">'
+             '<div class="shmon shcell">&nbsp;</div>'
+             '<div class="shcvr shcell">CVR</div>'
+             '<div class="shroas shcell">META ROAS</div>'
+             '<div class="shrev shcell">REVENUE</div>'
+             '<div class="shbarw"></div></div>')
     for m in store["months"]:
         h = max(6, round(74 * m["rev"] / mx))
         rev_lbl = f"${m['rev']/1000:,.0f}k" if m["rev"] >= 1000 else f"${m['rev']:,.0f}"
+        mm = roas_by_m.get(m["m"].rstrip("*"))
+        if mm and mm["spend"]:
+            roas_div = (f'<div class="shroas shcell sh-{roas_cls(mm["roas"])}" '
+                        f'title="Meta {esc(m["m"])}: spend ${mm["spend"]:,.0f} &middot; attributed ${mm["value"]:,.0f}">'
+                        f'{mm["roas"]:.2f}x</div>')
+        else:
+            roas_div = '<div class="shroas shcell sh-na">&ndash;</div>'
         mcols += (f'<div class="shm" title="{esc(m["m"])}: CVR {m["cvr"]:.2f}% &middot; ${m["rev"]:,.2f}">'
-                  f'<div class="shcvr sh-{cvr_cls(m["cvr"])}">{m["cvr"]:.2f}%</div>'
-                  f'<div class="shbarw"><div class="shbar" style="height:{h}px"></div></div>'
-                  f'<div class="shrev">{rev_lbl}</div><div class="shmon">{esc(m["m"])}</div></div>')
+                  f'<div class="shmon shcell">{esc(m["m"])}</div>'
+                  f'<div class="shcvr shcell sh-{cvr_cls(m["cvr"])}">{m["cvr"]:.2f}%</div>'
+                  f'{roas_div}'
+                  f'<div class="shrev shcell">{rev_lbl}</div>'
+                  f'<div class="shbarw"><div class="shbar" style="height:{h}px"></div></div></div>')
     ov = store["overall"]
+    tot_sp = sum(r["spend"] for r in meta_monthly)
+    tot_val = sum(r["value"] for r in meta_monthly)
+    ov_roas = (f'<b class="shrevtot sh-{roas_cls(tot_val / tot_sp)}">{tot_val / tot_sp:.2f}x</b>'
+               f'<span>Meta ROAS &middot; Jan &ndash; today</span>') if tot_sp else ""
     store_section = f'''
 <section class="sec">
-<h2>&#128722; Store health &mdash; Shopify CVR &amp; revenue by month <span class="count">{len(store["months"])}</span></h2>
-<p class="note">Online Store channel, total sales (AUD), source: Shopify &middot; pulled {esc(store["pulled"])}. {esc(store["note"])} The number ads ultimately answer to: traffic we buy &times; this conversion rate.</p>
+<h2>&#128722; Store health &mdash; Shopify CVR, Meta ROAS &amp; revenue by month <span class="count">{len(store["months"])}</span></h2>
+<p class="note">Online Store channel, total sales (AUD), source: Shopify &middot; pulled {esc(store["pulled"])}. {esc(store["note"])} Monthly ROAS = Meta Ads attributed purchase value &divide; spend (account level, live from Meta). The number ads ultimately answer to: traffic we buy &times; this conversion rate.</p>
 <div class="shwrap">
-<div class="shoverall"><b>{ov["cvr"]:.2f}%</b><span>CVR &middot; {esc(ov["label"])}</span><b class="shrevtot">${ov["revenue"]:,.0f}</b><span>Online Store revenue</span></div>
+<div class="shoverall"><b>{ov["cvr"]:.2f}%</b><span>CVR &middot; {esc(ov["label"])}</span><b class="shrevtot">${ov["revenue"]:,.0f}</b><span>Online Store revenue</span>{ov_roas}</div>
 <div class="shmonths">{mcols}</div>
 </div>
 </section>'''
@@ -635,14 +726,21 @@ table.rollup{min-width:720px}
 .shoverall b{font-size:26px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--brand)}
 .shoverall b.shrevtot{font-size:20px;margin-top:8px;color:var(--ink)}
 .shoverall span{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
-.shmonths{display:flex;gap:6px;flex:1;align-items:flex-end}
-.shm{flex:1;min-width:52px;text-align:center}
-.shcvr{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:4px}
-.sh-good{color:var(--good)}.sh-mid{color:var(--mid)}.sh-bad{color:var(--bad)}
-.shbarw{display:flex;align-items:flex-end;justify-content:center;height:74px}
+.shmonths{display:flex;gap:0;flex:1;align-items:stretch;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.shm{flex:1;min-width:52px;text-align:center;border-left:1px solid var(--line)}
+.shm:first-child{border-left:none}
+.shcell{height:28px;line-height:28px;border-bottom:1px solid var(--line);white-space:nowrap;overflow:hidden}
+.shmon{font-size:10.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;background:var(--thbg)}
+.shcvr{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.shroas{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;background:rgba(28,126,214,.07)}
+.shrev{font-size:11.5px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.sh-good{color:var(--good)}.sh-mid{color:var(--mid)}.sh-bad{color:var(--bad)}.sh-na{color:var(--sub)}
+.shlbl .shcell{font-size:9px;font-weight:700;color:var(--sub);letter-spacing:.07em;text-align:left;padding-left:10px}
+.shlbl{min-width:84px;flex:0 0 84px}
+.shbarw{display:flex;align-items:flex-end;justify-content:center;height:84px;padding-top:8px}
 .shbar{width:70%;max-width:34px;background:linear-gradient(180deg,var(--accent),var(--brand));border-radius:5px 5px 0 0}
-.shrev{font-size:11px;color:var(--ink);font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums}
-.shmon{font-size:10.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
+.hofrank{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.hofroas{font-weight:800}
 @media(max-width:620px){.wgrid{grid-template-columns:1fr}.wcard{grid-template-columns:1fr}.wmedia{aspect-ratio:16/10}.wloc div{grid-template-columns:1fr}.wmetrics{margin-left:0;flex-basis:100%}}
 </style>"""
 
@@ -679,7 +777,7 @@ if not nodeliv_section:
 
 # ── TABS — one view at a time, no endless scrolling (Quan 05/10) ──
 TABS = [
-    ("winners",    "&#11088; Winners",          len(winners),            winners_section or '<section class="sec"><p class="note">No current winners at scale.</p></section>'),
+    ("winners",    "&#11088; Winners",          len(winners),            (winners_section or '<section class="sec"><p class="note">No current winners at scale.</p></section>') + hof_section),
     ("compliance", "&#9878;&#65039; Compliance", len(comp_nc),           compliance_section),
     ("running",    "&#9654;&#65039; Running",    len(running),            running_section),
     ("store",      "&#128722; Store",            None,                    store_section),

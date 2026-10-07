@@ -149,4 +149,8 @@ if __name__ == "__main__":
     write("insights7.json", pull_insights("last_7d"))
     pull_thumbs()
     pull_texts()
+    import _pull_meta_monthly
+    _pull_meta_monthly.main()
+    import _pull_lifetime
+    _pull_lifetime.main()
     print("Done. Next:  python _classify_compliance.py && python _fetch_thumbs.py && python _build_monitor.py")
