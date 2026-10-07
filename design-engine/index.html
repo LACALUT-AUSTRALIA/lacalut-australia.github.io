@@ -112,7 +112,7 @@
     <div class="modes" id="modes"></div>
 
     <h3>Product photos <span id="slotCount" style="color:#999;font-weight:600;"></span></h3>
-    <div class="guide">Real packshots only — the engine reproduces these exactly. Add 2–3 angles for best fidelity.</div>
+    <div class="guide">Real packshots only — the engine reproduces these exactly. Click a photo to include/exclude it from the render (✓ = in). Close-up selected alone = macro shot.</div>
     <div class="slots" id="slots"></div>
     <div id="fidWarn"></div>
 
@@ -405,21 +405,34 @@ function renderModes(){
     `<button class="mode ${k===curMode?'active':''}" onclick="pickMode('${k}')">${v.label}<br><small style="opacity:.7">${v.dims}</small></button>`).join('');
   $('fmtLabel').textContent = MODES[curMode].dims+' · '+MODES[curMode].ar;
 }
+/* ── SLOT ROLES + PER-SLOT SELECTION (Quan 08/10/2026): Hero = the pack the ad features; Alt angle =
+   2nd view of the SAME pack for label fidelity; Close-up = tight label crop — selected ALONE it tells
+   the engine to render a macro close-up. Click a filled photo to include/exclude it from the render
+   (e.g. box only, no tube). Selection persists per SKU+product-type. ── */
+const SLOT_ROLES=['Hero','Alt angle','Close-up'];
+function _slotSelKey(){ return 'de_slot_sel_'+prodKey(); }
+function getSlotSel(){ try{ const v=JSON.parse(localStorage.getItem(_slotSelKey())||'[]'); return [v[0]!==false,v[1]!==false,v[2]!==false]; }catch(e){ return [true,true,true]; } }
+function toggleSlotSel(i){ const s=getSlotSel(); s[i]=!s[i]; try{ localStorage.setItem(_slotSelKey(),JSON.stringify(s)); }catch(_){} renderSlots(); }
+function selectedProductImgs(){ const s=getSlotSel(); return productImgs.filter((im,i)=>im&&s[i]); }
+function closeUpOnly(){ const s=getSlotSel(); return !!(productImgs[2]&&s[2]) && !(productImgs[0]&&s[0]) && !(productImgs[1]&&s[1]); }
 function renderSlots(){
   if(curSku==='multi'){
     renderMultiProductPanel();
   } else {
+    const sel=getSlotSel();
     const html=[];
     for(let i=0;i<3;i++){
       const img=productImgs[i];
-      const roles=['Main','Angle','Detail'];
-      html.push(`<div class="slot" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropPhoto(event,${i})" onclick="pickPhoto(${i})" title="Click to swap, or drag an image here">${img?`<img src="${img}" draggable="false"><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷 drop / click'}<span class="lbl">${roles[i]}</span></div>`);
+      const on=sel[i];
+      html.push(`<div class="slot" style="${img&&!on?'opacity:.35;filter:grayscale(.6)':''}" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropPhoto(event,${i})" onclick="${img?`toggleSlotSel(${i})`:`pickPhoto(${i})`}" title="${img?'Click to '+(on?'EXCLUDE from':'INCLUDE in')+' the render':'Click to upload, or drag an image here'}">${img?`<img src="${img}" draggable="false"><span style="position:absolute;top:3px;left:3px;font-size:13px;line-height:1;background:${on?'#1a7f37':'#999'};color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-weight:800">${on?'✓':'–'}</span><button class="rm" style="right:22px" title="Swap photo" onclick="event.stopPropagation();pickPhoto(${i})">📷</button><button class="rm" onclick="event.stopPropagation();delPhoto(${i})">×</button>`:'📷 drop / click'}<span class="lbl">${SLOT_ROLES[i]}</span></div>`);
     }
     html.push(`<div style="grid-column:1/-1;margin-top:2px"><button class="btn" style="font-size:12px;padding:5px 10px;width:100%" title="Fill the 3 slots with this formula's saved library refs — toothpaste + mouthwash + toothbrush (box forms preferred) for a full range/system shot" onclick="fillSystemRefs()">🧰 3-Part System refs (from library)</button></div>`);
     $('slots').innerHTML=html.join('');
-    $('slotCount').textContent = productImgs.filter(Boolean).length+'/3';
-    $('fidWarn').innerHTML = productImgs.filter(Boolean).length===1
-      ? `<div class="warn">⚠ Only 1 angle — product fidelity may drop. Add 1–2 more angles.</div>`:'';
+    const selN=selectedProductImgs().length, fillN=productImgs.filter(Boolean).length;
+    $('slotCount').textContent = selN+' of '+fillN+' in render';
+    $('fidWarn').innerHTML = fillN&&!selN ? `<div class="warn">⚠ No photo selected — the render goes brief-only (AI may invent the pack). Click a photo to include it.</div>`
+      : (closeUpOnly() ? `<div class="warn" style="background:#eef7ee;border-color:#bfe3bf;color:#1a7f37">🔍 Close-up only — the engine renders a tight macro shot of the pack.</div>`
+      : (selN===1 ? `<div class="warn">⚠ Only 1 angle in the render — product fidelity may drop. Add/select a 2nd angle.</div>`:''));
   }
   // style slots (common to both modes)
   const s=[];
@@ -769,7 +782,7 @@ async function runGenerate(){
   } else {
     if(!curBrain && !$('brief').value.trim()){ alert('Add a Brief, or pick a format (or 🎲 Mixed).'); return; }
     const selBrain = (!curBrain || curBrain==='mixed')? null : BRAINS.find(b=>b.id===curBrain);
-    if(selBrain && selBrain.product==='required' && !productImgs.filter(Boolean).length){ alert('This strategy needs a product photo — upload one in the Main slot.'); return; }
+    if(selBrain && selBrain.product==='required' && !productImgs.filter(Boolean).length){ alert('This strategy needs a product photo — upload one in the Hero slot.'); return; }
   }
   const qty=parseInt($('qty').value); const btn=$('genBtn');
   const genPtype=curPtype;   // tag every new generation with the active product type at generate time
@@ -785,7 +798,8 @@ async function runGenerate(){
     archSel: ($('archSel') ? $('archSel').value : ''),
     geminiKey: KEYS.gemini,
     ar: MODES[curMode].ar,
-    productImgs: productImgs.filter(Boolean).slice(),
+    productImgs: (curSku==='multi'?productImgs.filter(Boolean):selectedProductImgs()).slice(),   // only the ✓-selected slot photos reach the render
+    closeUp: curSku!=='multi' && closeUpOnly(),
     styleImgs:   styleImgs.filter(Boolean).slice(),
     multiImgs:   multiImgs.slice(),
     multiLabels: multiLabels.slice(),
@@ -844,7 +858,7 @@ async function runGenerate(){
       prompt += perfBrainInjection(S.isMulti?'multi':S.curSku);   // bias toward live Meta winners
       prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
-        render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
+        render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels, closeUp:S.closeUp });
       // PROVENANCE (Quan 07/10/2026): the FULL final prompt + engine settings travel with the image
       // record forever — metadata only, zero pipeline change — so every render can be QC'd against
       // exactly what was asked of the model (ℹ️ button on the card).
@@ -2712,7 +2726,7 @@ function openTournament(){
 async function runTournament(){
   if(!KEYS.gemini){ openKeys(); return; }
   if(curSku==='multi'){ alert('The tournament runs on a single formulation tab — switch to Aktiv / Flora / White etc. first.'); return; }
-  if(!productImgs.filter(Boolean).length){ alert('Upload the Main packshot first — most formats need the real product.'); return; }
+  if(!productImgs.filter(Boolean).length){ alert('Upload the Hero packshot first — most formats need the real product.'); return; }
   const list=BRAINS.slice();
   const est=(list.length*0.14).toFixed(2);
   if(!confirm('🏆 FORMAT TOURNAMENT — renders 1 ad for EVERY format ('+list.length+') on '+(SKUS[curSku]?.name||curSku)+', raw brain quality (no brief, no polish), auto-scored + ranked.\n\nTakes a while and spends ~US$'+est+' on image generations. Run it?')) return;
