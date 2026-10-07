@@ -116,14 +116,16 @@
     <div class="slots" id="slots"></div>
     <div id="fidWarn"></div>
 
-    <h3 style="margin-top:12px">Format <span id="stratCount" style="color:#999;font-weight:600;">0/8</span></h3>
-    <input type="text" id="brainSearch" placeholder="🔎 Search formats… (e.g. money)" oninput="setBrainFilter(this.value)" style="width:100%;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
-    <div class="chips" id="chips"></div>
+    <details id="fmtSection" style="margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:0 10px 2px">
+      <summary style="cursor:pointer;padding:9px 2px;font-weight:700;font-size:13px">🎨 Format <span style="color:#999;font-weight:600;font-size:11px">optional</span> <span id="stratCount" style="color:#999;font-weight:600;font-size:11px">none</span></summary>
+      <div class="guide" style="font-size:11px">No format selected = the engine builds straight from your brief. Pick a format only to lock a proven structure.</div>
+      <input type="text" id="brainSearch" placeholder="🔎 Search formats… (e.g. money)" oninput="setBrainFilter(this.value)" style="width:100%;padding:8px 10px;margin:4px 0 6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
+      <div class="chips" id="chips" style="margin-bottom:8px"></div>
+    </details>
 
     <h3 style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">Brief<button type="button" onclick="clearBrief()" title="Clear the brief box so you can paste a fresh prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></h3>
     <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
-    <input type="text" id="facyAngle" placeholder="🎯 Why → Facy (the angle/strategy, e.g. 'mechanism — specialist beats generalist; amplify the baked hook')" title="The strategic WHY behind this creative — travels with the ad to Facy so its copy matches our angle" style="width:100%;padding:7px 9px;margin-top:6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
-    <div style="font-size:10px;color:#8a63d2;margin-top:3px">↑ Rides with every ad to Facy — Facy writes copy that matches this angle</div>
+    <div style="font-size:10px;color:#8a63d2;margin-top:3px">🎯 The brief's first sentence auto-rides to Facy as the angle — override under ⚙️ Advanced</div>
 
     <div class="adv">
       <input type="checkbox" id="advNeg" checked hidden>
@@ -140,6 +142,9 @@
 
     <details id="advSection" style="margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:0 10px 2px">
       <summary style="cursor:pointer;padding:10px 2px;font-weight:700;font-size:13px">⚙️ Advanced <span style="color:#999;font-weight:600;font-size:11px">style refs · winner layout · render · qty · presets · batch tools</span></summary>
+
+      <h3 style="margin-top:4px">🎯 Why → Facy <span style="color:#999;font-weight:600;font-size:11px">override — blank = brief's first sentence</span></h3>
+      <input type="text" id="facyAngle" placeholder="🎯 Override the auto-derived angle (e.g. 'mechanism — specialist beats generalist; amplify the baked hook')" title="The strategic WHY behind this creative — travels with the ad to Facy so its copy matches our angle. Leave blank to auto-use the brief's first sentence." style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
 
       <h3 style="margin-top:4px">Style references <span style="color:#999;font-weight:600;">optional</span></h3>
       <div class="guide">Best Scalable/designed outputs to emulate layout — never their product/text.</div>
@@ -525,6 +530,14 @@ function pickSku(k){ curSku=k; curPtype=getPtype(k); if(k!=='multi') loadProduct
 function pickMode(m){ curMode=m; try{ localStorage.setItem('de_mode',m); }catch(_){} renderModes(); renderEditModes(); renderTitle(); }
 
 /* ═══ SETTINGS PERSISTENCE — brief/render/qty survive an Image↔Video switch AND a page refresh ═══ */
+// 🎯 Angle that rides to Facy: the override field when filled, else the brief's first sentence.
+function facyAngleVal(){
+  const o = $('facyAngle') ? $('facyAngle').value.trim() : '';
+  if(o) return o;
+  const b = $('brief') ? $('brief').value.trim() : '';
+  const first = (b.split(/\n/)[0].split(/(?<=[.!?])\s+/)[0] || '').trim();
+  return first.slice(0, 160);
+}
 function restoreGenSettings(){
   const b=localStorage.getItem('de_brief'); if(b!=null && $('brief')) $('brief').value=b;
   const fa=localStorage.getItem('de_facy_angle'); if(fa!=null && $('facyAngle')) $('facyAngle').value=fa;
@@ -777,7 +790,7 @@ async function runGenerate(){
       prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:($('facyAngle')?$('facyAngle').value.trim():''), brain:brainId};
+      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:facyAngleVal(), brain:brainId};
       await idbPut(rec);   // persisted FIRST — the image can never be lost even if the placeholder card is gone
       const _el=$(id);
       if(_el){ _el.outerHTML=cardHTML(rec); }
@@ -2026,7 +2039,7 @@ async function sendToFacy(cardId){
   // CREATIVE BRIEF — the angle/why that MADE this image travels with it so Facy writes aligned copy (not blind).
   let brief='';
   try{ const rec=await idbGet(cardId);
-    const angle=(rec&&rec.angle)|| ($('facyAngle')?$('facyAngle').value.trim():'') ||'';
+    const angle=(rec&&rec.angle)|| facyAngleVal() ||'';
     const imgBrief=(rec&&rec.brief)|| ($('brief')?$('brief').value.trim():'') ||'';
     const parts=['[CREATIVE BRIEF — from Desi, write copy that MATCHES this angle; the hook is already baked into the image, amplify it, never contradict it]'];
     if(label)    parts.push('Creative / format: '+label);
@@ -2835,6 +2848,18 @@ if($('archSel') && window.LAYOUT_ARCHETYPES){
   window.LAYOUT_ARCHETYPES.forEach(a=>$('archSel').insertAdjacentHTML('beforeend',`<option value="${a.id}">${a.name} · ${a.styleFamily}</option>`));
   try{ const v=localStorage.getItem('de_arch'); if(v && [...$('archSel').options].some(o=>o.value===v)) $('archSel').value=v; }catch(_){}
 }
+// 🎨 Format section: remember open/closed; while collapsed, default = NO format selected
+// so generation runs from the brief alone (no format dims injected).
+(function(){
+  const fmt=$('fmtSection'); if(!fmt) return;
+  try{ if(localStorage.getItem('de_fmt_open')==='1') fmt.open=true; }catch(_){}
+  fmt.addEventListener('toggle', ()=>{ try{ localStorage.setItem('de_fmt_open', fmt.open?'1':'0'); }catch(_){} });
+  if(!fmt.open && curBrain){
+    curBrain=null; galFmtFilter=null;
+    try{ localStorage.removeItem('de_brain'); }catch(_){}
+    renderBrains(); renderFmtLib();
+  }
+})();
 // ⚙️ Advanced section: remember open/closed; while collapsed, enforce simple defaults
 // (Render=Mixed, Qty=1, Winner Layout=None) so hidden stale settings can't steer a render.
 (function(){
