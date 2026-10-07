@@ -107,7 +107,9 @@ for (let i = 0; i < ads.length; i++) {
     const buf = Buffer.from(url.split(',')[1], 'base64');
     fs.writeFileSync(path.join(REVIEW_OUT, filename), buf);
     fs.writeFileSync(path.join(IMPORT_OUT, filename), buf);
-    manifest.push({ id: 'g' + Date.now() + '_' + i, filename, sku, mode, ptype: 'toothpaste', label: ad.label || ad.id, brief: ad.brief, angle: ad.angle || '' });
+    // PROVENANCE: the full final prompt travels in the manifest → imported onto the gallery
+    // record as genPrompt, so the engine's ℹ️ view can show exactly what the model was asked.
+    manifest.push({ id: 'g' + Date.now() + '_' + i, filename, sku, mode, ptype: 'toothpaste', label: ad.label || ad.id, brief: ad.brief, angle: ad.angle || '', prompt });
     console.log('OK -> ' + batchName + '/' + filename);
   } catch (e) { console.log('FAIL', e.message); }
 }

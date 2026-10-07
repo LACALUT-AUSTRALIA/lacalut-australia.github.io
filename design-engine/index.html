@@ -1379,7 +1379,7 @@ async function importCliImageRenders(){
       if(existing){ skipped++; continue; }   // never clobber/duplicate on re-import
       const blob = await files[m.filename].getFile();
       const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
-      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null, collection:m.collection||null };
+      const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null, collection:m.collection||null, genPrompt:m.prompt||'' };
       await idbPut(rec); imported++;
     }catch(e){ console.error('import failed for', m, e); }
   }
@@ -1413,7 +1413,7 @@ async function autoImportCliRenders(){
             if(!imgRes.ok) return;
             const blob = await imgRes.blob();
             const url = await new Promise(r=>{ const fr=new FileReader(); fr.onloadend=()=>r(fr.result); fr.readAsDataURL(blob); });
-            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null, collection:m.collection||null };
+            const rec = { id:m.id, sku:m.sku, mode:m.mode||'social', ptype:m.ptype||'toothpaste', label:m.label||'Imported', ts:m.ts||Date.now(), url, fav:false, brief:m.brief||'', angle:m.angle||'', brain:m.brain||null, parent:m.parent||null, collection:m.collection||null, genPrompt:m.prompt||'' };
             await idbPut(rec); imported++; batchImported++;
           }catch(e){ console.error('auto-import failed for', m, e); }
           finally{ done++; if(toastEl) toastEl.textContent = '🖼️ Loading new renders… '+done+'/'+fresh.length; }
@@ -2458,6 +2458,38 @@ async function applyEdit(){
   }
 }
 
+/* ═══ ℹ️ PROVENANCE VIEW — the prompt + settings that made an image, walking the srcId
+   edit chain (original → edit 1 → edit 2). Metadata display only — never touches the
+   render pipeline or the gallery repaint path. ═══ */
+function _escT(s){ return (s==null?'':String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function showProv(cardId){
+  const chain=[]; const seen={}; let id=cardId;
+  while(id && !seen[id] && chain.length<12){ seen[id]=1; let r=null; try{ r=await idbGet(id); }catch(_){} if(!r) break; chain.push(r); id=r.srcId||null; }
+  if(!chain.length){ toast('⚠️ No stored record for this image'); return; }
+  const fmtTs=t=>t?new Date(t).toLocaleString('en-AU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const blocks=chain.map((r,i)=>{
+    const isThis=i===0;
+    const role=isThis?'THIS VERSION':((i===chain.length-1&&!r.srcId)?'ORIGINAL':('PARENT '+i));
+    const prompt=r.editPrompt||r.genPrompt||r.brief||'';
+    const kind=r.editPrompt?'✏️ Edit prompt that created this version':(r.genPrompt?'✨ Full generation prompt':'📝 Brief only (made before prompt-provenance existed)');
+    const gs=r.genSettings?`<div style="font-size:11px;color:#666;margin:4px 0 0">⚙️ ${_escT(r.genSettings.render)} · ${_escT(r.genSettings.model)} · ${_escT(r.genSettings.ar)}${r.genSettings.arch?' · 🏛 '+_escT(r.genSettings.arch):''}${r.genSettings.oneUp?' · 🚀 one-up':''}${r.genSettings.qty>1?' · ×'+r.genSettings.qty+' batch':''}</div>`:'';
+    const pol=r.polishPrompt?`<div style="font-size:11px;color:#8a6d1a;background:#fffbe6;border:1px solid #e8d48a;border-radius:6px;padding:4px 8px;margin-top:5px">⚡ Auto-polish ALSO edited this image after render: ${_escT(r.polishPrompt)}</div>`:'';
+    const pid='provp_'+r.id;
+    return `<div style="border:1.5px solid ${isThis?'#d9a600':'var(--line)'};border-radius:10px;padding:10px;margin-bottom:8px;background:${isThis?'#fffdf2':'#fff'}">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <img src="${r.url}" style="width:64px;border-radius:6px;flex:none" loading="lazy">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:800">${isThis?'🟡 ':''}${_escT(role)} — ${_escT(r.label||'')} <span style="font-weight:400;color:#999">· ${fmtTs(r.ts)}</span></div>
+          <div style="font-size:11px;font-weight:700;color:#555;margin:6px 0 3px">${kind}</div>
+          <pre id="${pid}" style="white-space:pre-wrap;word-break:break-word;font-size:11px;line-height:1.45;background:#f6f7f9;border:1px solid var(--line);border-radius:7px;padding:8px;max-height:180px;overflow:auto;margin:0;font-family:ui-monospace,Consolas,monospace">${_escT(prompt)||'—'}</pre>
+          ${gs}${pol}
+          <div style="margin-top:6px"><button class="btn" style="font-size:11px;padding:4px 10px" onclick="navigator.clipboard.writeText(document.getElementById('${pid}').textContent).then(()=>toast('📋 Prompt copied'))">📋 Copy prompt</button></div>
+        </div></div></div>`;
+  });
+  $('provBody').innerHTML=blocks.join(`<div style="text-align:center;color:#b9a14a;font-size:12px;font-weight:700;margin:2px 0 8px">⬆ the version below was edited into the one above</div>`);
+  provDlg.showModal();
+}
+
 /* ═══ PUSH TO ALL SOCIAL PLATFORMS via MARKY (auto-caption from the image) ═══ */
 const MARKY_BASE='https://api.mymarky.ai', MARKY_VERSION='2026-08-06', MARKY_BUSINESS_ID='5156d77a-932f-45ac-9d20-bc118007c2ab';
 const COMPLIANCE_RULES=`CRITICAL COMPLIANCE RULES (legal — never break):
@@ -2828,6 +2860,7 @@ async function autoPolish(cardId){
       if(cand && cand.score>fresh.score){
         fresh.url=candUrl; fresh.score=cand.score; fresh.scoreData=cand.data; fresh.scoredTs=Date.now();
         fresh.polish={ from:startScore, to:cand.score, passes:pass };
+        fresh.polishPrompt=fix;   // PROVENANCE: the ℹ️ view shows the image was ALSO changed by this auto-polish edit after the main prompt
         await idbPut(fresh);
         const cardImg=$(cardId)&&$(cardId).querySelector('img'); if(cardImg) cardImg.src=candUrl;   // live-swap the card image
         rec=fresh;
