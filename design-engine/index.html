@@ -424,7 +424,7 @@ function renderSlots(){
   // style slots (common to both modes)
   const s=[];
   for(let i=0;i<3;i++){ const im=styleImgs[i];
-    s.push(`<div class="slot" onclick="${im?'':'pickStyle('+i+')'}">${im?`<img src="${im}"><button class="rm" onclick="event.stopPropagation();delStyle(${i})">×</button>`:'🎨'}</div>`); }
+    s.push(`<div class="slot" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropStyle(event,${i})" onclick="${im?'':'pickStyle('+i+')'}" title="Click to upload, Ctrl+V to paste a screenshot, or drag an image here">${im?`<img src="${im}"><button class="rm" onclick="event.stopPropagation();delStyle(${i})">×</button>`:'🎨 paste / click'}</div>`); }
   $('styleSlots').innerHTML=s.join('');
 }
 /* ═══ MULTI-SKU product panel (pick which SKUs go in the range/campaign shot) ═══ */
@@ -681,8 +681,32 @@ function autoGrowEdit(){ const t=$('editInstruction'); if(!t) return; t.style.he
 function editDraftGet(){ try{ return localStorage.getItem('deEditDraft')||''; }catch(e){ return ''; } }
 function saveEditDraft(){ try{ const v=$('editInstruction').value; if(v.trim()) localStorage.setItem('deEditDraft', v); else localStorage.removeItem('deEditDraft'); }catch(e){} }
 function editDraftClear(){ try{ localStorage.removeItem('deEditDraft'); }catch(e){} }
-function pickStyle(i){ fileToDataUrl(d=>{ styleImgs[i]=d; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }); }
+function pickStyle(i){ fileToDataUrl(d=>{ setStyle(i,d); }); }
 function delStyle(i){ styleImgs[i]=null; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }
+function setStyle(i,d){ styleImgs[i]=d; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }
+function dropStyle(e,i){ e.preventDefault(); const el=e.currentTarget; el.classList.remove('drag');
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f&&f.type&&f.type.startsWith('image/')){ const r=new FileReader(); r.onload=()=>setStyle(i,r.result); r.readAsDataURL(f); return; }
+  const uri=e.dataTransfer&&(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain'));
+  if(uri&&/^(data:image|https?:)/.test(uri)){ setStyle(i,uri.trim()); }
+}
+/* paste-to-style-refs (Quan 08/10/2026): Ctrl+V a screenshot anywhere on the page → first empty
+   style slot (all full → replaces slot 3). Text pastes into inputs are untouched. */
+document.addEventListener('paste', e=>{
+  const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type&&x.type.startsWith('image/'));
+  if(!it) return;
+  const f=it.getAsFile(); if(!f) return;
+  e.preventDefault();
+  const r=new FileReader();
+  r.onload=()=>{
+    let i=0; while(i<3&&styleImgs[i]) i++;
+    const replaced=(i===3); if(replaced) i=2;
+    setStyle(i,r.result);
+    const det=$('styleSlots')&&$('styleSlots').closest('details'); if(det) det.open=true;
+    toast(replaced?'🎨 Style slots full — replaced ref 3 with the pasted image':'🎨 Pasted image → Style ref '+(i+1));
+  };
+  r.readAsDataURL(f);
+});
 
 function openKeys(){ $('geminiKey').value=KEYS.gemini; $('markyKey').value=KEYS.marky; $('modelSel').value=curModel; keysDlg.showModal(); }
 function saveKeys(){ localStorage.setItem('lc_gemini_key',$('geminiKey').value.trim());
