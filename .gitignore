@@ -3,3 +3,4 @@ design-engine/gap-tracker/data.js
 design-engine/_rig/winner-ads/raw/
 design-engine/_rig/winner-ads/*.png
 design-engine/_rig/winner-ads/*.json
+__pycache__/
