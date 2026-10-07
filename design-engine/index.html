@@ -116,20 +116,9 @@
     <div class="slots" id="slots"></div>
     <div id="fidWarn"></div>
 
-    <h3 style="margin-top:12px">Style references <span style="color:#999;font-weight:600;">optional</span></h3>
-    <div class="guide">Best Scalable/designed outputs to emulate layout — never their product/text.</div>
-    <div class="slots" id="styleSlots"></div>
-
     <h3 style="margin-top:12px">Format <span id="stratCount" style="color:#999;font-weight:600;">0/8</span></h3>
     <input type="text" id="brainSearch" placeholder="🔎 Search formats… (e.g. money)" oninput="setBrainFilter(this.value)" style="width:100%;padding:8px 10px;margin:0 0 6px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
     <div class="chips" id="chips"></div>
-
-    <h3 style="margin-top:12px">🏛 Winner Layout <span style="color:#999;font-weight:600;font-size:11px">skeletons of proven Meta winners</span></h3>
-    <div class="guide" style="font-size:11px">Locks the canvas to a layout reverse-engineered from a long-running winning ad — our pack, our copy, their structure.</div>
-    <select id="archSel" onchange="try{localStorage.setItem('de_arch',this.value)}catch(_){}" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;box-sizing:border-box">
-      <option value="">None — engine composes freely</option>
-      <option value="random">🎲 Random winner layout per image</option>
-    </select>
 
     <h3 style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">Brief<button type="button" onclick="clearBrief()" title="Clear the brief box so you can paste a fresh prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></h3>
     <textarea id="brief" rows="3" placeholder="e.g. Hero shot on soft light-blue backdrop, headline 'Firm, Cared-For Gums the German Way', trust chips along the bottom"></textarea>
@@ -144,36 +133,54 @@
     </div>
 
     <div class="fmt">
-      <span>Render:</span>
-      <select id="render" style="flex:1;padding:7px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
-        <option value="mixed" selected>Mixed — vary angle &amp; finish (recommended)</option>
-        <option value="photoreal">3D Photoreal — premium studio render</option>
-        <option value="graphical">3D Graphical — glossy CGI ad look</option>
-        <option value="exact">Exact packshot — flat, max fidelity</option>
-      </select>
-    </div>
-    <div class="fmt">
       <span>Format:</span> <b id="fmtLabel"></b>
-      <span class="spacer" style="flex:1"></span>
-      <span>Qty:</span>
-      <select id="qty"><option selected>1</option><option>2</option><option>3</option></select>
-    </div>
-
-    <div class="fmt" style="gap:6px">
-      <select id="presetSel" onchange="loadPreset(this.value)" style="flex:1;min-width:0" title="Load a saved recipe (SKU + strategy + form + brief + settings)">
-        <option value="">⭐ Presets — load a saved recipe…</option>
-      </select>
-      <button class="btn" style="font-size:12px;padding:6px 8px" onclick="savePreset()" title="Save current SKU + strategy + form + brief + settings as a reusable recipe">💾 Save</button>
-      <button class="iconbtn" style="padding:6px 8px" onclick="deletePreset()" title="Delete the selected preset">🗑</button>
     </div>
 
     <button class="btn primary" id="genBtn" style="width:100%;padding:12px" onclick="runGenerate()">✨ Generate</button>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openMatrix()" title="One click → a grid of variants across the proven angles for this SKU">🧮 Batch Matrix</button>
-      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openClone()" title="Paste a competitor's winning ad — deconstruct it and rebuild the concept for LACALUT">🧬 Ad Clone</button>
-      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openTournament()" title="Render 1 ad for EVERY format on this SKU, auto-score all, rank them — every format earns its place">🏆 Tournament</button>
-      <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openCoverage()" title="SKU × format matrix of everything generated + sent — the red gaps are what to build next">📊 Coverage</button>
-    </div>
+
+    <details id="advSection" style="margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:0 10px 2px">
+      <summary style="cursor:pointer;padding:10px 2px;font-weight:700;font-size:13px">⚙️ Advanced <span style="color:#999;font-weight:600;font-size:11px">style refs · winner layout · render · qty · presets · batch tools</span></summary>
+
+      <h3 style="margin-top:4px">Style references <span style="color:#999;font-weight:600;">optional</span></h3>
+      <div class="guide">Best Scalable/designed outputs to emulate layout — never their product/text.</div>
+      <div class="slots" id="styleSlots"></div>
+
+      <h3 style="margin-top:12px">🏛 Winner Layout <span style="color:#999;font-weight:600;font-size:11px">skeletons of proven Meta winners</span></h3>
+      <div class="guide" style="font-size:11px">Locks the canvas to a layout reverse-engineered from a long-running winning ad — our pack, our copy, their structure.</div>
+      <select id="archSel" onchange="try{localStorage.setItem('de_arch',this.value)}catch(_){}" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px;box-sizing:border-box">
+        <option value="">None — engine composes freely</option>
+        <option value="random">🎲 Random winner layout per image</option>
+      </select>
+
+      <div class="fmt" style="margin-top:10px">
+        <span>Render:</span>
+        <select id="render" style="flex:1;padding:7px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
+          <option value="mixed" selected>Mixed — vary angle &amp; finish (recommended)</option>
+          <option value="photoreal">3D Photoreal — premium studio render</option>
+          <option value="graphical">3D Graphical — glossy CGI ad look</option>
+          <option value="exact">Exact packshot — flat, max fidelity</option>
+        </select>
+      </div>
+      <div class="fmt">
+        <span>Qty:</span>
+        <select id="qty"><option selected>1</option><option>2</option><option>3</option></select>
+      </div>
+
+      <div class="fmt" style="gap:6px">
+        <select id="presetSel" onchange="loadPreset(this.value)" style="flex:1;min-width:0" title="Load a saved recipe (SKU + strategy + form + brief + settings)">
+          <option value="">⭐ Presets — load a saved recipe…</option>
+        </select>
+        <button class="btn" style="font-size:12px;padding:6px 8px" onclick="savePreset()" title="Save current SKU + strategy + form + brief + settings as a reusable recipe">💾 Save</button>
+        <button class="iconbtn" style="padding:6px 8px" onclick="deletePreset()" title="Delete the selected preset">🗑</button>
+      </div>
+
+      <div style="display:flex;gap:8px;margin:8px 0 10px">
+        <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openMatrix()" title="One click → a grid of variants across the proven angles for this SKU">🧮 Batch Matrix</button>
+        <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openClone()" title="Paste a competitor's winning ad — deconstruct it and rebuild the concept for LACALUT">🧬 Ad Clone</button>
+        <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openTournament()" title="Render 1 ad for EVERY format on this SKU, auto-score all, rank them — every format earns its place">🏆 Tournament</button>
+        <button class="btn" style="flex:1;padding:9px;font-size:12px" onclick="openCoverage()" title="SKU × format matrix of everything generated + sent — the red gaps are what to build next">📊 Coverage</button>
+      </div>
+    </details>
   </div>
 
   <!-- LEFT (video mode): Video Generator settings -->
@@ -2828,6 +2835,19 @@ if($('archSel') && window.LAYOUT_ARCHETYPES){
   window.LAYOUT_ARCHETYPES.forEach(a=>$('archSel').insertAdjacentHTML('beforeend',`<option value="${a.id}">${a.name} · ${a.styleFamily}</option>`));
   try{ const v=localStorage.getItem('de_arch'); if(v && [...$('archSel').options].some(o=>o.value===v)) $('archSel').value=v; }catch(_){}
 }
+// ⚙️ Advanced section: remember open/closed; while collapsed, enforce simple defaults
+// (Render=Mixed, Qty=1, Winner Layout=None) so hidden stale settings can't steer a render.
+(function(){
+  const adv=$('advSection'); if(!adv) return;
+  try{ if(localStorage.getItem('de_adv_open')==='1') adv.open=true; }catch(_){}
+  adv.addEventListener('toggle', ()=>{ try{ localStorage.setItem('de_adv_open', adv.open?'1':'0'); }catch(_){} });
+  if(!adv.open){
+    if($('render')) $('render').value='mixed';
+    if($('qty')) $('qty').value='1';
+    if($('archSel')) $('archSel').value='';
+    try{ localStorage.setItem('de_render','mixed'); localStorage.setItem('de_qty','1'); localStorage.removeItem('de_arch'); }catch(_){}
+  }
+})();
 migratePtype().then(()=>migrateUnstackEdits()).then(()=>renderGallery(curSku)).then(()=>autoImportCliRenders());   // tag legacy gens, un-stack existing edits so originals show, paint gallery, then auto-pull any new CLI renders — zero clicks
 loadRefLib().then(seedPacks).then(loadProdSlots).then(()=>{ loadProductImgs(); renderSlots(); renderTopMode(); if(curTop==='video') pickTopMode('video'); });   // refs → seed German packs → load saved slot photos → fill slots + restore Image/Video mode
 $('advNeg').addEventListener('change',renderNeg);
