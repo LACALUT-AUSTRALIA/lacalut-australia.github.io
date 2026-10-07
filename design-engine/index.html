@@ -897,6 +897,7 @@ function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
+   <button class="iconbtn" title="Copy the full-res image to the clipboard — paste straight into a Warp/Facy terminal; the toast shows the repo file path (click it to copy the path)" onclick="copyCardImage('${rec.id}')">📋</button>
    <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
@@ -905,8 +906,8 @@ function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':
      ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
      : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}
    ${rec.sentToFacy
-     ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Sent to Facy — click to send again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Sent to Facy</button>`
-     : `<button class="markybtn" id="facy-${rec.id}" title="Send this image straight to Facy — queues it as a Facebook ad (no download needed)" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Send to Facy</button>`}
+     ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Queued for Facy (copy-pending) — click to queue again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Queued for Facy</button>`
+     : `<button class="markybtn" id="facy-${rec.id}" title="Queue this image for Facy (copy-pending) — Facy builds the ad only after copy is approved in the terminal; nothing goes live on this click" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Queue for Facy</button>`}
    ${rec.sentToDrive
      ? `<button class="markybtn pushed" id="drive-${rec.id}" title="In the Media Buyer Drive queue — click to send again" onclick="sendToDrive('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ In Drive</button>`
      : `<button class="markybtn" id="drive-${rec.id}" title="Send this image to the Media Buyer Google Drive folder" onclick="sendToDrive('${rec.id}')" style="background:#0a7cff;color:#fff;border-color:#0a7cff">📁 Send to Drive</button>`}
@@ -2008,6 +2009,42 @@ Return ONLY valid JSON: {"on_image_text":"every word you read on the image","pri
   return copy;
 }
 
+/* ═══ 📋 COPY IMAGE — full-res original PNG to the clipboard (paste into Warp/Facy terminal as
+   reference) + a toast with the card's repo file path so Facy can locate the ORIGINAL for the
+   ad build. Browser-only renders (no repo file yet) say so and point at ⬇ download. ═══ */
+let _cliPathMap=null;
+async function cliPathFor(id){
+  if(!_cliPathMap){
+    _cliPathMap={};
+    try{
+      const batches=await (await fetch('./_cli-renders-images/_index.json',{cache:'no-store'})).json();
+      await Promise.all((Array.isArray(batches)?batches:[]).map(async b=>{
+        try{ const mf=await (await fetch('./_cli-renders-images/'+b+'/manifest.json',{cache:'no-store'})).json();
+          for(const m of mf) _cliPathMap[m.id]=b+'/'+m.filename;
+        }catch(_){ }
+      }));
+    }catch(_){ }
+  }
+  return _cliPathMap[id]||'';
+}
+async function copyCardImage(cardId){
+  try{
+    const rec=await idbGet(cardId);
+    const src=(rec&&rec.url)|| ($(cardId)&&$(cardId).querySelector('img')?$(cardId).querySelector('img').src:'') || '';
+    if(!src){ toast('⚠️ No image on this card'); return; }
+    const blob=await (await fetch(src)).blob();
+    const png = blob.type==='image/png' ? blob : await new Promise((res,rej)=>{ const i=new Image();
+      i.onload=()=>{ const c=document.createElement('canvas'); c.width=i.naturalWidth; c.height=i.naturalHeight; c.getContext('2d').drawImage(i,0,0); c.toBlob(b=>b?res(b):rej(new Error('PNG encode failed')),'image/png'); };
+      i.onerror=()=>rej(new Error('image decode failed')); i.src=src; });
+    await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+    const path=await cliPathFor(cardId);
+    const t=toast('📋 Copied full-res image — '+(path?('file: '+path+' (click to copy path)'):'browser render, no repo file yet — use ⬇ to save the original'), true);
+    if(t){ clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.opacity='0'; t.onclick=null; },9000);
+      if(path){ t.style.cursor='pointer'; t.title='Click to copy the repo file path';
+        t.onclick=()=>{ try{ navigator.clipboard.writeText('design-engine/_cli-renders-images/'+path); t.textContent='📋 Path copied: design-engine/_cli-renders-images/'+path; }catch(_){ } }; }
+    }
+  }catch(e){ alert('Copy failed: '+e.message+'\n(Click somewhere on the page first, then retry — the clipboard needs page focus.)'); }
+}
 async function pushToFacyPipeline(img,sku,label,cardId,brief,copy){
   const url=await facyUploadImage(img,cardId);
   const extra=copy?('\n\n[MATCHED AD COPY — generated FROM this exact image, offer wording verbatim; use as-is or refine, never change the offer]\nALT HEADLINES: '+(copy.headlines||[]).slice(1).join(' | ')+'\nFIRST COMMENT: '+(copy.first_comment||'')+'\nON-IMAGE TEXT: '+(copy.on_image_text||'')):'';
@@ -2015,7 +2052,7 @@ async function pushToFacyPipeline(img,sku,label,cardId,brief,copy){
     image_url:url,image_url_vertical:url,
     adset_id:'',adset_name:'(Facy assigns)',campaign_id:'',template_ad_id:'',
     primary_text:(copy&&copy.primary_text)||'',headline:(copy&&copy.headlines&&copy.headlines[0])||'',
-    description:(brief||'')+extra,status:'ready_to_push'}];
+    description:(brief||'')+extra,status:'copy-pending'}];   // NEW LAUNCH FLOW (07/10): queue only — Facy builds AFTER Quan approves copy in the terminal, never live on click
   const res=await fetch(FACY_SUPA_URL+'/rest/v1/ad_approvals',{method:'POST',
     headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify(row)});
@@ -2060,8 +2097,8 @@ async function sendToFacy(cardId){
     // fallback path: keep the same-origin IndexedDB inbox in sync (belt-and-braces)
     try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, brief, adCopy, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
     try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; }catch(_){}
-    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Sent to Facy'; btn.title='Queued to the Facy pipeline — click to send again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
-    toast('🚀 Sent straight to Facy — building automatically, no other tab needed');
+    if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Queued for Facy'; btn.title='Queued (copy-pending) — Facy builds only after Quan approves copy in the terminal; click to queue again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
+    toast('🟡 Queued for Facy (copy-pending) — builds after copy approval in the terminal, nothing goes live from this click');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
 }
 /* ═══ VERSION SWITCH — flip a version-stacked card to a chosen version (nothing is ever lost) ═══ */
