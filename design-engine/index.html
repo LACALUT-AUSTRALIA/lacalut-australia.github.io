@@ -753,8 +753,8 @@ async function runGenerate(){
     if(!multiImgs.length){ alert('Upload at least one selected SKU pack for the Multi-SKU set (📷 Upload pack).'); return; }
     if(!$('brief').value.trim() && !curBrain){ alert('Add a Brief (or pick a strategy) so the engine knows the layout for the range shot.'); return; }
   } else {
-    if(!curBrain){ alert('Pick a strategy first (or 🎲 Mixed).'); return; }
-    const selBrain = curBrain==='mixed'? null : BRAINS.find(b=>b.id===curBrain);
+    if(!curBrain && !$('brief').value.trim()){ alert('Add a Brief, or pick a format (or 🎲 Mixed).'); return; }
+    const selBrain = (!curBrain || curBrain==='mixed')? null : BRAINS.find(b=>b.id===curBrain);
     if(selBrain && selBrain.product==='required' && !productImgs.filter(Boolean).length){ alert('This strategy needs a product photo — upload one in the Main slot.'); return; }
   }
   const qty=parseInt($('qty').value); const btn=$('genBtn');
