@@ -903,7 +903,13 @@ function versionBarHTML(rec, versions){
     <button onclick="showVersion('${root}',${next})" ${curIdx===versions.length-1?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===versions.length-1?'opacity:.4':''}">▶</button>
   </div>`;
 }
-function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}${sizeBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
+function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the lazy hydrator (freeze fix 07/10)
+  const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350';
+  // FREEZE FIX (07/10/2026): never inline the multi-MB base64 into innerHTML — ~80 cards × 2-3MB
+  // made every renderGallery parse hundreds of MB of HTML and froze the tab for minutes. The img
+  // ships as a tiny placeholder with data-lazy=<id>; the IntersectionObserver hydrator swaps in a
+  // cached blob: URL only when the card scrolls near the viewport.
+  return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img data-lazy="${rec.id}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" style="aspect-ratio:${ar}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}${sizeBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Provenance — the exact prompt + settings that made this image, and its original → edit lineage" onclick="showProv('${rec.id}')">ℹ️</button>
@@ -931,7 +937,7 @@ function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':
 function videoBlockHTML(rec){ if(!rec||!rec.video) return '';
   const meta = rec.videoMeta||{};
   return `<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:8px">
-    <video src="${rec.video}" controls loop muted playsinline style="width:100%;border-radius:8px;background:#000"></video>
+    <video data-lazyv="${rec.id}" controls loop muted playsinline style="width:100%;border-radius:8px;background:#000"></video>
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px">
       <span class="t" style="flex:1;font-size:10px">🎬 ${meta.style||'video'} · ${meta.model||''} · ${meta.seconds||8}s ${meta.aspectRatio||''}</span>
       <button class="iconbtn" title="download MP4" onclick="dlVideo('${rec.id}','${rec.sku}-${rec.mode}')">⬇ MP4</button>
@@ -1917,7 +1923,7 @@ function socialIdbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open
 async function socialIdbGet(k){ const db=await socialIdbOpen(); return new Promise((res,rej)=>{ const t=db.transaction('kv','readonly').objectStore('kv').get(k); t.onsuccess=()=>res(t.result); t.onerror=()=>rej(t.error); }); }
 async function socialIdbSet(k,v){ const db=await socialIdbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); }); }
 async function sendToCalendar(cardId){
-  const card=$(cardId); const img=card?.querySelector('img')?.src; if(!img){ alert('No image on this card.'); return; }
+  const card=$(cardId); const img=await cardSrc(cardId); if(!img){ alert('No image on this card.'); return; }
   const btn=$('marky-'+cardId);
   if(btn && (btn.disabled || btn.classList.contains('pushed'))){ toast('✅ Already sent to Calendar'); return; }   // guard: no double-send
   const sku=card.getAttribute('data-sku')||curSku;
@@ -2081,7 +2087,7 @@ async function sendToFacy(cardId){
       if(!confirm('⚠️ This creative scored '+_sr.score+'/100 — under the house bar of '+SCORE_MIN_SEND+'.\n'+(topFix?'Top fix: '+topFix+'\n\n':'\n')+'Send to Facy anyway?')) return;
     }
   }catch(_){}
-  let img; try{ img=await compositeCard(cardId); }catch(_){ img=card.querySelector('img')?.src; }   // send text-overlay-composited PNG
+  let img; try{ img=await compositeCard(cardId); }catch(_){ img=await cardSrc(cardId); }   // send text-overlay-composited PNG
   if(!img){ alert('No image on this card.'); return; }
   const btn=$('facy-'+cardId);
   // re-sendable: a green/"sent" button can be clicked again to re-queue the image
@@ -2153,7 +2159,7 @@ async function driveQueueUpload(dataUrl, cardId, sku, label, coll){
 }
 async function sendToDrive(cardId){
   const card=$(cardId); if(!card){ alert('No card.'); return; }
-  let img; try{ img=await compositeCard(cardId); }catch(_){ img=card.querySelector('img')?.src; }
+  let img; try{ img=await compositeCard(cardId); }catch(_){ img=await cardSrc(cardId); }
   if(!img){ alert('No image on this card.'); return; }
   const btn=$('drive-'+cardId);
   const sku=card.getAttribute('data-sku')||curSku;
@@ -2237,6 +2243,51 @@ function sizeBadgeHTML(rec){
    so every version of a creative groups into ONE card with a v1/v2/v3 switcher and nothing is lost. ═══ */
 function rootOf(rec){ let r=rec, seen=0; while(r && r.parent && seen<20){ const p=_recById&&_recById[r.parent]; if(!p) return r.parent; r=p; seen++; } return r?r.id:(rec&&rec.id); }
 let _recById={};
+
+/* ═══ GALLERY FREEZE FIX (07/10/2026) — lazy blob hydration.
+   Cards render with a 60-byte placeholder; this observer swaps in a blob: URL (built once,
+   cached, revoked when the underlying image changes) only when a card nears the viewport.
+   renderGallery's innerHTML goes from ~200MB of base64 to a few hundred KB of markup. ═══ */
+const _blobCache=new Map();   // "<kind><id>" -> {src,len}
+function _lazyUrl(rec,kind){
+  const raw=kind==='v'?rec.video:rec.url; if(!raw) return null;
+  if(raw.indexOf('data:')!==0) return raw;                       // plain path/URL — use as-is
+  const key=kind+rec.id, hit=_blobCache.get(key);
+  if(hit && hit.len===raw.length) return hit.src;                // cached + unchanged
+  if(hit){ try{URL.revokeObjectURL(hit.src);}catch(_){} }        // image was replaced (polish/edit) — rebuild
+  const i=raw.indexOf(','), mime=(raw.slice(5,i).split(';')[0])||'image/png';
+  const bin=atob(raw.slice(i+1)), arr=new Uint8Array(bin.length);
+  for(let j=0;j<bin.length;j++) arr[j]=bin.charCodeAt(j);
+  const src=URL.createObjectURL(new Blob([arr],{type:mime}));
+  _blobCache.set(key,{src,len:raw.length});
+  return src;
+}
+const _lazyIO=new IntersectionObserver(es=>{
+  for(const e of es){
+    if(!e.isIntersecting) continue;
+    const el=e.target; _lazyIO.unobserve(el);
+    const vid=el.hasAttribute('data-lazyv'), id=el.getAttribute(vid?'data-lazyv':'data-lazy');
+    const go=rec=>{ if(!rec) return; const u=_lazyUrl(rec,vid?'v':'i'); if(u&&el.isConnected!==false) el.src=u; };
+    const r=_recById[id]; if(r) go(r); else idbGet(id).then(go).catch(()=>{});
+  }
+},{rootMargin:'600px'});
+function hydrateLazy(){
+  document.querySelectorAll('img[data-lazy]:not([data-obs]),video[data-lazyv]:not([data-obs])')
+    .forEach(el=>{ el.setAttribute('data-obs','1'); _lazyIO.observe(el); });
+}
+/* every gallery mutation (full repaint, single insert, outerHTML card replace) re-arms hydration */
+window.addEventListener('DOMContentLoaded',()=>{ const o=$('output'); if(o){
+  new MutationObserver(()=>{ clearTimeout(window._hlT); window._hlT=setTimeout(hydrateLazy,40); })
+    .observe(o,{childList:true,subtree:true});
+  hydrateLazy();
+}});
+/* canonical full-res source for a card — ALWAYS the IDB record, never the (blob:) DOM src */
+async function cardSrc(cardId){
+  const r=_recById[cardId]||await idbGet(cardId).catch(()=>null);
+  if(r&&r.url) return r.url;
+  const s=$(cardId)?.querySelector('img')?.src;
+  return (s&&s.indexOf('blob:')!==0)?s:null;
+}
 function matchesSearch(rec){
   if(!galSearchText) return true;
   const q=galSearchText.toLowerCase();
@@ -2337,7 +2388,7 @@ function callGeminiEdit(imgDataUrl, instruction){
 let _editSrc=null, _editRefs=[], _editSrcLabel='', _editSrcBrief='', _editSrcAngle='', _editSrcBrain='', _editSrcParent=null;   // carry the source card's format label + creative brief + angle + brain + version-root through the edit
 async function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
-  const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
+  const src=await cardSrc(cardId); if(!src) return;
   _editSrc=src; _editRefs=[];
   let _srPrompt='';
   try{ const _sr=await idbGet(cardId); _editSrcLabel=_sr?.label||''; _editSrcBrief=_sr?.brief||''; _editSrcAngle=_sr?.angle||''; _editSrcBrain=_sr?.brain||brainOf(_sr)||''; _editSrcParent=(_sr&&(_sr.parent||_sr.id))||cardId; _srPrompt=_sr?.editPrompt||''; }catch(e){ _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=cardId; }   // inherit format keyword + brief + angle + brain + version-root so Send-to-Facy stays in context AND the edit stacks as a new version
@@ -2486,7 +2537,7 @@ async function showProv(cardId){
     const pid='provp_'+r.id;
     return `<div style="border:1.5px solid ${isThis?'#d9a600':'var(--line)'};border-radius:10px;padding:10px;margin-bottom:8px;background:${isThis?'#fffdf2':'#fff'}">
       <div style="display:flex;gap:10px;align-items:flex-start">
-        <img src="${r.url}" style="width:64px;border-radius:6px;flex:none" loading="lazy">
+        <img src="${_lazyUrl(r,'i')||r.url}" style="width:64px;border-radius:6px;flex:none" loading="lazy">
         <div style="flex:1;min-width:0">
           <div style="font-size:12px;font-weight:800">${isThis?'🟡 ':''}${_escT(role)} — ${_escT(r.label||'')} <span style="font-weight:400;color:#999">· ${fmtTs(r.ts)}</span></div>
           <div style="font-size:11px;font-weight:700;color:#555;margin:6px 0 3px">${kind}</div>
@@ -2921,7 +2972,7 @@ async function applyScoreFix(cardId, fixIdx){
 async function pushCardToMarky(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   if(!KEYS.marky){ alert('Add your Marky API key in 🔑 Keys first.'); openKeys(); return; }
-  const card=$(cardId); const dataUrl=card?.querySelector('img')?.src; if(!dataUrl){ alert('No image on this card.'); return; }
+  const card=$(cardId); const dataUrl=await cardSrc(cardId); if(!dataUrl){ alert('No image on this card.'); return; }
   const sku=card.getAttribute('data-sku')||curSku;
   const btn=$('marky-'+cardId);
   if(btn){ btn.disabled=true; btn.textContent='✍️ Writing caption…'; }
