@@ -287,7 +287,7 @@
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <div id="editProvNote" hidden style="margin:0 0 5px;font-size:11.5px;font-weight:700;color:#8a6d1a;background:#fffbe6;border:1px solid #e8d48a;border-radius:7px;padding:5px 9px">🧾 This is the prompt that CREATED this image — compare it against the result, tweak and re-run, or clear it for a fresh edit.</div>
   <div style="display:flex;align-items:center;justify-content:flex-end;margin:0 0 3px"><button type="button" onclick="clearEditInstruction()" title="Clear the instruction box so you can paste a fresh edit prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></div>
-  <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
+  <textarea id="editInstruction" rows="4" style="width:100%;overflow-y:hidden" oninput="autoGrowEdit()" onpaste="setTimeout(autoGrowEdit,0)" placeholder="Describe the change…"></textarea>
   <div style="margin-top:6px">
     <button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
     <button class="btn" style="font-size:12px;padding:5px 10px;margin-left:6px" onclick="presetBoxUpright()">📦 Stand box upright</button>
@@ -673,7 +673,9 @@ function fillSystemRefs(){
   toast('🧰 Loaded '+found.map(([l])=>l).join(' · ')+(missing.length?' — missing: '+missing.join(', ')+' (upload in the library)':''));
 }
 function clearBrief(){ const t=$('brief'); if(!t) return; t.value=''; localStorage.removeItem('de_brief'); t.focus(); toast('🧹 Brief cleared — paste your next prompt'); }
-function clearEditInstruction(){ const t=$('editInstruction'); if(!t) return; t.value=''; const n=$('editProvNote'); if(n) n.hidden=true; t.focus(); toast('🧹 Edit box cleared — paste your next edit prompt'); }
+function clearEditInstruction(){ const t=$('editInstruction'); if(!t) return; t.value=''; const n=$('editProvNote'); if(n) n.hidden=true; autoGrowEdit(); t.focus(); toast('🧹 Edit box cleared — paste your next edit prompt'); }
+// Auto-size the edit instruction box to its content (no dragging) — capped at half the viewport.
+function autoGrowEdit(){ const t=$('editInstruction'); if(!t) return; t.style.height='auto'; t.style.height=Math.min(t.scrollHeight+4, Math.round(window.innerHeight*0.5))+'px'; t.style.overflowY = (t.scrollHeight+4 > window.innerHeight*0.5) ? 'auto' : 'hidden'; }
 function pickStyle(i){ fileToDataUrl(d=>{ styleImgs[i]=d; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }); }
 function delStyle(i){ styleImgs[i]=null; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }
 
@@ -2412,7 +2414,7 @@ async function editImage(cardId){
   // created it pre-filled, so prompt vs result can be compared and tweaked instead of retyped.
   renderEditSrc(); renderRefLibGrid(); $('editInstruction').value=_srPrompt;
   if($('editProvNote'))$('editProvNote').hidden=!_srPrompt;
-  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>{$('editInstruction').focus();autoGrowEdit();},60);
 }
 function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   const arw=(MODES[curMode].ar||'4:5').split(' ')[0].replace(':','/');
@@ -2435,16 +2437,16 @@ function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editS
 document.addEventListener('paste', e=>{ if(!editDlg.open) return; const items=(e.clipboardData&&e.clipboardData.items)||[]; for(const it of items){ if(it.type && it.type.indexOf('image')===0){ const f=it.getAsFile(); if(f){ _fileToEditSrc(f); e.preventDefault(); break; } } } });
 function presetUpright(){
   $('editInstruction').value = 'Re-pose this toothpaste tube so it stands fully UPRIGHT and VERTICAL, resting on its CAP at the BOTTOM with the flat crimped/sealed end at the TOP — the normal way a toothpaste tube stands (cap down, seal up). Keep the label design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background. Product only — no text overlays, no badges.';
-  $('editInstruction').focus();
+  $('editInstruction').focus();autoGrowEdit();
 }
 function presetBoxUpright(){
   $('editInstruction').value = 'Re-pose this product carton/box so it stands fully UPRIGHT and VERTICAL, standing on its base as if on a shelf, shown front-on at a slight three-quarter angle. Keep the box design, colours, logo and every word of the text exactly as they are and clearly readable the right way up. Place it centred on a clean plain white studio background with a soft realistic shadow beneath. Product only — no text overlays, no badges.';
-  $('editInstruction').focus();
+  $('editInstruction').focus();autoGrowEdit();
 }
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
   _editRefs=[]; renderEditSrc(); renderRefLibGrid(); if($('editProvNote'))$('editProvNote').hidden=true; $('editInstruction').value='';
-  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
+  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>{$('editInstruction').focus();autoGrowEdit();},60);
 }
 function callGeminiEditRefs(imgDataUrl, instruction, refKeys, seed){
   const refImgs=refKeys.map(k=>_refLib[k]).filter(Boolean);
@@ -2982,7 +2984,7 @@ async function applyScoreFix(cardId, fixIdx){
   const rec=await idbGet(cardId); const fix=rec?.scoreData?.fixes?.[fixIdx]?.fix; if(!fix) return;
   const p=document.getElementById('scorePanel'); if(p) p.remove();
   await editImage(cardId);                                  // opens the edit dialog with this card loaded
-  const ta=$('editInstruction'); if(ta){ ta.value=fix+' Keep everything else on the image EXACTLY as it is — same product rendering, layout, colours and all other text.'; ta.focus(); }
+  const ta=$('editInstruction'); if(ta){ ta.value=fix+' Keep everything else on the image EXACTLY as it is — same product rendering, layout, colours and all other text.'; ta.focus(); autoGrowEdit(); }
 }
 
 async function pushCardToMarky(cardId){
