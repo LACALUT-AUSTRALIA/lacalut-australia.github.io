@@ -1927,8 +1927,9 @@ function facyIdbGet(k){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{ c
 function facyIdbSet(k,v){ return facyIdbOpen().then(db=>new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=()=>res(); tx.onerror=()=>rej(tx.error); })); }
 /* ═══ DIRECT-TO-FACY PIPELINE (Supabase) — bypasses the manual FB Ads Generator tab ═══
    Uploads the image to the ad-images bucket, then queues a row in ad_approvals as
-   `ready_to_push` with EMPTY copy. Facy (build engine) writes One-Up-Loop copy from
-   the image, runs the compliance gate, assigns the ad set, and builds to Meta per SOP. */
+   `copy-pending` (NEW LAUNCH FLOW 07/10): nothing builds on click — Facy builds to Meta
+   only AFTER Quan approves the copy in the terminal (see lacalut-fb-creative/references/
+   meta-build.md). Matched copy from generateAdCopy rides along as the starting draft. */
 const FACY_SUPA_URL='https://bfzvxxcsfxvgeblnkqne.supabase.co';
 const FACY_SUPA_KEY='sb_publishable_3Do5mWxJcwfj7Cr_U43CgA_T3sx8n3M';
 /* ═══ PERFORMANCE BRAIN — the closed feedback loop (Phase 2). perf_feedback.py publishes a
