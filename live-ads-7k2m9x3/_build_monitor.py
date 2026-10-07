@@ -1092,6 +1092,114 @@ GO.addEventListener('click',apply);X.addEventListener('click',clearRange);
 })();
 </script>"""
 
+# ── Image search index: 12x12 RGB fingerprint per ad (cached by file mtime) ──
+def _img_index():
+    import base64
+    from PIL import Image
+    cache = load("imghash.json", {})
+    life = {r["ad_id"]: r for r in insmax}
+    out, fresh = [], {}
+    for a in ads:
+        aid = a["id"]
+        f = os.path.join(SP, "big", aid + ".jpg")
+        if not os.path.exists(f):
+            f = os.path.join(SP, "thumbs", aid + ".jpg")
+            if not os.path.exists(f):
+                continue
+        key = f"{os.path.basename(os.path.dirname(f))}:{int(os.path.getmtime(f))}"
+        c = cache.get(aid)
+        if c and c.get("k") == key:
+            h = c["h"]
+        else:
+            try:
+                im = Image.open(f).convert("RGB").resize((96, 96), Image.BOX).resize((12, 12), Image.BOX)
+                h = base64.b64encode(im.tobytes()).decode()
+            except Exception:
+                continue
+        fresh[aid] = {"k": key, "h": h}
+        L = life.get(aid, {})
+        sp = float(L.get("spend") or 0)
+        rv = float(L.get("purchase_conversion_value") or 0)
+        out.append([aid, a.get("name", ""), a.get("effective_status", ""), (a.get("created_time") or "")[:10],
+                    a.get("campaign") or "", round(sp), round(rv), int(float(L.get("purchase_conversions") or 0)), h,
+                    os.path.basename(os.path.dirname(f)) == "big"])
+    json.dump(fresh, open(os.path.join(SP, "imghash.json"), "w", encoding="utf-8"))
+    return out
+
+IMG_INDEX = json.dumps(_img_index(), ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+
+ISEARCH_HTML = r"""<style>
+#isbtn{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap}
+#ispanel{display:none;margin:0 0 18px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+#ispanel.on{display:block}
+#isdrop{border:2px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--sub);font-size:14px;cursor:pointer}
+#isdrop.hot{border-color:var(--brand);color:var(--brand)}
+#isq{display:flex;gap:14px;align-items:center;margin:14px 0 4px}
+#isq img{max-height:120px;max-width:160px;border-radius:8px;border:1px solid var(--line)}
+#isverdict{font-weight:700;font-size:15px}
+#isres{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:12px}
+.isc{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);font-size:12.5px}
+.isc img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:contain;background:#fff;border-radius:0;border:0}
+.isc .b{padding:8px 10px;display:flex;flex-direction:column;gap:3px}
+.isc .n{font-weight:600;word-break:break-word;line-height:1.3}
+.isc .m{font-weight:800}
+.isc .st{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;color:#fff;width:max-content}
+.st-live{background:#1A7F37}.st-paused{background:#9a6700}.st-off{background:#6e7781}
+</style>
+<div id="ispanel">
+<div id="isdrop">&#128269; <b>Paste</b> (Ctrl+V) a screenshot of any ad, <b>drop</b> an image here, or <b>click</b> to choose a file &mdash; it checks every ad this account has ever run</div>
+<input id="isfile" type="file" accept="image/*" hidden>
+<div id="isq" hidden><img alt=""><div><div id="isverdict"></div><div class="mut" style="font-size:12.5px">Match % = how visually alike. 90%+ = same creative; 75&ndash;90% = likely a variant or edit.</div></div></div>
+<div id="isres"></div>
+</div>
+<script>
+(function(){
+var IDX=__IDX__;
+var panel=document.getElementById('ispanel'),drop=document.getElementById('isdrop'),file=document.getElementById('isfile');
+var qw=document.getElementById('isq'),qimg=qw.querySelector('img'),verdict=document.getElementById('isverdict'),res=document.getElementById('isres');
+var btn=document.getElementById('isbtn');
+function norm(v){var n=v.length,m=0,i;for(i=0;i<n;i++)m+=v[i];m/=n;var s=0;for(i=0;i<n;i++){v[i]-=m;s+=v[i]*v[i]}s=Math.sqrt(s)||1;for(i=0;i<n;i++)v[i]/=s;return v}
+var vecs=IDX.map(function(r){var b=atob(r[8]),v=new Float32Array(b.length);for(var i=0;i<b.length;i++)v[i]=b.charCodeAt(i);return norm(v)});
+function fp(img){var c=document.createElement('canvas');c.width=c.height=96;var x=c.getContext('2d');x.imageSmoothingQuality='high';x.drawImage(img,0,0,96,96);
+  var d=document.createElement('canvas');d.width=d.height=12;var y=d.getContext('2d');y.imageSmoothingQuality='high';y.drawImage(c,0,0,12,12);
+  var p=y.getImageData(0,0,12,12).data,v=new Float32Array(432),k=0;for(var i=0;i<p.length;i+=4){v[k++]=p[i];v[k++]=p[i+1];v[k++]=p[i+2]}return norm(v)}
+function money(n){return '$'+Math.round(n).toLocaleString('en-AU')}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function run(blob){
+  var url=URL.createObjectURL(blob),img=new Image();
+  img.onload=function(){
+    var q=fp(img);
+    var sc=vecs.map(function(v,i){var s=0;for(var j=0;j<v.length;j++)s+=v[j]*q[j];return[s,i]}).sort(function(a,b){return b[0]-a[0]});
+    var groups=[],byH={};
+    sc.forEach(function(p){var r=IDX[p[1]],g=byH[r[8]];if(!g){if(groups.length>=8)return;g=byH[r[8]]={s:p[0],ads:[]};groups.push(g)}g.ads.push(r)});
+    qimg.src=url;qw.hidden=false;
+    var top=groups.length?groups[0].s:0,pct=Math.max(0,Math.round(top*100));
+    var live=groups.length&&groups[0].ads.some(function(r){return r[2]==='ACTIVE'});
+    verdict.textContent=top>=.9?(live?'✅ RUNNING NOW — best match '+pct+'%':'⏸ Ran before, not live now — best match '+pct+'%'):(top>=.75?'🟡 Similar creative found ('+pct+'%) — check below':'➕ No close match ('+pct+'%) — looks like this has never run');
+    res.innerHTML=groups.map(function(g){
+      var a=g.ads.slice().sort(function(x,y){return y[5]-x[5]}),r=a[0],sp=0,rv=0,pc=0,anyLive=false;
+      a.forEach(function(x){sp+=x[5];rv+=x[6];pc+=x[7];if(x[2]==='ACTIVE')anyLive=true});
+      var st=anyLive?'<span class="st st-live">LIVE</span>':(/DELETED|ARCHIVED/.test(r[2])?'<span class="st st-off">'+esc(r[2])+'</span>':'<span class="st st-paused">PAUSED</span>');
+      return '<div class="isc"><img class="th" src="thumbs/'+r[0]+'.jpg" data-full="'+(r[9]?'big/':'thumbs/')+r[0]+'.jpg" alt=""><div class="b"><span class="m">'+Math.max(0,Math.round(g.s*100))+'% match</span>'+st+
+        '<span class="n">'+esc(r[1])+'</span><span class="mut">'+esc(r[4])+'</span><span class="mut">Built '+r[3].split('-').reverse().join('/')+(a.length>1?' · '+a.length+' ads use this image':'')+'</span>'+
+        '<span>Lifetime: '+money(sp)+' spend · '+(sp?(rv/sp).toFixed(2)+'x':'—')+' ROAS · '+pc+' purch.</span></div></div>'}).join('');
+    [].forEach.call(res.querySelectorAll('img[data-full]'),function(im){var f=im.getAttribute('data-full'),t=new Image();t.onload=function(){im.src=f};t.src=f});
+  };
+  img.src=url;
+}
+function show(){panel.classList.add('on');panel.scrollIntoView({behavior:'smooth',block:'start'})}
+btn.addEventListener('click',function(){if(panel.classList.contains('on'))panel.classList.remove('on');else show()});
+drop.addEventListener('click',function(){file.click()});
+file.addEventListener('change',function(){if(file.files[0])run(file.files[0])});
+drop.addEventListener('dragover',function(e){e.preventDefault();drop.classList.add('hot')});
+drop.addEventListener('dragleave',function(){drop.classList.remove('hot')});
+drop.addEventListener('drop',function(e){e.preventDefault();drop.classList.remove('hot');var f=e.dataTransfer.files[0];if(f&&/^image/.test(f.type)){show();run(f)}});
+document.addEventListener('paste',function(e){var it=[].slice.call((e.clipboardData||{}).items||[]).filter(function(i){return /^image/.test(i.type)})[0];
+  if(!it)return;e.preventDefault();show();run(it.getAsFile())});
+})();
+</script>""".replace("__IDX__", IMG_INDEX)
+
+
 ZOOM_HTML = r"""<style>
 img.th{cursor:zoom-in}
 #zpop{position:fixed;z-index:200;pointer-events:none;display:none;width:min(440px,60vw);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.28);padding:6px}
@@ -1135,6 +1243,7 @@ html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"
 <nav class="tabs">{tab_btns}</nav>
 
 <div class="fbar">
+<button id="isbtn" type="button" title="Find an ad by pasting a screenshot">&#128269; Find by image</button>
 <input id="fq" type="search" placeholder="Search ads, campaigns, ad sets&hellip;">
 <select id="ft"><option value="">All types</option><option value="image">Image</option><option value="video">Video</option><option value="carousel">Carousel</option></select>
 <select id="fc"><option value="">All campaigns</option>{camp_opts}</select>
@@ -1150,6 +1259,7 @@ html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"
 <div class="kpi"><div class="lbl" id="kl-roas">Blended ROAS (7d)</div><div class="val {'good' if b_roas>=1 else 'bad'}" id="kv-roas">{b_roas:.2f}x</div></div>
 <div class="kpi"><div class="lbl" id="kl-pc">Purchases (7d)</div><div class="val" id="kv-pc">{t_pc}</div></div>
 </div>
+{ISEARCH_HTML}
 {DR_HTML}
 
 {tab_panes}
