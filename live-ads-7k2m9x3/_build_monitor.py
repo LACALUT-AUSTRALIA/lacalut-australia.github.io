@@ -797,6 +797,66 @@ tab_panes = "".join(
     f'<div class="tabpane" data-pane="{tid}"{"" if i == 0 else " hidden"}>{content}</div>'
     for i, (tid, lbl, cnt, content) in enumerate(TABS))
 
+SORT_JS = """<style>
+.tsearch{margin:6px 0 4px;display:flex;justify-content:flex-end}
+.tsearch input{background:#141820;border:1px solid #2a3140;color:#dfe6f0;border-radius:6px;padding:5px 9px;font-size:12px;width:230px;outline:none}
+.tsearch input:focus{border-color:#3b82f6}
+table thead th{cursor:pointer;user-select:none}
+table thead th.sorted-a:after{content:" \\25B2";font-size:9px;color:#3b82f6}
+table thead th.sorted-d:after{content:" \\25BC";font-size:9px;color:#3b82f6}
+</style>
+<script>
+(function(){
+function val(td){
+  if(!td)return null;
+  var t=(td.textContent||'').trim();
+  if(t===''||t==='\\u2014')return null;
+  var n=parseFloat(t.replace(/[$,x%]/g,''));
+  return isNaN(n)?t.toLowerCase():n;
+}
+document.querySelectorAll('.tablewrap table').forEach(function(tb){
+  var tbody=tb.querySelector('tbody');if(!tbody)return;
+  var wrap=tb.closest('.tablewrap');
+  if(tbody.rows.length>5){
+    var box=document.createElement('div');box.className='tsearch';
+    var inp=document.createElement('input');inp.type='search';inp.placeholder='\\uD83D\\uDD0D Filter this table\\u2026';
+    box.appendChild(inp);wrap.parentNode.insertBefore(box,wrap);
+    inp.addEventListener('input',function(){
+      var s=inp.value.toLowerCase().trim();
+      [].slice.call(tbody.rows).forEach(function(r){
+        r.style.display=(!s||r.textContent.toLowerCase().indexOf(s)>-1)?'':'none';
+      });
+    });
+  }
+  var ths=[].slice.call(tb.querySelectorAll('thead th'));
+  ths.forEach(function(th,i){
+    th.title='Click to sort';
+    th.addEventListener('click',function(){
+      var numeric=false;
+      for(var r=0;r<tbody.rows.length;r++){var v=val(tbody.rows[r].cells[i]);if(v!==null){numeric=(typeof v==='number');break;}}
+      var dir;
+      if(th.classList.contains('sorted-a'))dir=-1;
+      else if(th.classList.contains('sorted-d'))dir=1;
+      else dir=numeric?-1:1;
+      ths.forEach(function(x){x.classList.remove('sorted-a','sorted-d')});
+      th.classList.add(dir===1?'sorted-a':'sorted-d');
+      var rows=[].slice.call(tbody.rows);
+      rows.sort(function(a,b){
+        var va=val(a.cells[i]),vb=val(b.cells[i]);
+        if(va===null&&vb===null)return 0;
+        if(va===null)return 1;
+        if(vb===null)return -1;
+        if(typeof va==='number'&&typeof vb==='number')return (va-vb)*dir;
+        va=String(va);vb=String(vb);
+        return va<vb?-dir:(va>vb?dir:0);
+      });
+      rows.forEach(function(r){tbody.appendChild(r)});
+    });
+  });
+});
+})();
+</script>"""
+
 html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
@@ -870,6 +930,7 @@ wf.forEach(function(b){{b.addEventListener('click',function(){{
 }})}});
 }})();
 </script>
+{SORT_JS}
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
 </div>"""
 
