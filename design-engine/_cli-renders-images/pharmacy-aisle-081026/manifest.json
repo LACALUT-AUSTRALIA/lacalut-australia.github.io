@@ -1,24 +1,24 @@
 [
   {
-    "id": "g1791384487955",
-    "filename": "pharmacy-aisle-pov-c1.png",
-    "sku": "aktiv",
-    "mode": "social",
-    "ptype": "toothpaste",
-    "label": "AKTIV Pharmacy Aisle POV C1",
-    "brief": "POV shelf pick — aisle full of promises, this one off a German pharmacy shelf",
-    "angle": "German pharmacy provenance vs aisle overwhelm",
-    "prompt": "Candid phone photo, POV from a shopper's eyes in an Australian pharmacy oral-care aisle. Shelves stacked floor to ceiling with GENERIC unbranded toothpaste boxes in assorted colours — all slightly out of focus, NO readable brand names or claims anywhere on them. A woman's hand lifts a single LACALUT aktiv tube and box off the shelf toward camera — the ONLY crisp in-focus element, label square to camera, true real-world size, matching the aisle's cool fluorescent lighting with a natural contact shadow where it left the shelf. Render the LACALUT product EXACTLY as the attached reference packshot — identical tube/box shape, white cap, label layout, colours and wording; never restyle or redraw it. Realistic pharmacy lighting, slight phone-camera grain and imperfection — an everyday snapshot, NOT a polished ad. No sparkles, glows, floating objects, buttons or badges. TEXT as overlay layers (large, two lines, bottom third, white on a soft dark feathered scrim — no hard box): headline \"The toothpaste aisle is bloody full of promises.\" sub-line \"This one comes off a German pharmacy shelf. Since 1925.\" Large enough to read on a small mobile feed. No other text anywhere. PACK FINE-PRINT LOCK (mandatory): keep the pack's small printed body text in its ORIGINAL GERMAN, at true pack scale and softly out of focus so none of it is legible — only LACALUT and the variant name read clearly; never render readable English health or treatment claims anywhere. 4:5 aspect ratio, crisp legible overlay typography, no spelling errors on any text."
-  },
-  {
     "id": "g1791384591968",
     "filename": "pharmacy-aisle-pov-c1v2.png",
     "sku": "aktiv",
     "mode": "social",
     "ptype": "toothpaste",
     "label": "AKTIV Pharmacy Aisle POV C1 v2 (German pack + de-branded shelves)",
-    "brief": "POV shelf pick — aisle full of promises, this one off a German pharmacy shelf",
+    "brief": "POV shelf pick \u2014 aisle full of promises, this one off a German pharmacy shelf",
     "angle": "German pharmacy provenance vs aisle overwhelm",
-    "prompt": "TWO fixes. (1) Replace the LACALUT aktiv tube in the hand with the EXACT real product from the reference photo — the real GERMAN pack: same tube shape, white cap, label layout and colours, but with the pack's small printed body text in its ORIGINAL GERMAN, rendered at true pack scale and softly out of focus so NONE of it is legible — remove every readable English claim line currently printed on the tube; only LACALUT and 'aktiv' read clearly. Keep the tube in the exact same position, angle, scale and grip. (2) Make every OTHER product on the shelves GENERIC and unbranded: remove or blur all readable brand names and logos (including any Colgate or lookalike wordmarks) so no competitor brand or claim is readable anywhere — keep the boxes' colours, shapes and out-of-focus look so the aisle still reads as a full toothpaste aisle. Keep the bottom overlay text lines exactly as they are"
+    "prompt": "TWO fixes. (1) Replace the LACALUT aktiv tube in the hand with the EXACT real product from the reference photo \u2014 the real GERMAN pack: same tube shape, white cap, label layout and colours, but with the pack's small printed body text in its ORIGINAL GERMAN, rendered at true pack scale and softly out of focus so NONE of it is legible \u2014 remove every readable English claim line currently printed on the tube; only LACALUT and 'aktiv' read clearly. Keep the tube in the exact same position, angle, scale and grip. (2) Make every OTHER product on the shelves GENERIC and unbranded: remove or blur all readable brand names and logos (including any Colgate or lookalike wordmarks) so no competitor brand or claim is readable anywhere \u2014 keep the boxes' colours, shapes and out-of-focus look so the aisle still reads as a full toothpaste aisle. Keep the bottom overlay text lines exactly as they are"
+  },
+  {
+    "id": "g1791386306441",
+    "filename": "pharmacy-aisle-pov-c2.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV Pharmacy Aisle POV C2 (box hero, melted shelves, overlay text + CTA)",
+    "brief": "POV shelf pick - aisle full of promises, this one off a German pharmacy shelf",
+    "angle": "German pharmacy provenance vs aisle overwhelm",
+    "prompt": "editImage box swap + background melt, then deterministic PIL pass: top-band blur, bottom scrim, headline/sub overlay, red CTA pill 'Shop the German one'"
   }
 ]
