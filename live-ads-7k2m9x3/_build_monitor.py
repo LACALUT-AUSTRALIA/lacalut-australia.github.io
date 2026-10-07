@@ -21,6 +21,7 @@ ins90 = load("insights90.json", [])
 ins7 = load("insights7.json", [])
 thumbs = load("thumbs.json", {})
 compliance = load("compliance.json", {})
+daily = load("insights_daily.json", {})
 
 def imap(rows):
     m = {}
@@ -179,7 +180,7 @@ def verdict(a):
 
 def row_attrs(a):
     key = esc((a["name"] + " " + a["campaign"] + " " + a["adset"]).lower())
-    return f'data-s="{key}" data-t="{ad_type(a)}" data-stage="{stage_of(a)}"'
+    return f'data-s="{key}" data-t="{ad_type(a)}" data-stage="{stage_of(a)}" data-aid="{a["id"]}"'
 
 def adcell(a):
     th = a["_thumb"]
@@ -196,17 +197,17 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="c">{verdict(a)}</td>
 <td class="c sub">{a['_built']}<span class="mut"> · {days}</span></td>
 <td class="c">{comp_badge(a)}</td>
-<td class="num">{money(a['_s90'])}</td>
-<td class="num">{money(a['_rev'])}</td>
-<td class="num">{roas_badge(a['_roas7'])}</td>
-<td class="num">{roas_badge(a['_roas'])}</td>
-<td class="num">{a['_pc'] or '<span class="mut">0</span>'}</td>
-<td class="num">{money(a['_cac'], dash_zero=False)}</td>
+<td class="num d-sp">{money(a['_s90'])}</td>
+<td class="num d-rev">{money(a['_rev'])}</td>
+<td class="num d-r7">{roas_badge(a['_roas7'])}</td>
+<td class="num d-r90">{roas_badge(a['_roas'])}</td>
+<td class="num d-pc">{a['_pc'] or '<span class="mut">0</span>'}</td>
+<td class="num d-cac">{money(a['_cac'], dash_zero=False)}</td>
 <td class="num">{numf(a['_freq'], '.1f')}</td>
 <td class="num">{numf(a['_ctr'], '.2f', '%')}</td>
 </tr>"""
 
-HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th>Spend 90d</th><th>Rev 90d</th><th>ROAS 7d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th><th>Freq</th><th>CTR</th></tr>"""
+HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th class="h-sp">Spend 90d</th><th class="h-rev">Rev 90d</th><th class="h-r7">ROAS 7d</th><th class="h-r90">ROAS 90d</th><th class="h-pc">Purch.</th><th class="h-cac">CAC</th><th>Freq</th><th>CTR</th></tr>"""
 
 def table(rows, status_col=False):
     return f"""<div class="tablewrap"><table>
@@ -799,11 +800,11 @@ tab_panes = "".join(
 
 SORT_JS = """<style>
 .tsearch{margin:6px 0 4px;display:flex;justify-content:flex-end}
-.tsearch input{background:#141820;border:1px solid #2a3140;color:#dfe6f0;border-radius:6px;padding:5px 9px;font-size:12px;width:230px;outline:none}
-.tsearch input:focus{border-color:#3b82f6}
+.tsearch input{background:#fff;border:1px solid #e6e8ec;color:#14181f;border-radius:6px;padding:5px 9px;font-size:12px;width:230px;outline:none}
+.tsearch input:focus{border-color:#1c7ed6}
 table thead th{cursor:pointer;user-select:none}
-table thead th.sorted-a:after{content:" \\25B2";font-size:9px;color:#3b82f6}
-table thead th.sorted-d:after{content:" \\25BC";font-size:9px;color:#3b82f6}
+table thead th.sorted-a:after{content:" \\25B2";font-size:9px;color:#1c7ed6}
+table thead th.sorted-d:after{content:" \\25BC";font-size:9px;color:#1c7ed6}
 </style>
 <script>
 (function(){
@@ -857,6 +858,92 @@ document.querySelectorAll('.tablewrap table').forEach(function(tb){
 })();
 </script>"""
 
+DR_HTML = """<div class="drbar">
+<span class="drlbl">&#128197; Date range</span>
+<input type="date" id="dr-s"> <span class="drdash">&ndash;</span> <input type="date" id="dr-e">
+<span class="drsets">
+<button class="drp" data-days="1">Today</button><button class="drp" data-days="2">Yesterday</button><button class="drp" data-days="7">7d</button><button class="drp" data-days="14">14d</button><button class="drp" data-days="30">30d</button><button class="drp" data-days="90">90d</button>
+</span>
+<button id="dr-go">Apply</button><button id="dr-x" hidden>&#10005; Clear</button>
+<span id="dr-note"></span>
+</div>
+<style>
+.drbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid #e6e8ec;border-radius:10px;padding:10px 14px;margin:12px 0}
+.drbar .drlbl{font-weight:700;color:#0B5394;font-size:13px}
+.drbar input[type=date]{border:1px solid #e6e8ec;border-radius:6px;padding:4px 7px;font-size:12px;color:#14181f;background:#fff}
+.drbar .drdash{color:#6b7280}
+.drbar button{border:1px solid #e6e8ec;background:#f6f7f9;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:#14181f}
+.drbar .drp[aria-pressed=true]{background:#e3edf8;border-color:#1c7ed6;color:#0B5394;font-weight:700}
+.drbar #dr-go{background:#0B5394;color:#fff;border-color:#0B5394;font-weight:700}
+.drbar #dr-x{background:#fbe4e8;border-color:#a4122b;color:#a4122b;font-weight:700}
+#dr-note{font-size:12px;color:#0B5394;font-weight:600}
+.dr-hide{display:none!important}
+</style>"""
+
+daily_json = json.dumps(daily, separators=(",", ":"))
+
+DR_JS = '<script id="dd" type="application/json">' + daily_json + '</script>' + """
+<script>
+(function(){
+var DAILY=JSON.parse(document.getElementById('dd').textContent||'{}');
+var S=document.getElementById('dr-s'),E=document.getElementById('dr-e'),GO=document.getElementById('dr-go'),X=document.getElementById('dr-x'),NOTE=document.getElementById('dr-note');
+var CELLS=['d-sp','d-rev','d-r7','d-r90','d-pc','d-cac'];
+var orig=new Map(),origHead=new Map(),origKpi=null,active=false;
+function iso(d){return d.toISOString().slice(0,10)}
+var today=new Date();today.setHours(12,0,0,0);
+S.max=E.max=iso(today);
+function money(v){if(!v)return '<span class="mut">\\u2014</span>';return '$'+(v>=10?Math.round(v).toLocaleString('en-AU'):v.toFixed(2))}
+function pill(r){if(r===null)return '<span class="pill pill-none">\\u2014</span>';var c=r>=1?'pill-good':(r>=0.7?'pill-mid':'pill-bad');return '<span class="pill '+c+'">'+r.toFixed(2)+'x</span>'}
+function sums(aid,s,e){var rows=DAILY[aid]||[],sp=0,pc=0,rv=0;for(var i=0;i<rows.length;i++){var d=rows[i][0];if(d>=s&&d<=e){sp+=rows[i][1];pc+=rows[i][2];rv+=rows[i][3]}}return [sp,pc,rv]}
+function label(s,e){function f(x){return x.slice(8,10)+'/'+x.slice(5,7)}return s===e?f(s):f(s)+'\\u2013'+f(e)}
+function apply(){
+  var s=S.value,e=E.value;if(!s||!e)return;if(s>e){var t=s;s=e;e=t;S.value=s;E.value=e}
+  var lb=label(s,e);active=true;X.hidden=false;
+  document.querySelectorAll('tr[data-aid]').forEach(function(r){
+    if(!r.querySelector('.d-sp'))return;
+    if(!orig.has(r))orig.set(r,CELLS.map(function(c){var td=r.querySelector('.'+c);return td?td.innerHTML:null}));
+    var v=sums(r.getAttribute('data-aid'),s,e),sp=v[0],pc=v[1],rv=v[2];
+    var set=function(c,h){var td=r.querySelector('.'+c);if(td)td.innerHTML=h};
+    set('d-sp',money(sp));set('d-rev',money(rv));
+    set('d-r90',pill(sp>0?rv/sp:null));
+    set('d-pc',pc?String(pc):'<span class="mut">0</span>');
+    set('d-cac',pc?money(sp/pc):'<span class="mut">\\u2014</span>');
+  });
+  document.querySelectorAll('.d-r7,.h-r7').forEach(function(el){el.classList.add('dr-hide')});
+  document.querySelectorAll('.h-sp').forEach(function(h){if(!origHead.has(h))origHead.set(h,h.textContent);h.textContent='Spend '+lb});
+  document.querySelectorAll('.h-rev').forEach(function(h){if(!origHead.has(h))origHead.set(h,h.textContent);h.textContent='Rev '+lb});
+  document.querySelectorAll('.h-r90').forEach(function(h){if(!origHead.has(h))origHead.set(h,h.textContent);h.textContent='ROAS '+lb});
+  var tsp=0,tpc=0,trv=0;Object.keys(DAILY).forEach(function(a){var v=sums(a,s,e);tsp+=v[0];tpc+=v[1];trv+=v[2]});
+  if(!origKpi)origKpi=['sp','rev','roas','pc'].map(function(k){return [document.getElementById('kl-'+k).textContent,document.getElementById('kv-'+k).innerHTML]});
+  document.getElementById('kl-sp').textContent='Spend ('+lb+')';document.getElementById('kv-sp').textContent='$'+Math.round(tsp).toLocaleString('en-AU');
+  document.getElementById('kl-rev').textContent='Revenue ('+lb+')';document.getElementById('kv-rev').textContent='$'+Math.round(trv).toLocaleString('en-AU');
+  var br=tsp>0?trv/tsp:0;var kv=document.getElementById('kv-roas');
+  document.getElementById('kl-roas').textContent='Blended ROAS ('+lb+')';kv.textContent=br.toFixed(2)+'x';kv.classList.toggle('good',br>=1);kv.classList.toggle('bad',br<1);
+  document.getElementById('kl-pc').textContent='Purchases ('+lb+')';document.getElementById('kv-pc').textContent=tpc;
+  NOTE.textContent='Showing '+lb+' \\u00b7 tables: Running / Tested / Barely tested / Losers';
+}
+function clearRange(){
+  if(!active)return;active=false;X.hidden=true;NOTE.textContent='';
+  orig.forEach(function(html,r){CELLS.forEach(function(c,i){var td=r.querySelector('.'+c);if(td&&html[i]!==null)td.innerHTML=html[i]})});
+  origHead.forEach(function(t,h){h.textContent=t});
+  document.querySelectorAll('.d-r7,.h-r7').forEach(function(el){el.classList.remove('dr-hide')});
+  if(origKpi){['sp','rev','roas','pc'].forEach(function(k,i){document.getElementById('kl-'+k).textContent=origKpi[i][0];document.getElementById('kv-'+k).innerHTML=origKpi[i][1]});
+    var kv=document.getElementById('kv-roas');}
+  document.querySelectorAll('.drp').forEach(function(b){b.setAttribute('aria-pressed','false')});
+  S.value='';E.value='';
+}
+document.querySelectorAll('.drp').forEach(function(b){b.addEventListener('click',function(){
+  var n=+b.getAttribute('data-days');var e=new Date(today),s=new Date(today);
+  if(n===2){s.setDate(s.getDate()-1);e.setDate(e.getDate()-1)}else{s.setDate(s.getDate()-(n-1))}
+  S.value=iso(s);E.value=iso(e);
+  document.querySelectorAll('.drp').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+  apply();
+})});
+GO.addEventListener('click',apply);X.addEventListener('click',clearRange);
+[S,E].forEach(function(el){el.addEventListener('change',function(){document.querySelectorAll('.drp').forEach(function(x){x.setAttribute('aria-pressed','false')})})});
+})();
+</script>"""
+
 html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
@@ -877,11 +964,12 @@ html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><li
 <div class="cards">
 <div class="kpi"><div class="lbl">Running (active)</div><div class="val">{len(running)}</div></div>
 <div class="kpi"><div class="lbl">Built, not launched</div><div class="val {'bad' if stuck else 'good'}">{len(stuck)}</div></div>
-<div class="kpi"><div class="lbl">Spend (7d)</div><div class="val">${t_sp:,.0f}</div></div>
-<div class="kpi"><div class="lbl">Revenue (7d)</div><div class="val">${t_rev:,.0f}</div></div>
-<div class="kpi"><div class="lbl">Blended ROAS (7d)</div><div class="val {'good' if b_roas>=1 else 'bad'}">{b_roas:.2f}x</div></div>
-<div class="kpi"><div class="lbl">Purchases (7d)</div><div class="val">{t_pc}</div></div>
+<div class="kpi"><div class="lbl" id="kl-sp">Spend (7d)</div><div class="val" id="kv-sp">${t_sp:,.0f}</div></div>
+<div class="kpi"><div class="lbl" id="kl-rev">Revenue (7d)</div><div class="val" id="kv-rev">${t_rev:,.0f}</div></div>
+<div class="kpi"><div class="lbl" id="kl-roas">Blended ROAS (7d)</div><div class="val {'good' if b_roas>=1 else 'bad'}" id="kv-roas">{b_roas:.2f}x</div></div>
+<div class="kpi"><div class="lbl" id="kl-pc">Purchases (7d)</div><div class="val" id="kv-pc">{t_pc}</div></div>
 </div>
+{DR_HTML}
 
 {tab_panes}
 
@@ -931,6 +1019,7 @@ wf.forEach(function(b){{b.addEventListener('click',function(){{
 }})();
 </script>
 {SORT_JS}
+{DR_JS}
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
 </div>"""
 

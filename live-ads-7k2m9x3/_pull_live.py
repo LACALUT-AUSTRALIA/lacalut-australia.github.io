@@ -89,6 +89,26 @@ def pull_insights(preset):
         })
     return out
 
+def pull_daily():
+    # Per-day spend/purchases/revenue per ad (last 90d) for the dashboard's
+    # custom date-range picker. {ad_id: [[YYYY-MM-DD, spend, purch, rev], ...]}
+    fields = "ad_id,spend,actions,action_values"
+    url = (f"{GRAPH}/{ACCT}/insights?level=ad&date_preset=last_90d&time_increment=1"
+           f"&limit=500&fields={fields}&access_token={urllib.parse.quote(TOK)}")
+    out = {}
+    n = 0
+    for r in get_all(url):
+        sp = float(r.get("spend") or 0)
+        pc = int(pick(r.get("actions"), PURCH))
+        rv = pick(r.get("action_values"), PURCH)
+        if sp == 0 and pc == 0:
+            continue
+        out.setdefault(r.get("ad_id"), []).append(
+            [r.get("date_start"), round(sp, 2), pc, round(rv, 2)])
+        n += 1
+    json.dump(out, open(os.path.join(SP, "insights_daily.json"), "w", encoding="utf-8"))
+    print(f"  wrote insights_daily.json: {n} day-rows across {len(out)} ads")
+
 def pull_thumbs():
     # Merge each ad's creative thumbnail URL into thumbs.json (preserve existing so
     # an ad whose URL has since expired keeps its previously-downloaded local copy).
@@ -147,6 +167,7 @@ if __name__ == "__main__":
     write("ads_all.json", pull_ads())
     write("insights90.json", pull_insights("last_90d"))
     write("insights7.json", pull_insights("last_7d"))
+    pull_daily()
     pull_thumbs()
     pull_texts()
     import _pull_meta_monthly
