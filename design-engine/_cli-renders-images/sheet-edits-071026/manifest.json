@@ -88,5 +88,15 @@
     "label": "FLORA C1 V3 \u2014 Mints Washbasin BIG TYPE (deterministic text fix)",
     "brief": "c1v2 with baked text erased (cv2 inpaint) and re-set as overlay at before-version size: headline cap 52px 4 lines, red block cap 48px. No AI render.",
     "angle": "sheet-edits-071026"
+  },
+  {
+    "id": "g1791335311866_10",
+    "filename": "c5v3-office-dropin.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA C5 V3 \u2014 Desk Drop-In ONE SCENE (deterministic re-frame)",
+    "brief": "c5v2 left scene only, full-frame; desk tube removed via blouse patch (no AI); band rebuilt with big type + real packshot plate. $0 renders.",
+    "angle": "sheet-edits-071026"
   }
 ]
