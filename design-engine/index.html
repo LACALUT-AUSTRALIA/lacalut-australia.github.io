@@ -2488,7 +2488,8 @@ function markCardFailed(id, msg){ const el=$(id); if(!el) return;
 async function applyEdit(){
   const instruction=$('editInstruction').value.trim(); if(!instruction){ editDlg.close(); return; }
   const src=_editSrc; if(!src){ editDlg.close(); return; }
-  editDraftClear();   // edit fired — the draft has done its job
+  // NOTE (Quan 08/10/2026): do NOT clear the draft on fire — the prompt stays in the box for
+  // tweak-and-re-run until ✕ Clear is pressed. Losing it after a render was the original complaint.
   const refs=_editRefs.slice();
   const firePtype=curPtype;   // tag edit outputs with the active product type at fire time
   const editLbl = _editSrcLabel ? (_editSrcLabel.replace(/ · edited$/,'')+' · edited') : 'edited';   // KEEP the source format keyword so Send-to-Facy fires the right copy layer
