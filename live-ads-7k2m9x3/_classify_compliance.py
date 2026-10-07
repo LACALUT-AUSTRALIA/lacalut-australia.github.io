@@ -21,6 +21,19 @@ def norm(s):
 cleared = {norm(n) for n in cleared_raw}
 cleared |= {re.sub(r"\(.*?\)", "", c).strip() for c in list(cleared)}
 
+# MANUAL BREACH LIST (flagged_names.json) — human review beats the automated copy scan.
+# Each entry {"match": "<normalised name substring>", "why": "..."} flags every ad whose
+# normalised name contains the substring, EVEN IF the name claims "(compliant)" or the
+# copy scan found nothing (image/audio-level breaches the text scan can't see).
+_fp = os.path.join(SP, "flagged_names.json")
+flagged_manual = json.load(open(_fp, encoding="utf-8")) if os.path.exists(_fp) else []
+
+def manual_flag(nm):
+    for f in flagged_manual:
+        if f["match"] in nm:
+            return f["why"]
+    return None
+
 FLAG_PATTERNS = [
     (r"gum disease|gingivit|periodont|tooth loss|disease", "disease claim"),
     (r"bleed", "bleeding gums = therapeutic"),
@@ -37,6 +50,12 @@ out = {}
 counts = {"cleared": 0, "flagged": 0, "unscreened": 0}
 for a in ads:
     nm = norm(a["name"])
+    # manual human-review flags FIRST — they override the cleared list and name tags
+    mf = manual_flag(nm)
+    if mf:
+        out[a["id"]] = {"c": "flagged", "why": mf}
+        counts["flagged"] += 1
+        continue
     # explicit compliant/cosmetic rebuilds are cleared by name
     if nm in cleared or re.sub(r"\(.*?\)", "", nm).strip() in cleared:
         out[a["id"]] = {"c": "cleared", "why": "approved winners list 03/10"}

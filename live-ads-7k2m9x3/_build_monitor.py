@@ -61,6 +61,13 @@ for a in ads:
     a["_freq"] = (imp / reach) if reach else None
     a["_ctr"] = r90.get("ctr")
     a["_cpm"] = r90.get("cpm")
+    a["_imp"] = imp
+    # clicks: native field when the pull has it, else derive from spend/cpc
+    cl = r90.get("clicks")
+    if cl is None:
+        cpc = float(r90.get("cpc") or 0)
+        cl = (a["_s90"] / cpc) if cpc else 0
+    a["_clicks"] = int(cl or 0)
     dt = parse_dt(a.get("created_time", ""))
     a["_age"] = (now - dt.astimezone(timezone.utc)).days if dt else None
     a["_built"] = dt.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m") if dt else "?"
@@ -74,6 +81,11 @@ for a in ads:
         t = thumbs.get(aid, {})
         a["_thumb"] = t.get("thumb") or t.get("img") or ""
 
+# Lifetime spend per ad (account till date) — Aditya 07/10: an ad only counts as
+# "not launched" if it has NEVER spent in the account's entire history, not just 90d.
+insmax = load("insights_max.json", [])
+smax_map = {r["ad_id"]: float(r.get("spend") or 0) for r in insmax}
+
 running, stuck, tested, losers, nodeliv = [], [], [], [], []
 for a in ads:
     st = (a.get("effective_status") or "").upper()
@@ -86,6 +98,8 @@ for a in ads:
         losers.append(a)
     elif a["_s90"] > 0:
         tested.append(a)
+    elif smax_map.get(a["id"], 0) > 0:
+        tested.append(a)    # spent at SOME point lifetime → it launched; never "not launched"
     elif recent and a["_s7"] == 0:
         stuck.append(a)
     else:
@@ -171,7 +185,11 @@ def verdict(a):
     delivering = st == "ACTIVE" and a["_s7"] > 0
     if delivering and r7 >= 3:                        v = ("scale", "&#128640; Scale")
     elif delivering and r7 >= 1.5:                    v = ("keep", "&#9989; Keep")
-    elif delivering and a["_s7"] >= 50:               v = ("zombie", "&#129503; Zombie")
+    elif delivering and a["_s7"] >= 50:
+        # Aditya 07/10: Zombie only once the ad has had a fair run — 2+ weeks old.
+        # Younger + underperforming = still in learning → "Testing", not Zombie.
+        if a["_age"] is not None and a["_age"] < 14:  v = ("testing", "&#129514; Testing")
+        else:                                         v = ("zombie", "&#129503; Zombie")
     elif r90 >= 1.5 and a["_s90"] > 0:                v = ("recycle", "&#9851; Recycle")
     elif r90 < 1.5 and a["_s90"] >= 50:               v = ("dead", "&#9904; Dead")
     else:
@@ -207,7 +225,9 @@ def metric_row(a, status_txt="", status_cls=""):
 <td class="num">{numf(a['_ctr'], '.2f', '%')}</td>
 </tr>"""
 
-HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th class="h-sp">Spend 90d</th><th class="h-rev">Rev 90d</th><th class="h-r7">ROAS 7d</th><th class="h-r90">ROAS 90d</th><th class="h-pc">Purch.</th><th class="h-cac">CAC</th><th>Freq</th><th>CTR</th></tr>"""
+# Aditya 07/10: plain metric names — the active window (90d default, or the picked
+# date range) lives in the timeline bar + note, never baked into the column name.
+HEAD = """<tr><th>Ad</th><th>Campaign / ad set</th>{st}<th>Verdict</th><th>Built · age</th><th>Compliant</th><th class="h-sp" title="Default: last 90 days — pick a range in the Date range bar to change the window">Spend</th><th class="h-rev" title="Default: last 90 days — pick a range in the Date range bar to change the window">Revenue</th><th class="h-r7" title="Always the last 7 days — hidden while a custom range is active">ROAS 7d</th><th class="h-r90" title="Default: last 90 days — pick a range in the Date range bar to change the window">ROAS</th><th class="h-pc">Purch.</th><th class="h-cac">CAC</th><th>Freq</th><th>CTR</th></tr>"""
 
 def table(rows, status_col=False):
     return f"""<div class="tablewrap"><table>
@@ -231,7 +251,8 @@ for a in stuck:
     img = f'<img class="th" src="{esc(th)}" loading="lazy" alt="">' if th else '<span class="th th-empty"></span>'
     rows_stuck.append(f"""<tr {row_attrs(a)}>
 <td class="adtd"><div class="adc">{img}<span class="adname">{esc(a['name'])}</span></div></td>
-<td class="c camp"><div>{esc(a['campaign'])}</div><div class="mut">{esc(a['adset'])}</div></td>
+<td class="c camp"><div>{esc(a['campaign'])}</div></td>
+<td class="c camp"><div>{esc(a['adset'])}</div></td>
 <td class="c sub">{esc(a['effective_status'])}</td>
 <td class="c sub">built {age}</td>
 </tr>""")
@@ -344,14 +365,23 @@ winners_section = f'''
 # ── ALL-TIME HALL OF FAME — best creatives EVER by lifetime ROAS (Quan 07/10) ──
 # Compliance is deliberately NOT filtered here: the point is to see what actually
 # converts so we build more of the same (a breach ad's ANGLE gets rebuilt compliant).
-insmax = load("insights_max.json", [])
 ads_by_id = {a["id"]: a for a in ads}
 HOF_SPEND_MIN, HOF_PURCH_MIN, HOF_TOP = 200.0, 5, 30
+# Aditya 07/10: the same creative can live under several ad names ("VID - Funky Music"
+# vs "Herbal | Video | Funky Music | Rebuilt winner …") — exact-name dedupe missed them.
+# Any name containing a group phrase collapses to one entry (best ROAS instance kept).
+HOF_DUP_GROUPS = ["funky music"]
+def hof_key(nm):
+    n = (nm or "").strip().lower()
+    for g in HOF_DUP_GROUPS:
+        if g in n:
+            return g
+    return n
 _hof_seen = {}
 for r in insmax:
     if r["spend"] < HOF_SPEND_MIN or r["purchase_conversions"] < HOF_PURCH_MIN:
         continue
-    key = (r.get("ad_name") or r["ad_id"]).strip().lower()
+    key = hof_key(r.get("ad_name") or r["ad_id"])
     if key not in _hof_seen or r["roas"] > _hof_seen[key]["roas"]:
         _hof_seen[key] = r
 hof = sorted(_hof_seen.values(), key=lambda x: x["roas"], reverse=True)[:HOF_TOP]
@@ -444,28 +474,41 @@ for a in ads:
     if (a.get("effective_status") or "").upper() in ARCHIVED:
         continue
     c = a["campaign"] or "(no campaign)"
-    d = camp_roll.setdefault(c, {"sp": 0.0, "rev": 0.0, "pc": 0, "n": 0, "live": 0})
+    d = camp_roll.setdefault(c, {"sp": 0.0, "rev": 0.0, "pc": 0, "n": 0, "live": 0, "imp": 0.0, "cl": 0})
     d["sp"] += a["_s90"]; d["rev"] += a["_rev"]; d["pc"] += a["_pc"]; d["n"] += 1
+    d["imp"] += a["_imp"]; d["cl"] += a["_clicks"]
     if (a.get("effective_status") or "").upper() == "ACTIVE":
         d["live"] += 1
 camp_roll_rows = sorted(camp_roll.items(), key=lambda kv: kv[1]["sp"], reverse=True)
 
 def camp_roll_row(c, d):
-    ro = (d["rev"] / d["sp"]) if d["sp"] else None
-    cac = (d["sp"] / d["pc"]) if d["pc"] else None
+    # Aditya 07/10: full metric set per campaign — Spend, CPM, CPC, Purchases, CPP, CVR%, AOV, ROAS.
+    # Each metric cell is classed (cr-*) + the row carries data-camp so the date-range
+    # picker recomputes every column for the chosen window from the per-day data.
+    ro  = (d["rev"] / d["sp"]) if d["sp"] else None
+    cpp = (d["sp"] / d["pc"]) if d["pc"] else None
+    cpm = (d["sp"] / d["imp"] * 1000) if d["imp"] else None
+    cpc = (d["sp"] / d["cl"]) if d["cl"] else None
+    cvr = (d["pc"] / d["cl"] * 100) if d["cl"] else None
+    aov = (d["rev"] / d["pc"]) if d["pc"] else None
     pc_cell = str(d["pc"]) if d["pc"] else '<span class="mut">0</span>'
-    return (f'<tr><td class="c camp"><div>{esc(c)}</div><div class="mut">{d["live"]} live &middot; {d["n"]} ads</div></td>'
-            f'<td class="num">{money(d["sp"])}</td><td class="num">{money(d["rev"])}</td>'
-            f'<td class="num">{roas_badge(ro)}</td>'
-            f'<td class="num">{pc_cell}</td>'
-            f'<td class="num">{money(cac, dash_zero=False)}</td></tr>')
+    return (f'<tr data-camp="{esc(c.lower())}"><td class="c camp"><div>{esc(c)}</div><div class="mut">{d["live"]} live &middot; {d["n"]} ads</div></td>'
+            f'<td class="num cr-sp">{money(d["sp"])}</td>'
+            f'<td class="num cr-cpm">{money(cpm, dash_zero=False)}</td>'
+            f'<td class="num cr-cpc">{money(cpc, dash_zero=False)}</td>'
+            f'<td class="num cr-pc">{pc_cell}</td>'
+            f'<td class="num cr-cpp">{money(cpp, dash_zero=False)}</td>'
+            f'<td class="num cr-cvr">{numf(cvr, ".2f", "%")}</td>'
+            f'<td class="num cr-aov">{money(aov, dash_zero=False)}</td>'
+            f'<td class="num cr-rev">{money(d["rev"])}</td>'
+            f'<td class="num cr-roas">{roas_badge(ro)}</td></tr>')
 
 campaign_section = (f'''
 <section class="sec">
 <h2>By campaign <span class="count">{len(camp_roll_rows)}</span></h2>
-<p class="note">Account rolled up to campaign level &mdash; spend, revenue, blended ROAS and CPA across all non-archived ads (last 90 days), sorted by spend.</p>
+<p class="note">Account rolled up to campaign level across all non-archived ads, sorted by spend. Default window is the last 90 days &mdash; pick any range in the <b>&#128197; Date range</b> bar above and every column recomputes for that window. CPP = cost per purchase; CVR = purchases &divide; link clicks; AOV = revenue &divide; purchases.</p>
 <div class="tablewrap"><table class="rollup">
-<thead><tr><th>Campaign</th><th>Spend 90d</th><th>Rev 90d</th><th>ROAS 90d</th><th>Purch.</th><th>CAC</th></tr></thead>
+<thead><tr><th>Campaign</th><th>Spend</th><th>CPM</th><th>CPC</th><th>Purchases</th><th>CPP</th><th>CVR%</th><th>AOV</th><th>Revenue</th><th>ROAS</th></tr></thead>
 <tbody>{''.join(camp_roll_row(c, d) for c, d in camp_roll_rows)}</tbody>
 </table></div></section>''' if camp_roll_rows else "")
 
@@ -592,9 +635,9 @@ if rows_stuck:
     stuck_section = f"""
 <section class="sec">
 <h2>Built but not launched <span class="count">{len(stuck)}</span></h2>
-<p class="note">Created in the last {RECENT_DAYS} days, not archived, zero spend in the last 7 days. These are sitting idle.</p>
+<p class="note">Created in the last {RECENT_DAYS} days, not archived, <b>$0 spent in the account's ENTIRE history</b> (lifetime-checked against Meta, not just the last 90 days) and nothing in the last 7 days. These are sitting idle. Any ad that has ever spent a cent is excluded from this list.</p>
 <div class="tablewrap"><table>
-<thead><tr><th>Ad</th><th>Campaign / ad set</th><th>Status</th><th>Built</th></tr></thead>
+<thead><tr><th>Ad</th><th>Campaign</th><th>Ad set</th><th>Status</th><th>Built</th></tr></thead>
 <tbody>{''.join(rows_stuck)}</tbody>
 </table></div></section>"""
 else:
@@ -674,7 +717,7 @@ td.camp .mut{font-size:12px}
 footer{margin-top:40px;color:var(--sub);font-size:12px;text-align:center}
 .vb{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap}
 .v-scale{background:var(--goodbg);color:var(--good)}.v-keep{background:#e9f0f8;color:var(--accent)}
-.v-zombie{background:var(--badbg);color:var(--bad)}.v-recycle{background:var(--midbg);color:var(--mid)}.v-dead{background:var(--line);color:var(--sub)}
+.v-zombie{background:var(--badbg);color:var(--bad)}.v-testing{background:var(--midbg);color:var(--mid)}.v-recycle{background:var(--midbg);color:var(--mid)}.v-dead{background:var(--line);color:var(--sub)}
 :root[data-theme=dark] .v-keep,@media (prefers-color-scheme:dark){.v-keep{background:#132535}}
 .ststrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:4px 0 10px}
 .stcard{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--sc,var(--accent));border-radius:14px;padding:14px 16px}
@@ -802,9 +845,13 @@ SORT_JS = """<style>
 .tsearch{margin:6px 0 4px;display:flex;justify-content:flex-end}
 .tsearch input{background:#fff;border:1px solid #e6e8ec;color:#14181f;border-radius:6px;padding:5px 9px;font-size:12px;width:230px;outline:none}
 .tsearch input:focus{border-color:#1c7ed6}
-table thead th{cursor:pointer;user-select:none}
+table thead tr:first-child th{cursor:pointer;user-select:none}
 table thead th.sorted-a:after{content:" \\25B2";font-size:9px;color:#1c7ed6}
 table thead th.sorted-d:after{content:" \\25BC";font-size:9px;color:#1c7ed6}
+thead tr.colfilters th{position:sticky;top:206px;z-index:5;background:var(--thbg);padding:4px 6px;cursor:default;box-shadow:0 1px 0 var(--line)}
+tr.colfilters input{width:100%;min-width:52px;box-sizing:border-box;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:3px 6px;font-size:11px;outline:none}
+tr.colfilters input:focus{border-color:#1c7ed6}
+@media (max-width:1240px){thead tr.colfilters th{position:static}}
 </style>
 <script>
 (function(){
@@ -818,18 +865,37 @@ function val(td){
 document.querySelectorAll('.tablewrap table').forEach(function(tb){
   var tbody=tb.querySelector('tbody');if(!tbody)return;
   var wrap=tb.closest('.tablewrap');
-  if(tbody.rows.length>5){
-    var box=document.createElement('div');box.className='tsearch';
-    var inp=document.createElement('input');inp.type='search';inp.placeholder='\\uD83D\\uDD0D Filter this table\\u2026';
-    box.appendChild(inp);wrap.parentNode.insertBefore(box,wrap);
-    inp.addEventListener('input',function(){
-      var s=inp.value.toLowerCase().trim();
-      [].slice.call(tbody.rows).forEach(function(r){
-        r.style.display=(!s||r.textContent.toLowerCase().indexOf(s)>-1)?'':'none';
-      });
+  var colInputs=[];
+  function applyFilters(freeText){
+    var s=(freeText||'').toLowerCase().trim();
+    var fs=colInputs.map(function(i){return i.value.toLowerCase().trim()});
+    [].slice.call(tbody.rows).forEach(function(r){
+      var ok=(!s||r.textContent.toLowerCase().indexOf(s)>-1);
+      if(ok)for(var i=0;i<fs.length;i++){
+        if(fs[i]&&(!r.cells[i]||r.cells[i].textContent.toLowerCase().indexOf(fs[i])<0)){ok=false;break}
+      }
+      r.style.display=ok?'':'none';
     });
   }
-  var ths=[].slice.call(tb.querySelectorAll('thead th'));
+  var freeInp=null;
+  if(tbody.rows.length>5){
+    var box=document.createElement('div');box.className='tsearch';
+    freeInp=document.createElement('input');freeInp.type='search';freeInp.placeholder='\\uD83D\\uDD0D Filter this table\\u2026';
+    box.appendChild(freeInp);wrap.parentNode.insertBefore(box,wrap);
+    freeInp.addEventListener('input',function(){applyFilters(freeInp.value)});
+    // Aditya 07/10: per-COLUMN filters on every table — a second header row, one box per column.
+    var hr=tb.tHead&&tb.tHead.rows[0];
+    if(hr){
+      var fr=tb.tHead.insertRow(-1);fr.className='colfilters';
+      [].slice.call(hr.cells).forEach(function(){
+        var td=document.createElement('th');
+        var ip=document.createElement('input');ip.type='search';ip.placeholder='filter';
+        ip.addEventListener('input',function(){applyFilters(freeInp?freeInp.value:'')});
+        td.appendChild(ip);fr.appendChild(td);colInputs.push(ip);
+      });
+    }
+  }
+  var ths=[].slice.call((tb.tHead&&tb.tHead.rows[0]?tb.tHead.rows[0].cells:tb.querySelectorAll('thead th')));
   ths.forEach(function(th,i){
     th.title='Click to sort';
     th.addEventListener('click',function(){
@@ -882,7 +948,30 @@ DR_HTML = """<div class="drbar">
 
 daily_json = json.dumps(daily, separators=(",", ":"))
 
-DR_JS = '<script id="dd" type="application/json">' + daily_json + '</script>' + """
+build_id = str(int(datetime.now().timestamp()))
+POLL_JS = """<script>
+(function(){
+var cur=(document.querySelector('meta[name="build-id"]')||{}).content||'';
+if(!cur)return;
+function chk(){fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
+  var m=t.match(/name="build-id" content="(\\d+)"/);
+  if(m&&m[1]!==cur&&!document.getElementById('newdata')){
+    var p=document.createElement('div');p.id='newdata';p.textContent='\\uD83D\\uDD04 Newer data available \\u2014 click to refresh';
+    p.onclick=function(){location.reload()};document.body.appendChild(p);
+  }
+}).catch(function(){})}
+setInterval(chk,5*60*1000);
+})();
+</script>
+<style>#newdata{position:fixed;bottom:18px;right:18px;background:#0B5394;color:#fff;font-weight:700;font-size:13px;padding:10px 16px;border-radius:999px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);z-index:99}</style>"""
+# ad_id → campaign (lower-cased, matches tr[data-camp]) so the date-range picker can
+# re-aggregate the By-campaign rollup for any window (Aditya 07/10).
+a2c_json = json.dumps({a["id"]: (a["campaign"] or "(no campaign)").lower() for a in ads
+                       if (a.get("effective_status") or "").upper() not in ARCHIVED},
+                      separators=(",", ":"))
+
+DR_JS = ('<script id="dd" type="application/json">' + daily_json + '</script>'
+         + '<script id="a2c" type="application/json">' + a2c_json + '</script>') + """
 <script>
 (function(){
 var DAILY=JSON.parse(document.getElementById('dd').textContent||'{}');
@@ -894,7 +983,7 @@ var today=new Date();today.setHours(12,0,0,0);
 S.max=E.max=iso(today);
 function money(v){if(!v)return '<span class="mut">\\u2014</span>';return '$'+(v>=10?Math.round(v).toLocaleString('en-AU'):v.toFixed(2))}
 function pill(r){if(r===null)return '<span class="pill pill-none">\\u2014</span>';var c=r>=1?'pill-good':(r>=0.7?'pill-mid':'pill-bad');return '<span class="pill '+c+'">'+r.toFixed(2)+'x</span>'}
-function sums(aid,s,e){var rows=DAILY[aid]||[],sp=0,pc=0,rv=0;for(var i=0;i<rows.length;i++){var d=rows[i][0];if(d>=s&&d<=e){sp+=rows[i][1];pc+=rows[i][2];rv+=rows[i][3]}}return [sp,pc,rv]}
+function sums(aid,s,e){var rows=DAILY[aid]||[],sp=0,pc=0,rv=0,im=0,cl=0;for(var i=0;i<rows.length;i++){var d=rows[i][0];if(d>=s&&d<=e){sp+=rows[i][1];pc+=rows[i][2];rv+=rows[i][3];im+=rows[i][4]||0;cl+=rows[i][5]||0}}return [sp,pc,rv,im,cl]}
 function label(s,e){function f(x){return x.slice(8,10)+'/'+x.slice(5,7)}return s===e?f(s):f(s)+'\\u2013'+f(e)}
 function apply(){
   var s=S.value,e=E.value;if(!s||!e)return;if(s>e){var t=s;s=e;e=t;S.value=s;E.value=e}
@@ -910,9 +999,25 @@ function apply(){
     set('d-cac',pc?money(sp/pc):'<span class="mut">\\u2014</span>');
   });
   document.querySelectorAll('.d-r7,.h-r7').forEach(function(el){el.classList.add('dr-hide')});
-  document.querySelectorAll('.h-sp').forEach(function(h){if(!origHead.has(h))origHead.set(h,h.textContent);h.textContent='Spend '+lb});
-  document.querySelectorAll('.h-rev').forEach(function(h){if(!origHead.has(h))origHead.set(h,h.textContent);h.textContent='Rev '+lb});
-  document.querySelectorAll('.h-r90').forEach(function(h){if(!origHead.has(h))origHead.set(h,h.textContent);h.textContent='ROAS '+lb});
+  // Column names stay plain (Spend / Revenue / ROAS) — the active window lives in the note (Aditya 07/10).
+  // By-campaign rollup: re-aggregate every metric column for the chosen window.
+  var A2C=JSON.parse(document.getElementById('a2c').textContent||'{}');
+  var agg={};Object.keys(DAILY).forEach(function(aid){var c=A2C[aid];if(!c)return;var v=sums(aid,s,e);
+    var d=agg[c]||(agg[c]=[0,0,0,0,0]);d[0]+=v[0];d[1]+=v[1];d[2]+=v[2];d[3]+=v[3];d[4]+=v[4]});
+  document.querySelectorAll('tr[data-camp]').forEach(function(r){
+    if(!orig.has(r))orig.set(r,r.innerHTML);
+    var d=agg[r.getAttribute('data-camp')]||[0,0,0,0,0],sp=d[0],pc=d[1],rv=d[2],im=d[3],cl=d[4];
+    var set=function(c,h){var td=r.querySelector('.'+c);if(td)td.innerHTML=h};
+    set('cr-sp',money(sp));
+    set('cr-cpm',im?money(sp/im*1000):'<span class="mut">\\u2014</span>');
+    set('cr-cpc',cl?money(sp/cl):'<span class="mut">\\u2014</span>');
+    set('cr-pc',pc?String(pc):'<span class="mut">0</span>');
+    set('cr-cpp',pc?money(sp/pc):'<span class="mut">\\u2014</span>');
+    set('cr-cvr',cl?(pc/cl*100).toFixed(2)+'%':'<span class="mut">\\u2014</span>');
+    set('cr-aov',pc?money(rv/pc):'<span class="mut">\\u2014</span>');
+    set('cr-rev',money(rv));
+    set('cr-roas',pill(sp>0?rv/sp:null));
+  });
   var tsp=0,tpc=0,trv=0;Object.keys(DAILY).forEach(function(a){var v=sums(a,s,e);tsp+=v[0];tpc+=v[1];trv+=v[2]});
   if(!origKpi)origKpi=['sp','rev','roas','pc'].map(function(k){return [document.getElementById('kl-'+k).textContent,document.getElementById('kv-'+k).innerHTML]});
   document.getElementById('kl-sp').textContent='Spend ('+lb+')';document.getElementById('kv-sp').textContent='$'+Math.round(tsp).toLocaleString('en-AU');
@@ -920,11 +1025,13 @@ function apply(){
   var br=tsp>0?trv/tsp:0;var kv=document.getElementById('kv-roas');
   document.getElementById('kl-roas').textContent='Blended ROAS ('+lb+')';kv.textContent=br.toFixed(2)+'x';kv.classList.toggle('good',br>=1);kv.classList.toggle('bad',br<1);
   document.getElementById('kl-pc').textContent='Purchases ('+lb+')';document.getElementById('kv-pc').textContent=tpc;
-  NOTE.textContent='Showing '+lb+' \\u00b7 tables: Running / Tested / Barely tested / Losers';
+  NOTE.textContent='Showing '+lb+' \\u00b7 tables: Running / Tested / Barely tested / Losers / Campaigns';
 }
 function clearRange(){
   if(!active)return;active=false;X.hidden=true;NOTE.textContent='';
-  orig.forEach(function(html,r){CELLS.forEach(function(c,i){var td=r.querySelector('.'+c);if(td&&html[i]!==null)td.innerHTML=html[i]})});
+  orig.forEach(function(html,r){
+    if(typeof html==='string'){r.innerHTML=html;return}   // campaign rollup rows (whole-row snapshot)
+    CELLS.forEach(function(c,i){var td=r.querySelector('.'+c);if(td&&html[i]!==null)td.innerHTML=html[i]})});
   origHead.forEach(function(t,h){h.textContent=t});
   document.querySelectorAll('.d-r7,.h-r7').forEach(function(el){el.classList.remove('dr-hide')});
   if(origKpi){['sp','rev','roas','pc'].forEach(function(k,i){document.getElementById('kl-'+k).textContent=origKpi[i][0];document.getElementById('kv-'+k).innerHTML=origKpi[i][1]});
@@ -944,7 +1051,7 @@ GO.addEventListener('click',apply);X.addEventListener('click',clearRange);
 })();
 </script>"""
 
-html_body = f"""<meta charset="utf-8"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
+html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">{STYLE}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
@@ -1020,6 +1127,7 @@ wf.forEach(function(b){{b.addEventListener('click',function(){{
 </script>
 {SORT_JS}
 {DR_JS}
+{POLL_JS}
 <footer>LACALUT Australia &middot; Smartek Labs &middot; data: Meta Ads (act_2157906551266386) &middot; {len(ads)} ads scanned &middot; thumbnails are Meta CDN links and refresh with each rebuild</footer>
 </div>"""
 

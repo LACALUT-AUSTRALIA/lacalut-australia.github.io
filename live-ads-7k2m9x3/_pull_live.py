@@ -63,7 +63,7 @@ def pull_ads():
 
 def pull_insights(preset):
     fields = ("ad_id,spend,purchase_roas,actions,action_values,"
-              "impressions,reach,ctr,cpc,cpm")
+              "impressions,reach,ctr,cpc,cpm,clicks")
     url = (f"{GRAPH}/{ACCT}/insights?level=ad&date_preset={preset}&limit=400"
            f"&fields={fields}&access_token={urllib.parse.quote(TOK)}")
     rows = get_all(url)
@@ -86,13 +86,15 @@ def pull_insights(preset):
             "ctr": float(r.get("ctr") or 0),
             "cpc": float(r.get("cpc") or 0),
             "cpm": float(r.get("cpm") or 0),
+            "clicks": int(r.get("clicks") or 0),
         })
     return out
 
 def pull_daily():
-    # Per-day spend/purchases/revenue per ad (last 90d) for the dashboard's
-    # custom date-range picker. {ad_id: [[YYYY-MM-DD, spend, purch, rev], ...]}
-    fields = "ad_id,spend,actions,action_values"
+    # Per-day spend/purchases/revenue (+ impressions/clicks for CPM/CPC/CVR) per ad (last 90d)
+    # for the dashboard's custom date-range picker.
+    # {ad_id: [[YYYY-MM-DD, spend, purch, rev, impressions, clicks], ...]}
+    fields = "ad_id,spend,actions,action_values,impressions,clicks"
     url = (f"{GRAPH}/{ACCT}/insights?level=ad&date_preset=last_90d&time_increment=1"
            f"&limit=500&fields={fields}&access_token={urllib.parse.quote(TOK)}")
     out = {}
@@ -104,7 +106,8 @@ def pull_daily():
         if sp == 0 and pc == 0:
             continue
         out.setdefault(r.get("ad_id"), []).append(
-            [r.get("date_start"), round(sp, 2), pc, round(rv, 2)])
+            [r.get("date_start"), round(sp, 2), pc, round(rv, 2),
+             int(r.get("impressions") or 0), int(r.get("clicks") or 0)])
         n += 1
     json.dump(out, open(os.path.join(SP, "insights_daily.json"), "w", encoding="utf-8"))
     print(f"  wrote insights_daily.json: {n} day-rows across {len(out)} ads")
