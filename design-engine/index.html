@@ -2392,9 +2392,18 @@ async function finishEditCard(id, rec){
   await idbPut(rec);                                   // always persisted first
   scoreCreative(rec.id).catch(()=>{});                 // auto-score every finished edit (fire-and-forget)
   const el=$(id);
-  if(el){ el.outerHTML=cardHTML(rec); return; }        // placeholder still on screen
-  if(rec.sku===curSku && ptypeOf(rec)===curPtype && !$(rec.id)){ insertCardTop(cardHTML(rec)); }  // back on its tab+pill
+  if(el){ el.outerHTML=cardHTML(rec); pairWithSource(rec); return; }   // placeholder still on screen
+  if(rec.sku===curSku && ptypeOf(rec)===curPtype && !$(rec.id)){ insertCardTop(cardHTML(rec)); pairWithSource(rec); }  // back on its tab+pill
   else { toast('✅ '+((SKUS[rec.sku]&&SKUS[rec.sku].name)||rec.sku)+' image ready — see its SKU tab'); }
+}
+// (Quan 07/10/2026) COMPARISON PAIRING: the moment an edit lands, pull its ORIGINAL card up to sit
+// immediately beside the new version at the top of the gallery — old vs new side by side, no hunting.
+// Pure DOM move of the one existing card; never a gallery rebuild (freeze-bug path untouched).
+function pairWithSource(rec){
+  try{
+    const nu=$(rec.id), src=rec.srcId && rec.srcId!==rec.id && $(rec.srcId);
+    if(nu && src && nu.parentNode) nu.parentNode.insertBefore(src, nu.nextSibling);
+  }catch(_){}
 }
 function dismissCard(id){ const el=$(id); if(el) el.remove(); }
 function markCardFailed(id, msg){ const el=$(id); if(!el) return;
