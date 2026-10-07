@@ -469,18 +469,32 @@ function uploadMultiImg(k){ fileToDataUrl(async d=>{ const small=await compressR
   _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderSlots(); }); }
 let _brainFilter='';
 function setBrainFilter(q){ _brainFilter=(q||'').trim().toLowerCase(); renderBrains(); }
+/* ── FORMAT CHANNEL SPLIT (Quan 08/10/2026): Meta-ad formats vs organic social formats live under
+   two tabs so ad work isn't drowned in seasonal/engagement posts. Seasonal, Engagement, B2B and the
+   no-product viral formats = Social; everything else = Meta ads. ── */
+const SOCIAL_FMT_CATS=new Set(['Seasonal','Seasonal / Humour','Engagement','B2B','Viral / Humour']);
+const SOCIAL_FMT_IDS=new Set(['quote-proverb','hot-take-unpopular-opinion']);
+function fmtChannel(b){ return (SOCIAL_FMT_CATS.has(b.cat)||SOCIAL_FMT_IDS.has(b.id))?'social':'meta'; }
+let curFmtTab=(function(){ try{ return localStorage.getItem('de_fmt_tab')||'meta'; }catch(e){ return 'meta'; } })();
+function setFmtTab(t){ curFmtTab=t; try{ localStorage.setItem('de_fmt_tab',t); }catch(_){} renderBrains(); }
 function renderBrains(){
   if(!BRAINS.length){ $('chips').innerHTML='<span style="font-size:11px;color:#b3261e">strategies.js not loaded — reload</span>'; return; }
   const q=_brainFilter;
   const match=b=> !q || b.name.toLowerCase().includes(q) || (b.cat||'').toLowerCase().includes(q) || (b.id||'').toLowerCase().includes(q);
-  const list=BRAINS.filter(match);
-  const cats={}; list.forEach(b=>{ (cats[b.cat]=cats[b.cat]||[]).push(b); });
-  let h = q ? '' : `<button class="chip ${curBrain==='mixed'?'on':''}" onclick="selectBrain('mixed')" style="width:100%">🎲 Mixed — random brain per image</button>`;
-  for(const cat of Object.keys(cats)){
-    h+=`<div style="width:100%;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#999;margin:6px 0 2px">${cat}</div>`;
-    h+=cats[cat].map(b=>`<button class="chip ${curBrain===b.id?'on':''}" onclick="selectBrain('${b.id}')" title="${b.name} · product: ${b.product}">${b.name}${b.product==='none'?' ⬜':''}</button>`).join('');
-  }
-  if(q && !list.length) h=`<span style="font-size:11px;color:#999">No formats match “${q}”.</span>`;
+  // Search looks across BOTH tabs (never miss a format); no search = current tab only.
+  const list=BRAINS.filter(match).filter(b=> q || fmtChannel(b)===curFmtTab);
+  const cnt=id=> (window._fmtCounts && window._fmtCounts.get(id)) || 0;
+  // Most-rendered first → the untouched formats (0) sink to the bottom = the gaps to work on next.
+  list.sort((a,b)=> cnt(b.id)-cnt(a.id) || a.name.localeCompare(b.name));
+  const tabBtn=(t,lbl)=>`<button class="chip ${curFmtTab===t?'on':''}" onclick="setFmtTab('${t}')" style="flex:1;text-align:center;font-weight:700">${lbl}</button>`;
+  let h=`<div style="display:flex;gap:6px;width:100%;margin:0 0 6px">${tabBtn('meta','🎯 Meta ads')}${tabBtn('social','📱 Social')}</div>`;
+  if(!q) h+=`<button class="chip ${curBrain==='mixed'?'on':''}" onclick="selectBrain('mixed')" style="width:100%">🎲 Mixed — random brain per image</button>`;
+  h+=list.map(b=>{ const n=cnt(b.id);
+    const badge=n?`<span style="font-weight:800;font-size:11px;color:#555;background:#eee;border-radius:9px;padding:1px 8px;margin-left:8px;flex:none">${n}</span>`
+                 :`<span style="font-weight:800;font-size:10.5px;color:#b45309;background:#fff7e6;border:1px solid #f0d98a;border-radius:9px;padding:1px 7px;margin-left:8px;flex:none">none yet</span>`;
+    return `<button class="chip ${curBrain===b.id?'on':''}" onclick="selectBrain('${b.id}')" title="${b.name} · ${b.cat} · product: ${b.product}" style="display:flex;width:100%;align-items:center;justify-content:space-between;text-align:left">${b.name}${b.product==='none'?' ⬜':''}${badge}</button>`;
+  }).join('');
+  if(q && !list.length) h+=`<span style="font-size:11px;color:#999">No formats match “${q}”.</span>`;
   $('chips').innerHTML=h;
   $('stratCount').textContent = curBrain ? (curBrain==='mixed'?'Mixed':'1 selected') : 'none';
 }
@@ -2397,6 +2411,7 @@ async function renderGallery(sku){
   // ── FORMAT CHIPS: counts per brain across ALL reps (before filtering) so chips never vanish ──
   const fmtCount=new Map();
   for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
+  window._fmtCounts=fmtCount; if(typeof renderBrains==='function') renderBrains();   // left-panel format list shows the same live counts
   const formats=[...fmtCount.entries()].map(([id,count])=>({ id, name:(((BRAINS||[]).find(b=>b.id===id)||{}).name||formatGroupLabel(id)), count }))
     .sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));   // most-used formats first, then alpha
   // ── COLLECTION CHIPS: counts per named batch (Aditya Matrix / Format Tests) across ALL reps ──
