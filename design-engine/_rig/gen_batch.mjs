@@ -44,7 +44,23 @@ if (!PACK) { console.error('No packshot for packSku="' + packSku + '" (expected 
 // Optional second reference: the matching mouthwash bottle, so sign scenes can show BOTH the
 // tube AND the bottle together (the prompt tells the model to use either if both won't fit).
 const MW = window.LAC_PACKS[packSku + '_mw_bottle'] || null;
-const PRODUCT_IMGS = (batch.bothProducts !== false && MW) ? [PACK, MW] : [PACK];
+// Per-ad packshot selection. callGemini's PRODUCT LOCK forces the render to show EXACTLY the
+// attached packs ("same count, same form, no extras") — so attaching [tube + bottle] to every
+// render (the previous default) FORCED a mouthwash bottle into tube-only ads, and at cameo
+// scale the model redraws it from imagination → the hallucinated bottles. The bottle ref is
+// attached only when the ad actually features it (brief/headline mentions it, ad.products
+// lists it, or batch.bothProducts === true forces it for the whole batch).
+const MW_RE = /\b(mouthwash|mouth\s*wash|rinse|bottle|duo|tube \+ bottle|both products)\b/i;
+function productsFor(ad) {
+  const wantsMW = MW && (
+    batch.bothProducts === true ||
+    (Array.isArray(ad.products) && ad.products.some(p => /mw|mouthwash|bottle/i.test(p))) ||
+    (batch.bothProducts !== false && MW_RE.test((ad.brief || '') + ' ' + (ad.headline || '')))
+  );
+  return wantsMW
+    ? { imgs: [PACK, MW], labels: [packSku.toUpperCase() + ' toothpaste tube', packSku.toUpperCase() + ' mouthwash bottle'] }
+    : { imgs: [PACK], labels: null };
+}
 // Aspect ratio for the batch (default 4:5 feed portrait; set "1:1" for square, "9:16" for story).
 const AR = batch.aspect || '4:5';
 const BANS = [...new Set([...(E.GLOBAL_BAN || []), ...((E.SKUS[sku] || {}).ban || [])])];
@@ -82,11 +98,9 @@ for (let i = 0; i < ads.length; i++) {
         + '(B) Is the product pack\'s printed fine-print text kept SMALL and softly out of focus, never enlarged or sharpened into a readable headline-sized claim? If any pack text reads as clearly as the headline, shrink and soften it now.';
     }
     process.stdout.write('rendering… ');
+    const { imgs: productImgs, labels: productLabels } = productsFor(ad);
     const url = await E.callGemini({
-      // Attach ALL real packshots (tube + mouthwash bottle) to EVERY render — not just signs.
-      // Previously non-sign ads got only [PACK] (the tube), so any ad showing the bottle made
-      // Gemini hallucinate/invent it → inconsistent wrong products + wasted render spend.
-      prompt, productImgs: PRODUCT_IMGS, styleImgs: [],
+      prompt, productImgs, productLabels, styleImgs: [],
       render: 'photoreal', model: 'gemini-3-pro-image-preview', apiKey: KEY, aspectRatio: isSign ? AR : '4:5'
     });
     const filename = ad.id + '.png';
