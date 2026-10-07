@@ -285,6 +285,7 @@
   <label class="row" style="margin:0 0 4px;font-size:12px">📐 Output size <span style="color:#999;font-weight:600">— the edit renders at this size (same as the main page)</span></label>
   <div class="modes" id="editModes" style="margin:0 0 10px"></div>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
+  <div id="editProvNote" hidden style="margin:0 0 5px;font-size:11.5px;font-weight:700;color:#8a6d1a;background:#fffbe6;border:1px solid #e8d48a;border-radius:7px;padding:5px 9px">🧾 This is the prompt that CREATED this image — compare it against the result, tweak and re-run, or clear it for a fresh edit.</div>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
   <div style="margin-top:6px">
     <button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
@@ -308,6 +309,13 @@
     <button class="btn" onclick="editDlg.close()">Cancel</button>
     <button class="btn primary" onclick="applyEdit()">Apply edit</button>
   </div>
+</div></dialog>
+
+<!-- ℹ️ PROVENANCE — the prompts + settings that made an image, with its original → edit lineage -->
+<dialog id="provDlg" style="max-width:860px"><div class="dlg">
+  <h2>ℹ️ How this image was made</h2>
+  <div id="provBody" style="max-height:70vh;overflow:auto"></div>
+  <div class="row" style="justify-content:flex-end;margin-top:10px"><button class="btn" onclick="provDlg.close()">Close</button></div>
 </div></dialog>
 
 <script src="strategies.js"></script>
@@ -790,7 +798,11 @@ async function runGenerate(){
       prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels });
-      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:facyAngleVal(), brain:brainId};
+      // PROVENANCE (Quan 07/10/2026): the FULL final prompt + engine settings travel with the image
+      // record forever — metadata only, zero pipeline change — so every render can be QC'd against
+      // exactly what was asked of the model (ℹ️ button on the card).
+      const rec={id:'g'+Date.now()+'_'+i, sku:S.isMulti?'multi':S.curSku, mode:S.curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:S.brief||'', angle:facyAngleVal(), brain:brainId,
+        genPrompt:prompt, genSettings:{ render:rmode, model:S.curModel, ar:aspectRatio, arch:(archPick&&archPick.name)||'', oneUp:!!S.oneUp, qty, brain:brainId||'' }};
       await idbPut(rec);   // persisted FIRST — the image can never be lost even if the placeholder card is gone
       const _el=$(id);
       if(_el){ _el.outerHTML=cardHTML(rec); }
@@ -894,6 +906,7 @@ function versionBarHTML(rec, versions){
 function cardHTML(rec, versions){ const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350'; return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img src="${rec.url}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}${sizeBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
+   <button class="iconbtn" title="Provenance — the exact prompt + settings that made this image, and its original → edit lineage" onclick="showProv('${rec.id}')">ℹ️</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
@@ -2326,8 +2339,12 @@ async function editImage(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
   const src=$(cardId)?.querySelector('img')?.src; if(!src) return;
   _editSrc=src; _editRefs=[];
-  try{ const _sr=await idbGet(cardId); _editSrcLabel=_sr?.label||''; _editSrcBrief=_sr?.brief||''; _editSrcAngle=_sr?.angle||''; _editSrcBrain=_sr?.brain||brainOf(_sr)||''; _editSrcParent=(_sr&&(_sr.parent||_sr.id))||cardId; }catch(e){ _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=cardId; }   // inherit format keyword + brief + angle + brain + version-root so Send-to-Facy stays in context AND the edit stacks as a new version
-  renderEditSrc(); renderRefLibGrid(); $('editInstruction').value='';
+  let _srPrompt='';
+  try{ const _sr=await idbGet(cardId); _editSrcLabel=_sr?.label||''; _editSrcBrief=_sr?.brief||''; _editSrcAngle=_sr?.angle||''; _editSrcBrain=_sr?.brain||brainOf(_sr)||''; _editSrcParent=(_sr&&(_sr.parent||_sr.id))||cardId; _srPrompt=_sr?.editPrompt||''; }catch(e){ _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=cardId; }   // inherit format keyword + brief + angle + brain + version-root so Send-to-Facy stays in context AND the edit stacks as a new version
+  // PROVENANCE (Quan 07/10/2026): an image born from an edit re-opens with the exact prompt that
+  // created it pre-filled, so prompt vs result can be compared and tweaked instead of retyped.
+  renderEditSrc(); renderRefLibGrid(); $('editInstruction').value=_srPrompt;
+  if($('editProvNote'))$('editProvNote').hidden=!_srPrompt;
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
@@ -2342,8 +2359,8 @@ function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   } else { w.innerHTML=`<div onclick="pickEditSrc()" title="upload an image to edit" style="cursor:pointer;border:2px dashed #cbd5e1;border-radius:10px;padding:22px;text-align:center;color:#64748b;font-size:13px">📤 Click to load an image — or drag &amp; drop / paste it here</div>`; }
   renderEditSizePreview();   // keep the mini preview beside Apply edit in sync with the loaded image
 }
-function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=null; renderEditSrc(); }); }
-function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=null; renderEditSrc(); }; r.readAsDataURL(file); }
+function pickEditSrc(){ fileToDataUrl(d=>{ _editSrc=d; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=null; if($('editProvNote'))$('editProvNote').hidden=true; renderEditSrc(); }); }
+function _fileToEditSrc(file){ if(!file || !/^image\//.test(file.type)) return; const r=new FileReader(); r.onload=()=>{ _editSrc=r.result; _editSrcLabel=''; _editSrcBrief=''; _editSrcAngle=''; _editSrcBrain=''; _editSrcParent=null; if($('editProvNote'))$('editProvNote').hidden=true; renderEditSrc(); }; r.readAsDataURL(file); }
 function editDragOver(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline='2px solid #6d5efc'; }
 function editDragLeave(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; }
 function editDrop(e){ e.preventDefault(); e.stopPropagation(); const el=$('editSrcSlot'); if(el) el.style.outline=''; const f=e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if(f) _fileToEditSrc(f); }
@@ -2359,7 +2376,7 @@ function presetBoxUpright(){
 }
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
-  _editRefs=[]; renderEditSrc(); renderRefLibGrid();
+  _editRefs=[]; renderEditSrc(); renderRefLibGrid(); if($('editProvNote'))$('editProvNote').hidden=true; $('editInstruction').value='';
   if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>$('editInstruction').focus(),60);
 }
 function callGeminiEditRefs(imgDataUrl, instruction, refKeys, seed){
@@ -2402,7 +2419,7 @@ async function applyEdit(){
       (async ()=>{
         try{
           const url=await callGeminiEditRefs(src, instruction, [key]);
-          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:null};
+          const rec={id:'g'+Date.now()+'_'+i+'_edit', sku, mode:curMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:null, editPrompt:instruction, srcId:_editSrcParent||null};
           await finishEditCard(id, rec);
         }catch(e){ markCardFailed(id, e.message); }
       })();
@@ -2434,7 +2451,7 @@ async function applyEdit(){
     (async()=>{
       try{
         const url=await callGeminiEditRefs(src, instr, refKeys);
-        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:null};
+        const rec={id:'g'+Date.now()+'_'+i+'_edit', sku:fireSku, mode:fireMode, ptype:firePtype, label:editLbl, ts:Date.now(), url, fav:false, brief:_editSrcBrief||'', angle:_editSrcAngle||'', brain:_editSrcBrain||null, parent:null, editPrompt:instruction, srcId:_editSrcParent||null};
         await finishEditCard(id, rec);
       }catch(e){ markCardFailed(id, e.message); }
     })();
