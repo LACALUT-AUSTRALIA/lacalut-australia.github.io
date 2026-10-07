@@ -2490,6 +2490,11 @@ async function showProv(cardId){
   provDlg.showModal();
 }
 
+/* ═══ LIGHT-DISMISS (Quan 07/10/2026): clicking the dimmed backdrop closes ANY open dialog —
+   same as every other app; Esc already works natively. A click lands on the <dialog> element
+   itself only when it hits the backdrop (inner .dlg content swallows its own clicks). ═══ */
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{ if(e.target===d) d.close(); }));
+
 /* ═══ PUSH TO ALL SOCIAL PLATFORMS via MARKY (auto-caption from the image) ═══ */
 const MARKY_BASE='https://api.mymarky.ai', MARKY_VERSION='2026-08-06', MARKY_BUSINESS_ID='5156d77a-932f-45ac-9d20-bc118007c2ab';
 const COMPLIANCE_RULES=`CRITICAL COMPLIANCE RULES (legal — never break):
