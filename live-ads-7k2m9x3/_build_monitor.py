@@ -691,7 +691,7 @@ h2.losers .count{background:var(--bad)}
 .note{color:var(--sub);font-size:13px;margin:4px 0 14px}
 .tablewrap{overflow-x:visible;border:1px solid var(--line);border-radius:14px;background:var(--card)}
 
-table{border-collapse:separate;border-spacing:0;width:100%;min-width:1080px;font-size:14px}
+table{border-collapse:separate;border-spacing:0;width:100%;min-width:0;font-size:14px}
 thead th{position:sticky;top:166px;z-index:5;background:var(--thbg);text-align:left;color:var(--thtext);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.4px;padding:11px 12px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line);white-space:nowrap}
 @media (max-width:1240px){.tablewrap{overflow-x:auto}thead th{position:static}section.sec h2{position:static}}
 tbody td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -700,9 +700,10 @@ tbody tr:last-child td{border-bottom:0}
 td.num{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 td.c{color:var(--sub);font-size:13px}
 td.sub{font-size:12.5px;white-space:nowrap}
-td.adtd{min-width:230px;max-width:330px}
-td.camp{max-width:260px}
-td.camp div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+td.adtd{min-width:170px;max-width:330px}
+td.camp{min-width:110px;max-width:240px}
+td.camp div{overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;line-clamp:1;white-space:normal;overflow-wrap:anywhere;line-height:1.3}
+td.camp div.mut{-webkit-line-clamp:2;line-clamp:2}
 td.camp .mut{font-size:12px}
 .adc{display:flex;align-items:center;gap:10px}
 .adname{font-size:13.5px;line-height:1.35;word-break:break-word;overflow-wrap:anywhere}
@@ -765,6 +766,14 @@ table.rollup{min-width:720px}
 .winrow .wlink{margin-top:0;white-space:nowrap}
 .winrow .wchip,.winrow .wtier{white-space:nowrap}
 .winrow td.adtd{min-width:260px}
+@media (max-width:1240px){.winrow td.adtd{min-width:150px;max-width:240px}}
+@media (max-width:900px){.winrow td.adtd{min-width:96px;max-width:160px}
+.winrow .wchip,.winrow .wtier{white-space:normal}
+.wchip{font-size:10px;padding:2px 6px;display:inline-block;line-height:1.2}
+.wtier{font-size:9.5px;letter-spacing:0}
+.winrow .wlink{font-size:11.5px}}
+@media (max-width:600px){.winrow td.adtd{min-width:70px;max-width:110px}
+.winrow .wlink{white-space:normal}}
 .shwrap{display:flex;gap:18px;align-items:stretch;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;overflow-x:auto}
 .shoverall{display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:150px;padding-right:18px;border-right:1px solid var(--line)}
 .shoverall b{font-size:26px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;color:var(--brand)}
@@ -851,7 +860,39 @@ table thead th.sorted-d:after{content:" \\25BC";font-size:9px;color:#1c7ed6}
 thead tr.colfilters th{position:sticky;top:206px;z-index:5;background:var(--thbg);padding:4px 6px;cursor:default;box-shadow:0 1px 0 var(--line)}
 tr.colfilters input{width:100%;min-width:52px;box-sizing:border-box;background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:5px;padding:3px 6px;font-size:11px;outline:none}
 tr.colfilters input:focus{border-color:#1c7ed6}
-@media (max-width:1240px){thead tr.colfilters th{position:static}}
+@media (max-width:1240px){thead tr.colfilters th{position:static}
+thead th{white-space:normal;padding:9px 8px;font-size:11px;letter-spacing:.2px;vertical-align:bottom}
+tbody td{padding:8px 8px}
+table{font-size:13px}
+td.adtd{min-width:140px;max-width:240px}
+.th{width:44px;height:44px;min-width:44px}
+tr.colfilters input{min-width:0}}
+@media (max-width:900px){table{font-size:12px}
+thead th{padding:7px 5px;font-size:10px;letter-spacing:0}
+tbody td{padding:6px 5px}
+thead tr.colfilters th{padding:3px 3px}
+td.num,td.sub{white-space:normal}
+.adc{gap:6px;flex-wrap:wrap}
+td.adtd{min-width:96px;max-width:170px}
+.adname{font-size:12px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden}
+.th{width:34px;height:34px;min-width:34px}
+td.camp{min-width:80px}
+td.camp .mut{font-size:11px}
+.pill,.vb{font-size:10.5px;padding:1px 6px}}
+@media (max-width:600px){.th{display:none}
+table{font-size:11px}
+thead th{font-size:9px;padding:6px 3px}
+tbody td{padding:5px 3px}
+td.adtd{min-width:72px}
+.adname{font-size:11px}
+td.camp{min-width:60px}
+td.camp .mut{font-size:10px}
+table{font-size:10px}
+thead th{font-size:8.5px;padding:5px 2px}
+tbody td{padding:4px 2px}
+.pill,.vb{font-size:9px;padding:1px 4px}
+.tablewrap{border-radius:8px}
+.wrap{padding-left:8px;padding-right:8px}}
 </style>
 <script>
 (function(){
