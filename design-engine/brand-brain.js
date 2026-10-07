@@ -8,6 +8,7 @@ window.BRAND_BRAIN = {
     "Trusted in 60+ countries", "German-engineered formula", "Pharmacy-grade care"
   ],
   tone: "Premium German engineering meets warm Aussie plain-talk. Confident specialist, never shouty pharmacy-discount. Cosmetic FEEL language only (feels firmer / fresher / cared-for) — never medical outcomes.",
+  implication: "IMPLICATION DOCTRINE (how on-image text evokes gum health, cosmetically): lead with THE FLIP — describe the GOOD state through a metaphor whose opposite is the unspoken problem ('Gums that look like they've never been in a fight — calm, pink, unbothered', 'Gums with a clean record', 'The kind of pink that's never made news'). Shield words: 'looks/feels' before every outcome word — 'FEELS firm' yes, 'firms gums' never. 'Healthy Pink' is an owned brand code — capitalise and reuse it. Max ONE dark-side wink per creative, always scene-framed ('pink in the sink' as a scene), NEVER second-person condition questions ('Do your gums look beaten up?' = banned). Overall impression must stay appearance/feel — visceral comes from the metaphor, never stacked winks.",
   productRule: "PRODUCT RULE (standing, always): show BOTH this SKU's mouthwash bottle AND its toothpaste tube together in the frame whenever the composition allows, correctly proportioned to each other and to the scene. If both genuinely cannot fit believably, show EITHER the mouthwash bottle OR the toothpaste tube — but NEVER zero product. The products stay a small, natural, accurate cameo (real packaging, white cap) — never a giant studio hero. When two product references are attached, use BOTH; only drop one when there is truly no room.",
   banned: "bleeding, gingivitis, periodontitis, gum disease, infection, inflamed, clinical, medicinal, heals, cures, treats (therapeutic), repairs gums, percentages, #1/No.1/best, WHO/TGA logos, timed results ('in X days/hours'), microbiome, bacteria/bacterial, pH-balance/pH-balancing, flora (as a biological/scientific term — fine only as the LACALUT FLORA product name), any invented scientific/biological mechanism-of-action language not printed on the real pack.",
   angles: {
@@ -16,7 +17,9 @@ window.BRAND_BRAIN = {
       "Specialist vs generalist — a German pharmacy formula supermarket brands don't make",
       "Firm-gum FEEL — gums that feel firmer, fresher, cared-for every brush",
       "Neglected gums — your toothpaste has been ignoring your gums for years",
-      "German heritage — 100 years obsessed with gums (differentiation, not nostalgia)"
+      "German heritage — 100 years obsessed with gums (differentiation, not nostalgia)",
+      "Healthy Pink — own the colour as the aspiration ('the healthiest-looking pink in the room')",
+      "The FLIP — gums that look like they've never been in a fight: calm, pink, unbothered"
     ],
     "aktiv-herbal": [
       "Strongest astringent + botanical taste — serious gum care that tastes like herbs, not hospital",
@@ -61,6 +64,7 @@ window.brandBrainInjection = function(sku){
     + '\nTRUST LINES (only ever use these): ' + B.trust.join(' · ')
     + '\nTONE: ' + B.tone
     + (B.productRule ? '\n' + B.productRule : '')
+    + (B.implication ? '\n' + B.implication : '')
     + '\nNEVER (hard compliance): ' + B.banned
     + (ang.length ? '\nPROVEN ANGLES for this range (pick or evolve ONE, never mash several): ' + ang.map((a,i)=>(i+1)+') '+a).join(' ') : '');
 };
