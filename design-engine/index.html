@@ -1386,6 +1386,7 @@ async function importCliImageRenders(){
   const mf=files['manifest.json'];
   if(!mf){ alert('No manifest.json here — pick the design-engine/_cli-renders-images/<batch> folder.'); return; }
   let manifest; try{ manifest=JSON.parse(await (await mf.getFile()).text()); }catch(e){ alert('manifest.json is not valid JSON'); return; }
+  clearCliTombstones(manifest.map(m=>m.id));   // explicit folder pick = user wants these back
   let imported=0, skipped=0;
   for(const m of manifest){
     try{
@@ -1406,6 +1407,16 @@ async function importCliImageRenders(){
 // _cli-renders-images/_index.json (rebuilt automatically by _rig/gen_batch.mjs each run) and
 // pulls in any batch's manifest + images straight from the live site — no folder picker, no button.
 // Dedupes against IndexedDB by id, so re-running on every load is cheap once a batch is in.
+/* ── CLI-render tombstones (08/10/2026): deleting an imported card must STICK across reloads.
+   Bug: delGen removed the idb record, then autoImportCliRenders saw the manifest id missing and
+   re-imported it on every refresh — deleted cards resurrected. localStorage keeps deleted ids;
+   auto-import skips them. The manual 🖼️ Load Image Renders button deliberately IGNORES + clears
+   tombstones — an explicit folder pick means "bring these back". ── */
+const TOMB_KEY='de_cli_tombstones';
+function cliTombstones(){ try{ return new Set(JSON.parse(localStorage.getItem(TOMB_KEY)||'[]')); }catch(e){ return new Set(); } }
+function addCliTombstone(id){ const s=cliTombstones(); s.add(id); try{ localStorage.setItem(TOMB_KEY, JSON.stringify([...s])); }catch(e){} }
+function clearCliTombstones(ids){ const s=cliTombstones(); let hit=false; for(const id of ids){ if(s.delete(id)) hit=true; } if(hit){ try{ localStorage.setItem(TOMB_KEY, JSON.stringify([...s])); }catch(e){} } }
+
 async function autoImportCliRenders(){
   try{
     const idxRes = await fetch('./_cli-renders-images/_index.json', { cache: 'no-store' });
@@ -1418,7 +1429,8 @@ async function autoImportCliRenders(){
         if(!mf.ok) continue;
         const manifest = await mf.json();
         const fresh = [];
-        for(const m of manifest){ if(!(await idbGet(m.id))) fresh.push(m); }   // dedup check first, fast
+        const dead = cliTombstones();
+        for(const m of manifest){ if(dead.has(m.id)) continue; if(!(await idbGet(m.id))) fresh.push(m); }   // dedup check first, fast; tombstoned = deleted on purpose, stay dead
         if(!fresh.length) continue;
         if(!toastEl) toastEl = toast('🖼️ Loading new renders… 0/'+fresh.length, true);
         let done = 0, batchImported = 0;
@@ -1886,7 +1898,7 @@ function initCardDnD(){
 
 async function toggleFav(id,btn){ const db=await idb(); const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
   rq.onsuccess=()=>{ const r=rq.result; if(!r)return; r.fav=!r.fav; st.put(r); btn.textContent=r.fav?'❤️':'🤍'; }; }
-async function delGen(id){ if(!confirm('Delete this image?'))return; await idbDel(id); const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku); }
+async function delGen(id){ if(!confirm('Delete this image?'))return; await idbDel(id); addCliTombstone(id); const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku); }
 /* ═══ MOVE IMAGE TO ANOTHER SKU TAB ═══ */
 function moveOptions(curSkuOfCard, curPtypeOfCard){
   // Each SKU is an <optgroup> with its 3 forms (Toothpaste / Mouthwash / Toothbrush) as a submenu.
