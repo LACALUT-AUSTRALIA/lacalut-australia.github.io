@@ -286,6 +286,7 @@
   <div class="modes" id="editModes" style="margin:0 0 10px"></div>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
   <div id="editProvNote" hidden style="margin:0 0 5px;font-size:11.5px;font-weight:700;color:#8a6d1a;background:#fffbe6;border:1px solid #e8d48a;border-radius:7px;padding:5px 9px">🧾 This is the prompt that CREATED this image — compare it against the result, tweak and re-run, or clear it for a fresh edit.</div>
+  <div style="display:flex;align-items:center;justify-content:flex-end;margin:0 0 3px"><button type="button" onclick="clearEditInstruction()" title="Clear the instruction box so you can paste a fresh edit prompt" style="font-size:11px;font-weight:600;padding:3px 10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;cursor:pointer;color:#c0392b">✕ Clear</button></div>
   <textarea id="editInstruction" rows="4" style="width:100%" placeholder="Describe the change…"></textarea>
   <div style="margin-top:6px">
     <button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
@@ -672,6 +673,7 @@ function fillSystemRefs(){
   toast('🧰 Loaded '+found.map(([l])=>l).join(' · ')+(missing.length?' — missing: '+missing.join(', ')+' (upload in the library)':''));
 }
 function clearBrief(){ const t=$('brief'); if(!t) return; t.value=''; localStorage.removeItem('de_brief'); t.focus(); toast('🧹 Brief cleared — paste your next prompt'); }
+function clearEditInstruction(){ const t=$('editInstruction'); if(!t) return; t.value=''; const n=$('editProvNote'); if(n) n.hidden=true; t.focus(); toast('🧹 Edit box cleared — paste your next edit prompt'); }
 function pickStyle(i){ fileToDataUrl(d=>{ styleImgs[i]=d; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }); }
 function delStyle(i){ styleImgs[i]=null; localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); renderSlots(); }
 
