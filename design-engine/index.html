@@ -2274,7 +2274,21 @@ const _lazyIO=new IntersectionObserver(es=>{
 function hydrateLazy(){
   document.querySelectorAll('img[data-lazy]:not([data-obs]),video[data-lazyv]:not([data-obs])')
     .forEach(el=>{ el.setAttribute('data-obs','1'); _lazyIO.observe(el); });
+  // Belt-and-braces: IO callbacks are rendering-frame-tied and can stall (background/unfocused tab),
+  // so after a beat, directly hydrate any still-placeholder image sitting in/near the viewport.
+  clearTimeout(window._hlF);
+  window._hlF=setTimeout(()=>{
+    document.querySelectorAll('img[data-lazy][data-obs]').forEach(el=>{
+      if(el.src.indexOf('blob:')===0) return;
+      const r=el.getBoundingClientRect();
+      if(r.bottom<-600 || r.top>innerHeight+600) return;
+      const rec=_recById[el.getAttribute('data-lazy')];
+      if(rec){ const u=_lazyUrl(rec,'i'); if(u) el.src=u; }
+    });
+  },700);
 }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) hydrateLazy(); });
+window.addEventListener('scroll',()=>{ clearTimeout(window._hlS); window._hlS=setTimeout(hydrateLazy,150); },{passive:true});
 /* every gallery mutation (full repaint, single insert, outerHTML card replace) re-arms hydration */
 window.addEventListener('DOMContentLoaded',()=>{ const o=$('output'); if(o){
   new MutationObserver(()=>{ clearTimeout(window._hlT); window._hlT=setTimeout(hydrateLazy,40); })
