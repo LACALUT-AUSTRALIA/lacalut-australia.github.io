@@ -406,8 +406,8 @@
   /* ═══ GEMINI CALL (DOM-free) ═══ */
   function dataUrlToInlinePart(d){ const m=/^data:([^;]+);base64,(.*)$/.exec(d||''); return m?{inlineData:{mimeType:m[1],data:m[2]}}:null; }
 
-  // True relative scale of the LACALUT range, measured off the real 3-Part Kit packshot (08/10/2026).
-  const SCALE_LOCK = `TRUE PRODUCT SCALE (hard rule, every image and every edit): LACALUT products keep their real-world size relative to each other and to hands, sinks and props. Toothbrush and 300ml mouthwash bottle are about the SAME height (the brush may be slightly taller, never shorter or stubby). A 75ml toothpaste tube is about 80-85% of the bottle's height and far slimmer; it is NEVER as tall or as wide as the bottle. A 10ml travel tube is tiny (about a finger long); a 50ml travel mouthwash is about a third of the 300ml bottle's height. A product box is slightly larger than the product inside it. Never enlarge one product to make it the hero at the expense of real relative scale. `;
+  // True relative scale of the LACALUT range, confirmed by Quan from the physical products (08/10/2026).
+  const SCALE_LOCK = `TRUE PRODUCT SCALE (hard rule, every image and every edit): LACALUT products keep their real-world size relative to each other and to hands, sinks and props. Toothbrush and 300ml mouthwash bottle are about the SAME height (the brush may be slightly taller, never shorter or stubby). A 75ml toothpaste tube standing upright is AS TALL AS the 300ml bottle or slightly TALLER (never shorter), but far slimmer and flatter, so the bottle stays the bulkier product. A 10ml travel tube is tiny (about a finger long); a 50ml travel mouthwash is about a third of the 300ml bottle's height. A product box is slightly larger than the product inside it. Never enlarge one product to make it the hero at the expense of real relative scale. `;
   async function callGemini(opts){
     const prompt = opts.prompt;
     const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
