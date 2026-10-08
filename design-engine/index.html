@@ -516,8 +516,7 @@ function renderBrains(){
 function selectBrain(id){
   const wasOn = (curBrain===id);
   curBrain=(wasOn?null:id); try{ curBrain?localStorage.setItem('de_brain',curBrain):localStorage.removeItem('de_brain'); }catch(_){}
-  // Picking a format on the left FILTERS the main feed to that format (deselect/clear shows all).
-  galFmtFilter = (curBrain && curBrain!=='mixed') ? curBrain : null;
+  // Picking a format never hides gallery images (Quan 08/10/2026) — the feed's own format filter does that.
   renderBrains(); renderFmtLib(); if(typeof renderGallery==='function') renderGallery(curSku);
 }
 /* ═══ FORMAT LIBRARY — the user's OWN prior renders of the selected format for the CURRENT sku
