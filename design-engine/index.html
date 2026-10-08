@@ -3003,12 +3003,14 @@ async function autoPolish(cardId){
       const cand=await judgeImage(candUrl, rec.sku);
       const fresh=await idbGet(cardId); if(!fresh) return;    // deleted mid-flight
       if(cand && cand.score>fresh.score){
-        fresh.url=candUrl; fresh.score=cand.score; fresh.scoreData=cand.data; fresh.scoredTs=Date.now();
-        fresh.polish={ from:startScore, to:cand.score, passes:pass };
-        fresh.polishPrompt=fix;   // PROVENANCE: the ℹ️ view shows the image was ALSO changed by this auto-polish edit after the main prompt
-        await idbPut(fresh);
-        const cardImg=$(cardId)&&$(cardId).querySelector('img'); if(cardImg) cardImg.src=candUrl;   // live-swap the card image
-        rec=fresh;
+        // NEVER overwrite the original (Quan 08/10/2026 — auto-polish deleted 3 of 4 badges and replaced his image).
+        // The polished attempt lands as its OWN card beside the original; Quan compares and deletes the loser.
+        const nu=Object.assign({}, fresh, { id:'g'+Date.now()+'_polish', url:candUrl, score:cand.score, scoreData:cand.data, scoredTs:Date.now(),
+          ts:Date.now(), label:(fresh.label||'')+' · auto-polished', srcId:fresh.id, parent:null,
+          polish:{ from:startScore, to:cand.score, passes:pass }, polishPrompt:fix });
+        await idbPut(nu);
+        if($(cardId)) { $(cardId).insertAdjacentHTML('beforebegin', cardHTML(nu)); }
+        break;
       } else {
         // the fix didn't beat the original — keep the original, note the attempt, stop (don't burn more passes on a losing line)
         fresh.polish=fresh.polish||{ from:startScore, to:fresh.score, passes:pass, kept:'original' };
