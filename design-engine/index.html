@@ -26,7 +26,9 @@
   .tab.ptab{ font-size:12px; padding:5px 13px; border-width:1.5px; color:#555; }
   .tab.ptab.active{ color:var(--ink); }
   /* layout */
-  .wrap{ display:grid; grid-template-columns:340px 1fr; gap:18px; padding:18px; align-items:start; }
+  /* minmax(0,1fr): the gallery column may NEVER grow wider than the window — wide content scrolls
+     inside its own box instead of pushing the whole page sideways and cutting off cards. */
+  .wrap{ display:grid; grid-template-columns:340px minmax(0,1fr); gap:18px; padding:18px; align-items:start; }
   @media(max-width:900px){ .wrap{ grid-template-columns:1fr; } }
   .panel{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px; }
   .panel h3{ margin:0 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.5px; color:#666; }
@@ -53,11 +55,11 @@
   .adv{ border-top:1px solid var(--line); margin-top:12px; padding-top:12px; }
   .fmt{ display:flex; gap:8px; align-items:center; font-size:12px; color:#666; margin:10px 0; }
   /* output */
-  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
-  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(230px,100%),1fr)); gap:14px; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; min-width:0; }
   .card img{ width:100%; display:block; background:#f0f0f0; }
   .card .meta{ display:flex; flex-wrap:wrap; gap:6px; padding:8px; align-items:center; }
-  .card .meta .t{ font-size:11px; font-weight:700; color:#666; flex:1; }
+  .card .meta .t{ font-size:11px; font-weight:700; color:#666; flex:1 1 120px; min-width:0; overflow-wrap:anywhere; }
   .iconbtn{ border:none; background:#f2f2f2; border-radius:6px; padding:5px 8px; font-size:13px; }
   .vstyle:hover{ border-color:#7c3aed !important; }
   .vstyle.on{ border-color:#7c3aed !important; background:#f3edff !important; color:#7c3aed; box-shadow:0 0 0 1px #7c3aed inset; }
