@@ -893,7 +893,9 @@ async function runGenerate(){
       if(_el){ _el.outerHTML=cardHTML(rec); }
       else if(curTop==='image' && rec.sku===curSku && ptypeOf(rec)===genPtype){ insertCardTop(cardHTML(rec)); }
       // else: safely in IndexedDB — it appears the moment he returns to this product tab (renderGallery pulls it)
-      (TOURN_ACTIVE?scoreCreative(rec.id):autoPolish(rec.id)).catch(()=>{});   // auto-score + AUTO-POLISH every fresh render (tournament judges RAW brain quality — no polish)
+      // Score only — auto-polish OFF (Quan 08/10/2026: "why did you create two images and waste money?").
+      // Auto-polish fired a hidden paid edit on every render under 80, adding an unrequested card. Qty means Qty.
+      scoreCreative(rec.id).catch(()=>{});
     }catch(e){ markCardFailed(id, e.message); }
     finally{ const _pi=pendingImgGens.findIndex(p=>p.id===id); if(_pi>=0) pendingImgGens.splice(_pi,1); }
   }
