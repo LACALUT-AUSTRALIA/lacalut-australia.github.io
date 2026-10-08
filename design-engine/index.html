@@ -960,19 +960,20 @@ function toggleCopySel(id){ if(_copySel.has(id)) _copySel.delete(id); else _copy
 function clearCopySel(){ _copySel.clear(); updateCopySelUI(); }
 function updateCopySelUI(){
   document.querySelectorAll('.card').forEach(c=>{ c.style.outline=_copySel.has(c.id)?'3px solid #7c3aed':''; c.style.outlineOffset=_copySel.has(c.id)?'2px':'';
-    const b=[...c.querySelectorAll('.iconbtn')].find(x=>x.textContent==='☑️'||x.textContent==='✅');
-    if(b){ const on=_copySel.has(c.id); b.textContent=on?'✅':'☑️'; b.style.background=on?'#7c3aed':''; b.style.color=on?'#fff':''; } });
+    const b=[...c.querySelectorAll('.iconbtn')].find(x=>x.textContent==='📋'||x.textContent==='✅');
+    if(b){ const on=_copySel.has(c.id); b.textContent=on?'✅':'📋'; b.style.background=on?'#7c3aed':''; b.style.color=on?'#fff':''; } });
   let bar=$('copySelBar');
   if(!_copySel.size){ if(bar) bar.remove(); return; }
   if(!bar){ bar=document.createElement('div'); bar.id='copySelBar';
     bar.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:9999;background:#1f2430;color:#fff;border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:13px';
     document.body.appendChild(bar); }
   bar.innerHTML=`<b>${_copySel.size} selected</b>
-    <button onclick="copySelectedCards()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">📋 Copy selected — ONE image for the terminal</button>
+    <button onclick="copySelectedCards()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">${_copySel.size===1?'📋 Copy image':'📋 Copy '+_copySel.size+' — ONE image for the terminal'}</button>
     <button onclick="clearCopySel()" style="background:transparent;color:#bbb;border:1px solid #555;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;font-family:inherit">✕ Clear</button>`;
 }
 async function copySelectedCards(){
   const ids=[..._copySel]; if(!ids.length) return;
+  if(ids.length===1){ await copyCardImage(ids[0]); clearCopySel(); return; }   // single tick = straight full-res copy (with the repo-path toast)
   if(ids.length>6){ toast('⚠️ Max 6 at a time — the stitched image gets too big'); return; }
   try{
     const imgs=[];
@@ -1008,8 +1009,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
-   <button class="iconbtn" title="Copy the full-res image to the clipboard — paste straight into a Warp/Facy terminal; the toast shows the repo file path (click it to copy the path)" onclick="copyCardImage('${rec.id}')">📋</button>
-   <button class="iconbtn" title="Multi-copy: tick 2-3 cards, then hit 'Copy selected' in the floating bar — all of them paste into the terminal as ONE stitched image" onclick="toggleCopySel('${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'☑️'}</button>
+   <button class="iconbtn" title="Copy: tick 1 card for a straight full-res copy, or 2-6 cards to paste them all as ONE stitched image — then hit the floating Copy bar" onclick="toggleCopySel('${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'📋'}</button>
    <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
