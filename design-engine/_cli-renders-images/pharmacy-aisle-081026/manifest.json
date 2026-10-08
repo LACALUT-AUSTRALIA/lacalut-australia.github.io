@@ -20,5 +20,16 @@
     "brief": "POV shelf pick - aisle full of promises, this one off a German pharmacy shelf",
     "angle": "German pharmacy provenance vs aisle overwhelm",
     "prompt": "editImage box swap + background melt, then deterministic PIL pass: top-band blur, bottom scrim, headline/sub overlay, red CTA pill 'Shop the German one'"
+  },
+  {
+    "id": "g1791419090839",
+    "filename": "pharmacy-aisle-pov-c4.png",
+    "sku": "aktiv",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "AKTIV Pharmacy Aisle C4 - 'Standing in the toothpaste aisle. Again.' (BIG type)",
+    "brief": "Standing in the toothpaste aisle. Again. This time, grab the German one.",
+    "angle": "Serial switcher stuck at the aisle - grab the German one",
+    "prompt": "Clean base via one editImage text-removal pass (_clean-base-c4.png kept for $0 future text changes) + deterministic PIL text: headline 102px (9.4% width) top, sub 62% of headline, CTA pill bottom"
   }
 ]
