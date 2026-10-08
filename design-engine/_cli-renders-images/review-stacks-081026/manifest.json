@@ -1,33 +1,33 @@
 [
   {
-    "id": "g1791420823759",
-    "filename": "stack-aktiv.png",
+    "id": "g1791421105190",
+    "filename": "stack-aktiv-v2.png",
     "sku": "aktiv",
     "mode": "social",
     "ptype": "toothpaste",
-    "label": "AKTIV Review Stack - Their gums. Their words. (Margy + Sue)",
+    "label": "AKTIV Review Stack - Their gums. Their words. (Margy + Sue) v2 (full box+tube pack)",
     "brief": "Real FB comments: gums - destination AKTIV PDP",
     "angle": "Social proof - real customer comments, formula-specific",
     "prompt": "Deterministic PIL composite: genuine comment cards captured from lacalut.com.au/pages/reviews (unedited text), 100px headline, real packshots in own band"
   },
   {
-    "id": "g1791420823760",
-    "filename": "stack-flora.png",
+    "id": "g1791421105191",
+    "filename": "stack-flora-v2.png",
     "sku": "flora",
     "mode": "social",
     "ptype": "toothpaste",
-    "label": "FLORA Review Stack - Their breath. Their words. (Heather + Hurclues)",
+    "label": "FLORA Review Stack - Their breath. Their words. (Heather + Hurclues) v2 (full box+tube pack)",
     "brief": "Real FB comments: fresh breath - destination FLORA PDP",
     "angle": "Social proof - real customer comments, formula-specific",
     "prompt": "Deterministic PIL composite: genuine comment cards captured from lacalut.com.au/pages/reviews (unedited text), 100px headline, real packshots in own band"
   },
   {
-    "id": "g1791420823761",
-    "filename": "stack-white-repair.png",
+    "id": "g1791421105192",
+    "filename": "stack-white-repair-v2.png",
     "sku": "white-repair",
     "mode": "social",
     "ptype": "toothpaste",
-    "label": "W&R Review Stack - Their smiles. Their words. (Jane + Shelley)",
+    "label": "W&R Review Stack - Their smiles. Their words. (Jane + Shelley) v2 (full box+tube pack)",
     "brief": "Real FB comments: clean/white - destination WHITE & REPAIR PDP",
     "angle": "Social proof - real customer comments, formula-specific",
     "prompt": "Deterministic PIL composite: genuine comment cards captured from lacalut.com.au/pages/reviews (unedited text), 100px headline, real packshots in own band"
