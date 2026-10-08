@@ -281,6 +281,13 @@
     <button class="btn primary" id="cloneGo" onclick="runClone()" disabled>🧬 Deconstruct &amp; Rebuild for LACALUT</button></div>
 </div></dialog>
 
+<dialog id="binDlg" style="max-width:900px"><div class="dlg">
+  <h2>🗑 Bin — deleted images</h2>
+  <p style="font-size:12px;color:#666;margin:0 0 10px">Everything deleted from now on lands here (restorable). Dashed cards = repo renders deleted before the Bin existed — re-importable from their files.</p>
+  <div id="binGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:60vh;overflow:auto"></div>
+  <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="btn" onclick="binDlg.close()">Close</button></div>
+</div></dialog>
+
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
   <div id="editSrcSlot" style="margin:0 0 10px" ondragover="editDragOver(event)" ondragenter="editDragOver(event)" ondragleave="editDragLeave(event)" ondrop="editDrop(event)"></div>
@@ -2004,7 +2011,34 @@ function initCardDnD(){
 
 async function toggleFav(id,btn){ const db=await idb(); const t=db.transaction('gens','readwrite'); const st=t.objectStore('gens'); const rq=st.get(id);
   rq.onsuccess=()=>{ const r=rq.result; if(!r)return; r.fav=!r.fav; st.put(r); btn.textContent=r.fav?'❤️':'🤍'; }; }
-async function delGen(id){ if(!confirm('Delete this image?'))return; await idbDel(id); addCliTombstone(id); const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku); }
+/* ── SOFT DELETE + BIN (Quan 08/10/2026, after a mistaken delete): deleting flags the record
+   deleted (restorable from the 🗑 Bin) instead of destroying it; the toast offers instant UNDO.
+   The Bin also lists tombstoned CLI renders whose files still sit in the repo — restorable too. ── */
+async function delGen(id){ if(!confirm('Delete this image? (It goes to the 🗑 Bin — restorable.)'))return;
+  const rec=await idbGet(id); if(rec){ rec.deleted=Date.now(); await idbPut(rec); }
+  addCliTombstone(id);
+  const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku);
+  const t=toast('🗑 Deleted — click here to UNDO', true);
+  if(t){ t.style.cursor='pointer'; clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.opacity='0'; t.onclick=null; },9000);
+    t.onclick=async()=>{ await restoreGen(id); t.style.opacity='0'; t.onclick=null; }; }
+}
+async function restoreGen(id){ const rec=await idbGet(id); if(rec&&rec.deleted){ delete rec.deleted; await idbPut(rec); }
+  clearCliTombstones([id]); renderGallery(curSku); toast('↩️ Restored'); }
+async function restoreCliGhost(id){ clearCliTombstones([id]); binDlg.close(); await autoImportCliRenders(); renderGallery(curSku); toast('↩️ Re-imported from the repo'); }
+async function openBin(){
+  const grid=$('binGrid'); grid.innerHTML='<span style="font-size:12px;color:#888">Loading…</span>'; binDlg.showModal();
+  const gens=(await idbAllStore('gens')).filter(r=>r.deleted).sort((a,b)=>(b.deleted||0)-(a.deleted||0)).slice(0,60);
+  const dead=cliTombstones(); const ghosts=[];
+  try{ const batches=await (await fetch('./_cli-renders-images/_index.json',{cache:'no-store'})).json();
+    for(const b of (Array.isArray(batches)?batches:[])){
+      try{ const mf=await (await fetch('./_cli-renders-images/'+b+'/manifest.json',{cache:'no-store'})).json();
+        for(const m of mf){ if(dead.has(m.id) && !(await idbGet(m.id))) ghosts.push({...m,_batch:b}); } }catch(_){}
+    } }catch(_){}
+  let h='';
+  for(const r of gens) h+=`<div style="border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff"><img src="${r.url}" style="width:100%;display:block"><div style="padding:6px;font-size:10.5px;font-weight:700;color:#666">${(SKUS[r.sku]?.name||r.sku||'')+' · '+(r.label||r.id)}</div><button class="btn" style="width:100%;font-size:12px;border-radius:0" onclick="restoreGen('${r.id}');this.closest('div[style]').remove()">↩️ Restore</button></div>`;
+  for(const m of ghosts) h+=`<div style="border:1px dashed #b08c3d;border-radius:10px;overflow:hidden;background:#fffdf5"><img src="./_cli-renders-images/${m._batch}/${m.filename}" style="width:100%;display:block"><div style="padding:6px;font-size:10.5px;font-weight:700;color:#8a6d1a">repo render · ${m.label||m.id}</div><button class="btn" style="width:100%;font-size:12px;border-radius:0" onclick="restoreCliGhost('${m.id}')">↩️ Re-import</button></div>`;
+  grid.innerHTML=h||'<span style="font-size:12px;color:#888">Bin is empty.</span>';
+}
 /* ═══ MOVE IMAGE TO ANOTHER SKU TAB ═══ */
 function moveOptions(curSkuOfCard, curPtypeOfCard){
   // Each SKU is an <optgroup> with its 3 forms (Toothpaste / Mouthwash / Toothbrush) as a submenu.
@@ -2456,6 +2490,7 @@ function galleryBarHTML(sku, formats, collections){
   return `<div id="galBar" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
     <input id="galSearch" type="text" placeholder="🔎 Search images… (headline, format, brief)" value="${(galSearchText||'').replace(/"/g,'&quot;')}" oninput="onGalSearch(this.value)" style="flex:1 1 220px;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px">
     <button class="galchip${!anyFilter?' on':''}" onclick="clearGalFilters()" title="Show every image">All${!anyFilter?' ✓':''}</button>
+    <button class="galchip" onclick="openBin()" title="Deleted images — restore them from here">🗑 Bin</button>
     ${collChips}${collChips?'<span style="width:1px;height:20px;background:var(--line);margin:0 2px"></span>':''}${chips}${moreBtn}
     ${anyFilter?`<button class="galchip clear" onclick="clearGalFilters()" title="Clear filters" style="background:#fff;border-color:#CF102D;color:#CF102D">✕ Clear${activeName?' · '+activeName:''}</button>`:''}
   </div>`;
@@ -2470,7 +2505,7 @@ function insertCardTop(html){ const out=$('output'); const bar=$('galBar'); if(b
 async function renderGallery(sku){
   if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
   const all=await idbBySku(sku);
-  let recs=all.filter(r=>ptypeOf(r)===curPtype);   // untagged legacy = toothpaste, never hidden
+  let recs=all.filter(r=>ptypeOf(r)===curPtype && !r.deleted);   // untagged legacy = toothpaste, never hidden; soft-deleted live in the 🗑 Bin
   _recById={}; for(const r of recs) _recById[r.id]=r;
   // ── NO VERSION STACKING (removed 04/10/2026 per Quan): every record — original, edit, resize — is its
   //    own standalone card, shown side by side so he can compare and delete the one he doesn't want. ──
