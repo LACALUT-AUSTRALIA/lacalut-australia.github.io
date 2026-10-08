@@ -1,0 +1,13 @@
+[
+  {
+    "id": "g1791429652529",
+    "filename": "flora-journal-v3.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA Journal v3 - What didn't work for my breath (big tagline + Shop Now)",
+    "brief": "Crossed-out journal list of breath cover-ups - FLORA PDP",
+    "angle": "Mechanism: fresh breath vs cover-ups",
+    "prompt": "Quan engine edit (list + cleared bottom) + deterministic PIL tagline 62px Arial Black, sub 42px, red Shop Now pill"
+  }
+]
