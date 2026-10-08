@@ -282,8 +282,8 @@
 </div></dialog>
 
 <dialog id="binDlg" style="max-width:900px"><div class="dlg">
-  <h2>🗑 Bin — deleted images</h2>
-  <p style="font-size:12px;color:#666;margin:0 0 10px">Everything deleted from now on lands here (restorable). Dashed cards = repo renders deleted before the Bin existed — re-importable from their files.</p>
+  <h2 id="binTitle">🗑 Bin — deleted images</h2>
+  <p id="binIntro" style="font-size:12px;color:#666;margin:0 0 10px"></p>
   <div id="binGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;max-height:60vh;overflow:auto"></div>
   <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="btn" onclick="binDlg.close()">Close</button></div>
 </div></dialog>
@@ -1029,7 +1029,8 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="Copy: tick 1 card for a straight full-res copy, or 2-6 cards to paste them all as ONE stitched image — then hit the floating Copy bar" onclick="toggleCopySel('${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'📋'}</button>
    <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
-   <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
+   <button class="iconbtn" title="Archive — park this creative indefinitely for later (leaves the gallery, restore anytime from the 📦 Archive chip)" onclick="archiveGen('${rec.id}')">📦</button>
+   <button class="iconbtn" title="delete (goes to the 🗑 Bin — restorable)" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
    ${rec.sentToCalendar
@@ -2014,8 +2015,25 @@ async function delGen(id){ if(!confirm('Delete this image? (It goes to the 🗑 
 async function restoreGen(id){ const rec=await idbGet(id); if(rec&&rec.deleted){ delete rec.deleted; await idbPut(rec); }
   clearCliTombstones([id]); renderGallery(curSku); toast('↩️ Restored'); }
 async function restoreCliGhost(id){ clearCliTombstones([id]); binDlg.close(); await autoImportCliRenders(); renderGallery(curSku); toast('↩️ Re-imported from the repo'); }
+/* ── ARCHIVE (Quan 08/10/2026): park a creative indefinitely for later (e.g. recycle in 6 months)
+   without deleting it — leaves the main gallery, lives under the 📦 Archive chip, one-click restore. ── */
+async function archiveGen(id){ const rec=await idbGet(id); if(!rec) return; rec.archived=Date.now(); await idbPut(rec);
+  const el=$(id); if(el)el.remove(); if(!$('output').children.length) renderGallery(curSku);
+  const t=toast('📦 Archived — click here to UNDO (restore anytime via the 📦 Archive chip)', true);
+  if(t){ t.style.cursor='pointer'; clearTimeout(t._h); t._h=setTimeout(()=>{ t.style.opacity='0'; t.onclick=null; },9000);
+    t.onclick=async()=>{ await unarchiveGen(id); t.style.opacity='0'; t.onclick=null; }; }
+}
+async function unarchiveGen(id){ const rec=await idbGet(id); if(rec&&rec.archived){ delete rec.archived; await idbPut(rec); } renderGallery(curSku); toast('↩️ Back in the gallery'); }
+async function openArchive(){
+  const grid=$('binGrid'); $('binTitle').textContent='📦 Archive — parked for later'; $('binIntro').textContent='Kept indefinitely — recycle whenever the moment is right. Restore puts it straight back in the gallery.';
+  grid.innerHTML='<span style="font-size:12px;color:#888">Loading…</span>'; binDlg.showModal();
+  const recs=(await idbAllStore('gens')).filter(r=>r.archived && !r.deleted).sort((a,b)=>(b.archived||0)-(a.archived||0));
+  grid.innerHTML=recs.map(r=>`<div style="border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff"><img src="${r.url}" style="width:100%;display:block"><div style="padding:6px;font-size:10.5px;font-weight:700;color:#666">${(SKUS[r.sku]?.name||r.sku||'')+' · '+(r.label||r.id)}</div><button class="btn" style="width:100%;font-size:12px;border-radius:0" onclick="unarchiveGen('${r.id}');this.parentNode.remove()">↩️ Restore to gallery</button></div>`).join('')
+    || '<span style="font-size:12px;color:#888">Nothing archived yet — hit 📦 on a card to park it for later.</span>';
+}
 async function openBin(){
-  const grid=$('binGrid'); grid.innerHTML='<span style="font-size:12px;color:#888">Loading…</span>'; binDlg.showModal();
+  const grid=$('binGrid'); $('binTitle').textContent='🗑 Bin — deleted images'; $('binIntro').textContent='Everything deleted lands here (restorable). Dashed cards = repo renders deleted before the Bin existed — re-importable from their files.';
+  grid.innerHTML='<span style="font-size:12px;color:#888">Loading…</span>'; binDlg.showModal();
   const gens=(await idbAllStore('gens')).filter(r=>r.deleted).sort((a,b)=>(b.deleted||0)-(a.deleted||0)).slice(0,60);
   const dead=cliTombstones(); const ghosts=[];
   try{ const batches=await (await fetch('./_cli-renders-images/_index.json',{cache:'no-store'})).json();
@@ -2479,6 +2497,7 @@ function galleryBarHTML(sku, formats, collections){
   return `<div id="galBar" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
     <input id="galSearch" type="text" placeholder="🔎 Search images… (headline, format, brief)" value="${(galSearchText||'').replace(/"/g,'&quot;')}" oninput="onGalSearch(this.value)" style="flex:1 1 220px;min-width:180px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px">
     <button class="galchip${!anyFilter?' on':''}" onclick="clearGalFilters()" title="Show every image">All${!anyFilter?' ✓':''}</button>
+    <button class="galchip" onclick="openArchive()" title="Creatives parked for later — restore them anytime">📦 Archive</button>
     <button class="galchip" onclick="openBin()" title="Deleted images — restore them from here">🗑 Bin</button>
     ${collChips}${collChips?'<span style="width:1px;height:20px;background:var(--line);margin:0 2px"></span>':''}${chips}${moreBtn}
     ${anyFilter?`<button class="galchip clear" onclick="clearGalFilters()" title="Clear filters" style="background:#fff;border-color:#CF102D;color:#CF102D">✕ Clear${activeName?' · '+activeName:''}</button>`:''}
@@ -2494,7 +2513,7 @@ function insertCardTop(html){ const out=$('output'); const bar=$('galBar'); if(b
 async function renderGallery(sku){
   if(typeof curTop!=='undefined' && curTop==='video') return renderVideoGallery(sku);   // video mode owns the grid
   const all=await idbBySku(sku);
-  let recs=all.filter(r=>ptypeOf(r)===curPtype && !r.deleted);   // untagged legacy = toothpaste, never hidden; soft-deleted live in the 🗑 Bin
+  let recs=all.filter(r=>ptypeOf(r)===curPtype && !r.deleted && !r.archived);   // untagged legacy = toothpaste, never hidden; deleted → 🗑 Bin, parked → 📦 Archive
   _recById={}; for(const r of recs) _recById[r.id]=r;
   // ── NO VERSION STACKING (removed 04/10/2026 per Quan): every record — original, edit, resize — is its
   //    own standalone card, shown side by side so he can compare and delete the one he doesn't want. ──
