@@ -1,11 +1,11 @@
 [
   {
-    "id": "g1791421105190",
-    "filename": "stack-aktiv-v2.png",
+    "id": "g1791421155389",
+    "filename": "stack-aktiv-v3.png",
     "sku": "aktiv",
     "mode": "social",
     "ptype": "toothpaste",
-    "label": "AKTIV Review Stack - Their gums. Their words. (Margy + Sue) v2 (full box+tube pack)",
+    "label": "AKTIV Review Stack v3 - Their gums. Their words. (Sue + Natalie)",
     "brief": "Real FB comments: gums - destination AKTIV PDP",
     "angle": "Social proof - real customer comments, formula-specific",
     "prompt": "Deterministic PIL composite: genuine comment cards captured from lacalut.com.au/pages/reviews (unedited text), 100px headline, real packshots in own band"
@@ -22,12 +22,12 @@
     "prompt": "Deterministic PIL composite: genuine comment cards captured from lacalut.com.au/pages/reviews (unedited text), 100px headline, real packshots in own band"
   },
   {
-    "id": "g1791421105192",
-    "filename": "stack-white-repair-v2.png",
+    "id": "g1791421155391",
+    "filename": "stack-white-repair-v3.png",
     "sku": "white-repair",
     "mode": "social",
     "ptype": "toothpaste",
-    "label": "W&R Review Stack - Their smiles. Their words. (Jane + Shelley) v2 (full box+tube pack)",
+    "label": "W&R Review Stack v3 - Their smiles. Their words. (Margy + Jane)",
     "brief": "Real FB comments: clean/white - destination WHITE & REPAIR PDP",
     "angle": "Social proof - real customer comments, formula-specific",
     "prompt": "Deterministic PIL composite: genuine comment cards captured from lacalut.com.au/pages/reviews (unedited text), 100px headline, real packshots in own band"
