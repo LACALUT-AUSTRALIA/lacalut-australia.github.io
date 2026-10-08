@@ -284,6 +284,17 @@
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
   <div id="editSrcSlot" style="margin:0 0 10px" ondragover="editDragOver(event)" ondragenter="editDragOver(event)" ondragleave="editDragLeave(event)" ondrop="editDrop(event)"></div>
+  <!-- Mirror action row at the TOP (under the edit image) — same controls as the row under the prompt. -->
+  <div style="display:flex;gap:8px;align-items:center;margin:0 0 10px">
+    <label style="font-size:12px;font-weight:600">Qty
+      <select id="editQty2" onchange="syncEditQty(this.value)" style="margin-left:5px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+    <span style="font-size:11px;color:#888">variations</span>
+    <span style="flex:1"></span>
+    <span id="editSizePreview2"></span>
+    <button class="btn" onclick="editDlg.close()">Cancel</button>
+    <button class="btn primary" onclick="applyEdit()">✨ Apply edit</button>
+  </div>
   <label class="row" style="margin:0 0 4px;font-size:12px">📐 Output size <span style="color:#999;font-weight:600">— the edit renders at this size (same as the main page)</span></label>
   <div class="modes" id="editModes" style="margin:0 0 10px"></div>
   <p style="font-size:12px;color:#666;margin:0 0 8px">Keeps the rest of the image identical. e.g. "change the badge text to Clinical Formula", or "replace the three toothpaste tubes with the exact products in the reference photos below (left = Sensitive, middle = Aktiv, right = White &amp; Repair)".</p>
@@ -294,24 +305,28 @@
     <button class="btn" style="font-size:12px;padding:5px 10px" onclick="presetUpright()">🧴 Stand tube upright</button>
     <button class="btn" style="font-size:12px;padding:5px 10px;margin-left:6px" onclick="presetBoxUpright()">📦 Stand box upright</button>
     <span style="font-size:11px;color:#888;margin-left:6px">one-click fills the instruction box</span></div>
-  <label class="row" style="margin-top:12px">📎 Product reference library <span style="color:#999;font-weight:600">— upload once, then click to select for this edit</span></label>
-  <div id="refLibGrid" style="margin-top:6px"></div>
-  <p style="font-size:11px;color:#888;margin:6px 0 0">Empty slot = upload once (saved forever in this browser). Click a photo to select it as a reference (highlighted ✓ = selected). Selected products are what the edit will insert.</p>
-  <label class="row" style="margin-top:10px;font-size:12px;background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;padding:8px 10px;gap:8px;align-items:flex-start">
-    <input type="checkbox" id="batchPerRef" style="margin-top:2px">
-    <span><b>Batch mode</b> — render a <b>separate image per selected reference</b> (uses more credits). <b>Leave OFF</b> to make <b>ONE image using all the references together</b> (e.g. swap 4 products into one composite).</span></label>
-  <label class="row" style="margin-top:14px;font-size:12px;font-weight:700">📐 Output size — final check before applying</label>
-  <div class="modes" id="editModes2" style="margin:4px 0 8px"></div>
-  <div style="display:flex;gap:8px;align-items:center;margin-top:12px">
+  <!-- APPLY lives right under the prompt (Quan 08/10/2026 — the edit flow is clear → paste → apply,
+       dozens of times a day; the rarely-used reference library collapses below). -->
+  <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
     <label style="font-size:12px;font-weight:600">Qty
-      <select id="editQty" style="margin-left:5px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
+      <select id="editQty" onchange="syncEditQty(this.value)" style="margin-left:5px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:12px">
         <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-    <span style="font-size:11px;color:#888">variations of this one edit</span>
+    <span style="font-size:11px;color:#888">variations</span>
     <span style="flex:1"></span>
     <span id="editSizePreview"></span>
     <button class="btn" onclick="editDlg.close()">Cancel</button>
-    <button class="btn primary" onclick="applyEdit()">Apply edit</button>
+    <button class="btn primary" onclick="applyEdit()">✨ Apply edit</button>
   </div>
+  <details id="refLibWrap" ontoggle="updateRefSummary()" style="margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:8px 10px">
+    <summary id="refLibSummary" style="cursor:pointer;font-size:12.5px;font-weight:700;list-style-position:inside">📎 Product reference library — none selected · click to open</summary>
+    <p style="font-size:11px;color:#888;margin:8px 0 0">Upload once (saved forever in this browser). Click a photo to select it as a reference (highlighted ✓ = selected). Selected products are what the edit will insert.</p>
+    <div id="refLibGrid" style="margin-top:6px"></div>
+    <label class="row" style="margin-top:10px;font-size:12px;background:#fff8e6;border:1px solid #f0d98a;border-radius:8px;padding:8px 10px;gap:8px;align-items:flex-start">
+      <input type="checkbox" id="batchPerRef" style="margin-top:2px">
+      <span><b>Batch mode</b> — render a <b>separate image per selected reference</b> (uses more credits). <b>Leave OFF</b> to make <b>ONE image using all the references together</b> (e.g. swap 4 products into one composite).</span></label>
+    <label class="row" style="margin-top:14px;font-size:12px;font-weight:700">📐 Output size — final check before applying</label>
+    <div class="modes" id="editModes2" style="margin:4px 0 8px"></div>
+  </details>
 </div></dialog>
 
 <!-- ℹ️ PROVENANCE — the prompts + settings that made an image, with its original → edit lineage -->
@@ -631,14 +646,17 @@ function renderEditModes(){
   renderEditSrc(); renderEditSizePreview();                // live-preview the crop at the chosen size
 }
 // Mini preview beside Apply edit — the actual image framed at the EXACT output shape + dims.
-function renderEditSizePreview(){ const el=$('editSizePreview'); if(!el) return;
+// Fills BOTH action rows (top mirror under the edit image + the row under the prompt).
+function renderEditSizePreview(){
   const ar=(MODES[curMode].ar||'4:5').split(' ')[0].replace(':','/');
-  el.innerHTML=`<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-right:4px">
+  const html=`<span style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin-right:4px">
     <span style="display:block;height:58px;aspect-ratio:${ar};border:2px solid #d9a600;border-radius:6px;overflow:hidden;background:#fffbe6">
       ${typeof _editSrc==='string'&&_editSrc?`<img src="${_editSrc}" style="width:100%;height:100%;object-fit:cover;display:block">`:''}
     </span>
     <small style="font-size:10px;font-weight:800;color:#8a6d1a">${MODES[curMode].dims}</small></span>`;
+  for(const id of ['editSizePreview','editSizePreview2']){ const el=$(id); if(el) el.innerHTML=html; }
 }
+function syncEditQty(v){ for(const id of ['editQty','editQty2']){ const el=$(id); if(el) el.value=v; } }
 function resolveBrain(){ if(curBrain==='mixed') return BRAINS[Math.floor(Math.random()*BRAINS.length)]; return BRAINS.find(b=>b.id===curBrain)||null; }
 /* ═══ PRODUCT PHOTOS — per SKU + product-type (toothpaste/mouthwash/toothbrush).
    Manual uploads win and persist; otherwise the 3 slots AUTO-FILL live from the saved
@@ -943,7 +961,11 @@ function renderRefLibGrid(){
     }).join('');
   }
   wrap.innerHTML=h+`</div>`;
+  updateRefSummary();
 }
+// Collapsed-summary count — selected refs stay visible even with the library folded shut.
+function updateRefSummary(){ const sm=$('refLibSummary'); if(!sm) return;
+  sm.textContent='📎 Product reference library — '+(_editRefs.length?_editRefs.length+' selected':'none selected')+' · click to '+($('refLibWrap')&&$('refLibWrap').open?'close':'open'); }
 function pickRefSlot(key){ fileToDataUrl(async d=>{ const small=await compressRef(d,1024); _refLib[key]=small; try{ await refPut(key,small); }catch(e){ alert('Could not save (storage full?).'); } renderRefLibGrid(); refreshSlotsIfAuto(); }); }
 function toggleRefSelect(key){ const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); else _editRefs.push(key); renderRefLibGrid(); }
 async function removeRef(key){ if(!confirm('Remove this saved reference photo?'))return; delete _refLib[key]; const i=_editRefs.indexOf(key); if(i>=0)_editRefs.splice(i,1); try{ await refDel(key); }catch(e){} renderRefLibGrid(); refreshSlotsIfAuto(); }
@@ -2517,7 +2539,7 @@ async function editImage(cardId){
   const _draft=editDraftGet(); $('editInstruction').value=_draft||_srPrompt;   // unfired draft beats provenance prefill — never lose pasted work
   renderEditSrc(); renderRefLibGrid();
   if($('editProvNote'))$('editProvNote').hidden=!(_srPrompt && !_draft);
-  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>{$('editInstruction').focus();autoGrowEdit();},60);
+  if($('batchPerRef'))$('batchPerRef').checked=false; syncEditQty('1'); renderEditModes(); editDlg.showModal(); setTimeout(()=>{$('editInstruction').focus();autoGrowEdit();},60);
 }
 function renderEditSrc(){ const w=$('editSrcSlot'); if(!w) return;
   const arw=(MODES[curMode].ar||'4:5').split(' ')[0].replace(':','/');
@@ -2549,7 +2571,7 @@ function presetBoxUpright(){
 function editUpload(){
   if(!KEYS.gemini){ openKeys(); return; }
   _editRefs=[]; renderEditSrc(); renderRefLibGrid(); if($('editProvNote'))$('editProvNote').hidden=true; $('editInstruction').value=editDraftGet();
-  if($('batchPerRef'))$('batchPerRef').checked=false; if($('editQty'))$('editQty').value='1'; renderEditModes(); editDlg.showModal(); setTimeout(()=>{$('editInstruction').focus();autoGrowEdit();},60);
+  if($('batchPerRef'))$('batchPerRef').checked=false; syncEditQty('1'); renderEditModes(); editDlg.showModal(); setTimeout(()=>{$('editInstruction').focus();autoGrowEdit();},60);
 }
 function callGeminiEditRefs(imgDataUrl, instruction, refKeys, seed){
   const refImgs=refKeys.map(k=>_refLib[k]).filter(Boolean);
