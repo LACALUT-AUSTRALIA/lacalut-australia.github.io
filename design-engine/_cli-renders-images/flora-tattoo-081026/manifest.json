@@ -1,0 +1,13 @@
+[
+  {
+    "id": "g1791446991977",
+    "filename": "flora-tattoo-gum-v2.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA Tattoo - I never get offered gum v2 (tube on bench rail, no pill)",
+    "brief": "Woman's back tattoo 'I never get offered gum.' at a beach cafe - FLORA PDP",
+    "angle": "Confidence flex: nobody hints with gum",
+    "prompt": "Quan-approved fix: AI edit removed cropped tube + blue pill (clean base kept as _clean-base-tattoo.png), official Lac_flora_TU_075 composited resting on bench rail via PIL"
+  }
+]
