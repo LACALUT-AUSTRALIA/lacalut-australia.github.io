@@ -953,26 +953,13 @@ async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)
 async function idbGet(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').get(id); rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
-function versionBarHTML(rec, versions){
-  if(!versions || versions.length<2) return '';
-  const root = versions[0].parent || versions[0].id;
-  const curIdx = versions.findIndex(v=>v.id===rec.id);
-  const dots = versions.map((v,i)=>`<button onclick="showVersion('${root}',${i})" title="Version ${i+1}${i===versions.length-1?' (latest)':''}" style="cursor:pointer;border:none;background:none;padding:0 2px;font-size:12px;line-height:1;color:${i===curIdx?'#CF102D':'#bbb'}">●</button>`).join('');
-  const prev=Math.max(0,curIdx-1), next=Math.min(versions.length-1,curIdx+1);
-  return `<div class="verbar" style="grid-column:1/-1;display:flex;align-items:center;gap:6px;margin:0 0 4px;font-size:11px;font-weight:700;color:#8a63d2">
-    <button onclick="showVersion('${root}',${prev})" ${curIdx===0?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===0?'opacity:.4':''}">◀</button>
-    <span title="This creative has ${versions.length} saved versions — nothing is lost">🗂 v${curIdx+1} / ${versions.length}</span>
-    <span style="letter-spacing:1px">${dots}</span>
-    <button onclick="showVersion('${root}',${next})" ${curIdx===versions.length-1?'disabled':''} style="cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:6px;padding:1px 6px;${curIdx===versions.length-1?'opacity:.4':''}">▶</button>
-  </div>`;
-}
 function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the lazy hydrator (freeze fix 07/10)
   const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350';
   // FREEZE FIX (07/10/2026): never inline the multi-MB base64 into innerHTML — ~80 cards × 2-3MB
   // made every renderGallery parse hundreds of MB of HTML and froze the tab for minutes. The img
   // ships as a tiny placeholder with data-lazy=<id>; the IntersectionObserver hydrator swaps in a
   // cached blob: URL only when the card scrolls near the viewport.
-  return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true">${versionBarHTML(rec,versions)}<div class="imgwrap" style="position:relative"><img data-lazy="${rec.id}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" style="aspect-ratio:${ar}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}${sizeBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
+  return `<div class="card" id="${rec.id}" data-sku="${rec.sku}" draggable="true"><div class="imgwrap" style="position:relative"><img data-lazy="${rec.id}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'/%3E" style="aspect-ratio:${ar}" draggable="false">${collectionBadgeHTML(rec)}${scoreBadgeHTML(rec)}${sizeBadgeHTML(rec)}<div class="txtov" id="ov-${rec.id}" style="aspect-ratio:${ar}">${overlayPreviewHTML(rec)}</div></div>
   <div class="meta"><span class="t">${skuName} · ${rec.label}</span>
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Provenance — the exact prompt + settings that made this image, and its original → edit lineage" onclick="showProv('${rec.id}')">ℹ️</button>
@@ -2423,7 +2410,7 @@ async function renderGallery(sku){
   // ── NO VERSION STACKING (removed 04/10/2026 per Quan): every record — original, edit, resize — is its
   //    own standalone card, shown side by side so he can compare and delete the one he doesn't want. ──
   window._versionsByRoot=null;
-  let reps=recs.map(r=>({ rep:r, list:[r], root:r.id }));   // list:[r] → versionBarHTML renders nothing (needs ≥2)
+  let reps=recs.map(r=>({ rep:r, list:[r], root:r.id }));
   // ── FORMAT CHIPS: counts per brain across ALL reps (before filtering) so chips never vanish ──
   const fmtCount=new Map();
   for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
