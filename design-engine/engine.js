@@ -407,6 +407,7 @@
   function dataUrlToInlinePart(d){ const m=/^data:([^;]+);base64,(.*)$/.exec(d||''); return m?{inlineData:{mimeType:m[1],data:m[2]}}:null; }
 
   // True relative scale of the LACALUT range, confirmed by Quan from the physical products (08/10/2026).
+  const TYPE_FLOOR = `TYPE SIZE FLOOR (hard rule, every image and every edit, Quan 08/10/2026): this ad is read on a small phone, so EVERY piece of text is BIG, not just the headline. That includes sub-lines, support lines, badge and seal text, strips, chips and CTA pills. No text line anywhere may have a letter height (cap height) under about 3.5% of the image height; the headline is about 8% or more, and every other line is at least half the headline size. A seal or badge carrying words is LARGE (at least ~22% of the image width) with its words filling it. Never shrink a line to fit: cut words, break onto two lines, or drop fine print instead. Thin, light-grey or small text is a failure. `;
   const SCALE_LOCK = `TRUE PRODUCT SCALE (hard rule, every image and every edit): LACALUT products keep their real-world size relative to each other and to hands, sinks and props. Toothbrush and 300ml mouthwash bottle are about the SAME height (the brush may be slightly taller, never shorter or stubby). A 75ml toothpaste tube standing upright is AS TALL AS the 300ml bottle or slightly TALLER (never shorter), but far slimmer and flatter, so the bottle stays the bulkier product. A 10ml travel tube is tiny (about a finger long); a 50ml travel mouthwash is about a third of the 300ml bottle's height. A product box is slightly larger than the product inside it. Never enlarge one product to make it the hero at the expense of real relative scale. `;
   async function callGemini(opts){
     const prompt = opts.prompt;
@@ -418,7 +419,7 @@
     const pRefs=(opts.productImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,6);
     const sRefs=(opts.styleImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,3);
     const pLabels=opts.productLabels||null;
-    let instr='';
+    let instr=TYPE_FLOOR;
     if(pRefs.length){
       instr+=SCALE_LOCK;
       let base=(pLabels && pLabels.length>1)
@@ -486,7 +487,7 @@
     const refs = (opts.refImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,4);
     const bans=[...GLOBAL_BAN, ...(SKUS[sku]?.ban||[])];
     let text=`Edit the FIRST attached image. Apply ONLY this change: ${opts.instruction}. `;
-    text+=SCALE_LOCK;
+    text+=SCALE_LOCK+TYPE_FLOOR;
     if(refs.length){
       text+=`The ${refs.length} image(s) AFTER the first are REFERENCE photos of the EXACT real product(s), used ONLY as the source of truth for each product's branding: real packaging shape, label layout, colours, logo and exact wording; never invent, garble or alter the product text. Match each product to the correct position described in the instruction. `
         +`CRITICAL: keep each replaced product in the SAME position, orientation, upright/standing angle, scale and perspective as in the ORIGINAL first image. Do NOT copy the reference photo's orientation, angle, lighting or background — if a tube stands vertical in the original, it must stay vertical; the reference only supplies the label artwork. `;

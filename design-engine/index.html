@@ -338,7 +338,7 @@
 <script src="strategies.js"></script>
 <script src="format-library.js"></script>
 <script src="layout-archetypes.js"></script>
-<script src="engine.js?v=20261008c"></script>
+<script src="engine.js?v=20261008t"></script>
 <script src="brand-brain.js"></script>
 <script src="packs-seed.js"></script>
 <script src="gap-tracker/data.js"></script> <!-- live-Meta snapshot for Coverage Map (refresh: Desi session "refresh gap tracker") -->
@@ -3072,6 +3072,7 @@ EACH judge scores all 8 DIMENSIONS 0-10:
 hook (scroll-stop power of the first visual+headline read) · clarity (one message, instantly understood) · hierarchy (eye lands headline→product→CTA in order) · packshot (TWO-PART: (a) PRESENCE — the ad clearly features LACALUT product/branding; stronger, more deliberate brand/product presence scores HIGHER, and an ad with no readable LACALUT branding on or near its hero element caps this dimension at 5 — NEVER reward omission: a competently rendered product that is present always outscores no product at all; (b) FIDELITY — every product shown looks EXACTLY like a real LACALUT pack, no warping/garbled label; minor softness on a deliberately small/secondary product render is a minor deduction, never below what total absence would score) · legibility (headline still readable at 120px thumbnail / feed size) · cta (clear, contrasting, compelling) · emotion (creates desire/tension, not wallpaper) · compliance (two-part rule. EXEMPT — never penalise: ALL text printed ON the product pack itself, in ANY language, including its English claims lines — the real LACALUT pack genuinely prints them and the business has RISK-ACCEPTED pack fine print; score it 8+ if the ad's own text is clean. Cosmetic FEEL language is COMPLIANT and encouraged: "feels firmer", "feels fresher", "cared-for", "clean feeling". BREACH = 0 ONLY for: disease/treatment words in the ad's own OVERLAY/design text — headline, sub, badges, chips, CTA (bleeding/gingivitis/gum disease/periodontitis/inflammation/treats/heals/repairs/clinical/percentages/authority logos); OR the render blowing the pack's fine-print claims up to headline scale or repeating them as overlay text; OR a red medical-cross icon anywhere).
 
 Then compute overall = weighted mean of all judges (hook and packshot count double), scaled to 0-100 and rounded.
+TYPE SIZE FLOOR (hard cap): if ANY text line — including small sub-lines, badge/seal text, strips or CTA — has letters under about 3.5% of the image height, or is thin light-grey, cap "legibility" at 4 for every judge and make enlarging that exact line fix #1.
 fixes = the 2-3 highest-impact IMAGE EDITS (literal, actionable, e.g. "Enlarge the headline ~40% and raise contrast to white-on-dark") each with estimated point gain.
 disagreements = dimensions where judges differ by ≥3 pts, one line each on the tension (these are the interesting calls).
 
