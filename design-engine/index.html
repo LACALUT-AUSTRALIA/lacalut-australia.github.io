@@ -980,6 +980,9 @@ async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{
    stitched side-by-side with numbered labels as ONE PNG, because the OS clipboard holds only one
    image — a single Ctrl+V in the Warp terminal pastes the whole batch. ── */
 const _copySel=new Set();
+// ONE-CLICK COPY (Quan 08/10/2026): plain click = copy that image instantly, no second click.
+// Shift+click starts a multi-selection; while any selection is open, plain clicks add/remove.
+function copyBtnClick(ev,id){ if((ev&&ev.shiftKey)||_copySel.size){ toggleCopySel(id); } else { copyCardImage(id); } }
 function toggleCopySel(id){ if(_copySel.has(id)) _copySel.delete(id); else _copySel.add(id); updateCopySelUI(); }
 function clearCopySel(){ _copySel.clear(); updateCopySelUI(); }
 function updateCopySelUI(){
@@ -1033,7 +1036,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
-   <button class="iconbtn" title="Copy: tick 1 card for a straight full-res copy, or 2-6 cards to paste them all as ONE stitched image — then hit the floating Copy bar" onclick="toggleCopySel('${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'📋'}</button>
+   <button class="iconbtn" title="Click = copy this image instantly. Shift+click = start a multi-selection (2-6 cards paste as ONE stitched image); once selecting, plain clicks add/remove too" onclick="copyBtnClick(event,'${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'📋'}</button>
    <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="Archive — park this creative indefinitely for later (leaves the gallery, restore anytime from the 📦 Archive chip)" onclick="archiveGen('${rec.id}')">📦</button>
    <button class="iconbtn" title="delete (goes to the 🗑 Bin — restorable)" onclick="delGen('${rec.id}')">🗑</button>
