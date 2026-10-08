@@ -952,6 +952,49 @@ async function idbBySku(sku){ const db=await idb(); return new Promise((res,rej)
 async function idbGet(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readonly'); const rq=t.objectStore('gens').get(id); rq.onsuccess=()=>res(rq.result||null); rq.onerror=()=>rej(rq.error); }); }
 async function idbDel(id){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('gens','readwrite'); t.objectStore('gens').delete(id); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
 
+/* ── MULTI-COPY (Quan 08/10/2026): tick 2-3 cards (☑️ in the icon row) → floating bar → copies them
+   stitched side-by-side with numbered labels as ONE PNG, because the OS clipboard holds only one
+   image — a single Ctrl+V in the Warp terminal pastes the whole batch. ── */
+const _copySel=new Set();
+function toggleCopySel(id){ if(_copySel.has(id)) _copySel.delete(id); else _copySel.add(id); updateCopySelUI(); }
+function clearCopySel(){ _copySel.clear(); updateCopySelUI(); }
+function updateCopySelUI(){
+  document.querySelectorAll('.card').forEach(c=>{ c.style.outline=_copySel.has(c.id)?'3px solid #7c3aed':''; c.style.outlineOffset=_copySel.has(c.id)?'2px':'';
+    const b=[...c.querySelectorAll('.iconbtn')].find(x=>x.textContent==='☑️'||x.textContent==='✅');
+    if(b){ const on=_copySel.has(c.id); b.textContent=on?'✅':'☑️'; b.style.background=on?'#7c3aed':''; b.style.color=on?'#fff':''; } });
+  let bar=$('copySelBar');
+  if(!_copySel.size){ if(bar) bar.remove(); return; }
+  if(!bar){ bar=document.createElement('div'); bar.id='copySelBar';
+    bar.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:9999;background:#1f2430;color:#fff;border-radius:12px;padding:10px 14px;display:flex;gap:10px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:13px';
+    document.body.appendChild(bar); }
+  bar.innerHTML=`<b>${_copySel.size} selected</b>
+    <button onclick="copySelectedCards()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:800;font-size:13px;cursor:pointer;font-family:inherit">📋 Copy selected — ONE image for the terminal</button>
+    <button onclick="clearCopySel()" style="background:transparent;color:#bbb;border:1px solid #555;border-radius:8px;padding:8px 10px;font-size:12px;cursor:pointer;font-family:inherit">✕ Clear</button>`;
+}
+async function copySelectedCards(){
+  const ids=[..._copySel]; if(!ids.length) return;
+  if(ids.length>6){ toast('⚠️ Max 6 at a time — the stitched image gets too big'); return; }
+  try{
+    const imgs=[];
+    for(const id of ids){
+      const src=await cardSrc(id); if(!src) continue;
+      const im=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error('image decode failed')); i.src=src; });
+      const rec=_recById[id]||await idbGet(id)||{};
+      imgs.push({ im, label:(((rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku||''))+' · '+(rec.label||id)).slice(0,70)) });
+    }
+    if(!imgs.length){ toast('⚠️ Nothing to copy'); return; }
+    const H=1080, GAP=24, LBL=48;
+    const widths=imgs.map(o=>Math.round(o.im.naturalWidth*H/o.im.naturalHeight));
+    const W=widths.reduce((a,b)=>a+b,0)+GAP*(imgs.length-1);
+    const c=document.createElement('canvas'); c.width=W; c.height=H+LBL;
+    const g=c.getContext('2d'); g.fillStyle='#fff'; g.fillRect(0,0,W,H+LBL);
+    g.font='700 26px Assistant,"Segoe UI",sans-serif'; g.textBaseline='middle';
+    let x=0; imgs.forEach((o,i)=>{ g.drawImage(o.im,x,0,widths[i],H); g.fillStyle='#222'; g.fillText((i+1)+'. '+o.label, x+8, H+LBL/2); x+=widths[i]+GAP; });
+    const png=await new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('PNG encode failed')),'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({'image/png':png})]);
+    toast('📋 Copied '+imgs.length+' cards as ONE stitched image — paste into the terminal with Ctrl+V');
+  }catch(e){ alert('Copy failed: '+e.message+'\n(Click somewhere on the page first, then retry — the clipboard needs page focus.)'); }
+}
 function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the lazy hydrator (freeze fix 07/10)
   const skuName = rec.sku==='multi'?'Multi-SKU':(SKUS[rec.sku]?.name||rec.sku); const ar=(MODES[rec.mode]?.ar.split(' ')[0].replace(':','/'))||'1080/1350';
   // FREEZE FIX (07/10/2026): never inline the multi-MB base64 into innerHTML — ~80 cards × 2-3MB
@@ -966,6 +1009,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="Copy the full-res image to the clipboard — paste straight into a Warp/Facy terminal; the toast shows the repo file path (click it to copy the path)" onclick="copyCardImage('${rec.id}')">📋</button>
+   <button class="iconbtn" title="Multi-copy: tick 2-3 cards, then hit 'Copy selected' in the floating bar — all of them paste into the terminal as ONE stitched image" onclick="toggleCopySel('${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'☑️'}</button>
    <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="delete" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
