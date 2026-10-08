@@ -625,7 +625,7 @@ with open(os.path.join(SP, "spend_compliance.csv"), "w", newline="", encoding="u
         _w.writerow([a["name"], a["id"], a.get("effective_status", ""), a["campaign"], a["adset"],
                      round(a["_s90"], 2), round(a["_roas"] or 0, 2), vd, why])
 
-gen = now.astimezone(timezone(timedelta(hours=11))).strftime("%d/%m/%Y %H:%M AEDT")
+gen = now.astimezone(timezone(timedelta(hours=10))).strftime("%d/%m/%Y %I:%M %p Brisbane").replace(" 0", " ", 1)
 
 campaigns = sorted({a["campaign"] for a in ads if a.get("campaign")})
 camp_opts = "".join(f'<option value="{esc(c.lower())}">{esc(c)}</option>' for c in campaigns)
@@ -1237,7 +1237,7 @@ html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
-<div class="stamp">Refreshed {gen} &middot; metrics: last 90 days (KPI cards: last 7 days)</div>
+<div class="stamp"><b>Updated {gen}</b> &middot; auto-refreshes every 30 min (not live) &middot; Running tab: ROAS 7d = current</div>
 </header>
 
 <nav class="tabs">{tab_btns}</nav>
