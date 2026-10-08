@@ -9,5 +9,16 @@
     "brief": "Crossed-out journal list of breath cover-ups - FLORA PDP",
     "angle": "Mechanism: fresh breath vs cover-ups",
     "prompt": "Quan engine edit (list + cleared bottom) + deterministic PIL tagline 62px Arial Black, sub 42px, red Shop Now pill"
+  },
+  {
+    "id": "g1791430118904",
+    "filename": "flora-journal-v4.png",
+    "sku": "flora",
+    "mode": "social",
+    "ptype": "toothpaste",
+    "label": "FLORA Journal v4 - big tube (true proportion, official packshot)",
+    "brief": "Crossed-out journal list of breath cover-ups - FLORA PDP",
+    "angle": "Mechanism: fresh breath vs cover-ups",
+    "prompt": "v3 + old tube inpainted, official Lac_flora_TU_075 packshot composited at bottle-height length, relit + shadow"
   }
 ]
