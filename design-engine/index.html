@@ -9,7 +9,10 @@
   :root{ --red:#CF102D; --navy:#004A88; --ink:#1a1a1a; --line:#e5e7eb; --bg:#f7f8fa; --accent:#CF102D; }
   *{ box-sizing:border-box; }
   body{ margin:0; font-family:'Assistant','Segoe UI',system-ui,sans-serif; color:var(--ink); background:var(--bg); }
-  header{ background:#fff; border-bottom:1px solid var(--line); padding:12px 18px; display:flex; align-items:center; gap:14px; position:sticky; top:0; z-index:10; }
+  /* Header scrolls away (Quan 08/10/2026) — the sticky strip is the Sent tracker (#fmtLib), so new
+     creatives can be matched against what's already sent while scrolling the gallery. */
+  header{ background:#fff; border-bottom:1px solid var(--line); padding:12px 18px; display:flex; align-items:center; gap:14px; }
+  #fmtLib{ position:sticky; top:0; z-index:10; background:#fff; padding-top:6px; margin-top:-6px; box-shadow:0 8px 10px -8px rgba(0,0,0,.18); }
   .brand{ font-weight:800; color:var(--red); font-size:20px; letter-spacing:.5px; }
   .brand small{ color:#888; font-weight:600; font-size:12px; }
   .spacer{ flex:1; }
