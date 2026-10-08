@@ -534,24 +534,34 @@ function selectBrain(id){
    gallery shows what's ALREADY been sent to Facy / Calendar / Drive for the current SKU, so he can
    see at a glance what's running or scheduled and never double-sends. Click a thumb → jumps to the
    card in the gallery. ═══ */
+const FB_ICON=`<span style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;background:#1877F2;color:#fff;border-radius:3px;font-weight:800;font-size:11px;font-family:Arial,sans-serif;line-height:1">f</span>`;
+let sentTab=(function(){ try{ return localStorage.getItem('de_sent_tab')||'facy'; }catch(e){ return 'facy'; } })();
+function setSentTab(t){ sentTab=t; try{ localStorage.setItem('de_sent_tab',t); }catch(_){} renderFmtLib(); }
+function _sentDate(ms){ if(!ms) return ''; const d=new Date(ms); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); }
 async function renderFmtLib(){
   const box=$('fmtLib'); if(!box) return;
-  let recs=[];
-  try{ recs=(await idbBySku(curSku)).filter(r=>ptypeOf(r)===curPtype && !r.deleted && !r.archived && (r.sentToFacy||r.sentToCalendar||r.sentToDrive)); }catch(_){}
-  if(!recs.length){ box.style.display='none'; box.innerHTML=''; return; }
-  recs.sort((a,b)=>(b.ts||0)-(a.ts||0)); recs=recs.slice(0,40);
-  const nF=recs.filter(r=>r.sentToFacy).length, nC=recs.filter(r=>r.sentToCalendar).length, nD=recs.filter(r=>r.sentToDrive).length;
+  let all=[];
+  try{ all=(await idbBySku(curSku)).filter(r=>ptypeOf(r)===curPtype && !r.deleted && !r.archived); }catch(_){}
+  const fb=all.filter(r=>r.sentToFacy||r.sentToDrive), cal=all.filter(r=>r.sentToCalendar);
+  if(!fb.length && !cal.length){ box.style.display='none'; box.innerHTML=''; return; }
+  let recs=(sentTab==='cal'?cal:fb);
+  recs.sort((a,b)=>(b.sentAt||b.ts||0)-(a.sentAt||a.ts||0)); recs=recs.slice(0,40);
   const skuNm=(SKUS[curSku]?.name||curSku);
+  const tabBtn=(t,lbl,n)=>`<button class="galchip${sentTab===t?' on':''}" onclick="setSentTab('${t}')" style="display:inline-flex;align-items:center;gap:5px">${lbl} · ${n}</button>`;
   const thumbs=await Promise.all(recs.map(async r=>{
     let src=''; try{ src=await cardSrc(r.id); }catch(_){ src=r.url||''; }
+    const when=_sentDate(r.sentAt)||_sentDate(r.ts);
     return `<div onclick="jumpToCard('${r.id}')" title="${((r.label||r.id)+'').replace(/"/g,'&quot;')} — click to find it in the gallery" style="flex:0 0 auto;cursor:pointer;text-align:center">
       <img src="${src}" loading="lazy" style="height:130px;border-radius:8px;border:1px solid var(--line);display:block">
-      <span style="font-size:12px">${r.sentToFacy?'🚀':''}${r.sentToCalendar?'📅':''}${r.sentToDrive?'📁':''}</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:#666;margin-top:2px">${(sentTab==='cal')?'📅':(r.sentToFacy?FB_ICON:'')}${(sentTab!=='cal'&&r.sentToDrive)?'📁':''} ${when}</span>
     </div>`; }));
   box.style.display='block';
   box.innerHTML = `<div style="margin:0 0 10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fcfbfa">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2;margin-bottom:8px">📤 Already sent (${skuNm}) — 🚀 Facy ${nF} · 📅 Calendar ${nC} · 📁 Drive ${nD} <span style="color:#999;text-transform:none;letter-spacing:0">— click a thumb to find it in the gallery</span></div>
-    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">${thumbs.join('')}</div></div>`;
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#8a63d2">📤 Already sent (${skuNm})</span>
+      ${tabBtn('facy',FB_ICON+' Facebook Ads',fb.length)}${tabBtn('cal','📅 Calendar / Social',cal.length)}
+      <span style="font-size:11px;color:#999">click a thumb to find it in the gallery · 📁 = Drive queue</span></div>
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">${thumbs.length?thumbs.join(''):'<span style="font-size:12px;color:#888">Nothing sent here yet for '+skuNm+'.</span>'}</div></div>`;
 }
 function jumpToCard(id){ const el=$(id); if(!el){ toast('⚠️ Not in the current view — clear the filters above the gallery'); return; }
   el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='3px solid #CF102D'; el.style.outlineOffset='2px';
@@ -2097,7 +2107,7 @@ async function sendToCalendar(cardId){
     inbox.push({ imageDataUrl:img, sku, label, ts:Date.now(), id:cardId });
     await socialIdbSet('lc_social_inbox', inbox);
     // persist sent state so it survives re-render / refresh
-    try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToCalendar=true; st.put(r); } }; tx.oncomplete=()=>renderFmtLib(); }catch(_){}
+    try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToCalendar=true; r.sentAt=Date.now(); st.put(r); } }; tx.oncomplete=()=>renderFmtLib(); }catch(_){}
     if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Already Sent'; btn.disabled=true; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.cursor='default'; btn.style.borderColor='#16a34a'; btn.onclick=null; }
     toast('📅 Sent to Calendar — open the Social Content Calendar to schedule it');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to calendar: '+e.message); }
@@ -2280,7 +2290,7 @@ async function sendToFacy(cardId){
     await pushToFacyPipeline(img, sku, label, cardId, brief, adCopy);
     // fallback path: keep the same-origin IndexedDB inbox in sync (belt-and-braces)
     try{ const inbox=(await facyIdbGet('lc_facy_inbox'))||[]; inbox.push({ imageDataUrl:img, sku, label, brief, adCopy, ts:Date.now(), id:cardId }); await facyIdbSet('lc_facy_inbox', inbox); }catch(_){}
-    try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; st.put(r); } }; tx.oncomplete=()=>renderFmtLib(); }catch(_){}
+    try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToFacy=true; r.sentAt=Date.now(); st.put(r); } }; tx.oncomplete=()=>renderFmtLib(); }catch(_){}
     if(btn){ btn.className='markybtn pushed'; btn.textContent='✅ Queued for Facy'; btn.title='Queued (copy-pending) — Facy builds only after Quan approves copy in the terminal; click to queue again'; btn.style.background='#16a34a'; btn.style.color='#fff'; btn.style.borderColor='#16a34a'; }
     toast('🟡 Queued for Facy (copy-pending) — builds after copy approval in the terminal, nothing goes live from this click');
   }catch(e){ if(btn){ btn.className='markybtn'; } alert('Could not send to Facy: '+e.message); }
@@ -2339,7 +2349,7 @@ async function sendToDrive(cardId){
   }catch(e){ console.error('drive upload failed', e); }
   try{ const inbox=(await driveIdbGet('lc_drive_inbox'))||[]; inbox.push({ imageUrl:publicUrl, sku, label, folder:'Media Buyer', ts:Date.now(), id:cardId, queued }); await driveIdbSet('lc_drive_inbox', inbox); }catch(_){}
   // Only mark the card "In Drive" if the upload genuinely queued — never show a false green on failure.
-  try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToDrive=queued; st.put(r); } }; tx.oncomplete=()=>renderFmtLib(); }catch(_){}
+  try{ const db=await idb(); const tx=db.transaction('gens','readwrite'); const st=tx.objectStore('gens'); const rq=st.get(cardId); rq.onsuccess=()=>{ const r=rq.result; if(r){ r.sentToDrive=queued; r.sentAt=Date.now(); st.put(r); } }; tx.oncomplete=()=>renderFmtLib(); }catch(_){}
   if(btn){ btn.className='markybtn pushed'; btn.textContent=queued?'✅ In Drive':'⚠ Retry Drive'; btn.title=queued?'Queued for the Media Buyer Drive folder — syncs automatically':'Upload failed — click to retry'; btn.style.background=queued?'#16a34a':'#d9822b'; btn.style.color='#fff'; btn.style.borderColor=queued?'#16a34a':'#d9822b'; btn.disabled=false; }
   toast(queued?'📁 Sent to the Media Buyer Drive folder (syncs automatically)':'⚠ Drive upload failed — click to retry');
 }
