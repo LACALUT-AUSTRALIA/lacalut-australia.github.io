@@ -291,6 +291,24 @@
   <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="btn" onclick="binDlg.close()">Close</button></div>
 </div></dialog>
 
+<dialog id="tagDlg" style="max-width:760px"><div class="dlg">
+  <h2>🏷️ Tags — every format this creative fits</h2>
+  <p style="font-size:12px;color:#666;margin:0 0 10px">The engine files each image under ONE primary format, but many ads fit several (a Packaging Hero that's also a Money-Back Dare). Tick every format/angle that applies — the format chips above the gallery then find it from every direction.</p>
+  <div style="display:flex;gap:14px;align-items:flex-start">
+    <img id="tagThumb" style="width:180px;border-radius:10px;border:1px solid var(--line);flex:0 0 auto;display:block">
+    <div style="flex:1;min-width:0">
+      <div id="tagPrimary" style="font-size:12px;font-weight:700;margin-bottom:8px"></div>
+      <div id="tagChips" style="display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fafafa"></div>
+    </div>
+  </div>
+  <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+    <button class="btn" id="tagAiBtn" onclick="autoTagCard()" title="Gemini Flash looks at the finished image and ticks every catalogue format it clearly matches — fraction of a cent">🧠 Auto-tag this image</button>
+    <span id="tagAiNote" style="font-size:11.5px;color:#888"></span>
+    <span style="flex:1"></span>
+    <button class="btn primary" onclick="tagDlg.close()">Done</button>
+  </div>
+</div></dialog>
+
 <dialog id="editDlg" style="max-width:920px"><div class="dlg">
   <h2>✏️ Describe an edit</h2>
   <div id="editSrcSlot" style="margin:0 0 10px" ondragover="editDragOver(event)" ondragenter="editDragOver(event)" ondragleave="editDragLeave(event)" ondrop="editDrop(event)"></div>
@@ -1039,6 +1057,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="Add/edit text overlay — real editable headline + sub that always obey" onclick="openOverlay('${rec.id}')">🅣</button>
    <button class="iconbtn" title="Provenance — the exact prompt + settings that made this image, and its original → edit lineage" onclick="showProv('${rec.id}')">ℹ️</button>
    <button class="iconbtn" title="Describe an edit" onclick="editImage('${rec.id}')">✏️</button>
+   <button class="iconbtn" title="Tags — file this creative under EVERY format it fits${rec.tags&&rec.tags.length?` (${rec.tags.length} extra tag${rec.tags.length>1?'s':''})`:''}; manual ticks or 🧠 auto-tag" onclick="openTags('${rec.id}')" style="${rec.tags&&rec.tags.length?'background:#8a63d2;color:#fff':''}">🏷️</button>
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="Click = copy this image instantly. Shift+click = start a multi-selection (2-6 cards paste as ONE stitched image); once selecting, plain clicks add/remove too" onclick="copyBtnClick(event,'${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'📋'}</button>
@@ -2396,6 +2415,101 @@ function brainOf(rec){
   }
   return null;
 }
+/* ═══ MULTI-TAGGING (Quan 08/10/2026) — rec.tags = extra format ids beyond the primary brain.
+   BOF ads especially span formats (Packaging Hero that's ALSO Money-Back Dare); tags make the
+   format chips + search find a creative from EVERY angle it fits. Manual via 🏷️ on the card,
+   or Gemini Flash looks at the finished image and tags it itself (🧠, ~free). ═══ */
+function tagsOf(rec){ const s=new Set((rec&&rec.tags)||[]); const p=brainOf(rec); if(p) s.add(p); return s; }
+let _tagCardId=null;
+async function openTags(id){
+  _tagCardId=id;
+  const rec=_recById[id]||await idbGet(id).catch(()=>null); if(!rec) return;
+  try{ $('tagThumb').src=await cardSrc(id)||''; }catch(_){ $('tagThumb').src=rec.url||''; }
+  renderTagDlg(rec); $('tagAiNote').textContent=''; tagDlg.showModal();
+}
+function renderTagDlg(rec){
+  const primary=brainOf(rec);
+  const pName=primary?(((BRAINS||[]).find(b=>b.id===primary)||{}).name||primary):null;
+  $('tagPrimary').innerHTML = pName
+    ? `Primary format: <span class="galchip on" style="cursor:default">${pName}</span> <span style="color:#999;font-weight:600">— fixed (what generated it)</span>`
+    : `Primary format: <span style="color:#999;font-weight:600">none inferred — every tag below is manual</span>`;
+  const tags=new Set(rec.tags||[]);
+  $('tagChips').innerHTML = (BRAINS||[]).slice().sort((a,b)=>a.name.localeCompare(b.name)).map(b=>{
+    if(b.id===primary) return '';
+    const on=tags.has(b.id);
+    return `<button class="galchip${on?' on':''}" onclick="toggleTag('${b.id}')">${on?'✓ ':''}${b.name}</button>`;
+  }).join('');
+}
+async function toggleTag(bid){
+  const rec=await idbGet(_tagCardId); if(!rec) return;
+  rec.tags=rec.tags||[];
+  const i=rec.tags.indexOf(bid);
+  if(i>=0) rec.tags.splice(i,1); else rec.tags.push(bid);
+  await idbPut(rec); _recById[rec.id]=rec; renderTagDlg(rec);
+}
+if(typeof tagDlg!=='undefined'&&tagDlg&&!tagDlg._wired){ tagDlg._wired=1; tagDlg.addEventListener('close',()=>renderGallery(curSku)); }
+/* shrink to ≤512px JPEG so the vision call costs a fraction of a cent and uploads instantly */
+function _shrinkForAI(dataUrl){ return new Promise((res,rej)=>{ const im=new Image();
+  im.onload=()=>{ const k=Math.min(1,512/Math.max(im.width,im.height));
+    const c=document.createElement('canvas'); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
+    c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+    res(c.toDataURL('image/jpeg',0.82).split(',')[1]); };
+  im.onerror=rej; im.src=dataUrl; }); }
+async function _aiTagIds(rec){
+  const src=await cardSrc(rec.id); if(!src) throw new Error('no image');
+  const b64=await _shrinkForAI(src);
+  const cat=(BRAINS||[]).map(b=>b.id+' = '+b.name).join('\n');
+  const prompt=`You are tagging a finished LACALUT (oral care) ad creative for a searchable library.
+Catalogue of format/angle tags (id = name):
+${cat}
+
+Look at the ad image. Return a STRICT JSON array (no markdown, no prose) of up to 5 ids from the catalogue whose STRUCTURE or ANGLE is clearly present in this ad — e.g. a money-back guarantee badge/offer = money-back dare; a premium packshot composition = packaging hero. Only include a tag when it is visibly, unambiguously there. Ids must come from the catalogue exactly.`;
+  const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+KEYS.gemini,
+    { method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ contents:[{parts:[{text:prompt},{inline_data:{mime_type:'image/jpeg',data:b64}}]}], generationConfig:{temperature:0} }) });
+  if(!res.ok) throw new Error('Gemini '+res.status);
+  const j=await res.json();
+  let txt=(((j.candidates||[])[0]||{}).content?.parts||[]).map(p=>p.text||'').join('').trim();
+  txt=txt.replace(/^```(json)?/i,'').replace(/```$/,'').trim();
+  const ids=JSON.parse(txt);
+  const valid=new Set((BRAINS||[]).map(b=>b.id));
+  return (Array.isArray(ids)?ids:[]).filter(id=>valid.has(id));
+}
+async function autoTagCard(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  const btn=$('tagAiBtn'); btn.disabled=true; $('tagAiNote').textContent='🧠 looking…';
+  try{
+    const rec=await idbGet(_tagCardId); if(!rec) return;
+    const ids=await _aiTagIds(rec);
+    const primary=brainOf(rec); rec.tags=rec.tags||[];
+    let added=0; for(const id of ids){ if(id!==primary && !rec.tags.includes(id)){ rec.tags.push(id); added++; } }
+    rec.tagsAI=true; await idbPut(rec); _recById[rec.id]=rec; renderTagDlg(rec);
+    $('tagAiNote').textContent=added?('✅ added '+added+' tag'+(added>1?'s':'')):'✅ nothing new — already covered';
+  }catch(e){ $('tagAiNote').textContent='⚠️ '+(e.message||'failed'); }
+  btn.disabled=false;
+}
+async function autoTagAll(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  const all=await idbBySku(curSku);
+  const todo=all.filter(r=>ptypeOf(r)===curPtype && !r.deleted && !r.archived && !r.tagsAI);
+  if(!todo.length){ toast('✅ Everything here is already auto-tagged'); return; }
+  if(!confirm('🧠 Auto-tag '+todo.length+' image(s) with Gemini Flash? Cost is a fraction of a cent per image.')) return;
+  let done=0, tagged=0;
+  toast('🧠 Auto-tagging 0/'+todo.length+'…', true);
+  for(const rec of todo){
+    try{
+      const ids=await _aiTagIds(rec);
+      const primary=brainOf(rec); rec.tags=rec.tags||[];
+      for(const id of ids){ if(id!==primary && !rec.tags.includes(id)){ rec.tags.push(id); tagged++; } }
+      rec.tagsAI=true;   // only on success — failures stay unflagged so a re-run retries them
+      await idbPut(rec); _recById[rec.id]=rec;
+    }catch(_){ }
+    done++; toast('🧠 Auto-tagging '+done+'/'+todo.length+'…', true);
+  }
+  toast('✅ Auto-tagged '+done+' image(s) — '+tagged+' new tag(s) added');
+  renderGallery(curSku);
+}
+
 /* ═══ COLLECTION / BATCH tag — which named set a creative belongs to, so Quan can isolate the
    Aditya Creative Matrix (36) or the Format-Test Library (80) from his own ad-hoc generations.
    Durable field rec.collection when present (set in manifests); else inferred from the label. ═══ */
@@ -2488,7 +2602,8 @@ function matchesSearch(rec){
   if(!galSearchText) return true;
   const q=galSearchText.toLowerCase();
   const bn=(()=>{ const id=brainOf(rec); const b=(BRAINS||[]).find(x=>x.id===id); return b?b.name:''; })();
-  return ((rec.label||'')+' '+(rec.brief||'')+' '+(rec.angle||'')+' '+bn).toLowerCase().includes(q);
+  const tn=(rec.tags||[]).map(id=>{ const b=(BRAINS||[]).find(x=>x.id===id); return b?b.name:id; }).join(' ');
+  return ((rec.label||'')+' '+(rec.brief||'')+' '+(rec.angle||'')+' '+bn+' '+tn).toLowerCase().includes(q);
 }
 function galleryBarHTML(sku, formats, collections){
   // formats: [{id,name,count}] · collections: [{id,name,icon,colour,count}] — chips filter the feed; search free-filters.
@@ -2513,6 +2628,7 @@ function galleryBarHTML(sku, formats, collections){
     <button class="galchip${!anyFilter?' on':''}" onclick="clearGalFilters()" title="Show every image">All${!anyFilter?' ✓':''}</button>
     <button class="galchip" onclick="openArchive()" title="Creatives parked for later — restore them anytime">📦 Archive</button>
     <button class="galchip" onclick="openBin()" title="Deleted images — restore them from here">🗑 Bin</button>
+    <button class="galchip" onclick="autoTagAll()" title="Gemini Flash looks at every image here it hasn't tagged yet and files it under every matching format — asks first, fraction of a cent per image">🧠 Auto-tag</button>
     ${collChips}${collChips?'<span style="width:1px;height:20px;background:var(--line);margin:0 2px"></span>':''}${chips}${moreBtn}
     ${anyFilter?`<button class="galchip clear" onclick="clearGalFilters()" title="Clear filters" style="background:#fff;border-color:#CF102D;color:#CF102D">✕ Clear${activeName?' · '+activeName:''}</button>`:''}
   </div>`;
@@ -2535,7 +2651,7 @@ async function renderGallery(sku){
   let reps=recs.map(r=>({ rep:r, list:[r], root:r.id }));
   // ── FORMAT CHIPS: counts per brain across ALL reps (before filtering) so chips never vanish ──
   const fmtCount=new Map();
-  for(const {rep} of reps){ const id=brainOf(rep); if(!id) continue; fmtCount.set(id,(fmtCount.get(id)||0)+1); }
+  for(const {rep} of reps){ for(const id of tagsOf(rep)) fmtCount.set(id,(fmtCount.get(id)||0)+1); }   // primary brain + manual/AI tags — one creative can live under several format chips
   window._fmtCounts=fmtCount; if(typeof renderBrains==='function') renderBrains();   // left-panel format list shows the same live counts
   const formats=[...fmtCount.entries()].map(([id,count])=>({ id, name:(((BRAINS||[]).find(b=>b.id===id)||{}).name||formatGroupLabel(id)), count }))
     .sort((a,b)=> b.count-a.count || a.name.localeCompare(b.name));   // most-used formats first, then alpha
@@ -2546,7 +2662,7 @@ async function renderGallery(sku){
   // ── APPLY FILTERS (collection + format + search) ──
   let visReps=reps.filter(({rep})=>{
     if(galCollectionFilter && collectionOf(rep)!==galCollectionFilter) return false;
-    if(galFmtFilter && brainOf(rep)!==galFmtFilter) return false;
+    if(galFmtFilter && !tagsOf(rep).has(galFmtFilter)) return false;
     if(galSearchText && !matchesSearch(rep)) return false;
     return true;
   });
