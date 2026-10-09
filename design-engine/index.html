@@ -356,7 +356,7 @@
 <script src="strategies.js"></script>
 <script src="format-library.js"></script>
 <script src="layout-archetypes.js"></script>
-<script src="engine.js?v=20261009a"></script>
+<script src="engine.js?v=20261010a"></script>
 <script src="brand-brain.js"></script>
 <script src="packs-seed.js"></script>
 <script src="gap-tracker/data.js"></script> <!-- live-Meta snapshot for Coverage Map (refresh: Desi session "refresh gap tracker") -->
@@ -899,6 +899,11 @@ async function runGenerate(){
       prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
       prompt += perfBrainInjection(S.isMulti?'multi':S.curSku);   // bias toward live Meta winners
       prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
+      // Quoted-copy brief = the brief owns ALL text + scene (Quan 09/10/2026: the M1 gantry got a duplicate headline,
+      // a Shop Now pill and a herb splash because HARD_RULES (13) CTA-mandatory was the prompt's last word). Lock goes LAST.
+      if(E.briefOwnsCopy && E.briefOwnsCopy(S.brief)) prompt += '
+
+FINAL OVERRIDE — '+E.COPY_LOCK+' HARD_RULES (4), (5), (8), (9) and (13) apply ONLY to text elements the art-director note lists: if the note lists no CTA, render NO CTA pill; never repeat the note's sign or headline text as a second overlay.';
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels, closeUp:S.closeUp });
       // PROVENANCE (Quan 07/10/2026): the FULL final prompt + engine settings travel with the image

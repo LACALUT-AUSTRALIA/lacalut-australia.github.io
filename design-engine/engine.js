@@ -22,7 +22,7 @@
     if(own) out+=`FORMAT = STYLE GUARDRAILS ONLY: the art-director note supplies ALL on-image wording AND the layout; take only realism, lighting, colour, mood and compliance from this format — never its example headlines, chips, seals or CTA pills. `;
     return out;
   }
-  const COPY_LOCK = `EXACT-COPY LOCK (hard rule, final word): the ONLY words on this image, apart from the real product packaging, are the quoted lines in the art-director note, spelled exactly. Add NO extra headline, seal, trust badge or stamp ("Trusted in…", "Since…"), CTA pill or button, URL or price unless the note lists it. The note's scene and layout are followed literally. `;
+  const COPY_LOCK = `EXACT-COPY LOCK (hard rule, final word): the ONLY words on this image, apart from the real product packaging, are the quoted lines in the art-director note, spelled exactly. Add NO extra headline, seal, trust badge or stamp ("Trusted in…", "Since…"), CTA pill or button, URL or price unless the note lists it. The note's scene and layout are followed literally — add NO props, ingredient splashes, herbs, water swirls, glows or effects the note does not describe, and keep any product at the size and position the note gives. THIS LOCK OVERRIDES every earlier rule that demands a headline overlay, CTA pill, badge or decorative energy (those apply ONLY when the note itself lists them). `;
 
   /* ═══ BRAND KITS (RULES layer) ═══ */
   const SKUS = {
@@ -1866,7 +1866,7 @@ Return ONLY valid JSON:
     getGuide, pickStr, pickRand,
     resolveBrain, brainUsesProduct, pickBrainForCategories,
     buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
-    resolveArchetype, archetypeBlock, ARCHS,
+    resolveArchetype, archetypeBlock, ARCHS, briefOwnsCopy, COPY_LOCK,
     oneUpImagePrompt,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm,
     VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
