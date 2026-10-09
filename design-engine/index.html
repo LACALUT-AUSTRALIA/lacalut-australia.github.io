@@ -1086,6 +1086,7 @@ function videoBlockHTML(rec){ if(!rec||!rec.video) return '';
     <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px">
       <span class="t" style="flex:1;font-size:10px">🎬 ${meta.style||'video'} · ${meta.model||''} · ${meta.seconds||8}s ${meta.aspectRatio||''}</span>
       <button class="iconbtn" title="download MP4" onclick="dlVideo('${rec.id}','${rec.sku}-${rec.mode}')">⬇ MP4</button>
+      ${rec.qcUrl?`<a class="iconbtn" href="${rec.qcUrl}" target="_blank" title="QC copy in Supabase — Desi QCs it frame-by-frame in the terminal (cli/video_qc.py), no download needed" style="text-decoration:none">🔍 QC</a>`:''}
       <button class="iconbtn" title="QC checklist" onclick="showVideoQC('${rec.id}')">✅ QC</button>
       <button class="iconbtn" title="Regenerate / try another look" onclick="openVideo('${rec.id}')">🔄</button>
     </div></div>`; }
@@ -1287,6 +1288,7 @@ async function runVideo(cardId){
     fresh.videoMeta={ style:(E.VIDEO_STYLES[style]?.label)||style, model:out.model, seconds:out.seconds, aspectRatio:out.aspectRatio };
     fresh.videoQC=out.qc; fresh.videoPrompt=out.prompt;
     await idbPut(fresh);
+    qcAutoUpload(fresh,{ main:fresh.video, put:idbPut, after:()=>{ const w2=$('vidwrap-'+cardId); if(w2) w2.innerHTML=videoBlockHTML(fresh); } });
     const w=$('vidwrap-'+cardId); if(w) w.innerHTML=videoBlockHTML(fresh);
     const d=g('viddlg'); if(d) d.remove();
     try{ toast('🎬 Video ready — check the card'); }catch(_){}
@@ -1793,6 +1795,7 @@ async function _renderScenesInto(recId, startAt){
   if(rec.qcScore100==null){ const ss=(rec.scenes||[]).map(s=>s&&s.qc&&s.qc.score).filter(n=>typeof n==='number');
     if(ss.length) rec.qcScore100=Math.round(ss.reduce((a,b)=>a+b,0)/ss.length*10); }
   await vidPut(rec); renderVideoGallery(curSku);
+  if(rec.stitchedBlob) qcAutoUpload(rec,{ main:vidBlob(rec.stitchedBlob), scenes:(rec.scenes||[]).map(s=>s&&vidBlob(s.videoBlob)), put:vidPut, after:()=>renderVideoGallery(curSku) });
   try{ toast('🎬 Video ad ready'+(rec.qcScore100!=null?' — QC '+rec.qcScore100+'/100':'')); }catch(_){}
 }
 async function resumeVidRender(recId){ const rec=await getVid(recId); if(!rec) return;
@@ -1835,6 +1838,7 @@ async function retryStitch(recId){ const rec=await getVid(recId); if(!rec) retur
     const ff=await loadFFmpeg(); const bed=await makeMusicBed(rec.duration, musicMoodFor(rec));
     rec.stitchedBlob=await E.stitchScenes(ff, rec.scenes.map(s=>vidBlob(s.videoBlob)),
       { voBlobs:rec.scenes.map(s=>vidBlob(s.voWav)), secondsPerScene:8, musicBlob:bed }); rec.stitchFailed=null; await vidPut(rec); renderVideoGallery(curSku);
+    if(rec.stitchedBlob) qcAutoUpload(rec,{ main:vidBlob(rec.stitchedBlob), put:vidPut, after:()=>renderVideoGallery(curSku) });
     try{ toast(recovered?('🎵 Narrator restored on '+recovered+' scene(s) + remixed'):'🎵 Audio remixed — one continuous soundtrack'); }catch(_){}
   }
   catch(e){ alert('Stitch failed again: '+e.message); } }
@@ -1901,6 +1905,7 @@ async function rerollVidScene(recId,i,opts){ opts=opts||{}; const rec=await getV
       }catch(e){}
     }
     await vidPut(rec); renderVideoGallery(curSku);
+    if(rec.stitchedBlob) qcAutoUpload(rec,{ main:vidBlob(rec.stitchedBlob), put:vidPut, after:()=>renderVideoGallery(curSku) });
   }catch(e){ alert('Re-roll failed: '+e.message); } }
 
 /* ── video gallery ── */
@@ -1953,6 +1958,7 @@ function vidCardHTML(rec){
   return `<div class="card" id="${rec.id}" data-sku="${rec.sku}">${media}${note}
     <div class="meta"><span class="t">${scoreBadge}🎬 ${rec.duration}s · ${tLabel} · ${sLabel} · ${mLabel} · ~US$${(rec.cost?.usd||0).toFixed(2)}</span>
       <button class="iconbtn" title="download MP4" onclick="dlVid('${rec.id}')">⬇</button>
+      ${rec.qcUrl?`<a class="iconbtn" href="${rec.qcUrl}" target="_blank" title="QC copy in Supabase — Desi QCs it frame-by-frame in the terminal (cli/video_qc.py), no download needed" style="text-decoration:none">🔍</a>`:''}
       ${(rec.scenes&&rec.scenes.filter(Boolean).length)?`<button class="iconbtn" title="Remix audio — re-stitch these scenes with the one continuous soundtrack + narrator (free, no re-render)" onclick="retryStitch('${rec.id}')">🎵</button>`:''}
       <button class="iconbtn" title="QC checklist" onclick="showVidQC('${rec.id}')">✅</button>
       <button class="iconbtn" title="delete" onclick="delVid('${rec.id}')">🗑</button></div>
@@ -2180,6 +2186,35 @@ async function facyUploadImage(dataUrl,id){
     body:new Blob([arr],{type:mime})});
   if(!up.ok){const e=await up.json().catch(()=>({}));throw new Error('image upload failed: '+(e.message||up.status));}
   return FACY_SUPA_URL+'/storage/v1/object/public/ad-images/'+fn;
+}
+/* ═══ VIDEO QC AUTO-UPLOAD (Quan 09/10/2026) — every finished video auto-uploads to
+   ad-images/video-qc/ so Desi QCs it frame-by-frame in the terminal (cli/video_qc.py)
+   with ZERO manual downloads. Fire-and-forget: a failed upload never blocks or breaks
+   a render. Every re-stitch/re-render = NEW timestamped file, never overwritten. ═══ */
+function _qcStamp(){ const d=new Date(),z=n=>String(n).padStart(2,'0'); return ''+d.getFullYear()+z(d.getMonth()+1)+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes()); }
+async function _qcToBlob(x){ if(x instanceof Blob) return x; if(typeof x==='string'&&x.indexOf('data:')===0) return await (await fetch(x)).blob(); return null; }
+async function _qcPut(fn, blob){
+  const up=await fetch(FACY_SUPA_URL+'/storage/v1/object/ad-images/'+fn,{method:'POST',
+    headers:{'apikey':FACY_SUPA_KEY,'Authorization':'Bearer '+FACY_SUPA_KEY,'Content-Type':'video/mp4','x-upsert':'true'},
+    body:blob});
+  if(!up.ok) throw new Error('QC upload HTTP '+up.status);
+  return FACY_SUPA_URL+'/storage/v1/object/public/ad-images/'+fn;
+}
+function qcAutoUpload(rec, opts){
+  (async()=>{
+    try{
+      const o=opts||{};
+      const main=await _qcToBlob(o.main); if(!main) return;
+      const base='video-qc/'+(rec.sku||'video')+'-'+rec.id+'-'+_qcStamp();
+      rec.qcUrl=await _qcPut(base+'.mp4', main);
+      if(o.scenes) for(let i=0;i<o.scenes.length;i++){
+        try{ const b=await _qcToBlob(o.scenes[i]); if(b) await _qcPut(base+'-s'+(i+1)+'.mp4', b); }catch(_){}
+      }
+      await (o.put||idbPut)(rec);
+      if(o.after) try{ o.after(); }catch(_){}
+      try{ toast('🔍 QC copy saved'); }catch(_){}
+    }catch(e){ console.warn('QC upload failed (video unaffected)',e); try{ toast('⚠️ QC upload failed — video unaffected'); }catch(_){} }
+  })();
 }
 /* ═══ ONE-BRAIN COPY SYNC — the copy IS the creative.
    Reads the FINAL image (exact on-image wording, offer, challenge) and writes the matching
