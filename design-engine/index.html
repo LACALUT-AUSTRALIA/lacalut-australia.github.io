@@ -356,7 +356,7 @@
 <script src="strategies.js"></script>
 <script src="format-library.js"></script>
 <script src="layout-archetypes.js"></script>
-<script src="engine.js?v=20261010a"></script>
+<script src="engine.js?v=20261010b"></script>
 <script src="brand-brain.js"></script>
 <script src="packs-seed.js"></script>
 <script src="gap-tracker/data.js"></script> <!-- live-Meta snapshot for Coverage Map (refresh: Desi session "refresh gap tracker") -->
@@ -881,8 +881,12 @@ async function runGenerate(){
         label=(brain?brain.name:'Hero')+(useProd?' · '+finish:' · logo-only');
       }
       if(archPick) label += ' · 🏛 '+archPick.name;
+      // LITERAL MODE: quoted-copy brief = brief is the whole spec (no template, no one-up, no hard-rule ad furniture)
+      const literal = !!(E.briefOwnsCopy && E.briefOwnsCopy(S.brief));
+      if(literal){ const _b=brainId?BRAINS.find(b=>b.id===brainId):null; const _bans=S.isMulti?[...new Set([...GLOBAL_BAN, ...S.multiSel.flatMap(k=>SKUS[k]?.ban||[])])]:[...GLOBAL_BAN, ...(SKUS[S.curSku]?.ban||[])];
+        prompt = E.buildLiteralPrompt({ brief:S.brief, brain:_b, advNeg:S.advNeg, bans:_bans }); label += ' · literal'; }
       // 🚀 ONE-UP LOOP — refine the assembled brief to its pinnacle before generating (every strategy)
-      if(S.oneUp){
+      if(S.oneUp && !literal){
         const _t=$(id)?.querySelector('.t'); if(_t) _t.textContent='🚀 one-upping the prompt…';
         const _bans = S.isMulti
           ? [...new Set([...GLOBAL_BAN, ...S.multiSel.flatMap(k=>SKUS[k]?.ban||[])])]
@@ -896,14 +900,14 @@ async function runGenerate(){
       } else if(qty>1){ const V=IMG_VARIATIONS[i % IMG_VARIATIONS.length];
         prompt += `\n\nCREATIVE VARIATION ${i+1} of ${qty} — make this execution VISUALLY DISTINCT from the others in its BACKGROUND, lighting mood and text layout: ${V} CRITICAL: reproduce every product EXACTLY as its attached reference — front-facing, upright, undistorted, correct label, colours and shape. DO NOT change the camera angle on the products, tilt them dramatically, or restyle them. Vary ONLY the background scene, lighting mood and text layout — never the product rendering, the brand, the offer, the benefit points or any compliance rule. Keep the background WITHIN the colour palette stated in the brief — never introduce a clashing colour scheme.`;
       }
-      prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
-      prompt += perfBrainInjection(S.isMulti?'multi':S.curSku);   // bias toward live Meta winners
-      prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
+      if(!literal){
+        prompt += HARD_RULES;   // icon-contrast + realistic proportions, every time
+        prompt += perfBrainInjection(S.isMulti?'multi':S.curSku);   // bias toward live Meta winners
+        prompt += (window.brandBrainInjection?window.brandBrainInjection(S.isMulti?'multi':S.curSku):'');   // persistent brand knowledge, every render
+      }
       // Quoted-copy brief = the brief owns ALL text + scene (Quan 09/10/2026: the M1 gantry got a duplicate headline,
       // a Shop Now pill and a herb splash because HARD_RULES (13) CTA-mandatory was the prompt's last word). Lock goes LAST.
-      if(E.briefOwnsCopy && E.briefOwnsCopy(S.brief)) prompt += '
-
-FINAL OVERRIDE — '+E.COPY_LOCK+' HARD_RULES (4), (5), (8), (9) and (13) apply ONLY to text elements the art-director note lists: if the note lists no CTA, render NO CTA pill; never repeat the note's sign or headline text as a second overlay.';
+      if(E.briefOwnsCopy && E.briefOwnsCopy(S.brief)) prompt += '\n\nFINAL OVERRIDE — '+E.COPY_LOCK+' HARD_RULES (4), (5), (8), (9) and (13) apply ONLY to text elements the art-director note lists: if the note lists no CTA, render NO CTA pill; never repeat the sign or headline text from the note as a second overlay.';
       const url=await E.callGemini({ prompt, productImgs:refImgs, styleImgs:S.styleImgs,
         render:rmode, model:S.curModel, apiKey:S.geminiKey, aspectRatio, productLabels:refLabels, closeUp:S.closeUp });
       // PROVENANCE (Quan 07/10/2026): the FULL final prompt + engine settings travel with the image
