@@ -1092,7 +1092,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="favourite" onclick="toggleFav('${rec.id}',this)">${rec.fav?'❤️':'🤍'}</button>
    <button class="iconbtn" title="download" onclick="dlCard('${rec.id}','${rec.sku}-${rec.mode}')">⬇</button>
    <button class="iconbtn" title="Click = copy this image instantly. Shift+click = start a multi-selection (2-6 cards paste as ONE stitched image); once selecting, plain clicks add/remove too" onclick="copyBtnClick(event,'${rec.id}')" style="${_copySel.has(rec.id)?'background:#7c3aed;color:#fff':''}">${_copySel.has(rec.id)?'✅':'📋'}</button>
-   <button class="iconbtn" title="Auto-resize — build Story 9:16 + Square 1:1 versions of this exact ad (asks before spending)" onclick="makeSizes('${rec.id}')">📐</button>
+   <button class="iconbtn" title="Resize — pick ONE size (Story / Square / Feed / Landscape); one paid render for just that size" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="Archive — park this creative indefinitely for later (leaves the gallery, restore anytime from the 📦 Archive chip)" onclick="archiveGen('${rec.id}')">📦</button>
    <button class="iconbtn" title="delete (goes to the 🗑 Bin — restorable)" onclick="delGen('${rec.id}')">🗑</button>
    <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
@@ -3195,27 +3195,38 @@ async function runClone(){
 }
 
 /* ═══ AUTO-RESIZE — one approved 4:5 → Story 9:16 + Square 1:1, layout preserved (AdCreative/Cuttable) ═══ */
-const SIZE_TARGETS=[ ['9:16','ad','Story 9:16'], ['1:1','listing','Square 1:1'] ];
-async function makeSizes(cardId){
+/* 📐 ONE size per click (Quan 10/10/2026) — the button opens a picker; each size is its own
+   single paid render, chosen explicitly. No more forced Story+Square double spend. */
+const SIZE_TARGETS=[ ['9:16','ad','Story 9:16'], ['1:1','listing','Square 1:1'], ['4:5','social','Feed 4:5'], ['16:9','pmax','Landscape 1200×628'] ];
+function makeSizes(cardId){
   if(!KEYS.gemini){ openKeys(); return; }
-  // Spend guard — this fires 2 paid AI re-renders. Confirm so a mis-click never burns credits.
-  if(!confirm('📐 Auto-resize will GENERATE 2 new AI images (Story 9:16 + Square 1:1) and costs credits.\n\nProceed?')) return;
+  idbGet(cardId).then(rec=>{
+    if(!rec){ alert('No card.'); return; }
+    const curAr=((MODES[rec.mode]||{}).ar||'').split(' ')[0];
+    const btns=SIZE_TARGETS.filter(([ratio])=>ratio!==curAr).map(([ratio,mode,label],)=>
+      `<button class="btn" style="flex:1;min-width:120px;padding:12px 8px;font-weight:700" onclick="this.closest('dialog').close();makeOneSize('${cardId}','${ratio}','${mode}',this.textContent.trim())">${label}</button>`).join('');
+    let d=$('sizeDlg');
+    if(!d){ d=document.createElement('dialog'); d.id='sizeDlg'; d.style.maxWidth='460px'; document.body.appendChild(d); }
+    d.innerHTML=`<div class="dlg"><h3 style="margin:0 0 4px">📐 Resize — pick ONE size</h3>
+      <p style="font-size:12px;color:#666;margin:0 0 10px">One paid AI render for the size you pick. Every element stays identical — the layout recomposes for the new shape.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">${btns}</div>
+      <div style="margin-top:12px;display:flex;justify-content:flex-end"><button class="btn" onclick="sizeDlg.close()">Cancel</button></div></div>`;
+    d.showModal();
+  });
+}
+async function makeOneSize(cardId, ratio, mode, label){
   const rec=await idbGet(cardId); if(!rec){ alert('No card.'); return; }
   let src; try{ src=await compositeCard(cardId); }catch(_){ src=rec.url; }
-  toast('📐 Building Story 9:16 + Square 1:1 — no need to wait');
-  SIZE_TARGETS.forEach(([ratio,mode,label],i)=>{
-    const id='sz'+Date.now()+'_'+i;
-    insertCardTop(`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">📐 ${label}…</span></div></div>`);
-    (async ()=>{
-      try{
-        const url=await E.editImage({ imgDataUrl:src,
-          instruction:'REFRAME this finished ad to a '+ratio+' canvas ('+label+'). Keep EVERY element identical — same product rendering, headline text word-for-word, colours, badges and style. Recompose the layout gracefully for the new shape (extend the background naturally to fill; restack text zones if needed). Never crop off the product or any text.',
-          refImgs:[], sku:rec.sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio:ratio });
-        const nrec={id:'g'+Date.now()+'_sz'+i, sku:rec.sku, mode, ptype:ptypeOf(rec), label:(rec.label||'')+' · '+label, ts:Date.now(), url, fav:false, brief:rec.brief||'', angle:rec.angle||'', brain:rec.brain||brainOf(rec)||null};
-        await finishEditCard(id, nrec);
-      }catch(e){ markCardFailed(id, e.message); }
-    })();
-  });
+  toast('📐 Building '+label+' — no need to wait');
+  const id='sz'+Date.now();
+  insertCardTop(`<div class="card" id="${id}"><img src="${src}" style="opacity:.35"><div class="meta"><span class="t">📐 ${label}…</span></div></div>`);
+  try{
+    const url=await E.editImage({ imgDataUrl:src,
+      instruction:'REFRAME this finished ad to a '+ratio+' canvas ('+label+'). Keep EVERY element identical — same product rendering, headline text word-for-word, colours, badges and style. Recompose the layout gracefully for the new shape (extend the background naturally to fill; restack text zones if needed). Never crop off the product or any text.',
+      refImgs:[], sku:rec.sku, model:'gemini-3-pro-image-preview', apiKey:KEYS.gemini, aspectRatio:ratio });
+    const nrec={id:'g'+Date.now()+'_sz', sku:rec.sku, mode, ptype:ptypeOf(rec), label:(rec.label||'')+' · '+label, ts:Date.now(), url, fav:false, brief:rec.brief||'', angle:rec.angle||'', brain:rec.brain||brainOf(rec)||null};
+    await finishEditCard(id, nrec);
+  }catch(e){ markCardFailed(id, e.message); }
 }
 
 /* ═══ CREATIVE SCORING — pre-spend judge panel (steal from AdCreative.ai scoring + Creatify's
