@@ -1,0 +1,39 @@
+// 📋 Copy Ad — headless runner (same engine code + same Gemini models as the Design Engine's Copy Ad popup).
+// Usage: node copyad_run.js <ref.png> <packshot.png> <sku> <out.png> [changes.txt]
+// Env:   COPYAD_BATCH=<batch-name>  → auto-ingests the render into design-engine/_cli-renders-images/<batch>/ (engine auto-loads it on next page load after push)
+//        COPYAD_LABEL="<card label>" (optional)
+const fs = require('fs');
+const path = require('path');
+const { execFileSync } = require('child_process');
+const DE = 'C:/Users/conta/lacalut-pages/design-engine';
+const key = (fs.readFileSync('C:/Users/conta/.env', 'utf8').match(/^GEMINI_API_KEY=(.+)$/m) || [])[1]?.trim();
+global.window = global; global.localStorage = { getItem: () => null, setItem() {} };
+require(DE + '/strategies.js'); require(DE + '/engine.js');
+const E = global.LacalutEngine;
+const toData = p => 'data:image/png;base64,' + fs.readFileSync(p).toString('base64');
+const [refP, packP, sku, outP, changesP] = process.argv.slice(2);
+const sizeOf = p => { const b = fs.readFileSync(p); return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) }; };
+const modeFor = ar => ar === '1:1' ? 'listing' : ar === '9:16' ? 'ad' : ar === '16:9' ? 'pmax' : 'social';
+(async () => {
+  const ref = toData(refP), pack = toData(packP);
+  const { w, h } = sizeOf(refP); const ar = E.nearestAspect(w, h);
+  const spec = await E.describeAd({ refImg: ref, apiKey: key });
+  fs.writeFileSync(outP.replace(/\.png$/, '_spec.txt'), spec);
+  const changes = changesP ? fs.readFileSync(changesP, 'utf8') : '';
+  const prompt = E.buildCopyPrompt({ sku, spec, changes, advNeg: true, ar });
+  const promptFile = outP.replace(/\.png$/, '_prompt.txt');
+  fs.writeFileSync(promptFile, prompt);
+  console.log('aspect', ar, '| spec chars', spec.length, '| prompt chars', prompt.length);
+  const url = await E.callGemini({ prompt, productImgs: [pack], copyRef: ref, apiKey: key, model: 'gemini-3-pro-image-preview', aspectRatio: ar });
+  fs.writeFileSync(outP, Buffer.from(url.split(',')[1], 'base64'));
+  console.log('render OK ->', outP);
+  // auto-ingest into the engine gallery (Quan 15/10: never leave renders in a local folder)
+  const batch = process.env.COPYAD_BATCH;
+  if (batch) {
+    const label = process.env.COPYAD_LABEL || ('📋 Copy Ad · ' + path.basename(outP, '.png'));
+    const firstLine = (changes.split(/\r?\n/)[0] || '').slice(0, 160);
+    const out = execFileSync('python', ['-I', DE + '/cli/ingest_images.py', batch, sku, label, outP,
+      '--mode', modeFor(ar), '--ar', ar, '--brief', 'COPY AD — ' + firstLine, '--prompt-file', promptFile], { encoding: 'utf8' });
+    console.log(out.trim(), '-> commit + push lacalut-pages to make it live');
+  }
+})().catch(e => { console.log('FAIL', e.message); process.exit(1); });
