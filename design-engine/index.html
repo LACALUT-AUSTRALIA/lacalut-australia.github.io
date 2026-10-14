@@ -121,6 +121,19 @@
     <div class="slots" id="slots"></div>
     <div id="fidWarn"></div>
 
+    <!-- 📋 COPY AD MODE (Quan 15/10/2026) — the FB-ads default: recreate a competitor's scaling ad with OUR product -->
+    <details id="copySection" open style="margin-top:12px;border:2px solid #8a63d2;border-radius:10px;padding:0 10px 8px;background:#faf7ff">
+      <summary style="cursor:pointer;padding:9px 2px;font-weight:700;font-size:13px;color:#5b2fb3">📋 Copy Ad <span style="color:#999;font-weight:600;font-size:11px">recreate a competitor's winning ad with OUR product — FB-ads default</span></summary>
+      <label style="display:flex;gap:8px;align-items:center;font-size:12px;font-weight:700;color:#5b2fb3;margin:2px 0 6px;cursor:pointer"><input type="checkbox" id="copyMode" onchange="setCopyMode(this.checked)"> Copy Ad mode <span id="copyModeLbl">OFF</span></label>
+      <div class="guide" style="font-size:11px">1️⃣ paste the competitor ad (Ctrl+V anywhere) · 2️⃣ <b>Read the ad</b> · 3️⃣ edit the wording / add changes · 4️⃣ <b>Generate</b>. Our packshot must be ✓ in a Product photo slot above. Formats, Brief, Winner Layout and One-Up are all ignored in this mode.</div>
+      <div class="slots" id="copySlot" style="grid-template-columns:1fr"></div>
+      <div id="copyAspect" style="font-size:11px;color:#666;margin:2px 0 6px"></div>
+      <button class="btn" id="readAdBtn" style="width:100%;font-size:12px;padding:7px" onclick="readCopyAd()">🔎 Read the ad → editable spec</button>
+      <textarea id="copySpec" rows="8" style="margin-top:6px;font-size:11px" placeholder="Spec appears here after 'Read the ad'. Edit any line — swap their wording for ours, add 'keep' to lines that stay. This is what the engine rebuilds."></textarea>
+      <h3 style="margin-top:8px">What to change <span style="color:#999;font-weight:600;font-size:11px">the 5% — leave blank for product + wording swap only</span></h3>
+      <textarea id="copyChanges" rows="3" placeholder="e.g. headline → 'Gums That Feel Firm Again'; swap the woman for a man in his 40s; background to soft light-blue #DDEBF7"></textarea>
+    </details>
+
     <details id="fmtSection" style="margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:0 10px 2px">
       <summary style="cursor:pointer;padding:9px 2px;font-weight:700;font-size:13px">🎨 Format <span style="color:#999;font-weight:600;font-size:11px">optional</span> <span id="stratCount" style="color:#999;font-weight:600;font-size:11px">none</span></summary>
       <div class="guide" style="font-size:11px">No format selected = the engine builds straight from your brief. Pick a format only to lock a proven structure.</div>
@@ -752,6 +765,87 @@ function saveEditDraft(){ try{ const v=$('editInstruction').value; if(v.trim()) 
 function editDraftClear(){ try{ localStorage.removeItem('deEditDraft'); }catch(e){} }
 /* Click an empty style slot = paste the copied image STRAIGHT in from the clipboard —
    no file picker, ever (Quan 10/10/2026: "I'm never going to upload an image"). */
+/* ═══ 📋 COPY AD MODE (Quan 15/10/2026) ═══ */
+let copyRefImg = null; try{ copyRefImg = localStorage.getItem('lc_copy_ref')||null; }catch(_){}
+let copyAR = '4:5';
+function copyModeOn(){ return !!($('copyMode') && $('copyMode').checked); }
+function setCopyMode(on){
+  try{ localStorage.setItem('de_copy_mode', on?'1':'0'); }catch(_){}
+  const lbl=$('copyModeLbl'); if(lbl){ lbl.textContent=on?'ON':'OFF'; lbl.style.color=on?'#1a9d4a':'#999'; }
+  const gb=$('genBtn'); if(gb) gb.textContent = on ? '📋 Generate Copy Ad' : '✨ Generate';
+  const fs=$('fmtSection'); if(fs) fs.style.opacity = on?'.45':'';
+  const br=$('brief'); if(br) br.style.opacity = on?'.45':'';
+  const cs=$('copySection'); if(cs && on) cs.open=true;
+}
+function renderCopySlot(){
+  const el=$('copySlot'); if(!el) return;
+  el.innerHTML = `<div class="slot" style="min-height:120px" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropCopyRef(event)" onclick="${copyRefImg?'':'pasteCopyRef()'}" title="Copy the competitor's ad image, then click here (or Ctrl+V anywhere while Copy Ad mode is ON).">${copyRefImg?`<img src="${copyRefImg}" style="max-height:220px;object-fit:contain"><button class="rm" onclick="event.stopPropagation();delCopyRef()">×</button>`:'📋 paste the competitor ad here'}</div>`;
+  const ca=$('copyAspect');
+  if(copyRefImg){ const im=new Image(); im.onload=()=>{ copyAR=E.nearestAspect(im.width,im.height); if(ca) ca.textContent='📐 Reference '+im.width+'×'+im.height+' → render aspect '+copyAR+' (auto-matched)'; }; im.src=copyRefImg; }
+  else if(ca) ca.textContent='';
+}
+function setCopyRef(d){ copyRefImg=d;
+  try{ localStorage.setItem('lc_copy_ref', d); }catch(e){ try{ toast('⚠️ Reference attached (this session only — browser storage full)'); }catch(_){} }
+  const sp=$('copySpec'); if(sp) sp.value='';   // new reference = stale spec
+  renderCopySlot();
+  if($('copyMode') && !$('copyMode').checked){ $('copyMode').checked=true; setCopyMode(true); }
+}
+function delCopyRef(){ copyRefImg=null; try{ localStorage.removeItem('lc_copy_ref'); }catch(_){} renderCopySlot(); }
+function dropCopyRef(e){ e.preventDefault(); e.currentTarget.classList.remove('drag');
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f&&f.type&&f.type.startsWith('image/')){ const r=new FileReader(); r.onload=async()=>setCopyRef(await compressRef(r.result,1280)); r.readAsDataURL(f); return; }
+  const uri=e.dataTransfer&&(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain'));
+  if(uri&&/^(data:image|https?:)/.test(uri)) setCopyRef(uri.trim());
+}
+async function pasteCopyRef(){
+  try{ const items=await navigator.clipboard.read();
+    for(const it of items){ const t=it.types.find(x=>x.startsWith('image/'));
+      if(t){ const blob=await it.getType(t); const r=new FileReader();
+        r.onload=async()=>{ setCopyRef(await compressRef(r.result,1280)); toast('📋 Competitor ad attached'); }; r.readAsDataURL(blob); return; } }
+    toast('⚠️ No image on the clipboard — copy one first, then click');
+  }catch(e){ toast('⚠️ Clipboard read blocked — press Ctrl+V instead'); }
+}
+async function readCopyAd(){
+  if(!KEYS.gemini){ openKeys(); return; }
+  if(!copyRefImg){ alert('Paste the competitor ad into the Copy Ad slot first.'); return; }
+  const b=$('readAdBtn'); b.disabled=true; b.textContent='🔎 reading the ad…';
+  try{ const spec=await E.describeAd({ refImg:copyRefImg, apiKey:KEYS.gemini }); $('copySpec').value=spec; toast('✅ Spec ready — edit the wording, then Generate'); }
+  catch(e){ alert('Read failed: '+e.message); }
+  finally{ b.disabled=false; b.textContent='🔎 Read the ad → editable spec'; }
+}
+/* Generate in Copy Ad mode: reference ad FIRST, our packshot second, spec + changes = the whole prompt.
+   No format, no brief, no archetype, no One-Up, no HARD_RULES / brand-brain / perf-brain furniture. */
+async function runCopyGenerate(){
+  if(!copyRefImg){ alert('Copy Ad mode is ON but no competitor ad is attached — paste it into the 📋 slot.'); return; }
+  const packs = selectedProductImgs();
+  if(!packs.length){ alert('Select our packshot (✓) in a Product photo slot — the engine swaps it into the reference ad.'); return; }
+  if(curSku==='multi'){ alert('Copy Ad mode works per SKU — pick a product tab (Aktiv, Flora…), not Multi.'); return; }
+  const qty=parseInt($('qty').value)||1; const btn=$('genBtn');
+  const S = { curSku, curModel, genPtype:curPtype, spec:$('copySpec').value.trim(), changes:$('copyChanges').value.trim(),
+    advNeg:$('advNeg').checked, geminiKey:KEYS.gemini, ar:copyAR, ref:copyRefImg, packs:packs.slice() };
+  const prompt = E.buildCopyPrompt({ sku:S.curSku, spec:S.spec, changes:S.changes, advNeg:S.advNeg, ar:S.ar });
+  btn.disabled=true; btn.textContent='📋 Copying ad…';
+  if($('output').querySelector('.empty')) $('output').innerHTML='';
+  for(let i=0;i<qty;i++){
+    const id='c'+Date.now()+i; const _ar=S.ar.replace(':','/');
+    pendingImgGens.push({id, sku:S.curSku, ptype:S.genPtype, ar:_ar});
+    if(curTop==='image') insertCardTop(`<div class="card" id="${id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${_ar}"><div class="meta"><span class="t">📋 recreating the reference ad…</span></div></div>`);
+    try{
+      const url=await E.callGemini({ prompt, productImgs:S.packs, copyRef:S.ref, model:S.curModel, apiKey:S.geminiKey, aspectRatio:S.ar });
+      const label='📋 Copy Ad'+(S.changes?' · edited':' · straight swap');
+      const briefTxt=(S.changes?('COPY AD — changes: '+S.changes):'COPY AD — straight product + wording swap');
+      const rec={id:'g'+Date.now()+'_'+i, sku:S.curSku, mode:curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:briefTxt, angle:facyAngleVal(), brain:null,
+        copyRef:S.ref, genPrompt:prompt, genSettings:{ render:'copy', model:S.curModel, ar:S.ar, arch:'', oneUp:false, qty, brain:'', copyMode:true }};
+      await idbPut(rec);
+      const _el=$(id);
+      if(_el){ _el.outerHTML=cardHTML(rec); }
+      else if(curTop==='image' && rec.sku===curSku && ptypeOf(rec)===S.genPtype){ insertCardTop(cardHTML(rec)); }
+      scoreCreative(rec.id).catch(()=>{});
+    }catch(e){ markCardFailed(id, e.message); }
+    finally{ const _pi=pendingImgGens.findIndex(p=>p.id===id); if(_pi>=0) pendingImgGens.splice(_pi,1); }
+  }
+  btn.disabled=false; btn.textContent='📋 Generate Copy Ad';
+}
 async function pasteStyle(i){
   try{
     const items=await navigator.clipboard.read();
@@ -790,6 +884,7 @@ document.addEventListener('paste', e=>{
   e.preventDefault();
   const r=new FileReader();
   r.onload=async()=>{
+    if(copyModeOn() || (!copyRefImg && $('copySection') && $('copySection').open && !styleImgs.filter(Boolean).length)){ setCopyRef(await compressRef(r.result,1280)); toast('📋 Pasted → Copy Ad reference'); return; }
     let i=0; while(i<3&&styleImgs[i]) i++;
     const replaced=(i===3); if(replaced) i=2;
     setStyle(i, await compressRef(r.result,1024));   // compress first — a raw screenshot data-URL can blow the localStorage quota and make the paste look dead
@@ -836,6 +931,7 @@ const dataUrlToInlinePart = E.dataUrlToInlinePart;
 
 async function runGenerate(){
   if(!KEYS.gemini){ openKeys(); return; }
+  if(copyModeOn()) return runCopyGenerate();   // 📋 Copy Ad mode owns Generate
   const isMulti = curSku==='multi';
   let multiImgs=[], multiLabels=[];
   if(isMulti){
@@ -3392,7 +3488,8 @@ async function pushCardToMarky(cardId){
 }
 
 /* ═══ INIT ═══ */
-if(typeof MODES!=='undefined' && !MODES[curMode]) curMode='social';   // drop a stale saved mode
+if(typeof MODES!=='undefined' && !MODES[curMode]) curMode='social';
+try{ const _cm=localStorage.getItem('de_copy_mode')==='1'; if($('copyMode')){ $('copyMode').checked=_cm; setCopyMode(_cm); } renderCopySlot(); }catch(_){}   // drop a stale saved mode
 if(curBrain && curBrain!=='mixed' && typeof BRAINS!=='undefined' && !BRAINS.find(b=>b.id===curBrain)){ curBrain=null; try{localStorage.removeItem('de_brain');}catch(_){} }   // drop a stale saved strategy
 renderTabs(); renderPtypes(); renderModes(); loadProductImgs(); renderSlots(); renderBrains(); renderFmtLib(); renderNeg(); renderTitle(); renderKeyBadge(); initCardDnD(); renderPresets(''); restoreGenSettings();
 // 🏛 Winner-Layout archetype picker — populate from layout-archetypes.js + restore last choice

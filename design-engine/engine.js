@@ -437,6 +437,57 @@ ${o.brief}
 
   // True relative scale of the LACALUT range, confirmed by Quan from the physical products (08/10/2026).
   const TYPE_FLOOR = `TYPE SIZE FLOOR (hard rule, every image and every edit, Quan 08/10/2026): picture this ad as a TINY card on Facebook Marketplace — a few centimetres tall on a phone screen. EVERY single text element must still read at THAT size, not just the headline: sub-lines, review quotes AND the reviewer name/attribution line (e.g. "Jarrod N."), star-rating rows, eyebrow/trust pills (e.g. "TRUSTED BY THOUSANDS"), social-proof numbers AND the descriptor words under them (e.g. "Reviews", "Years of German oral-care science"), feature tags, badge and seal text, stat strips, chips and CTA pills. MINIMUM letter height (cap height) for ANY text line is ~4.5% of the image height; the headline is ~8% or more; every supporting line is at least HALF the headline size. Stat-strip descriptor words must be nearly as big as their numbers — never thin, grey mouse-type. A seal or badge carrying words is LARGE (at least ~22% of the image width) with its words filling it. Never shrink a line to fit: cut words, break onto two lines, or DELETE the line entirely instead — fewer, bigger words always beats more, smaller words. If ANY line would be unreadable on a Marketplace thumbnail, the design has FAILED. `;
+
+  /* ═══ 📋 COPY AD MODE (Quan 15/10/2026) — recreate a competitor's scaling ad near-identically with OUR product.
+     99% of FB-ad usage from now on. Bypasses formats, brand design rules, variation lenses, archetypes and One-Up.
+     Keeps ONLY: compliance ban list + product lock + German pack lock. ═══ */
+  const COPY_SPEC_PROMPT = `You are an art director reverse-engineering a Facebook ad so it can be re-built pixel-close. Describe the attached ad as an exact production spec a designer could rebuild from WITHOUT seeing it. Plain text, numbered lines, no markdown, no commentary.
+Cover, in this order:
+1. CANVAS: aspect ratio, overall style (photo / flat graphic / UGC / meme / screenshot), dominant background (colour, gradient, texture, scene).
+2. LAYOUT GRID: top-to-bottom zones with approximate % of height each (e.g. "headline band top 22%; product + scene middle 55%; CTA bar bottom 23%").
+3. TEXT — EVERY text element verbatim, one per line: exact wording in quotes, position, approx size (huge/large/medium/small), weight, case, colour, font style (sans bold / serif / handwritten / condensed), alignment, any background pill/box behind it.
+4. PRODUCT: what it is, where it sits (zone + left/centre/right), approx % of canvas height, angle (front-on / 3-quarter / tilted / lying), lighting, shadow/reflection, held or standing.
+5. PEOPLE / PROPS / SCENE: who/what, pose, expression, crop, props and their positions, camera angle and lens feel.
+6. GRAPHIC DEVICES: arrows, circles, badges, stars, stickers, before/after split, emojis, logos, borders — each with position and colour.
+7. COLOUR PALETTE: 3-5 hex-ish colours and where each is used.
+8. MOOD / FINISH: lighting, contrast, photo vs render, any filter or grain.
+Be exhaustive and literal. Never summarise. Every word on the ad must appear in section 3.`;
+
+  async function describeAd(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model  = opts.textModel || 'gemini-2.5-flash';
+    const ref    = dataUrlToInlinePart(opts.refImg);
+    if(!apiKey) throw new Error('No Gemini API key');
+    if(!ref) throw new Error('No reference ad image');
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text:COPY_SPEC_PROMPT}, ref]}], generationConfig:{ temperature:0.2 } }) });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
+    const txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();
+    if(!txt) throw new Error('Could not read the ad — try a clearer screenshot.');
+    return txt;
+  }
+
+  function buildCopyPrompt(o){
+    const s = SKUS[o.sku] || SKUS.aktiv;
+    const bans = [...new Set([...GLOBAL_BAN, ...(s.ban||[])])];
+    let p = `COPY-AD REMAKE. The FIRST attached image is a proven, high-spending competitor Facebook ad. Recreate it as a NEAR-IDENTICAL remake for LACALUT ${s.name} (German pharmacy oral care). Target: a viewer who saw both would say "same ad, different brand". `;
+    p += `KEEP EXACTLY (do not reinterpret, improve, re-compose or add to): the layout grid and every zone's position and size, the background, scene, props, people, poses, crops, camera angle, lighting, colour-blocking, type hierarchy, type sizes, text positions, alignment, badges, arrows, stickers, borders and overall finish. If it is a flat graphic, stay flat; if it is a photo, stay photographic; if it is UGC / lo-fi, stay lo-fi. `;
+    p += `SWAP ONLY: (a) their product → the attached LACALUT reference packshot, placed in the SAME spot, SAME scale, SAME angle and SAME lighting as their product (if their product is held, ours is held the same way); (b) their brand name, logo and wording → the LACALUT wording below. Where a line is marked "keep", reproduce it exactly; where it is rewritten, keep the SAME size, weight, colour, case and position for the new words. `;
+    if(o.spec)    p += `\n\nPRODUCTION SPEC OF THE REFERENCE AD (follow literally — this is the layout and copy to rebuild):\n${o.spec.trim()}\n`;
+    if(o.changes) p += `\nCHANGES REQUESTED BY THE ART DIRECTOR (the ONLY deliberate differences from the reference — apply exactly, nothing more):\n${o.changes.trim()}\n`;
+    else          p += `\nNO other changes were requested: apart from the product and brand-wording swap, the remake must match the reference.\n`;
+    p += `\nLACALUT PRODUCT (from the SECOND attached image onward): reproduce the real packaging EXACTLY — shape, label layout, colours, logo and wording; real proportions (a tall slim 75ml tube, never squat); only the LACALUT wordmark and variant name may read clearly, all small printed pack text stays in its ORIGINAL GERMAN and softly out of focus — NEVER legible English health words on the pack. Never invent, add or duplicate any other product, tube, box, bottle or brush. `;
+    if(o.advNeg!==false) p += `STRICT COMPLIANCE (cosmetic-only, non-negotiable): never show or write ${bans.join(', ')}; never a medical cross, never a disease or treatment claim, never "clinically proven", never a doctor endorsement unless the reference's equivalent line was explicitly rewritten by the art director. If a competitor line would breach this, keep its size/position but soften the wording to a cosmetic feel/benefit. `;
+    p += `TEXT RULES: all text in Australian English, spelled exactly as given, crisp and legible at thumbnail size. Do NOT add any headline, badge, trust seal, star row, review, CTA pill, URL, price or logo that the reference does not have. Do NOT remove any element the reference has. `;
+    p += `${o.ar||'4:5'} aspect ratio, matching the reference's framing edge to edge. Output ONE finished image.`;
+    return p;
+  }
+
+  // Nearest Gemini-3 native aspect to a reference image's w/h
+  const COPY_ASPECTS = [['1:1',1],['4:5',0.8],['5:4',1.25],['3:4',0.75],['4:3',1.333],['2:3',0.667],['3:2',1.5],['9:16',0.5625],['16:9',1.778],['21:9',2.333]];
+  function nearestAspect(w,h){ const r=w/h; let best=COPY_ASPECTS[0]; for(const a of COPY_ASPECTS){ if(Math.abs(a[1]-r)<Math.abs(best[1]-r)) best=a; } return best[0]; }
   const TYPE_CHECK = ` FINAL LEGIBILITY CHECK (do this before outputting): mentally shrink the finished design to a tiny Facebook Marketplace thumbnail. Scan EVERY text element — reviewer names, star rows, trust pills, stat descriptors, badges, CTA. Any line too small to read at thumbnail size: make it bigger or delete it, THEN output. Medium-to-large type on every element, no exceptions.`;
   const SCALE_LOCK = `TRUE PRODUCT SCALE (hard rule, every image and every edit): LACALUT products keep their real-world size relative to each other and to hands, sinks and props. Toothbrush and 300ml mouthwash bottle are about the SAME height (the brush may be slightly taller, never shorter or stubby). A 75ml toothpaste tube standing upright is AS TALL AS the 300ml bottle or slightly TALLER (never shorter), but far slimmer and flatter, so the bottle stays the bulkier product. A 10ml travel tube is tiny (about a finger long); a 50ml travel mouthwash is about a third of the 300ml bottle's height. A product box is slightly larger than the product inside it. Never enlarge one product to make it the hero at the expense of real relative scale. `;
   async function callGemini(opts){
@@ -449,6 +500,23 @@ ${o.brief}
     const pRefs=(opts.productImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,6);
     const sRefs=(opts.styleImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,3);
     const pLabels=opts.productLabels||null;
+    const cRef = opts.copyRef ? dataUrlToInlinePart(opts.copyRef) : null;
+    if(cRef){
+      // 📋 COPY AD MODE — reference ad is THE spec. Packshots are branding truth only. No generic furniture.
+      const instrC = `The FIRST attached image is the REFERENCE AD to recreate near-identically. ` +
+        (pRefs.length ? `The NEXT ${pRefs.length} image${pRefs.length>1?'s are':' is'} the real LACALUT product packshot${pRefs.length>1?'s':''} — the ONLY source of truth for OUR product's packaging; place it exactly where, how big and at what angle the reference's product sits. ` : ``) +
+        SCALE_LOCK;
+      const partsC=[{text:instrC+prompt}, cRef, ...pRefs];
+      const gcfgC = { responseModalities:['TEXT','IMAGE'] };
+      if (opts.aspectRatio && /gemini-3/.test(model)) gcfgC.imageConfig = { aspectRatio: opts.aspectRatio };
+      const resC=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{role:'user',parts:partsC}], generationConfig: gcfgC }) });
+      const dataC=await resC.json();
+      if(!resC.ok) throw new Error(dataC.error?.message||'HTTP '+resC.status);
+      const partC=dataC.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+      if(!partC?.inlineData?.data) throw new Error('No image returned — the reference may have been blocked; try a cleaner screenshot.');
+      return 'data:'+(partC.inlineData.mimeType||'image/png')+';base64,'+partC.inlineData.data;
+    }
     let instr=TYPE_FLOOR;
     if(pRefs.length){
       instr+=SCALE_LOCK;
@@ -1882,6 +1950,7 @@ Return ONLY valid JSON:
     resolveBrain, brainUsesProduct, pickBrainForCategories,
     buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
     resolveArchetype, archetypeBlock, ARCHS, briefOwnsCopy, COPY_LOCK, buildLiteralPrompt,
+    describeAd, buildCopyPrompt, nearestAspect,
     oneUpImagePrompt,
     sanitizeCopy, sanitizeHashtags, hasBannedTerm,
     VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
