@@ -469,11 +469,23 @@ Be exhaustive and literal. Never summarise. Every word on the ad must appear in 
     return txt;
   }
 
+  // 📋 COPY AD BACKGROUND (Quan 15/10/2026): the background colour is the ONE thing that changes 100% of the time —
+  // same background = competitors can tell we copied them. Each SKU owns its background. W&R = grey, always.
+  const COPY_BG = {
+    'aktiv':        'soft light-blue #DDEBF7 (LACALUT Aktiv brand background) — or clean white if the reference is a photo scene',
+    'aktiv-herbal': 'soft sage-free pale cream-white #F4F6F1 with a hint of forest green #1B5E3F in accents — never blue',
+    'flora':        'soft pale citrus-cream #FFF7D6 with navy #004A88 accents (toothpaste) or fresh pale mint-green #E6F4EA (mouthwash)',
+    'sensitive':    'soft pale teal-aqua #E3F2F3 (LACALUT Sensitive brand background)',
+    'white-repair': 'light silver-grey #E9EBEE to platinum grey #D9DCE1 (LACALUT White & Repair brand grey) — NEVER green, sage, blue or cream',
+    'multi':        'clean white #FFFFFF with a soft light-blue #DDEBF7 gradient'
+  };
   function buildCopyPrompt(o){
     const s = SKUS[o.sku] || SKUS.aktiv;
     const bans = [...new Set([...GLOBAL_BAN, ...(s.ban||[])])];
+    const copyBg = COPY_BG[o.sku] || COPY_BG.aktiv;
     let p = `COPY-AD REMAKE. The FIRST attached image is a proven, high-spending competitor Facebook ad. Recreate it as a NEAR-IDENTICAL remake for LACALUT ${s.name} (German pharmacy oral care). Target: a viewer who saw both would say "same ad, different brand". `;
     p += `KEEP EXACTLY (do not reinterpret, improve, re-compose or add to): the layout grid and every zone's position and size, the background, scene, props, people, poses, crops, camera angle, lighting, colour-blocking, type hierarchy, type sizes, text positions, alignment, badges, arrows, stickers, borders and overall finish. If it is a flat graphic, stay flat; if it is a photo, stay photographic; if it is UGC / lo-fi, stay lo-fi. `;
+    p += `BACKGROUND COLOUR — MANDATORY CHANGE (the ONE thing that is ALWAYS different from the reference): replace the reference's dominant background / card colour with ${copyBg}. Keep the same background TYPE (flat card stays a flat card, gradient stays a gradient, photo scene stays a photo scene with its surfaces re-tinted toward this colour), same texture and lighting — only the hue changes. Re-tint any panel borders, pills or outlines that matched the old background so they still sit naturally on the new one. Text colours stay as the reference unless contrast fails, then darken/lighten minimally. `;
     p += `SWAP ONLY: (a) their product → the attached LACALUT reference packshot, placed in the SAME spot, SAME scale, SAME angle and SAME lighting as their product (if their product is held, ours is held the same way); (b) their brand name, logo and wording → the LACALUT wording below. Where a line is marked "keep", reproduce it exactly; where it is rewritten, keep the SAME size, weight, colour, case and position for the new words. `;
     if(o.spec)    p += `\n\nPRODUCTION SPEC OF THE REFERENCE AD (follow literally — this is the layout and copy to rebuild):\n${o.spec.trim()}\n`;
     if(o.changes) p += `\nCHANGES REQUESTED BY THE ART DIRECTOR (the ONLY deliberate differences from the reference — apply exactly, nothing more):\n${o.changes.trim()}\n`;
