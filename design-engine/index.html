@@ -97,6 +97,7 @@
 <header>
   <div class="brand">LACALUT <small>Design Engine · Scalable-Lite <span style="color:#CF102D;font-weight:700">· v25 collections</span></small></div>
   <div class="spacer"></div>
+  <span id="whoBadge" class="kbadge" style="display:none" title="Signed in via Cloudflare Access"></span>
   <span id="keyBadge" class="kbadge no">⚠ No Gemini key</span>
   <button class="btn" onclick="editUpload()">✏️ Edit Image</button>
   <button class="btn" onclick="openGuide()">📖 Brand Guide</button>
@@ -150,14 +151,11 @@
     <button class="btn primary" id="genBtn" style="width:100%;padding:12px" onclick="runGenerate()">✨ Generate</button>
 
     <details id="advSection" style="margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:0 10px 2px">
-      <summary style="cursor:pointer;padding:10px 2px;font-weight:700;font-size:13px">⚙️ Advanced <span style="color:#999;font-weight:600;font-size:11px">style refs · winner layout · render · qty · presets · batch tools</span></summary>
+      <summary style="cursor:pointer;padding:10px 2px;font-weight:700;font-size:13px">⚙️ Advanced <span style="color:#999;font-weight:600;font-size:11px">winner layout · render · qty · presets · batch tools</span></summary>
 
       <h3 style="margin-top:4px">🎯 Why → Facy <span style="color:#999;font-weight:600;font-size:11px">override — blank = brief's first sentence</span></h3>
       <input type="text" id="facyAngle" placeholder="🎯 Override the auto-derived angle (e.g. 'mechanism — specialist beats generalist; amplify the baked hook')" title="The strategic WHY behind this creative — travels with the ad to Facy so its copy matches our angle. Leave blank to auto-use the brief's first sentence." style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;font-size:12px;box-sizing:border-box">
 
-      <h3 style="margin-top:4px">Style references <span style="color:#999;font-weight:600;">optional</span></h3>
-      <div class="guide">Best Scalable/designed outputs to emulate layout — never their product/text.</div>
-      <div class="slots" id="styleSlots"></div>
 
       <h3 style="margin-top:12px">🏛 Winner Layout <span style="color:#999;font-weight:600;font-size:11px">skeletons of proven Meta winners</span></h3>
       <div class="guide" style="font-size:11px">Locks the canvas to a layout reverse-engineered from a long-running winning ad — our pack, our copy, their structure.</div>
@@ -411,7 +409,7 @@ let curModel = localStorage.getItem('de_model') || 'gemini-3-pro-image-preview';
 if(curModel==='gemini-2.5-flash-image'){ curModel='gemini-3-pro-image-preview'; try{localStorage.setItem('de_model',curModel);}catch(_){} }   // Flash retired — force Pro
 let curSku=(function(){ try{ const k=localStorage.getItem('de_sku'); if(k && (k==='multi' || SKUS[k])) return k; }catch(_){} return 'aktiv'; })(), curMode = localStorage.getItem('de_mode') || 'social';   // remember the SKU tab across (hard) refreshes — Quan 15/10
 let productImgs = [];   // loaded per SKU+ptype by loadProductImgs() at init (after _refLib is ready)
-let styleImgs   = JSON.parse(localStorage.getItem('lc_style_images')||'[]');
+try{ localStorage.removeItem('lc_style_images'); }catch(_){}   // Style References retired 15/10/2026 (📋 Copy Ad supersedes it)
 let multiSel    = JSON.parse(localStorage.getItem('de_multi_sel')||'["aktiv","sensitive","white-repair"]');
 let curBrain = localStorage.getItem('de_brain') || null;
 let galSearchText = '';        // free-text filter over the feed (label/brief/angle/format)
@@ -504,11 +502,6 @@ function renderSlots(){
       : (closeUpOnly() ? `<div class="warn" style="background:#eef7ee;border-color:#bfe3bf;color:#1a7f37">🔍 Close-up only — the engine renders a tight macro shot of the pack.</div>`
       : (selN===1 ? `<div class="warn">⚠ Only 1 angle in the render — product fidelity may drop. Add/select a 2nd angle.</div>`:''));
   }
-  // style slots (common to both modes)
-  const s=[];
-  for(let i=0;i<3;i++){ const im=styleImgs[i];
-    s.push(`<div class="slot" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropStyle(event,${i})" onclick="${im?'':'pasteStyle('+i+')'}" title="Copy an image, then click here (or Ctrl+V anywhere) — it pastes straight in. Drag also works. No file upload.">${im?`<img src="${im}"><button class="rm" onclick="event.stopPropagation();delStyle(${i})">×</button>`:'🎨 paste'}</div>`); }
-  $('styleSlots').innerHTML=s.join('');
 }
 /* ═══ MULTI-SKU product panel (pick which SKUs go in the range/campaign shot) ═══ */
 // Which single product form the Multi-SKU range shot uses — chosen explicitly, like a human
@@ -633,6 +626,13 @@ function renderTitle(){ const nm = curSku==='multi'?'Multi-SKU':SKUS[curSku].nam
   $('skuTitle').textContent = (typeof curTop!=='undefined'&&curTop==='video')
     ? `${nm} · 🎬 Video Ads`
     : `${nm} · ${PTYPE_LABEL[curPtype]||curPtype} · ${MODES[curMode].label} (${MODES[curMode].dims})`; }
+/* Cloudflare Access identity (15/10/2026): on engine.lacalut.com.au the page sits behind Access; show who is
+   signed in + a logout link. On github.io / local the endpoint 404s and the badge stays hidden. */
+(async function renderWhoBadge(){ try{
+  const r=await fetch('/cdn-cgi/access/get-identity',{credentials:'include'}); if(!r.ok) return;
+  const j=await r.json(); if(!j||!j.email) return;
+  const b=$('whoBadge'); b.innerHTML='👤 '+j.email.replace(/</g,'&lt;')+' · <a href="/cdn-cgi/access/logout" style="color:inherit">log out</a>'; b.style.display='';
+}catch(_){} })();
 function renderKeyBadge(){ const b=$('keyBadge'); const mdl = curModel.includes('3-pro')?'Pro 🍌':'Nano 🍌';
   if(KEYS.gemini){ b.className='kbadge ok'; b.textContent='✓ '+mdl; } else { b.className='kbadge no'; b.textContent='⚠ No Gemini key'; } }
 
@@ -916,51 +916,16 @@ async function runCopyGenerate(){
   }
   btn.disabled=false; btn.textContent='✨ Generate'; if(_cb){ _cb.disabled=false; _cb.textContent="📋 Copy Ad — recreate a competitor's winner with our product"; }
 }
-async function pasteStyle(i){
-  try{
-    const items=await navigator.clipboard.read();
-    for(const it of items){
-      const t=(it.types||[]).find(x=>x.startsWith('image/'));
-      if(t){
-        const blob=await it.getType(t);
-        const r=new FileReader();
-        r.onload=async()=>{ setStyle(i, await compressRef(r.result,1024)); toast('🎨 Pasted → Style ref '+(i+1)); };
-        r.readAsDataURL(blob);
-        return;
-      }
-    }
-    toast('⚠️ No image on the clipboard — copy one first, then click');
-  }catch(e){ toast('⚠️ Clipboard read blocked — press Ctrl+V instead'); }
-}
-function delStyle(i){ styleImgs[i]=null; try{ localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); }catch(_){} renderSlots(); }
-/* Quota-safe: a huge pasted screenshot must NEVER silently fail — if localStorage is full
-   the ref still works for this session and Quan gets told, instead of a dead paste. */
-function setStyle(i,d){ styleImgs[i]=d;
-  try{ localStorage.setItem('lc_style_images',JSON.stringify(styleImgs)); }
-  catch(e){ try{ toast('⚠️ Ref attached (this session only — browser storage full)'); }catch(_){} }
-  renderSlots(); }
-function dropStyle(e,i){ e.preventDefault(); const el=e.currentTarget; el.classList.remove('drag');
-  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
-  if(f&&f.type&&f.type.startsWith('image/')){ const r=new FileReader(); r.onload=async()=>setStyle(i, await compressRef(r.result,1024)); r.readAsDataURL(f); return; }
-  const uri=e.dataTransfer&&(e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain'));
-  if(uri&&/^(data:image|https?:)/.test(uri)){ setStyle(i,uri.trim()); }
-}
-/* paste-to-style-refs (Quan 08/10/2026): Ctrl+V a screenshot anywhere on the page → first empty
-   style slot (all full → replaces slot 3). Text pastes into inputs are untouched. */
+/* paste → Copy Ad reference (Style References retired 15/10/2026): Ctrl+V an image while the
+   📋 Copy Ad dialog is open → becomes its reference. Text pastes and other pastes are untouched. */
 document.addEventListener('paste', e=>{
+  if(!copyDlgOpen()) return;
   const it=[...(e.clipboardData&&e.clipboardData.items||[])].find(x=>x.type&&x.type.startsWith('image/'));
   if(!it) return;
   const f=it.getAsFile(); if(!f) return;
   e.preventDefault();
   const r=new FileReader();
-  r.onload=async()=>{
-    if(copyDlgOpen()){ setCopyRef(await compressRef(r.result,1280)); toast('📋 Pasted → Copy Ad reference'); return; }
-    let i=0; while(i<3&&styleImgs[i]) i++;
-    const replaced=(i===3); if(replaced) i=2;
-    setStyle(i, await compressRef(r.result,1024));   // compress first — a raw screenshot data-URL can blow the localStorage quota and make the paste look dead
-    const det=$('styleSlots')&&$('styleSlots').closest('details'); if(det) det.open=true;
-    toast(replaced?'🎨 Style slots full — replaced ref 3 with the pasted image':'🎨 Pasted image → Style ref '+(i+1));
-  };
+  r.onload=async()=>{ setCopyRef(await compressRef(r.result,1280)); toast('📋 Pasted → Copy Ad reference'); };
   r.readAsDataURL(f);
 });
 
@@ -991,11 +956,6 @@ function saveGuideEdits(){ const g={ colours:$('g-colours').value.trim() };
 /* ═══ PROMPT BUILD + GEMINI — thin wrappers over engine.js (reads DOM, delegates) ═══ */
 function buildPrompt(brain, useProd){
   return E.buildPrompt({ sku:curSku, mode:curMode, brain, brief:$('brief').value, advNeg:$('advNeg').checked, useProd });
-}
-function callGemini(prompt, pRefsRaw, sRefsRaw, renderOverride){
-  return E.callGemini({ prompt, productImgs:pRefsRaw, styleImgs:sRefsRaw,
-    render: renderOverride||($('render')?.value)||'photoreal', model:curModel, apiKey:KEYS.gemini,
-    aspectRatio: (MODES[curMode].ar||'4:5').split(' ')[0] });
 }
 const dataUrlToInlinePart = E.dataUrlToInlinePart;
 
@@ -1029,7 +989,7 @@ async function runGenerate(){
     ar: MODES[curMode].ar,
     productImgs: (curSku==='multi'?productImgs.filter(Boolean):selectedProductImgs()).slice(),   // only the ✓-selected slot photos reach the render
     closeUp: curSku!=='multi' && closeUpOnly(),
-    styleImgs:   styleImgs.filter(Boolean).slice(),
+    styleImgs:   [],
     multiImgs:   multiImgs.slice(),
     multiLabels: multiLabels.slice(),
     multiSel:    multiSel.slice(),
@@ -1264,7 +1224,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
    ${rec.sentToCalendar
      ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
-     : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}
+     : ``}   /* 📅 Send to Calendar hidden 15/10/2026 — browser-inbox handoff is per-origin and dead on engine.lacalut.com.au; use 📁 Send to Drive until a Supabase bridge lands. sendToCalendar() kept. */
    ${rec.sentToFacy
      ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Queued for Facy (copy-pending) — click to queue again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Queued for Facy</button>`
      : `<button class="markybtn" id="facy-${rec.id}" title="Queue this image for Facy (copy-pending) — Facy builds the ad only after copy is approved in the terminal; nothing goes live on this click" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Queue for Facy</button>`}
@@ -2212,11 +2172,11 @@ async function idbAllStore(name){ const db=await idb(); return new Promise((res,
 async function exportBackup(){
   try{
     const ls={}; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(/^(de_|lc_)/.test(k)) ls[k]=localStorage.getItem(k); }
-    const [gens,reflib,vidsRaw]=await Promise.all([idbAllStore('gens'),idbAllStore('reflib'),idbAllStore('vids')]);
+    const [gens,reflib,vidsRaw,prodslots]=await Promise.all([idbAllStore('gens'),idbAllStore('reflib'),idbAllStore('vids'),idbAllStore('prodslots').catch(()=>[])]);
     const vids=await Promise.all(vidsRaw.map(async v=>({ ...v, enc:'b64',
       scenes:await Promise.all((v.scenes||[]).map(async s=>s?{...s, videoBlob:(s.videoBlob instanceof Blob)?await blobToB64(s.videoBlob):s.videoBlob}:s)),
       stitchedBlob:(v.stitchedBlob instanceof Blob)?await blobToB64(v.stitchedBlob):v.stitchedBlob })));
-    const payload={app:'lacalut-design-engine',ver:3,ts:Date.now(),ls,gens,reflib,vids};
+    const payload={app:'lacalut-design-engine',ver:4,ts:Date.now(),ls,gens,reflib,vids,prodslots};   // v4 (15/10/2026): + prodslots (per-SKU product-photo slots)
     const blob=new Blob([JSON.stringify(payload)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download='lacalut-design-engine-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
@@ -2232,8 +2192,9 @@ function importBackup(){ const inp=document.createElement('input'); inp.type='fi
         +(payload.gens||[]).length+' images, '+(payload.vids||[]).length+' videos, '+(payload.reflib||[]).length+' reference photos + all settings will be ADDED to this browser.\nExisting items with the same id are overwritten; nothing else is deleted.')) return;
       Object.entries(payload.ls||{}).forEach(([k,v])=>{ try{ localStorage.setItem(k,v); }catch(_){}});
       const db=await idb();
-      await new Promise((res,rej)=>{ const t=db.transaction(['gens','reflib','vids'],'readwrite');
+      await new Promise((res,rej)=>{ const t=db.transaction(['gens','reflib','vids','prodslots'],'readwrite');
         (payload.gens||[]).forEach(r=>t.objectStore('gens').put(r));
+        (payload.prodslots||[]).forEach(r=>t.objectStore('prodslots').put(r));
         (payload.reflib||[]).forEach(r=>t.objectStore('reflib').put(r));
         (payload.vids||[]).forEach(r=>t.objectStore('vids').put(r));
         t.oncomplete=res; t.onerror=()=>rej(t.error); });

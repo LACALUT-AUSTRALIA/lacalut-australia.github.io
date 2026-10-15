@@ -1,0 +1,1983 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   LACALUT DESIGN ENGINE — shared, DOM-free module.
+   Single source of truth for brand kits, prompt building, Gemini image gen
+   and AICIS compliance. Consumed by BOTH design-engine/index.html and
+   social-content-calendar/index.html.
+
+   Depends on: strategies.js (window.STRATEGY_BRAINS) loaded BEFORE this file.
+   Exposes:    window.LacalutEngine
+   ═══════════════════════════════════════════════════════════════════════ */
+(function (global) {
+  'use strict';
+
+  const BRAINS = global.STRATEGY_BRAINS || [];
+
+  /* BRIEF OWNS THE COPY (Quan 09/10/2026): a quoted-copy brief + a picked format used to blend —
+     the format's example hooks/CTA/seals ("Shop Enamel Zahncreme", "Trusted in 60+ countries")
+     leaked onto the image. With quoted copy in the brief, the format supplies style guardrails only. */
+  function briefOwnsCopy(brief){ return !!brief && /["\u201C\u201D][^"\u201C\u201D]{2,}["\u201C\u201D]/.test(brief); }
+  function fmtDims(brain, brief){
+    const own=briefOwnsCopy(brief); let out='';
+    brain.dims.forEach(([d,pool])=>{ if(own && /hook|payoff|conversion|headline|cta/i.test(d)) return; const v=pickStr(pool); if(v) out+=`${d} — ${v}. `; });
+    if(own) out+=`FORMAT = STYLE GUARDRAILS ONLY: the art-director note supplies ALL on-image wording AND the layout; take only realism, lighting, colour, mood and compliance from this format — never its example headlines, chips, seals or CTA pills. `;
+    return out;
+  }
+  /* LITERAL MODE (Quan 10/10/2026): a quoted-copy brief skips the ad template entirely — the M1 gantry still
+     got a fake 5-star review, seals and Shop Now from the template/one-up/hard-rules stack even with COPY_LOCK last. */
+  function buildLiteralPrompt(o){
+    let p=`Create exactly the image described below. Follow it LITERALLY — it is the complete specification. Do NOT add any element, text, badge, seal, review, star rating, name, logo, CTA button, prop or effect that it does not describe.
+
+DESCRIPTION:
+${o.brief}
+
+`;
+    if(o.brain && o.brain.dims){ const keep=o.brain.dims.filter(([d])=>/scene|realism|talent|product|compliance/i.test(d));
+      if(keep.length){ p+=`STYLE GUARDRAILS (realism and compliance only — never a reason to add text or elements): `; keep.forEach(([d,pool])=>{ const v=pickStr(pool); if(v) p+=`${d} — ${v}. `; }); } }
+    if(o.advNeg && o.bans && o.bans.length) p+=`STRICT COMPLIANCE — never show or write: ${o.bans.join(', ')}. `;
+    p+=`Any sign or overlay text in English exactly as quoted. Products exactly as the attached reference packshots; their small printed fine print stays small and unreadable — only LACALUT and the variant name read clearly. Never a medical cross. NEVER invent reviews, testimonials, customer names, star ratings or statistics. `;
+    return p+COPY_LOCK;
+  }
+  const COPY_LOCK = `EXACT-COPY LOCK (hard rule, final word): the ONLY words on this image, apart from the real product packaging, are the quoted lines in the art-director note, spelled exactly. Add NO extra headline, seal, trust badge or stamp ("Trusted in…", "Since…"), CTA pill or button, URL or price unless the note lists it. The note's scene and layout are followed literally — add NO props, ingredient splashes, herbs, water swirls, glows or effects the note does not describe, and keep any product at the size and position the note gives. THIS LOCK OVERRIDES every earlier rule that demands a headline overlay, CTA pill, badge or decorative energy (those apply ONLY when the note itself lists them). `;
+
+  /* ═══ BRAND KITS (RULES layer) ═══ */
+  const SKUS = {
+    'aktiv': { name:'Aktiv', dot:'#CF102D', accent:'#CF102D',
+      palette:'brand red #CF102D + navy #004A88 + soft light-blue #DDEBF7 backgrounds and #4C97C9 icon circles (use all three)',
+      props:'white hydroxyapatite mineral, salt-mineral rock clusters, clean water splash, subtle navy molecular hex pattern',
+      voice:'clinical, German pharmacy-grade, trustworthy',
+      say:'intensive gum care, firms and cares for the gum line, "Gums That Feel Firm & Cared-For"',
+      ban:['gingivitis','periodontitis','gum disease'] },
+    'aktiv-herbal': { name:'Aktiv Herbal', dot:'#2E7D46', accent:'#2E7D46',
+      palette:'dark forest green #1B5E3F / #2E7D46 + white dominant, brand red #CF102D on logo + result pill, gold #C9A227 badge/accent; NEVER navy or blue',
+      props:'fresh herbs and botanicals (sage, chamomile, myrrh), green leaves, natural stems, soft daylight, water dew',
+      voice:'natural yet clinical, botanical',
+      say:'natural gum care, 9 medicinal herbs, gums that feel cared-for naturally',
+      ban:['gingivitis','periodontitis','gum disease'] },
+    'flora': { name:'Flora', dot:'#2E9E5B', accent:'#004A88',
+      palette:'TOOTHPASTE = navy #004A88 + citrus-yellow; MOUTHWASH = fresh green #2E9E5B; red #CF102D on logo/pill only',
+      props:'mint leaves, citrus/lemon, fresh water splash, ice crystals',
+      voice:'fresh, confident, clean',
+      say:'eliminates bad breath at the source, fresh breath, balances oral microbiome',
+      ban:['halitosis','reverses the condition','0% alcohol','alcohol-free'] },
+    'sensitive': { name:'Sensitive', dot:'#008490', accent:'#008490',
+      palette:'teal #008490 / #0E6C7D dominant, red #CF102D on logo/pill only, navy #004A88 headers',
+      props:'feather (gentleness), cold water and ice, white minerals, calm blue-teal light',
+      voice:'gentle, calm, clinical',
+      say:'for sensitive teeth, gentle everyday comfort, for cold & hot twinges',
+      ban:['pain relief','pain-free cure','therapeutic'] },
+    'white-repair': { name:'White & Repair', dot:'#8a8f98', accent:'#CF102D',
+      palette:'TOOTHPASTE = bright white + red headline pill #CF102D; MOUTHWASH = silver/platinum grey; navy #004A88 headers',
+      props:'white enamel stones, subtle diamond/sparkle, bright clean light, water splash',
+      voice:'clinical whitening, never bleach-luxury',
+      say:'removes surface stains, supports natural whiteness, enamel-kind German formula',
+      ban:['peroxide','bleach'] }
+  };
+  const GLOBAL_BAN = ['gingivitis','periodontitis','gum disease','halitosis','reverses the condition','graphic bleeding gums close-up',
+    'bleeding','reduces bleeding','stops bleeding','stops gum bleeding','gum bleeding',
+    'soothes','soothes irritation','irritation','inflammation','reduces inflammation','anti-inflammatory',
+    'heals','calms','closes gum pockets','kills bacteria','kills the bacteria','clinically proven','clinically tested','clinical trial','gum health','oral health','dental health','healthy tissue','healthy gums','dentist approved','dentist recommended'];
+
+  const MODES = {
+    'social':  { label:'Feed 4:5',      dims:'1080×1350', ar:'4:5 portrait' },
+    'ad':      { label:'Reels / Story', dims:'1080×1920', ar:'9:16 vertical' },
+    'listing': { label:'Square 1:1',    dims:'1080×1080', ar:'1:1 square' },
+    'pmax':    { label:'PMax Landscape',dims:'1200×628',  ar:'16:9 landscape' }
+  };
+
+  /* ═══ EDITABLE BRAND GUIDES (per-SKU pools) ═══ */
+  const DEFAULT_GUIDES = {
+   'aktiv':{ colours:'Dominant brand red #CF102D + navy #004A88 + soft light-blue #DDEBF7 backgrounds with #4C97C9 icon circles',
+     backgrounds:['clean bright white studio background, soft shadow, minimal premium look','deep navy-blue gradient with subtle molecular hex pattern and soft glow','bold LACALUT red gradient fading to dark maroon, faint hex texture, premium','soft light-blue backdrop, water splash, white mineral rocks','dark maroon-to-red radial gradient, dramatic mood, particle sparkle','airy white-to-pale-blue gradient, fresh feel, reflective floor','premium charcoal-to-navy gradient with red rim-light and floating mineral particles','pharmacy-white scene with a soft blue gel swirl and clean reflections','geometric navy-and-red split background with bold diagonal blocks','macro water-droplet surface catching red and blue light, hero product emerging','frosted glass panel with soft studio glow and a subtle brand-red accent line','dark cinematic spotlight on a red-velvet surface, luxe pharmacy mood'],
+     formula:['white salt-mineral rock clusters','angular hydroxyapatite crystal shards','clear enamel crystals','clean water splash (NO herbs — herbs belong to Aktiv Herbal only)'],
+     usps:['Firms & cares for the gum line','Intensive German deep-clean formula','12-hour lasting fresh feel','Astringent firm-gum feel','A noticeably deep-clean feel, every brush','Daily intensive gum care','The German standard in gum care','Trusted German pharmacy heritage'],
+     headlines:['Gums That Feel Firm & Cared-For','Intensive German Gum Care','Firm, Fresh, Cared-For Gums','The German Standard in Gum Care','Give Your Gums the German Way','Strong-Feeling Gums, Every Day','Your Gums Deserve German Care','Firm-Gum Feel, Day After Day','Serious About Your Gum Line','The Daily Upgrade for Your Gums','German Gum Care Since 1925','Care for Your Gums the German Way'],
+     subheadlines:['Intensive Formula for a Firm Gum Feel','Notice the Difference From Day One','The German Standard of Gum Care','Astringent Care for a Cared-For Gumline','Daily Intensive Gum Care','Firm, Fresh and Cared-For','German Pharmacy Heritage Since 1925','For Gums That Feel Strong','The Intensive Gum-Care Ritual','Premium German Oral Care'],
+     benefits:['Firm Gumline Feel','Cared-For Gums','Astringent Firm Feel','Removes Plaque','Fresh for 12 Hours','German Gum-Care Formula','Deep-Clean Feel','Daily Intensive Care','Strong-Feeling Gumline','Fresh Confident Mouth','Pharmacy-Grade Care','Trusted German Formula'],
+     trust:['Made in Germany','Pharmacy Grade','100+ Years Expertise','German Pharmacy Heritage','Since 1925'] },
+   'aktiv-herbal':{ colours:'Dark forest green #1B5E3F / #2E7D46 + clean white dominant, brand red #CF102D on the logo & result pill, GOLD #C9A227 accent on badges/dividers/seals; headers in WHITE or dark green. NEVER navy, blue or light-blue anywhere in this ad',
+     backgrounds:['clean white studio background, soft natural shadow','deep forest-green gradient with botanical silhouettes and soft light','lush botanical scene, fresh herbs and green leaves, natural daylight','soft sage-green gradient with dew and leaf accents','dark green-to-emerald gradient, premium herbal mood','sunlit herb-garden flat-lay with sage, chamomile and mint','deep emerald studio with glowing botanical particles and dew','fresh eucalyptus-and-mint arrangement on a pale stone surface','moody enchanted-forest backdrop with god-rays and floating leaves','bright botanical white scene with scattered fresh herbs and water dew','green marble surface with herbal sprigs and soft daylight','macro dewy leaf texture with the product emerging, natural glow'],
+     formula:['white mineral base with the 9 medicinal herbs','fresh sage, chamomile and myrrh sprigs','green botanical leaves','soft water dew'],
+     usps:['9 valuable natural herbs','Natural gum care, German formula','Astringent herbal firm-gum feel','Herbal freshness, German quality','Botanical daily gum care','Nature meets German pharmacy care','Fresh herbal clean feel'],
+     headlines:['Nature’s Answer to Firm, Fresh Gums','9 Herbs · German Gum Care','Natural Gum Care, German Made','Firm-Feeling Gums, Naturally','The Herbal Way to German Gum Care','Where Nature Meets German Care','9 Herbs for a Firmer Gum Feel','Botanical Care, German Precision','Naturally Firm, Naturally Fresh','Your Gums, the Natural Way','German Herbal Gum Care','Fresh From Nature, Made in Germany'],
+     subheadlines:['9 Medicinal Herbs · German Formula','Aromatherapy Brushing Experience','Nature Meets German Gum Care','A Botanical Firm-Gum Ritual','Herbal Freshness, German Quality','9 Herbs, One German Formula','Naturally Fresh, Daily','The Herbal Gum-Care Ritual','Botanical Care Since 1925'],
+     benefits:['Fresh Herbal Comfort','Firm Gumline Feel','Astringent Firm Feel','9 Herb Extracts','Natural German Gum Care','Fresh Botanical Clean','Herbal Fresh Feel','Cared-For Gums, Naturally','Daily Botanical Care','Gentle Herbal Formula','9 Powerful Herbs','Naturally Fresh Breath'],
+     trust:['9 Natural Herbs','Made in Germany','Pharmacy Grade','German Pharmacy Heritage','Since 1925','Naturally Derived Herbs'] },
+   'flora':{ colours:'TOOTHPASTE navy #004A88 + citrus-yellow; MOUTHWASH fresh green #2E9E5B; red #CF102D on logo/pill only',
+     backgrounds:['clean white studio background, minimal fresh look','deep navy-blue gradient with water ripples and hex pattern','fresh green gradient (mouthwash) with mint leaves and splash','bright citrus-fresh scene, lemon and ice accents, airy','cool blue-to-teal gradient, crisp hygienic mood','splashing water crown with mint leaves frozen mid-air','icy blue backdrop with frost crystals and cold vapour','sunlit citrus flat-lay with lemon, lime and fresh mint','dark teal studio with a single bright mint-green light beam','fresh dewy mint leaves macro with the product emerging','clean spa-blue gradient with soft bubbles and reflections'],
+     formula:['silver-grey zinc-gluconate granules','white mineral powder','fresh lemon peel twists','mint leaves','light water splash'],
+     usps:['Tackles bad breath at the source','For lasting fresh breath','Supports a fresh, balanced mouth feel','All-day breath confidence','Clean, fresh mouth feel','Gentle daily freshness','German fresh-breath formula'],
+     headlines:['Beat Garlic & Onion Breath','Goodbye Morning Breath','Coffee Breath, Handled','Onion, Garlic, Coffee — Out','End Morning Dragon-Breath','Fresh Breath That Lasts','All-Day Fresh Breath','Say Goodbye to Bad Breath','Confidence in Every Breath','German Freshness, All Day','Breath So Fresh You’ll Notice','Fresh From the First Rinse','Own the Room With Fresh Breath','The Fresh-Breath Upgrade','Fresh Mouth, Full Confidence','Kiss Bad Breath Goodbye'],
+     subheadlines:['Freshness at the Source','Fresh-Breath Formula','A Fresher Mouth Feel, Daily','German Freshness Since 1925','Clean, Confident, Fresh','For Breath That Lasts','The Daily Fresh-Breath Ritual','Premium German Fresh Care'],
+     benefits:['Fights Bad Breath','Fresh, Balanced Mouth Feel','Long-Lasting Freshness','Gentle Daily Care','Clean, Confident Breath','All-Day Fresh Feel','Fresh From First Use','Cool Mint Freshness','German Fresh-Breath Care','Everyday Breath Confidence','Fresh Clean Finish'],
+     trust:['Made in Germany','Pharmacy Grade','12h Fresh Feel','German Pharmacy Heritage','Since 1925'] },
+   'sensitive':{ colours:'Teal #008490 / #0E6C7D dominant, red #CF102D on logo/pill only, navy #004A88 headers',
+     backgrounds:['clean white studio background, soft gentle shadow','soft teal-to-white gradient, gentle mood','deep teal gradient with subtle enamel/mineral texture','airy pale-blue and teal scene with ice and feather accents','dark teal radial gradient, premium serene feel','soft-focus feather resting on still water, gentle light','frosted teal glass with cold vapour and soft glow','pale mint-and-white minimalist scene with a single ice crystal','serene spa-teal backdrop with smooth pebbles and water','macro enamel-white mineral surface with soft teal light','gentle gradient from icy blue to warm cream, comforting mood'],
+     formula:['pale blue-teal soothing crystals','white mineral salt','cool ice shards','calm blue-teal light'],
+     usps:['For sensitive teeth','Comfort for cold & hot twinges','Gentle daily care','Extra-gentle everyday cleaning','Builds a protective feel','German gentle-care formula','Comfort you can feel'],
+     headlines:['Enjoy Ice Cream Again','No More Cold-Drink Twinges','That Ice-Cream Zing? Gone','Hot Coffee, Cold Ice — No Wince','Cold Air, No Wince','Enjoy Cold & Hot Again','Comfort for Sensitive Teeth','Everyday Comfort, German Made','Gentle Care, Real Comfort','From Twinges to Comfort','Say Yes to Cold Drinks Again','Gentle on Teeth, Serious on Care','Comfort in Every Brush','The Gentle German Choice','Enjoy Every Bite Again','Sensitive Teeth, Meet Comfort'],
+     subheadlines:['Gentle Care for Sensitive Teeth','Gentle Everyday Comfort','A Protective Everyday Feel','German Gentle-Care Formula','Comfort That Lasts','For Teeth That Need Extra Care','The Gentle Daily Ritual','Premium German Comfort Care'],
+     benefits:['Comfort for Sensitive Teeth','Protective Everyday Feel','Extra-Gentle Cleaning','Long-Lasting Comfort','Gentle Daily Care','Kind to Sensitive Teeth','Everyday Comfort Feel','Protective Everyday Care','Gentle German Formula','Comfort From First Use','Cold & Hot Comfort'],
+     trust:['Made in Germany','Pharmacy Grade','Gentle Formula','German Pharmacy Heritage','Since 1925'] },
+   'white-repair':{ colours:'TOOTHPASTE bright white + red headline pill #CF102D; MOUTHWASH silver/platinum grey; navy #004A88 headers',
+     backgrounds:['clean bright white studio background, sparkle highlights','silver/platinum gradient, premium sheen','deep navy gradient with diamond sparkle and enamel stones','soft white-to-silver gradient, bright airy whitening feel','cool grey studio with reflective floor and light burst','bright white surface with a single dazzling light flare','crystal-and-diamond arrangement catching bright light','polished marble surface with soft sparkle and clean reflections','dark charcoal studio with a bright white beam on the product','macro enamel-white mineral texture with sparkle particles','frosted silver gradient with subtle shimmer and clean shadow'],
+     formula:['white hydroxyapatite pearls','clear ice / enamel cubes','subtle diamond sparkle','bright white mineral powder'],
+     usps:['Removes surface stains','Enamel-kind gentle whitening','No peroxide','Gentle daily whitening','Reveals natural whiteness','Enamel-safe whitening','German whitening care'],
+     headlines:['Coffee, Tea & Wine Stains — Gone','Beat Coffee & Tea Stains','Wave Goodbye To Yellow Teeth','Your Coffee Habit, Erased','Undo Years Of Surface Stains','Stains From Coffee, Tea & Wine — Lifted','Whiter, Stronger-Feeling Teeth','A Brighter, Whiter Smile','Gentle Whitening, German Made','Remove Stains, Reveal White','Your Whiter Smile Starts Here','Brighten Without the Bleach','Say Goodbye to Surface Stains','The Gentle Road to White','Whiter Teeth, Happy Enamel','Reveal Your Natural White','Bright Smile, German Care'],
+     subheadlines:['Gentle Whitening & Enamel Protection','Whiter Smile, Enamel-Safe','Brighten Without Bleach','No-Peroxide Whitening Care','For a Naturally Whiter Smile','Gentle Daily Whitening','The Enamel-Safe Whitening Ritual','Premium German Whitening'],
+     benefits:['Removes Surface Stains','Supports Natural Whiteness','Enamel-Kind Care','No Peroxide','Gentle Daily Whitening','Brighter Smile Feel','Strong-Enamel Feel','Whiter From First Use','Enamel-Safe Formula','Bright Confident Smile','German Whitening Care'],
+     trust:['Made in Germany','Pharmacy Grade','Enamel-Safe','No Peroxide','Since 1925'] }
+  };
+  const GUIDE_SECTIONS = [['backgrounds','Background Styles (colour + scene — engine varies these)'],['formula','Formula Elements (signature ingredients — ALWAYS applied, EXCLUSIVE to this SKU: never another formula’s elements)'],['usps','USPs'],['headlines','Main Headlines'],['subheadlines','Subheadlines'],['benefits','Benefits'],['trust','Trust Elements']];
+
+  // Pool sanitiser — saved localStorage guides can carry legacy fabricated/unverifiable cues
+  // (Dermatologically Tested, Loved by Millions, 60+ Countries) and therapeutic wording; every
+  // guide is scrubbed ON READ so old saved guides can never feed a breach into a prompt.
+  const GUIDE_DROP = /dermatologically|clinically|loved by millions|trusted in \d+\+? countries|\b\d+ ?billion|dentist (approved|recommended)/i;
+  const GUIDE_FIX = [[/german treatment/gi,'German way'],[/long-lasting protection/gi,'lasting fresh feel'],[/\bprotection\b/gi,'fresh feel'],[/anti-plaque/gi,'deep-clean'],[/removes plaque/gi,'a deep-clean feel']];
+  function sanitizeGuide(g){
+    for(const k of ['usps','headlines','subheadlines','benefits','trust']){
+      if(!Array.isArray(g[k])) continue;
+      g[k] = g[k].filter(x=>!GUIDE_DROP.test(x&&x.text||''));
+      for(const x of g[k]) for(const [re,rep] of GUIDE_FIX) x.text = String(x.text||'').replace(re,rep);
+    }
+    return g;
+  }
+  function getGuide(sku){
+    const d = DEFAULT_GUIDES[sku] || {};
+    const toObj = a => (a||[]).map(t=>({text:t,on:true}));
+    try { const saved = global.localStorage && localStorage.getItem('de_guide_'+sku); if(saved){ const g=JSON.parse(saved); if(!g.formula || !g.formula.length){ g.formula = toObj(d.formula); } return sanitizeGuide(g); } } catch(e){}
+    return sanitizeGuide({ colours:d.colours||'', backgrounds:toObj(d.backgrounds), formula:toObj(d.formula), usps:toObj(d.usps), headlines:toObj(d.headlines), subheadlines:toObj(d.subheadlines), benefits:toObj(d.benefits), trust:toObj(d.trust) });
+  }
+
+  /* ═══ SAMPLERS ═══ */
+  function pickStr(str){ const a=(str||'').split(';').map(x=>x.trim()).filter(Boolean); return a.length? a[Math.floor(Math.random()*a.length)] : ''; }
+  function pickRand(list,n){ const on=(list||[]).filter(x=>x.on!==false).map(x=>x.text); const out=[]; while(on.length&&out.length<n) out.push(on.splice(Math.floor(Math.random()*on.length),1)[0]); return out; }
+
+  /* ═══ BRAIN RESOLUTION ═══ */
+  function resolveBrain(brainId){
+    if(brainId==='mixed' || !brainId) return BRAINS[Math.floor(Math.random()*BRAINS.length)] || null;
+    return BRAINS.find(b=>b.id===brainId) || null;
+  }
+  function brainUsesProduct(brain){
+    if(!brain) return true;
+    if(brain.product==='none') return false;
+    if(brain.product==='required') return true;
+    if(['Sales','Social Proof','Story'].includes(brain.cat)) return true;
+    return Math.random()<0.3; // 'optional' content brains: mostly clean, ~30% get a product cameo
+  }
+  // Pick a random brain whose category is in `cats`. Optional preferIds bias
+  // (if any of those brain ids exist in the pool, pick from them ~65% of the time).
+  function pickBrainForCategories(cats, preferIds){
+    const pool = BRAINS.filter(b => cats.includes(b.cat));
+    if(!pool.length) return BRAINS[Math.floor(Math.random()*BRAINS.length)] || null;
+    if(preferIds && preferIds.length){
+      const pref = pool.filter(b => preferIds.includes(b.id));
+      if(pref.length && Math.random()<0.65) return pref[Math.floor(Math.random()*pref.length)];
+    }
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+
+  /* ═══ VARIATION ENGINE — forces every render (even same strategy) to look distinct ═══
+     A random composition/camera "lens" + colour mood is injected each generation so the
+     engine (and the One-Up Loop) can't converge on one obvious hero shot. */
+  const VARIATION_LENSES = [
+    'extreme macro close-up filling the frame with product detail and texture, shallow depth of field',
+    'wide cinematic environmental shot with the product smaller inside a vast dramatic scene',
+    'top-down flat-lay composition seen from directly above',
+    'dramatic low hero angle looking up so the product towers heroically',
+    'off-centre editorial layout with the product to one side and bold negative space for the headline',
+    'surreal floating / levitating product with elements orbiting around it',
+    'split / diptych composition of two contrasting halves',
+    'forced-perspective shot with the product bursting toward the camera, strong motion energy',
+    'symmetrical centred hero on a plinth or pedestal under a luxe spotlight',
+    'diagonal dutch-angle dynamic composition',
+    'poster / collage layout with several framed panels',
+    'product emerging from a splash or burst in the lower third with huge type filling the top',
+    'three-quarter turntable studio angle with a long soft reflection',
+    'over-the-shoulder in-scene framing as if caught in a real moment'
+  ];
+  const VARIATION_MOODS = [
+    'bright high-key airy lighting','dark moody low-key with a single dramatic light',
+    'bold saturated punchy colour grade','soft pastel premium palette',
+    'high-contrast graphic poster style','warm golden natural light',
+    'cool clean clinical light','cinematic teal-and-warm colour grade'
+  ];
+  function pickVariationLens(){ return VARIATION_LENSES[Math.floor(Math.random()*VARIATION_LENSES.length)]; }
+  function pickVariationMood(){ return VARIATION_MOODS[Math.floor(Math.random()*VARIATION_MOODS.length)]; }
+
+  /* ═══ LAYOUT-ARCHETYPE LIBRARY (Phase 4 #3) — structural skeletons of PROVEN winner ads ═══
+     Loaded from layout-archetypes.js (window.LAYOUT_ARCHETYPES). When a render carries an
+     archetype, its layout spec becomes the LAW of the canvas: it outranks the brain's own
+     Layout dim, the generic template scaffolding AND the random variation lens — only the
+     brand/compliance locks stay above it. The source ad's CONTENT is never copied: the
+     skeleton is re-skinned with LACALUT packs, palette and cosmetic-only copy. */
+  const ARCHS = global.LAYOUT_ARCHETYPES || [];
+  function resolveArchetype(idOrObj){
+    if(!idOrObj) return null;
+    if(typeof idOrObj === 'object') return idOrObj;
+    if(idOrObj === 'random') return ARCHS.length ? ARCHS[Math.floor(Math.random()*ARCHS.length)] : null;
+    return ARCHS.find(a=>a.id===idOrObj) || null;
+  }
+  function archetypeBlock(a){
+    if(!a) return '';
+    let t = `LAYOUT ARCHETYPE — "${a.name}" (THE LAW of this canvas — reverse-engineered from a PROVEN, long-running winning Meta ad; reproduce its STRUCTURE exactly, never its source brand, product, wording or imagery): `;
+    t += `GRID: ${a.gridDNA}. `;
+    (a.zones||[]).forEach(z=>{
+      t += `ZONE [${z.role}]: ${z.position}${z.sizePct?`, ~${z.sizePct}% of canvas`:''}${z.align?`, ${z.align}-aligned`:''}${z.treatment?`; treatment: ${z.treatment}`:''}${z.note?` (${z.note})`:''}. `;
+    });
+    if(a.typeScale) t += `TYPE SCALE: ${a.typeScale}. `;
+    if(a.colourBlocking) t += `COLOUR BLOCKING (structure only — REMAP every colour to the LACALUT brand palette stated above; keep the same light/dark/saturation relationships): ${a.colourBlocking}. `;
+    if(a.hierarchy && a.hierarchy.length) t += `VISUAL HIERARCHY (strongest first): ${a.hierarchy.join(' > ')}. `;
+    if(a.negativeSpace) t += `NEGATIVE SPACE: ${a.negativeSpace}. `;
+    if(a.eyePath) t += `EYE PATH: ${a.eyePath}. `;
+    if(a.whyItWins) t += `WHY THIS SKELETON CONVERTS (preserve this quality): ${a.whyItWins}. `;
+    t += `RE-SKIN RULE (non-negotiable): every structural slot is filled with LACALUT content — the real referenced pack(s), LACALUT red #CF102D / navy #004A88 palette, cosmetic-only oral-care copy. If the archetype's canvas ratio differs from the requested aspect ratio, adapt the skeleton proportionally — never letterbox. NEVER reproduce the source ad's brand, product shape, mascot, illustration characters' likeness, logo or any of its words. `;
+    return t;
+  }
+
+  /* ═══ PROMPT BUILD (DOM-free) ═══ */
+  function buildPrompt(opts){
+    const sku = opts.sku, mode = opts.mode || 'social', brain = opts.brain;
+    const brief = (opts.brief || '').trim();
+    const advNeg = opts.advNeg !== false;
+    const useProd = opts.useProd;
+    const s = SKUS[sku], m = MODES[mode], g = getGuide(sku);
+    const bans = [...GLOBAL_BAN, ...s.ban];
+    const salesLike = brain && ['Sales','Social Proof','Story'].includes(brain.cat);
+    const isUGC = brain && brain.cat === 'UGC';
+    const isChat = brain && /chat|text message/i.test(brain.name);
+    // AI SIGN CREATIVE (NHB "AI Sign Creatives" doctrine) — an organic real-world SIGN carries the
+    // whole message as text; the scene makes it look like a real photo, not an ad. Text swaps freely;
+    // the graphic stays. Like chat, it bypasses ALL generic headline/badge/CTA scaffolding below.
+    const isSign = brain && (brain.cat === 'Sign' || /\bsign\b/i.test(brain.name || ''));
+    // Format owns the frame: when the brain carries its own Layout dim, the generic template
+    // mandates (pack lower-third hero, mandatory badge stack) step aside — they were flattening
+    // every format into the same headline-top / tube-bottom / three-badges ad.
+    const fmtLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d)));
+    const arch = resolveArchetype(opts.archetype);   // winner-ad layout skeleton — outranks brain layout + variation lens
+
+    // ═══ CHAT / TEXT MESSAGE — dedicated FLAT full-bleed messaging-screen screenshot ═══
+    // Bypasses ALL the generic headline/variation/photoreal/badge scaffolding, which was
+    // turning this into a photoreal phone-on-a-podium in a studio scene with a headline banner.
+    if(isChat){
+      let cp = `Create a FLAT 2D SCREENSHOT of a mobile phone MESSAGING app (iMessage / WhatsApp style) for LACALUT ${s.name} (German pharmacy oral-care brand) — exactly as if someone took a screenshot ON their phone and posted it to Facebook. `;
+      cp += `THE ENTIRE 4:5 IMAGE IS THE PHONE SCREEN ITSELF, full-bleed edge to edge. It is a flat on-screen UI screenshot, NOT a photograph of a phone. ABSOLUTELY NO physical phone device, NO phone body, bezel or frame, NO hand holding a phone, NO desk, table, podium or pedestal, NO 3D scene, NO studio background, NO teal/coloured backdrop, NO drop shadow around a device — the chat interface fills 100% of the canvas. `;
+      cp += `LAYOUT, top to bottom: (1) a slim phone STATUS BAR — time at top-left, signal/wifi/battery icons at top-right; (2) a chat HEADER BAR with a back chevron on the left, a small round contact avatar and a first-name contact label (e.g. "Alex", "Sam", "Jess") centred — this is what signals it is a phone screen; (3) the CONVERSATION as a vertical stack of rounded chat bubbles filling the rest of the screen — GREY received bubbles aligned LEFT, BLUE sent bubbles aligned RIGHT, small timestamps; (4) a slim message-input bar at the very bottom. `;
+      cp += `TYPOGRAPHY (most important rule): the chat bubble text must be VERY LARGE — like a phone with the accessibility "Larger Text" setting turned right up — big, bold and effortless to read even in a small Facebook feed thumbnail on a mobile. Err on the side of TOO big. CONCRETE SIZE TARGET (do not miss this): each line of bubble text should be roughly 1/14 to 1/11 of the total image height tall — as large as a mobile banner headline — with only ~3 to 6 words per line so the words stay huge; a viewer must read every word on a phone-sized feed thumbnail WITHOUT zooming. If in doubt, make the text bigger and the bubbles fewer. `;
+      cp += `Keep the conversation SHORT — only about 4 to 6 bubbles total — and each bubble to one short line or two, so every bubble can be rendered large; do NOT cram in many small messages. The bubbles and their text should fill most of the screen width. `;
+      cp += `Text is high-contrast: dark text on grey received bubbles, white text on blue sent bubbles. `;
+      if(brain) cp += fmtDims(brain, brief);
+      if(brief) cp += `Art-director note (priority): ${brief}. THE BRIEF IS LAW: when this note lists text elements (headline lines, benefit lines, badges, sub-captions, CTA), render EVERY ONE exactly as written - never drop, merge, shorten or simplify any listed element; the note OUTRANKS every generic layout or badges-optional suggestion in this prompt (a badge the note lists is MANDATORY). Only the compliance rules outrank this note. `;
+      if(opts.headline) cp += `The conversation should naturally get across THIS message/topic — "${opts.headline}" — woven into the texts, never as an overlay headline. `;
+      cp += `Include exactly ONE inline PHOTO-MESSAGE bubble showing the real LACALUT ${s.name} product (from the reference image) — like a friend texted a pic. Keep this photo SMALL — no more than about a quarter to a third of the screen height — so it never dominates or shrinks the text; the text bubbles are the hero, not the photo. White cap, real German packaging accurate; NOT a big studio hero. `;
+      cp += `NO external headline, NO title banner, NO benefit badges, NO trust chips, NO logo watermark, NO call-to-action sticker — the whole message lives INSIDE the chat bubbles. `;
+      cp += `CLAIM LOCK (mandatory): the benefits mentioned in the chat must be ONLY about ${s.name}'s real job — ${s.say}. Do NOT borrow another LACALUT product's benefit — never mention whitening, "stain lift" or brightening unless this IS White & Repair; never "fresh breath" or bad-breath unless this IS Flora; never herbal/botanical unless this IS Aktiv Herbal. `;
+      if(advNeg) cp += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
+      cp += `All chat text in ENGLISH (Australian English), casual and natural like real friends texting. Keep the product's own printed packaging text unchanged. `;
+      cp += `${m.ar} aspect ratio, clean flat messaging-app UI, crisp legible typography, no spelling errors on any text.`;
+      return cp;
+    }
+
+    // ═══ AI SIGN CREATIVE — organic real-world sign that IS the message ═══
+    if(isSign){
+      const SIGN_TYPES = [
+        'a large roadside BILLBOARD beside a busy highway',
+        'a yellow diamond ROAD SIGN / street warning sign on a post',
+        'an illuminated SIGN above a shop or pharmacy on a busy street',
+        'an orange INDUSTRIAL WARNING / caution sign bolted to a wall',
+        'a yellow POST-IT NOTE stuck on a laptop screen or bathroom mirror',
+        'a flyer / card pinned to a cork BULLETIN BOARD',
+        'white SKYWRITING / words formed in the clouds against blue sky',
+        'bold graphics printed across the front of a T-SHIRT someone is wearing',
+        'a push NOTIFICATION / banner popping up on a phone lock screen',
+        'a wooden SANDWICH-BOARD A-frame sign on a footpath outside a cafe',
+        'vinyl GRAPHICS / lettering on the side of a parked van',
+        'a BUMPER STICKER on the back of a car in traffic',
+        'the printed front of a GREETING CARD standing on a table',
+        'a message piped in icing on top of a decorated CAKE',
+        'bold lettering TATTOOED across the upper BACK of a person photographed from behind in a natural candid setting',
+        'a few words written across the FOREHEAD of a person, candid close-up portrait in a real everyday setting'
+      ];
+      const signType = opts.signType || SIGN_TYPES[Math.floor(Math.random()*SIGN_TYPES.length)];
+      const signAr = opts.aspectRatio || m.ar;
+      let sp = `Create a PHOTOREALISTIC, high-resolution, natural-looking photo in which ${signType} prominently displays a short written message. This is an "AI sign" ad: it must look like a REAL candid photograph someone snapped, NOT a designed advertisement — the realism is what makes it scroll-stopping. `;
+      sp += `FRAMING (critical): the SIGN is the CENTRAL focus of the frame — zoom IN on it so it fills most of the image and the message is instantly, crystal-clearly legible; do not shoot it small or far away. `;
+      sp += `THE MESSAGE ON THE SIGN (exact wording, the single hero element — HUGE, bold, perfectly legible, filling most of the sign): "${opts.headline || (brief || 'Your gums will thank you')}". `;
+      sp += `TYPOGRAPHY IS EVERYTHING (the #1 rule): the message text must be MASSIVE, thick and ultra-high-contrast — readable in a SPLIT SECOND on a small mobile feed thumbnail WITHOUT zooming, so the viewer gets an instant "aha" the moment they see it. Err on the side of TOO BIG. Keep it to a few words on one short line (or two at most) so each word stays enormous; never cram in small text. The written message is the WHOLE point of the image. Australian English. `;
+      sp += `BRANDING + PRODUCT (organic, small): show ONLY the product(s) supplied as reference images, resting naturally and SMALL somewhere in the scene (true-to-life size, packaging copied exactly from the reference — a toothpaste tube has a white cap; a mouthwash bottle is a transparent coloured bottle with a clear measuring cap) — e.g. on a bench, a car dash, a hand, beside the sign. NEVER add a product form that has no reference image. A small "LACALUT ${s.name}" logo may also sit in a corner of the sign. The products are a quiet signature; the written message is the hero. `;
+      sp += (window.BRAND_BRAIN && window.BRAND_BRAIN.productRule ? window.BRAND_BRAIN.productRule + ' ' : '');
+      sp += `STRICTLY NO advertising scaffolding: NO separate overlay headline banner floating over the photo, NO benefit badges, NO trust chips, NO guarantee seals, NO "Shop Now" / CTA button, NO studio backdrop, NO glowing product podium — the ONLY text in the whole image is the message written ON the sign itself. `;
+      sp += `SCENE REALISM: believable real-world setting, natural lighting and perspective, authentic textures and depth of field, slight real-world imperfection — it must pass as a genuine photograph. If people appear, they are believable everyday Australians, photoreal, never plastic AI faces. `;
+      if(brief) sp += `Art-director note (priority) for the scene: ${brief}. THE BRIEF IS LAW: when this note lists text elements (headline lines, benefit lines, badges, sub-captions, CTA), render EVERY ONE exactly as written - never drop, merge, shorten or simplify any listed element; the note OUTRANKS every generic layout or badges-optional suggestion in this prompt (a badge the note lists is MANDATORY). Only the compliance rules outrank this note. `;
+      sp += `CLAIM LOCK: the message must be about LACALUT ${s.name}'s own real job only — ${s.say}. Never borrow another LACALUT product's angle (no whitening unless White & Repair, no fresh-breath unless Flora, no sensitivity unless Sensitive, no herbal/botanical unless Aktiv Herbal). `;
+      if(advNeg) sp += `STRICT COMPLIANCE — never show or write any of these words/claims anywhere: ${bans.join(', ')}. `;
+      sp += `PACK FINE-PRINT LOCK (mandatory): render any product cameo SMALL and slightly soft/out-of-focus so that NONE of the pack's printed body text or claims is legible — only the LACALUT brand name and variant read clearly; never let words like inflammation, bleeding, periodontitis or any health claim appear readable in English. ${signAr} aspect ratio, crisp legible sign typography, no spelling errors on any text.`;
+      return sp;
+    }
+
+    let p = `Professional graphic-designed ${m.label} for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
+    p += `STRICT brand colours — ${g.colours||s.palette}. These colour/hex names (navy, red, gold, teal, etc.) are internal styling instructions for fills and accents ONLY — never print a colour name, hex code or palette label as literal on-image text, and never invent a sub-brand or product-line name (e.g. "LACALUT Navy") from a colour word. The only brand name in the image is "LACALUT ${s.name}". `;
+    if(brain){
+      p += `CREATIVE STRATEGY — "${brain.name}": `;
+      p += fmtDims(brain, brief);
+      if(!briefOwnsCopy(brief)) p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image. A viewer comparing it side-by-side with any other LACALUT ad format must instantly see a DIFFERENT structural skeleton. NEVER collapse into the default template (centred product hero on a glowing backdrop, headline above, three badges below) unless the strategy above explicitly asks for exactly that. `;
+    }
+    if(arch){
+      p += archetypeBlock(arch);
+      if(brain) p += `PRECEDENCE: where the "${brain.name}" strategy's layout and the LAYOUT ARCHETYPE disagree on STRUCTURE (placement, sizes, grid), the ARCHETYPE wins; the strategy still supplies the content idea, hook angle and mood. `;
+    }
+    if(salesLike && !briefOwnsCopy(brief)){
+      // GUIDE INJECTION ONLY AS FALLBACK — a format's own Hook/Layout dims outrank the generic
+      // Brand Guide pools. Injecting the guide headline + badge stack over every Sales brain was
+      // the root cause of "every format renders the same centred-hero-with-badges ad".
+      const hasHook   = !!(brain && brain.dims && brain.dims.some(([d])=>/hook/i.test(d)));
+      const hasLayout = !!(brain && brain.dims && brain.dims.some(([d])=>/layout/i.test(d))) || !!arch;
+      if(!hasHook){ const head=pickRand(g.headlines,1)[0]; if(head) p += `Headline (exact wording): "${head}". `; }
+      if(!hasLayout){
+        const bens=pickRand(g.benefits,3); if(bens.length) p += `Benefit badges: ${bens.join('; ')}. `;
+        const trust=pickRand(g.trust,2); if(trust.length) p += `Trust badges: ${trust.join('; ')}. `;
+        const bg=pickRand(g.backgrounds,1)[0]; if(bg) p += `Background scene: ${bg}. `;
+      }
+    }
+    if(brief) p += `Art-director note (priority): ${brief}. THE BRIEF IS LAW: when this note lists text elements (headline lines, benefit lines, badges, sub-captions, CTA), render EVERY ONE exactly as written - never drop, merge, shorten or simplify any listed element; the note OUTRANKS every generic layout or badges-optional suggestion in this prompt (a badge the note lists is MANDATORY). Only the compliance rules outrank this note. `;
+    if(opts.headline) p += `TOPIC LOCK (highest priority): the MAIN on-image headline and all overlay text must convey THIS exact message/topic — "${opts.headline}". Do NOT substitute a different tip, fact or headline; everything written on the image must be consistent with it. `;
+    if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
+    p += `ALL overlay/design text — headline, labels, badges, captions — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (The product's own printed packaging text stays unchanged.) Keep it clean and uncluttered — no extra call-to-action stickers or badges unless specified. `;
+    p += `COPY RELEVANCE: every headline, caption and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste, fresh breath, or the whitening/repair benefit — never a vague generic line like "German pharmacy care" on its own; always tie it to the actual product (e.g. "German pharmacy-grade gum care"). `;
+    p += `SKU ANGLE LOCK (mandatory — the foundation rule): this creative is EXCLUSIVELY for LACALUT ${s.name}. Every headline, sub-headline, benefit, transformation, badge and visual MUST be about THIS product's own benefit only — ${s.say}. NEVER borrow another LACALUT product's angle or claim: do NOT show or write teeth-whitening, "whiter smile", stain-removal or before/after whitening UNLESS this is the White & Repair whitening product; do NOT show gum-firmness or plaque unless this is a gum-care product; do NOT show sensitivity/cold-twinge comfort unless this is the Sensitive product; do NOT show fresh-breath messaging unless this is the Flora fresh-breath product. Match the angle to ${s.name} and nothing else. `;
+    { const fx=(g.formula||[]).filter(x=>x.on!==false).map(x=>x.text);
+      if(fx.length && !isUGC) p += `SIGNATURE FORMULA ELEMENTS (mandatory whenever the design shows ANY ingredient, mineral, botanical, powder, formula-spill prop, cutaway tube or formula backdrop): use ONLY these elements for ${s.name} — ${fx.join(', ')}. NEVER show another formula's signature elements: no herbs / chamomile / sage / botanicals unless this is Aktiv Herbal; no silver zinc granules unless this is Flora; no blue soothing crystals unless this is Sensitive; no diamond/pearl whitening minerals unless this is White & Repair. If the layout uses no ingredient or formula props, do not force them in. `; }
+    if(brain && brain.id==='before-after' && sku!=='white-repair'){
+      p += `BEFORE/AFTER FOCUS (mandatory): ${s.name} is NOT a whitening product — the before→after transformation must show ${s.name}'s OWN benefit improving (${s.say}). Do NOT show whiter teeth, any tooth-shade change, a "Month 1 vs Month 6" teeth comparison, stains, or the words "whitening" or "stains". For fresh breath, use a freshness cue (a low→high freshness meter, or dull → fresh minty burst); for gum care, a dull→firm cared-for gum cue; for sensitivity, a discomfort→comfort cue. `;
+    }
+    if(isUGC){
+      p += `UGC PHOTO — a real, believable everyday PERSON (matching the Art-director note) is the CLEAR SUBJECT, authentically holding or using the LACALUT product in a genuine phone-camera photo: natural imperfect lighting, a real home or bathroom setting, candid unposed feel. The PERSON MUST be clearly visible and prominent — NEVER a product-only, hand-only or studio-hero shot. The product is held or placed naturally in the scene (not a big floating hero), its real packaging accurate and the CAP ALWAYS WHITE (never red, navy or coloured). CRITICAL SCALE: the tube is its TRUE real-world size — a normal ~75ml toothpaste tube (about the length of a hand), correctly proportioned to the person's hand, fingers and face; NEVER enlarged, oversized or giant. Any on-image caption stays in a casual, native, lowercase style (like a viral social-post caption), NOT a formal studio ad headline — BUT it is rendered LARGE, bold and instantly readable on a mobile screen, never tiny. `;
+      const ugcLens = ["a front-camera selfie held at arm's length","a candid over-the-shoulder phone shot","a relaxed waist-up handheld shot","a casual straight-on shelf/vanity phone shot (no mirror anywhere in frame)"][Math.floor(Math.random()*4)];
+      p += `VARIATION: frame it as ${ugcLens}; ${pickVariationMood()}. Keep it authentically UGC — never a studio product composition. `;
+      p += `TYPOGRAPHY SIZE (mandatory): the caption text is LARGE and bold — big enough to read instantly on a small mobile screen — just in a casual native style rather than a formal headline. Text sells the creative as much as the image. `;
+    } else {
+      if(useProd){
+        // PRODUCT PROMINENCE DIAL (Quan 28/09: "a lot more lifestyle images with the product
+        // secondary or very small — or no product at all, just our logo"). Each brain carries
+        // prom: 'hero' | 'secondary' | 'cameo' | 'logo'. Pack-hero is the EXCEPTION now, not the rule.
+        const prom = (brain && brain.prom) || 'hero';
+        if(prom === 'secondary'){
+          p += `PRODUCT PROMINENCE — SECONDARY (mandatory): a REAL HUMAN LIFESTYLE MOMENT is the hero of this image — a believable person and scene own the frame; the product appears naturally IN the scene at TRUE real-world size (on the vanity, on the bench, held casually) occupying NO MORE than ~15% of the frame. NEVER a giant floating pack, never a studio product hero, never the pack as the main subject. `;
+        } else if(prom === 'cameo'){
+          p += `PRODUCT PROMINENCE — CAMEO (mandatory): the IDEA/GRAPHIC CONCEPT is the ad; the product appears only as a small, sharp cameo in a lower corner near the CTA — roughly logo-sized, NO MORE than ~10% of the frame. The concept owns the canvas, the pack just signs it. NEVER a big centred product hero. `;
+        } else {
+          p += `Product packaging LARGE and dominant${(fmtLayout||arch)?' exactly where the layout structure above places it':' — lower ~55% as the clear hero'}. Even in this product-hero composition, a small CTA pill (e.g. "Shop Now") MUST still sit in a bottom corner — it never competes with the product's dominance, it just signs off the ad; a hero shot with no CTA is an incomplete ad, not a cleaner one. NEVER render the literal words "CTA" or "call to action" as visible text anywhere in the image — the button shows real copy only (e.g. "Shop Now"). `;
+        }
+        p += `Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
+        p += `CRITICAL PRODUCT FIDELITY: a TOOTHPASTE tube/box always has a WHITE cap — never red, navy, blue, green or any coloured cap. A MOUTHWASH BOTTLE is a completely different pack: a transparent coloured bottle with a clear ribbed measuring cap — copy its reference photo exactly and NEVER give it a white tube-style cap, a solid white body or a redesigned label. Each product form follows ITS OWN reference image only. `;
+        if(prom==='secondary' || prom==='cameo'){
+          p += `HUMAN REALISM (when people appear): believable everyday Australian adults with natural, imperfect skin texture and real proportions — photoreal, never plastic-smooth AI faces, never stock-photo posing. `;
+        }
+      } else {
+        p += `Do NOT show any product packaging or tube. Brand the image with the LACALUT logo only (small, top-centre or a corner). `;
+      }
+      if(arch){
+        if(!briefOwnsCopy(brief)) p += `VARIATION: ${pickVariationMood()} — but the COMPOSITION comes ONLY from the LAYOUT ARCHETYPE above; never override its structure with a different camera or layout idea. `;
+      } else {
+        if(!briefOwnsCopy(brief)) p += `VARIATION (make THIS render visually DISTINCT from other ads of the same concept): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected composition — do NOT default to the obvious centred-hero-on-a-glowing-backdrop look. `;
+      }
+      p += `TYPOGRAPHY SIZE (mandatory): render the MAIN HEADLINE as the single biggest element on the canvas — huge, bold and dominant — and the SUBHEADLINE clearly extra-large too, so both read instantly on a small mobile screen. Prioritise large, legible headline/subheadline type over decorative detail. `;
+    }
+    p += `PACKAGING FINE-PRINT: keep any small printed body or claims text on the product packaging in the product\u0027s ORIGINAL GERMAN and render it small and softly out of focus so it is NOT legible; never reproduce the pack fine print as legible English health, disease or treatment claims (e.g. never show readable words like bleeding, gingivitis, periodontitis in English). `; p += `TEXT CONTRAST (mandatory — the single most important design rule): all overlay text must be high-contrast and instantly legible. On any red, dark or saturated background the text MUST be white/light; on any white, light, pale or pastel background the text MUST be navy/dark. NEVER white or light text on a light/pale background (e.g. no white on light blue), and NEVER navy/dark text on a red or dark background. `; if(!isUGC){ p += `TITLE CASE (mandatory): the MAIN HEADLINE and the SUB-HEADLINE must BOTH be written in Title Case — capitalise the first letter of every significant word (e.g. "German Pharmacy Whitening That Lifts Everyday Stains"). Never sentence case, never all-lowercase for the sub-headline. `; p += `HEADLINE vs SUB-HEADLINE COLOUR (mandatory): render the main headline and the sub-headline in two DIFFERENT but complementary on-brand colours — never both in the same flat colour. e.g. a white headline with a brand-red #CF102D or light-accent sub-headline, or a navy #004A88 headline with a brand-red sub. Both must stay high-contrast against the background; the slight colour shift separates the two lines and makes the copy pop and feel more clickable. `; p += `BADGES ARE OPTIONAL — include benefit/trust badges ONLY when the strategy layout above asks for them; a clean lifestyle or concept image with just headline + CTA is often stronger than a badge stack. IF badges appear, BADGE & ICON SYSTEM applies: give each a small relevant icon (e.g. sparkle for stain-lift, a tooth for a clean feel, a droplet for freshness, a medal or ribbon for German heritage / "since 1925") — icons crisp and consistent line-weight, never plain unstyled text labels. ICON COLOUR (hard rule): every badge/feature icon MUST be rendered in a DIFFERENT colour from its own label text — e.g. a brand-red #CF102D icon beside navy #004A88 text, never icon and text the same flat colour — so the icon reads as a distinct visual element and never blends into the words. SHAPE CONSISTENCY (hard rule): within THIS single image EVERY benefit/feature badge MUST be the exact SAME shape as the others — all identical rounded pills, OR all identical rectangles, OR all identical squares — NEVER mix different badge shapes in one image (mixed shapes look unprofessional and cheap). All trust badges likewise share one uniform shape. Pick ONE badge shape for the set; the shape MAY differ between separate images for variety, but must be uniform inside any one image. `; p += `BADGE CONTRAST (non-negotiable — the #1 design rule): light or white badge text ALWAYS sits on a DARK, deep or saturated fill (navy #004A88, brand red #CF102D, deep teal or charcoal) — NEVER on a light, pale or pastel fill (e.g. never white text on light blue). Dark text (navy or charcoal) sits ONLY on a white or light fill. When unsure, darken the badge background until the text reads instantly. `; } p += `HEADLINE LEGIBILITY (mandatory): wherever the headline sits over a busy, bright or light area, add a subtle darkened gradient, scrim or soft shadow directly behind the headline text so it stays high-contrast and instantly readable — never let a bright background or light flare wash out the headline. `; p += `PLAIN LANGUAGE: keep copy simple and everyday (this is a Facebook ad, not a science paper) - avoid medical or scientific jargon and never print obscure or scary-sounding ingredient names such as "aluminium lactate"; reference any formula plainly, e.g. "a special German gum-care formula". `; p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
+    if(briefOwnsCopy(brief)) p += COPY_LOCK;
+    return p;
+  }
+
+  /* ═══ MULTI-SKU PROMPT BUILD (range / family / campaign shot) ═══ */
+  function buildMultiPrompt(opts){
+    const mode = opts.mode || 'social', brain = opts.brain;
+    const brief = (opts.brief || '').trim();
+    const advNeg = opts.advNeg !== false;
+    const names = opts.skuNames || [];
+    const form = (opts.form || '').trim();
+    const m = MODES[mode];
+    const bans = [...new Set([...GLOBAL_BAN, ...(opts.bans || [])])];
+    let p = `Professional graphic-designed ${m.label} for LACALUT (premium German pharmacy oral-care brand) featuring MULTIPLE products together — ${names.length} products: ${names.join(', ')}. `;
+    p += `AD, NOT A POST (hard rule): this is a PAID Meta direct-response ad for cold traffic — it must stop the scroll AND sell: customer-first hook, one clear cosmetic feel-benefit payoff, and a clear CTA pill; NEVER an organic-social layout and NEVER 'save/share/follow/comment' language. CTA PILL (mandatory): exactly ONE clear button-style CTA pill in a brand colour (e.g. 'Shop Now') always appears — never omit it, never more than one. NEVER render the literal words "CTA" or "call to action" as visible text anywhere in the image — the button shows real copy only (e.g. "Shop Now"); a supporting tagline is printed as plain words with NO "CTA:" label in front of it. `;
+    p += `STRICT brand colours — dominant LACALUT red #CF102D + navy #004A88, clean premium palette (each product may keep its own accent). `;
+    p += `Arrange all ${names.length} products together as ONE cohesive premium hero composition — a "range line-up" / family shot: every product clearly visible, evenly balanced and distinct, none obscured or merged. `;
+    if(brain){
+      p += `CREATIVE STRATEGY — "${brain.name}": `;
+      p += fmtDims(brain, brief);
+      if(!briefOwnsCopy(brief)) p += `FORMAT SIGNATURE (hard rule — outranks every generic habit): this creative must be UNMISTAKABLY the "${brain.name}" format — the strategy's layout structure above is the LAW of this image; never collapse into the default centred-lineup-with-badges template unless the strategy explicitly asks for exactly that. `;
+    }
+    { const archM = resolveArchetype(opts.archetype);
+      if(archM){
+        p += archetypeBlock(archM);
+        if(brain) p += `PRECEDENCE: where the "${brain.name}" strategy's layout and the LAYOUT ARCHETYPE disagree on STRUCTURE, the ARCHETYPE wins; the strategy still supplies the content idea and hook angle. `;
+        p += `All ${names.length} products are arranged WITHIN the archetype's product zone(s) as one cohesive group. `;
+      }
+    }
+    if(brief) p += `Art-director note (HIGHEST priority — follow it exactly): ${brief}. `;
+    if(opts.headline) p += `TOPIC LOCK (highest priority): the main on-image headline and all overlay text must convey THIS exact message — "${opts.headline}". `;
+    if(advNeg) p += `STRICT COMPLIANCE — never show or write any of these words/claims: ${bans.join(', ')}. `;
+    p += `ALL overlay/design text — headline, labels, badges — must be in ENGLISH (Australian English) ONLY; never German, never bilingual. (Each product's own printed packaging text stays unchanged.) `;
+    p += `The products are LARGE and dominant as the clear hero of the composition. Prefer "German Pharmacy Formula" — never "Mineral Formula" and never "Clinical Formula" (clinical is a banned therapeutic word). `;
+    p += `CRITICAL PRODUCT FIDELITY: every TOOTHPASTE tube/box has a WHITE cap — never red, navy, blue, green or any coloured cap. A MOUTHWASH BOTTLE is a completely different pack: a transparent coloured bottle with a clear ribbed measuring cap — copy its reference photo exactly and NEVER give it a white tube-style cap, a solid white body or a redesigned label. Each product form follows ITS OWN reference image only. `;
+    p += `CONSISTENT PRODUCT FORM (mandatory, non-negotiable): render ALL ${names.length} products as ${form||'ONE single form (all tubes OR all boxes — never mixed)'}${form?` — show EVERY product as ${form} and NOTHING else (do NOT draw tubes if these are boxes, do NOT draw boxes if these are tubes, do NOT add a mouthwash bottle unless these ARE bottles)`:''}. Identical form for every product, matching the reference photos exactly. NEVER mix forms in one image; even if a supplied reference photo shows a box AND a tube together, render ONLY the ${form||'chosen'} form. Keep it uniform so the range reads as one clean, cohesive set. `;
+    p += `COPY RELEVANCE: every headline and overlay line must be specifically about ORAL CARE — gums, teeth, toothpaste or fresh breath — never a vague generic line like "German pharmacy care" on its own; tie it to the actual products (e.g. "German pharmacy-grade oral care"). `;
+    if(resolveArchetype(opts.archetype)){
+      if(!briefOwnsCopy(brief)) p += `VARIATION: ${pickVariationMood()} — but the COMPOSITION comes ONLY from the LAYOUT ARCHETYPE above; never override its structure. `;
+    } else {
+      if(!briefOwnsCopy(brief)) p += `VARIATION (make THIS render visually DISTINCT from other range shots): compose it as a ${pickVariationLens()}; ${pickVariationMood()}. Choose a fresh, unexpected arrangement — do NOT default to a flat line-up on a plain backdrop. `;
+    }
+    p += `TYPOGRAPHY SIZE (mandatory): render the MAIN HEADLINE as the single biggest element on the canvas — huge, bold and dominant — and the SUBHEADLINE clearly extra-large too, so both read instantly on a small mobile screen. Prioritise large, legible headline/subheadline type over decorative detail. `;
+    p += `PACKAGING FINE-PRINT: keep any small printed body or claims text on the product packaging in the product\u0027s ORIGINAL GERMAN and render it small and softly out of focus so it is NOT legible; never reproduce the pack fine print as legible English health, disease or treatment claims (e.g. never show readable words like bleeding, gingivitis, periodontitis in English). `; p += `TEXT CONTRAST (mandatory — the single most important design rule): all overlay text must be high-contrast and instantly legible. On any red, dark or saturated background the text MUST be white/light; on any white, light, pale or pastel background the text MUST be navy/dark. NEVER white or light text on a light/pale background (e.g. no white on light blue), and NEVER navy/dark text on a red or dark background. `; p += `TITLE CASE (mandatory): the MAIN HEADLINE and the SUB-HEADLINE must BOTH be written in Title Case — capitalise the first letter of every significant word (e.g. "German Pharmacy Whitening That Lifts Everyday Stains"). Never sentence case, never all-lowercase for the sub-headline. `; p += `HEADLINE vs SUB-HEADLINE COLOUR (mandatory): render the main headline and the sub-headline in two DIFFERENT but complementary on-brand colours — never both in the same flat colour. e.g. a white headline with a brand-red #CF102D or light-accent sub-headline, or a navy #004A88 headline with a brand-red sub. Both must stay high-contrast against the background; the slight colour shift separates the two lines and makes the copy pop and feel more clickable. `; p += `BADGE & ICON SYSTEM (mandatory): give benefit and trust badges a small relevant icon (e.g. sparkle for stain-lift, a tooth, a shield for protection, a globe for "trusted in X countries", a medal or ribbon for heritage / "since 1925") — icons crisp and consistent line-weight, never plain unstyled text labels. ICON COLOUR (hard rule): every badge/feature icon MUST be rendered in a DIFFERENT colour from its own label text — e.g. a brand-red #CF102D icon beside navy #004A88 text, never icon and text the same flat colour — so the icon reads as a distinct visual element and never blends into the words. SHAPE CONSISTENCY (hard rule): within THIS single image EVERY benefit/feature badge MUST be the exact SAME shape as the others — all identical rounded pills, OR all identical rectangles, OR all identical squares — NEVER mix different badge shapes in one image (mixed shapes look unprofessional and cheap). All trust badges likewise share one uniform shape. Pick ONE badge shape for the set; the shape MAY differ between separate images for variety, but must be uniform inside any one image. `; p += `BADGE CONTRAST (non-negotiable — the #1 design rule): light or white badge text ALWAYS sits on a DARK, deep or saturated fill (navy #004A88, brand red #CF102D, deep teal or charcoal) — NEVER on a light, pale or pastel fill (e.g. never white text on light blue). Dark text (navy or charcoal) sits ONLY on a white or light fill. When unsure, darken the badge background until the text reads instantly. `; p += `HEADLINE LEGIBILITY (mandatory): wherever the headline sits over a busy, bright or light area, add a subtle darkened gradient, scrim or soft shadow directly behind the headline text so it stays high-contrast and instantly readable — never let a bright background or light flare wash out the headline. `; p += `PLAIN LANGUAGE: keep copy simple and everyday (this is a Facebook ad, not a science paper) - avoid medical or scientific jargon and never print obscure or scary-sounding ingredient names such as "aluminium lactate"; reference any formula plainly, e.g. "a special German gum-care formula". `; p += `${m.ar} aspect ratio, high-end premium finish, crisp legible typography, no spelling errors on any text.`;
+    if(briefOwnsCopy(brief)) p += COPY_LOCK;
+    return p;
+  }
+
+  /* ═══ GEMINI CALL (DOM-free) ═══ */
+  function dataUrlToInlinePart(d){ const m=/^data:([^;]+);base64,(.*)$/.exec(d||''); return m?{inlineData:{mimeType:m[1],data:m[2]}}:null; }
+
+  // True relative scale of the LACALUT range, confirmed by Quan from the physical products (08/10/2026).
+  const TYPE_FLOOR = `TYPE SIZE FLOOR (hard rule, every image and every edit, Quan 08/10/2026): picture this ad as a TINY card on Facebook Marketplace — a few centimetres tall on a phone screen. EVERY single text element must still read at THAT size, not just the headline: sub-lines, review quotes AND the reviewer name/attribution line (e.g. "Jarrod N."), star-rating rows, eyebrow/trust pills (e.g. "TRUSTED BY THOUSANDS"), social-proof numbers AND the descriptor words under them (e.g. "Reviews", "Years of German oral-care science"), feature tags, badge and seal text, stat strips, chips and CTA pills. MINIMUM letter height (cap height) for ANY text line is ~4.5% of the image height; the headline is ~8% or more; every supporting line is at least HALF the headline size. Stat-strip descriptor words must be nearly as big as their numbers — never thin, grey mouse-type. A seal or badge carrying words is LARGE (at least ~22% of the image width) with its words filling it. Never shrink a line to fit: cut words, break onto two lines, or DELETE the line entirely instead — fewer, bigger words always beats more, smaller words. If ANY line would be unreadable on a Marketplace thumbnail, the design has FAILED. `;
+
+  /* ═══ 📋 COPY AD MODE (Quan 15/10/2026) — recreate a competitor's scaling ad near-identically with OUR product.
+     99% of FB-ad usage from now on. Bypasses formats, brand design rules, variation lenses, archetypes and One-Up.
+     Keeps ONLY: compliance ban list + product lock + German pack lock. ═══ */
+  const COPY_SPEC_PROMPT = `You are an art director reverse-engineering a Facebook ad so it can be re-built pixel-close. Describe the attached ad as an exact production spec a designer could rebuild from WITHOUT seeing it. Plain text, numbered lines, no markdown, no commentary.
+Cover, in this order:
+1. CANVAS: aspect ratio, overall style (photo / flat graphic / UGC / meme / screenshot), dominant background (colour, gradient, texture, scene).
+2. LAYOUT GRID: top-to-bottom zones with approximate % of height each (e.g. "headline band top 22%; product + scene middle 55%; CTA bar bottom 23%").
+3. TEXT — EVERY text element verbatim, one per line: exact wording in quotes, position, approx size (huge/large/medium/small), weight, case, colour, font style (sans bold / serif / handwritten / condensed), alignment, any background pill/box behind it.
+4. PRODUCT: what it is, where it sits (zone + left/centre/right), approx % of canvas height, angle (front-on / 3-quarter / tilted / lying), lighting, shadow/reflection, held or standing.
+5. PEOPLE / PROPS / SCENE: who/what, pose, expression, crop, props and their positions, camera angle and lens feel.
+6. GRAPHIC DEVICES: arrows, circles, badges, stars, stickers, before/after split, emojis, logos, borders — each with position and colour.
+7. COLOUR PALETTE: 3-5 hex-ish colours and where each is used.
+8. MOOD / FINISH: lighting, contrast, photo vs render, any filter or grain.
+Be exhaustive and literal. Never summarise. Every word on the ad must appear in section 3.`;
+
+  async function describeAd(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model  = opts.textModel || 'gemini-2.5-flash';
+    const ref    = dataUrlToInlinePart(opts.refImg);
+    if(!apiKey) throw new Error('No Gemini API key');
+    if(!ref) throw new Error('No reference ad image');
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text:COPY_SPEC_PROMPT}, ref]}], generationConfig:{ temperature:0.2 } }) });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
+    const txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('').trim();
+    if(!txt) throw new Error('Could not read the ad — try a clearer screenshot.');
+    return txt;
+  }
+
+  // 📋 COPY AD BACKGROUND (Quan 15/10/2026): the background colour is the ONE thing that changes 100% of the time —
+  // same background = competitors can tell we copied them. Each SKU owns its background. W&R = grey, always.
+  const COPY_BG = {
+    'aktiv':        'soft light-blue #DDEBF7 (LACALUT Aktiv brand background) — or clean white if the reference is a photo scene',
+    'aktiv-herbal': 'soft sage-free pale cream-white #F4F6F1 with a hint of forest green #1B5E3F in accents — never blue',
+    'flora':        'soft pale citrus-cream #FFF7D6 with navy #004A88 accents (toothpaste) or fresh pale mint-green #E6F4EA (mouthwash)',
+    'sensitive':    'soft pale teal-aqua #E3F2F3 (LACALUT Sensitive brand background)',
+    'white-repair': 'light silver-grey #E9EBEE to platinum grey #D9DCE1 (LACALUT White & Repair brand grey) — NEVER green, sage, blue or cream',
+    'multi':        'clean white #FFFFFF with a soft light-blue #DDEBF7 gradient'
+  };
+  function buildCopyPrompt(o){
+    const s = SKUS[o.sku] || SKUS.aktiv;
+    const bans = [...new Set([...GLOBAL_BAN, ...(s.ban||[])])];
+    const copyBg = COPY_BG[o.sku] || COPY_BG.aktiv;
+    let p = `COPY-AD REMAKE. The FIRST attached image is a proven, high-spending competitor Facebook ad. Recreate it as a NEAR-IDENTICAL remake for LACALUT ${s.name} (German pharmacy oral care). Target: a viewer who saw both would say "same ad, different brand". `;
+    p += `KEEP EXACTLY (do not reinterpret, improve, re-compose or add to): the layout grid and every zone's position and size, the background, scene, props, people, poses, crops, camera angle, lighting, colour-blocking, type hierarchy, type sizes, text positions, alignment, badges, arrows, stickers, borders and overall finish. If it is a flat graphic, stay flat; if it is a photo, stay photographic; if it is UGC / lo-fi, stay lo-fi. `;
+    p += `BACKGROUND COLOUR — MANDATORY CHANGE (the ONE thing that is ALWAYS different from the reference): replace the reference's dominant background / card colour with ${copyBg}. Keep the same background TYPE (flat card stays a flat card, gradient stays a gradient, photo scene stays a photo scene with its surfaces re-tinted toward this colour), same texture and lighting — only the hue changes. Re-tint any panel borders, pills or outlines that matched the old background so they still sit naturally on the new one. Text colours stay as the reference unless contrast fails, then darken/lighten minimally. `;
+    p += `SWAP ONLY: (a) their product → the attached LACALUT reference packshot, placed in the SAME spot, SAME scale, SAME angle and SAME lighting as their product (if their product is held, ours is held the same way); (b) their brand name, logo and wording → the LACALUT wording below. Where a line is marked "keep", reproduce it exactly; where it is rewritten, keep the SAME size, weight, colour, case and position for the new words. `;
+    if(o.spec)    p += `\n\nPRODUCTION SPEC OF THE REFERENCE AD (follow literally — this is the layout and copy to rebuild):\n${o.spec.trim()}\n`;
+    if(o.changes) p += `\nCHANGES REQUESTED BY THE ART DIRECTOR (the ONLY deliberate differences from the reference — apply exactly, nothing more):\n${o.changes.trim()}\n`;
+    else          p += `\nNO other changes were requested: apart from the product and brand-wording swap, the remake must match the reference.\n`;
+    p += `\nLACALUT PRODUCT (from the SECOND attached image onward): reproduce the real packaging EXACTLY — shape, label layout, colours, logo and wording; real proportions (a tall slim 75ml tube, never squat); only the LACALUT wordmark and variant name may read clearly, all small printed pack text stays in its ORIGINAL GERMAN and softly out of focus — NEVER legible English health words on the pack. Never invent, add or duplicate any other product, tube, box, bottle or brush. `;
+    if(o.advNeg!==false) p += `STRICT COMPLIANCE (cosmetic-only, non-negotiable): never show or write ${bans.join(', ')}; never a medical cross, never a disease or treatment claim, never "clinically proven", never a doctor endorsement unless the reference's equivalent line was explicitly rewritten by the art director. If a competitor line would breach this, keep its size/position but soften the wording to a cosmetic feel/benefit. `;
+    p += `TITLE CASE ALL HEADERS (Quan's #1 header rule, never break): the headline AND every sub-headline are written in Title Case — capitalise every significant word; small words (a, an, the, and, or, in, of, to, for, with, on, at) stay lowercase unless they are the first word. This overrides the reference ad's own casing (even if their headline is in sentence case). Body lines and fine print keep the casing given in the changes. `;
+    p += `TEXT RULES: all text in Australian English, spelled exactly as given, crisp and legible at thumbnail size. Do NOT add any headline, badge, trust seal, star row, review, CTA pill, URL, price or logo that the reference does not have. Do NOT remove any element the reference has. `;
+    p += `OUTPUT FORMAT — ALWAYS 4:5 PORTRAIT (1080×1350), even when the reference is square or landscape (Quan 15/10/2026, never break). Keep the reference's element order and styling top to bottom, and use the extra vertical space to make the main elements BIGGER — never add new elements, never leave an empty band. `;
+    p += `4:5 portrait aspect ratio, full-bleed edge to edge. Output ONE finished image.`;
+    return p;
+  }
+
+  // Nearest Gemini-3 native aspect to a reference image's w/h
+  const COPY_ASPECTS = [['1:1',1],['4:5',0.8],['5:4',1.25],['3:4',0.75],['4:3',1.333],['2:3',0.667],['3:2',1.5],['9:16',0.5625],['16:9',1.778],['21:9',2.333]];
+  function nearestAspect(w,h){ const r=w/h; let best=COPY_ASPECTS[0]; for(const a of COPY_ASPECTS){ if(Math.abs(a[1]-r)<Math.abs(best[1]-r)) best=a; } return best[0]; }
+  const TYPE_CHECK = ` FINAL LEGIBILITY CHECK (do this before outputting): mentally shrink the finished design to a tiny Facebook Marketplace thumbnail. Scan EVERY text element — reviewer names, star rows, trust pills, stat descriptors, badges, CTA. Any line too small to read at thumbnail size: make it bigger or delete it, THEN output. Medium-to-large type on every element, no exceptions.`;
+  const SCALE_LOCK = `TRUE PRODUCT SCALE (hard rule, every image and every edit): LACALUT products keep their real-world size relative to each other and to hands, sinks and props. Toothbrush and 300ml mouthwash bottle are about the SAME height (the brush may be slightly taller, never shorter or stubby). A 75ml toothpaste tube standing upright is AS TALL AS the 300ml bottle or slightly TALLER (never shorter), but far slimmer and flatter, so the bottle stays the bulkier product. A 10ml travel tube is tiny (about a finger long); a 50ml travel mouthwash is about a third of the 300ml bottle's height. A product box is slightly larger than the product inside it. Never enlarge one product to make it the hero at the expense of real relative scale. `;
+  async function callGemini(opts){
+    const prompt = opts.prompt;
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-3-pro-image-preview';
+    const render = opts.render || 'photoreal';
+    if(!apiKey) throw new Error('No Gemini API key');
+
+    const pRefs=(opts.productImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,6);
+    const sRefs=(opts.styleImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,3);
+    const pLabels=opts.productLabels||null;
+    const cRef = opts.copyRef ? dataUrlToInlinePart(opts.copyRef) : null;
+    if(cRef){
+      // 📋 COPY AD MODE — reference ad is THE spec. Packshots are branding truth only. No generic furniture.
+      const instrC = `The FIRST attached image is the REFERENCE AD to recreate near-identically. ` +
+        (pRefs.length ? `The NEXT ${pRefs.length} image${pRefs.length>1?'s are':' is'} the real LACALUT product packshot${pRefs.length>1?'s':''} — the ONLY source of truth for OUR product's packaging; place it exactly where, how big and at what angle the reference's product sits. ` : ``) +
+        SCALE_LOCK;
+      const xRefs=(opts.copyExtras||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,3);
+      const instrX = xRefs.length ? `The LAST ${xRefs.length} attached image${xRefs.length>1?'s are':' is'} EXTRA REFERENCE${xRefs.length>1?'S':''} (e.g. a real customer's profile photo) — use ${xRefs.length>1?'them':'it'} EXACTLY where the art director's notes say (e.g. as the Facebook comment avatar, cropped into the circle, same face, same colours, sharpened cleanly — never replace it with a different or invented person). ` : ``;
+      const partsC=[{text:instrC+instrX+prompt}, cRef, ...pRefs, ...xRefs];
+      const gcfgC = { responseModalities:['TEXT','IMAGE'] };
+      if (opts.aspectRatio && /gemini-3/.test(model)) gcfgC.imageConfig = { aspectRatio: opts.aspectRatio };
+      const resC=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ contents:[{role:'user',parts:partsC}], generationConfig: gcfgC }) });
+      const dataC=await resC.json();
+      if(!resC.ok) throw new Error(dataC.error?.message||'HTTP '+resC.status);
+      const partC=dataC.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+      if(!partC?.inlineData?.data) throw new Error('No image returned — the reference may have been blocked; try a cleaner screenshot.');
+      return 'data:'+(partC.inlineData.mimeType||'image/png')+';base64,'+partC.inlineData.data;
+    }
+    let instr=TYPE_FLOOR;
+    if(pRefs.length){
+      instr+=SCALE_LOCK;
+      let base=(pLabels && pLabels.length>1)
+        ? `The FIRST ${pRefs.length} reference images are ${pRefs.length} DIFFERENT LACALUT products, in this exact left-to-right order: ${pLabels.slice(0,pRefs.length).map((n,i)=>`${i+1}) ${n}`).join(', ')}. Treat each image ONLY as the source of truth for THAT product's real packaging shape, label layout, colours, logo and exact wording. Keep every product visually DISTINCT and every label word and logo accurate and legible; never invent, garble, mistranslate, merge or swap the products' text. `
+        : `The FIRST ${pRefs.length} reference image(s) show the EXACT LACALUT product — treat them ONLY as the source of truth for the product's branding: real packaging shape, label layout, colours, logo and exact wording. Keep every label word and logo accurate and legible; never invent, garble, mistranslate or alter the product text. `;
+      // PRODUCT-COUNT LOCK — the loaded reference slots are the single source of truth for WHICH products appear.
+      // Renders EXACTLY the N supplied packs and nothing else; ignores any product the brief names but the slots don't contain.
+      base += `PRODUCT LOCK (non-negotiable — overrides the brief and every other instruction): the final image must show EXACTLY these ${pRefs.length} product item${pRefs.length>1?'s':''} — the ${pRefs.length===1?'single reference pack':pRefs.length+' reference packs'} above — and NOTHING else. Do NOT add, invent, duplicate or include ANY other LACALUT product, tube, box, bottle, sachet, applicator or toothbrush that is not shown in ${pRefs.length===1?'that reference image':'those reference images'}. If the brief or scene note mentions or implies a product, form or pack that is NOT in the reference image${pRefs.length>1?'s':''}, IGNORE it completely. The number, type and packaging form of products in the render MUST match the reference photo${pRefs.length>1?'s':''} exactly — same count, same form (tube vs box vs bottle), no extras. `;
+      if(opts.chatShot){
+        instr+=base+`Place the product ONLY as a small, flat, slightly-compressed PHOTO inside a chat message bubble — exactly like a JPEG a friend texted you (an MMS). Keep the packaging, label, logo and wording accurate and legible, white cap. Do NOT render it as a large 3D studio hero, do NOT give it a new background, scene, podium or dramatic lighting — it is just a small inline photo within a flat messaging-screen screenshot. `;
+      } else {
+        const angle=`You have creative freedom over the product's ANGLE and composition — choose a fresh, dynamic, flattering hero angle (standing upright, three-quarter turn, tilted, or lying on a surface); it need NOT match the reference photo's angle. `;
+        if(render==='exact') instr+=base+`Reproduce the product exactly as photographed — flat and unchanged. `;
+        else if(render==='graphical') instr+=base+angle+`Render the product as a clean, glossy premium 3D CGI product render — dimensional form, studio lighting, crisp reflections, graphic-design ad aesthetic. `;
+        else instr+=base+angle+`Render the product as a hyper-realistic photographic 3D studio product shot — realistic lighting, soft shadows, gentle reflections, depth and dimension, sitting believably in the scene. `;
+      }
+      if(opts.closeUp) instr+=`CLOSE-UP SHOT (requested): frame the product as a TIGHT MACRO close-up — the pack fills most of the frame, razor-sharp label detail and typography, shallow depth of field, premium studio lighting. `;
+    }
+    if(sRefs.length) instr+=`The NEXT ${sRefs.length} reference image(s) show the DESIGN STYLE to emulate — match their layout, typography, colour-blocking and composition, but do NOT copy their product, logos or wording. `;
+    const parts=[{text:(instr?instr+'Now create the following: ':'')+prompt+TYPE_CHECK}, ...pRefs, ...sRefs];
+    // Aspect ratio: gemini-3 pro image supports imageConfig.aspectRatio natively (4:5, 9:16, 1:1…).
+    // Nano (2.5-flash-image) ignores it — relies on the prompt text instead — so only send it to Pro to avoid a 400.
+    const gcfg = { responseModalities:['TEXT','IMAGE'] };
+    if (opts.aspectRatio && /gemini-3/.test(model)) gcfg.imageConfig = { aspectRatio: opts.aspectRatio };
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{role:'user',parts}], generationConfig: gcfg }) });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
+    const part=data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+    if(!part?.inlineData?.data) throw new Error('No image returned — try a more specific brief.');
+    return 'data:'+(part.inlineData.mimeType||'image/png')+';base64,'+part.inlineData.data;
+  }
+
+  /* ═══ HIGH-LEVEL: one designed image from a brain ═══ */
+  async function generateImage(opts){
+    const sku  = opts.sku || 'aktiv';
+    const mode = opts.mode || 'social';
+    let render = opts.render || 'photoreal';
+    if(render==='mixed') render = Math.random()<0.5 ? 'photoreal' : 'graphical';
+
+    const brain = opts.brain || resolveBrain(opts.brainId);
+    const isChat = brain && /chat|text message/i.test(brain.name);
+    const wantsProduct = /\b(box|tube|pack|packshot|packaging|product|bottle)\b/i.test(opts.brief||''); const useProd = isChat ? true : ((typeof opts.useProd==='boolean') ? opts.useProd : ((brain && brain.product==='none') ? false : true));
+    const prompt = buildPrompt({ sku, mode, brain, brief:opts.brief, headline:opts.headline, advNeg:opts.advNeg, useProd, archetype:opts.archetype });
+    const aspectRatio = ((MODES[mode] && MODES[mode].ar) || '4:5').split(' ')[0];
+
+    const url = await callGemini({
+      prompt,
+      productImgs: useProd ? (opts.productImgs||[]).filter(Boolean) : [],
+      styleImgs:   useProd ? (opts.styleImgs||[]).filter(Boolean) : [],
+      render, model: opts.model, apiKey: opts.apiKey, aspectRatio, chatShot: isChat
+    });
+    const finish = render==='graphical'?'CGI':render==='exact'?'flat':'photoreal';
+    const label = (brain?brain.name:'Hero') + (useProd?' · '+finish:' · logo-only');
+    return { url, label, brain, useProd, render, prompt };
+  }
+
+  /* ═══ IMAGE-TO-IMAGE EDIT ═══ */
+  async function editImage(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-3-pro-image-preview';
+    const sku = opts.sku || 'aktiv';
+    const part = dataUrlToInlinePart(opts.imgDataUrl); if(!part) throw new Error('bad image');
+    const refs = (opts.refImgs||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,4);
+    const bans=[...GLOBAL_BAN, ...(SKUS[sku]?.ban||[])];
+    let text=`Edit the FIRST attached image. Apply ONLY this change: ${opts.instruction}. `;
+    text+=SCALE_LOCK+TYPE_FLOOR;
+    if(refs.length){
+      text+=`The ${refs.length} image(s) AFTER the first are REFERENCE photos of the EXACT real product(s), used ONLY as the source of truth for each product's branding: real packaging shape, label layout, colours, logo and exact wording; never invent, garble or alter the product text. Match each product to the correct position described in the instruction. `
+        +`CRITICAL: keep each replaced product in the SAME position, orientation, upright/standing angle, scale and perspective as in the ORIGINAL first image. Do NOT copy the reference photo's orientation, angle, lighting or background — if a tube stands vertical in the original, it must stay vertical; the reference only supplies the label artwork. `;
+    }
+    // Photoreal-integration clause fires on EVERY edit, refs or not (Quan 07/10/2026:
+    // the no-photoshopped-look rule must be baked into every generation, never re-prompted).
+    text+=`PHOTOREALISTIC INTEGRATION — MANDATORY, THE SINGLE MOST IMPORTANT RULE: every NEW or ALTERED element must look like it was PHYSICALLY PRESENT in the original photograph when it was shot (on-screen content must look genuinely DISPLAYED on its screen, following its perspective, glow and reflections), NOT pasted or photoshopped in. You MUST completely RELIGHT every new/altered element to match the original scene: same light direction, same softness/hardness of light, same colour temperature and white balance, same brightness and contrast, same ambient colour cast from the surroundings. Re-render its highlights, shadows and reflections to match the scene's light. Add a correct, soft, physically-accurate CONTACT SHADOW wherever it rests on a surface, matching every other object's shadow. Match the original photo's focus/depth-of-field, grain/noise and resolution so it is not sharper or cleaner than the scene. Blend the edges naturally — absolutely NO cut-out sticker look, NO hard outline, NO over-saturated or flat studio look, NO brightness/colour mismatch. If the result looks even slightly pasted, collaged or photoshopped in, you have FAILED — relight and re-integrate until it is indistinguishable from a real part of the original photograph. `
+      +`Keep the ENTIRE rest of the image pixel-identical — same layout, composition, background, format, other elements and all overlay text. The final image must read as ONE natural, cohesive photograph in the SAME style and lighting as the original — never a composite. Do not restyle or regenerate anything else. `
+      +`Never add any of these words/claims: ${bans.join(', ')}.`
+      +` FINAL LEGIBILITY CHECK on any text this edit ADDS or ALTERS (untouched text stays pixel-identical): mentally shrink the result to a tiny Facebook Marketplace thumbnail — if the new/altered text is too small to read there, make it bigger or cut words, THEN output.`;
+    const gcfg={responseModalities:['TEXT','IMAGE']};
+    // Variation: a distinct seed (+ temperature) per call makes Qty>1 return DIFFERENT rolls
+    // instead of identical clones. Without these the edit is near-deterministic.
+    if(opts.seed!=null) gcfg.seed=opts.seed;
+    if(opts.temperature!=null) gcfg.temperature=opts.temperature;
+    if(opts.aspectRatio && /gemini-3/.test(model)){ gcfg.imageConfig={aspectRatio:opts.aspectRatio};
+      text+=` Output the final image in a ${opts.aspectRatio} aspect ratio (fill the frame; add clean matching background around the product if needed — never squash or stretch it).`; }
+    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{role:'user',parts:[{text}, part, ...refs]}], generationConfig:gcfg }) });
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error?.message||'HTTP '+res.status);
+    const p=data.candidates?.[0]?.content?.parts?.find(x=>x.inlineData);
+    if(!p?.inlineData?.data) throw new Error('No edited image returned.');
+    return 'data:'+(p.inlineData.mimeType||'image/png')+';base64,'+p.inlineData.data;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     AICIS COMPLIANCE SANITISER
+     Belt-and-braces guard on any COPY (captions, hooks, hashtags) before
+     it is stored or pushed. Rewrites therapeutic/disease terms into
+     cosmetic language so a non-compliant Claude output (or legacy stored
+     copy) can never reach a live post.
+     ═══════════════════════════════════════════════════════════════════ */
+  // Phrase → cosmetic replacement. Order matters (longest/most-specific first).
+  const COPY_REPLACEMENTS = [
+    [/periodontal disease/gi, 'gum health issues'],
+    [/periodontitis/gi,       'gum health issues'],
+    [/gingivitis/gi,          'gum problems'],
+    [/gum disease/gi,         'gum problems'],
+    [/halitosis/gi,           'bad breath'],
+    [/\btreats?\b/gi,         'supports'],
+    [/\bcures?\b/gi,          'supports'],
+    [/\bheals?\b/gi,          'soothes'],
+    [/\breverses?\b/gi,       'helps improve']
+  ];
+  // Hashtags that must never appear → safe swaps (deduped after).
+  const HASHTAG_SWAPS = {
+    gingivitis:'gumcare', periodontitis:'gumhealth', periodontaldisease:'gumhealth',
+    periodontal:'gumhealth', gumdisease:'gumcare', halitosis:'freshbreath',
+    curegumdisease:'gumcare', treatgingivitis:'gumcare'
+  };
+
+  function sanitizeCopy(text){
+    if(!text) return text;
+    let out = String(text);
+    for(const [re, rep] of COPY_REPLACEMENTS) out = out.replace(re, rep);
+    return out;
+  }
+
+  // Accepts a string ("#a #b") or an array (["a","b"]) → returns SAME type, sanitised + deduped.
+  function sanitizeHashtags(tags){
+    const wasArray = Array.isArray(tags);
+    let list = wasArray ? tags.slice() : String(tags||'').split(/\s+/);
+    const seen = new Set(); const out = [];
+    for(let t of list){
+      if(!t) continue;
+      let bare = t.replace(/^#/, '').toLowerCase().replace(/[^a-z0-9]/g,'');
+      if(!bare) continue;
+      if(HASHTAG_SWAPS[bare]) bare = HASHTAG_SWAPS[bare];
+      if(seen.has(bare)) continue;
+      seen.add(bare);
+      out.push(wasArray ? bare : '#'+bare);
+    }
+    return wasArray ? out : out.join(' ');
+  }
+
+  // Returns true if copy still contains any banned disease/therapeutic term
+  // AFTER sanitising (should always be false — used for QC assertions/tests).
+  function hasBannedTerm(text){
+    const t = String(text||'').toLowerCase();
+    return /gingivitis|periodontitis|periodontal disease|gum disease|halitosis/.test(t);
+  }
+
+  /* ═══ ONE-UP LOOP (image prompt) — the "Copy Brain" one-up rule, applied to the IMAGE PROMPT ═══
+     Takes the assembled base prompt and runs an internal draft → one-up → one-up → … → pinnacle
+     refinement through a Gemini TEXT model, so EVERY strategy toggle ships a genuinely
+     scroll-stopping, over-the-top brief instead of a plain one. Never throws — on any failure it
+     returns the original base prompt unchanged, so an image is always produced. */
+  async function oneUpImagePrompt(opts){
+    const basePrompt = (opts.basePrompt||'').trim();
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model  = opts.textModel || 'gemini-2.5-flash';
+    const rounds = opts.rounds || 4;
+    if(!apiKey || !basePrompt) return basePrompt;
+    const meta =
+`You are the single best Meta / Facebook / Instagram ADS ART DIRECTOR and image-prompt engineer alive, working for LACALUT — a premium 100-year German pharmacy oral-care brand. Your one job: turn a competent image brief into a THUMB-STOPPING, scroll-stopping, over-the-top HERO visual that no one can scroll past. Boring, plain, safe or generic = total failure.
+
+Follow this ONE-UP LOOP internally before you answer:
+1. Write draft v1 from the base brief.
+2. Then one-up it: v2 must be MORE scroll-stopping than v1. Then v3 > v2. Then v4 > v3. Do at least ${rounds} rounds.
+3. Each round, ask yourself: "Can I make this more visually arresting, more cinematic, more premium, more surprising, more emotionally charged, higher production value?" Push composition, scale, lighting, drama, colour, contrast, depth, implied motion, and the hero moment harder every time.
+4. Only stop at the ZENITH / PINNACLE — when it genuinely cannot get better without breaking a hard rule.
+5. Output ONLY that final pinnacle brief. Never show the drafts or your reasoning.
+
+NON-NEGOTIABLE PRESERVATION: every EXACT text element the base brief lists (each headline line, benefit line, badge title, sub-caption, CTA wording) must appear UNCHANGED in your final brief - one-upping applies to scene, lighting, composition and drama ONLY, never to removing, merging or rewording listed text or listed products. If the base brief lists four badges, your final brief lists the same four badges.
+
+DIVERGENCE (critical): this is ONE of many ads for this strategy — it MUST look clearly DIFFERENT from the others. Build the pinnacle AROUND the specific composition/camera lens and colour mood named in the base brief's VARIATION directive; do not override them with the obvious centred-hero look. A distinct, unexpected execution beats a generic "perfect" one — never collapse every render to the same single best idea.
+
+LAYOUT ARCHETYPE OVERRIDE: if the base brief contains a "LAYOUT ARCHETYPE" block, that block is the LAW of the canvas — carry its ENTIRE structure (grid, every zone's position/size/alignment/treatment, type scale, colour blocking, hierarchy, eye path) into the final brief UNCHANGED and UNABRIDGED. Your one-upping then happens only INSIDE that skeleton: richer lighting, more premium finish, sharper copy, better micro-details — never a different composition, never moved or resized zones.
+
+HARD RULES — the final brief MUST keep every one of these from the base brief, never trade them away for drama:
+- The REAL product packaging: exact shape, label layout, brand colours, logo and exact printed wording. Never invent, garble, translate or alter product text. Keep which product(s) appear. The product CAP is ALWAYS WHITE — never red, navy, blue or any coloured cap.
+- CONSISTENT PRODUCT FORM: if multiple different products appear, they MUST all be the same format — all tubes/bottles OR all boxes, never a mix of tubes and boxes in one image.
+- COPY RELEVANCE: every headline, caption and overlay line must be specifically about oral care — gums, teeth, toothpaste, fresh breath or the whitening/repair benefit. Never a vague generic line like "German pharmacy care" on its own; always tie it to the actual product.
+- If the base brief is a UGC PHOTO, keep a real, clearly-visible everyday PERSON as the subject holding or using the product at its true real-world size — never collapse it to a product-only, hand-only or studio-hero shot, and never oversize the product. Keep any on-image text a LARGE, bold, casual native caption (big enough to read on mobile) — casual in style, not a formal studio headline, but never tiny.
+- ALL compliance / banned-word constraints. LACALUT is a COSMETIC, not a medicine. Cosmetic benefits ONLY (fresh breath, clean feel, firm/cared-for gum FEEL, removes plaque, removes stains, German quality, whiter smile). NEVER add, keep, imply or amplify any therapeutic / disease / gum-condition claim — specifically NEVER write "reduces/stops bleeding", "soothes", "soothes irritation", "reduces inflammation", "heals", "calms", "closes gum pockets", "kills bacteria/gum disease", "gingivitis", "periodontitis", "clinically proven", any statistic or percentage, any fake review/testimonial, or any competitor name. If the base brief contains such a claim, REMOVE it or rewrite it as a cosmetic feel-benefit — do not carry it into the final brief.
+- Every overlay/design text word in Australian English ONLY, minimal and correctly spelled.
+- The exact aspect ratio and the product-hero / logo instruction from the base brief.
+- Keep the MAIN HEADLINE the single biggest element on the canvas and the SUBHEADLINE extra-large — both must read instantly on a small mobile screen. Never shrink the headline for the sake of a dramatic scene.
+- TITLE CASE: keep BOTH the main headline and the sub-headline in Title Case (capitalise every significant word); never rewrite either into sentence case or all-lowercase.
+- HEADLINE vs SUB COLOUR: render the headline and sub-headline in two DIFFERENT complementary on-brand colours (never the same flat colour) — both still high-contrast against the background — so the two lines separate and pop.
+- Keep icon'd badges (globe = countries, medal/ribbon = heritage, shield = protection, sparkle = stain-lift). Every badge in the image MUST be the SAME shape as the others — uniform pills OR uniform rectangles OR uniform squares, NEVER a mix of shapes in one image. Every badge/feature icon MUST be a DIFFERENT colour from its own label text (e.g. red icon + navy text) — never the same flat colour, so the icon stays a distinct element. Never flatten to plain unstyled text.
+- CONTRAST IS THE #1 RULE: light/white badge or overlay text ONLY on a dark/deep/saturated fill (navy, brand red, deep teal, charcoal); dark/navy text ONLY on white/light fills. NEVER white text on a light or pastel fill (no white on light blue). Keep a darkened scrim/shadow behind any headline over a bright or busy area.
+- Unmistakably LACALUT and on-brand: over-the-top in CRAFT and art direction, never off-brand chaos.
+
+Return ONLY valid JSON: {"prompt":"<the final pinnacle image prompt, fully self-contained>"}.
+
+BASE BRIEF:
+"""
+${basePrompt}
+"""`;
+    try{
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:1.0 } }) });
+      const data = await res.json();
+      if(!res.ok) return basePrompt;
+      let txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+      let obj; try{ obj = JSON.parse(txt); }catch(e){ return basePrompt; }
+      let refined = (obj && obj.prompt) ? String(obj.prompt).trim() : '';
+      if(!refined || refined.length < 40) return basePrompt;
+      // Safety belt — guarantee the non-negotiables survived the rewrite, re-append any that got dropped.
+      const bans = (opts.bans && opts.bans.length) ? opts.bans.join(', ') : '';
+      let tail = '';
+      if(bans && !/never show or write|compliance/i.test(refined)) tail += ` STRICT COMPLIANCE — never show or write any of these words/claims: ${bans}.`;
+      if(!/australian english|english only|english \(/i.test(refined)) tail += ` ALL overlay/design text in ENGLISH (Australian English) ONLY; minimal and correctly spelled.`;
+      if(opts.aspectRatio && refined.indexOf(opts.aspectRatio)===-1) tail += ` ${opts.aspectRatio} aspect ratio.`;
+      return refined + tail;
+    }catch(e){ return basePrompt; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     VIDEO MODULE — animate a static (or the SKU packshot) into a 5–8s
+     marketing clip. IMAGE-TO-VIDEO. Default engine: Veo 3 Fast on the
+     SAME Gemini key the image engine already uses. Swap to fal.ai
+     (Seedance / Kling) by changing VIDEO_MODEL — every brand + compliance
+     lock from buildPrompt() is mirrored into buildVideoPrompt() below.
+     ═══════════════════════════════════════════════════════════════════ */
+  // Each model earns its place with ONE job the others can't do (no overlap):
+  //  • VEO3 (full) — THE engine (Quan 23/09: best quality no matter the cost; Fast retired from the UI, entry kept only so old cards keep their label)
+  //  • FAL_SEEDANCE — CHEAPEST: throwaway tests + volume B-roll
+  //  • FAL_KLING — best real physical MOTION: hyper-motion, splash, levitation
+  //  • VEO3 — TOP hero quality for the final cinematic ad
+  const VIDEO_MODELS = {
+    VEO3_FAST:    { route:'gemini', id:'veo-3.1-fast-generate-preview', label:'Veo 3.1 Fast', usdPerSec:0.15, audio:true,  aspects:['16:9','9:16'],  job:'RETIRED 23/09 (kept only so old cards keep their label) — never offered in the UI', retired:true },
+    FAL_SEEDANCE: { route:'fal',    id:'bytedance/seedance-2.5/image-to-video', label:'Seedance 2.5 (fal.ai)', usdPerSec:0.47, audio:false, aspects:['1:1','16:9','9:16'], imgParam:'image_url', noNegative:true, resolution:'720p', aspectAuto:true, genAudioOff:true, maxPrompt:2500, job:'Premium long-form — native up to 30s single-shot, 720p/1080p (pricey ~US$0.47/s)' },
+    FAL_KLING:    { route:'fal',    id:'fal-ai/kling-video/v3/pro/image-to-video', label:'Kling v3 Pro (fal.ai)', usdPerSec:0.112, audio:false, aspects:['9:16','16:9','1:1'], deriveAR:true, imgParam:'start_image_url', genAudioOff:true, maxPrompt:2500, job:'BEST humans/anatomy — realistic people, hands, motion; native 3–15s (renders true 8s scenes, no 5s drift)' },
+    VEO3:         { route:'gemini', id:'veo-3.1-generate-preview',  label:'Veo 3.1',    usdPerSec:0.40, audio:true,  aspects:['16:9','9:16'],       job:'Top hero quality — the final cinematic ad' }
+  };
+  // ── SINGLE SWAPPABLE CONSTANT — change this one value to switch engines ──
+  let VIDEO_MODEL = 'VEO3';   // Quan 23/09: BEST engine always — Fast retired, quality over cost
+  const VIDEO_ASPECTS   = { '1:1':'Feed 1:1 (square)', '9:16':'Reels / Stories 9:16', '16:9':'YouTube 16:9' };
+  const VIDEO_DURATIONS = [6, 8];   // seconds — Veo 3 Fast supports 4/6/8; default 8
+
+  // ── ARTIFACT NEGATIVE PROMPT — sent to EVERY video render (Veo negativePrompt + fal negative_prompt).
+  //    Belt-and-braces on top of the pre-spend lint: names the exact AI-slop failure modes so the model
+  //    steers away from them. SKU word-bans still ride in the positive prompt; this is anatomy/render only.
+  //    (Quan 26/09: "you should have already done this" — extra arms, floating tube, phantom paste, flipped logo.)
+  const VIDEO_ARTIFACT_NEGATIVE = 'extra limbs, third arm, extra arm, two right hands, duplicate hands, extra hand, extra fingers, missing fingers, six fingers, fused fingers, malformed hands, deformed hands, mangled hands, floating product, levitating tube, product hovering in mid-air, product suspended in air, photoshopped-looking product, pasted-in product, product cut-out edges, toothpaste paste, paste blob, foam, gel blob, stray droplet, dripping paste, dispensing paste, squeezing tube, mirror-flipped logo, reversed text, backwards logo, warped logo, morphing packaging, melting tube, bending tube, duplicated tube, second tube, extra tube, garbled text, gibberish text, distorted face, warped face, deformed face, extra teeth, uncanny valley, plastic skin, low quality, blurry, warping, jitter, flicker, ghosting, watermark, burned-in subtitles, caption bar';
+  // MULTI-PACK variant: an intentional pile of identical tubes is the creative, so DROP the anti-duplicate
+  // bans ("duplicated tube / second tube / extra tube") that would fight it — and ADD the motion artefacts
+  // Kling sneaks in on piles (falling/tumbling tubes that then morph + garble their labels mid-clip).
+  const VIDEO_ARTIFACT_NEGATIVE_MULTIPACK = VIDEO_ARTIFACT_NEGATIVE
+    .replace(/, duplicated tube, second tube, extra tube/, '')
+    + ', falling tubes, tumbling tubes, cascading tubes, avalanche of tubes, tubes sliding, tubes rolling, moving product, product in motion, collapsing pile, shifting pile';
+  // Global brain list ALWAYS fires; the per-render "Avoid" box (user) is APPENDED, never a replacement.
+  function mergeNegative(userAvoid, multiPack){
+    const base = multiPack ? VIDEO_ARTIFACT_NEGATIVE_MULTIPACK : VIDEO_ARTIFACT_NEGATIVE;
+    const extra = (userAvoid||'').trim().replace(/^,+|,+$/g,'').trim();
+    return extra ? base + ', ' + extra : base;
+  }
+
+  /* ═══ VIDEO STYLE PRESETS — the "Higgsfield Motion" variety pack ═══
+     Each preset = a distinct look/feel + the BEST engine for it + a motion
+     brief that overrides the generic MOTION DIRECTION line in buildVideoPrompt.
+     'model' is the recommended engine key (user can still override in the UI). */
+  const VIDEO_STYLES = {
+    lofi_native:    { label:'📱 Lo-Fi Native (proven default)', model:'VEO3', emoji:'📱',
+      desc:'Handheld phone-shot feel — 42% of top-spend ads look like this.',
+      motion:'MOTION & LOOK: authentic lo-fi smartphone footage — natural imperfect handheld movement, real-world lighting (bathroom, kitchen, daylight), native social-feed feel, NEVER glossy studio polish. A visual change or cut-feel every 2–3 seconds; a pattern interrupt (snap zoom, angle change) at least every 4 seconds. Looks like a real person filmed it, scroll-native, not an ad.' },
+    polished_hybrid:{ label:'💎 Polished Hybrid', model:'VEO3', emoji:'💎',
+      desc:'Clean studio product beats + lo-fi inserts — the Hismile blend.',
+      motion:'MOTION & LOOK: hybrid pacing — crisp clean studio product beats (macro texture, controlled light, premium grade) intercut with quick lo-fi real-world insert moments. A visual change every 2–3 seconds; never a static hold longer than 4 seconds. Polished where the product shines, human where trust is built.' },
+    product_motion: { label:'✨ Product Motion (Premium)', model:'VEO3', emoji:'✨',
+      desc:'Smooth luxe camera on the hero — the safe premium default.',
+      motion:'MOTION: a slow, luxurious cinematic camera move on the product hero — a gentle push-in or slow lateral glide (NEVER a circling orbit; the front label faces camera the whole time), soft studio light shimmer sliding across the pack, a delicate depth-of-field rack focus, subtle floating dust/particles. Elegant, controlled, high-end — never fast or chaotic.' },
+    hyper_motion:   { label:'⚡ Hyper Motion', model:'FAL_KLING', emoji:'⚡',
+      desc:'Fast, punchy, energetic — Higgsfield-style hype cut.',
+      motion:'MOTION: high-energy hyper-motion — fast dynamic camera whips and speed-ramps through the scene, snap-zooms that stop short of the pack, kinetic energy and punchy accents in the environment. The pack itself stays STATIC, front-on, sharp and un-warped throughout — the energy comes from the camera and the world, never from the pack moving or flying.' },
+    slow_reveal:    { label:'🎬 Slow Cinematic Reveal', model:'VEO3', emoji:'🎬',
+      desc:'Elegant slow build — light blooms, product emerges.',
+      motion:'MOTION: a slow cinematic reveal — the product emerges from soft shadow or light bloom, a gentle dolly-in with drifting light rays and a shallow depth of field pulling focus onto the pack. Calm, premium, aspirational pacing.' },
+    liquid_splash:  { label:'💧 Liquid / Splash', model:'FAL_KLING', emoji:'💧',
+      desc:'Water, gel and ingredient splash around the pack.',
+      motion:'MOTION: dynamic liquid motion with a VISIBLE SOURCE — a clean pour arcs down from above or a tap stream runs beside the pack, slow-motion droplets suspended mid-air catching the light, a fresh clean burst landing NEAR the pack (never onto it). Every liquid has an obvious real source — no sourceless scenic water. The pack stays dry, crisp and central.' },
+    float_levitate: { label:'🪐 Float / Levitation', model:'FAL_KLING', emoji:'🪐',
+      desc:'Surreal floating elements around a grounded pack.',
+      motion:'MOTION: surreal weightlessness AROUND a grounded hero — the pack stands static and front-on while formula elements and soft geometric accents float and drift dreamily through the air NEAR it (never wrapping or enveloping it, never lifting the pack), gentle parallax on the background. Premium and hypnotic — the world levitates, the product never does.' },
+    kinetic_type:   { label:'🔤 Kinetic Typography', model:'VEO3', emoji:'🔤',
+      desc:'Bold animated headline text, graphic ad feel.',
+      motion:'MOTION: bold kinetic typography — the on-image English headline and sub animate in with punchy, graphic-design timing (slide, scale, snap) synced to a subtle product move; clean colour-blocked motion-graphics feel. Text stays perfectly legible, correctly spelled and never garbled.' },
+    retro_nostalgia:{ label:'📼 Retro / Nostalgia', model:'FAL_SEEDANCE', emoji:'📼',
+      desc:'90s / VHS throwback grade and motion.',
+      motion:'MOTION: a retro nostalgic feel — soft VHS/film grain, gentle light leaks and a warm vintage colour grade, slow analogue camera drift on the product. Stylised and characterful, but the pack and any text stay clean and readable.' },
+    cinematic_ad:   { label:'🎥 Cinematic Ad', model:'VEO3', emoji:'🎥',
+      desc:'Dramatic story-grade hero moment (top quality).',
+      motion:'MOTION: a dramatic cinematic ad moment — moody directional lighting, a smooth crafted camera move (crane, slow track or dolly), rich colour grade and a strong hero beat on the product. Film-grade, premium and emotive; motion smooth and deliberate.' }
+  };
+  function videoStyle(id){ return VIDEO_STYLES[id] || null; }
+  // The STYLE is the source of truth for the engine — each style is authored with its best engine
+  // (lofi_native→VEO3, hyper_motion/liquid_splash/float→FAL_KLING, retro→FAL_SEEDANCE). This makes a
+  // wrong style↔engine pairing (and the wasted credits it burns) impossible: pick the style, get its
+  // engine automatically. Quan 26/09. An explicit override is honoured ONLY if forceModel is passed.
+  function videoEngineForStyle(style, forceModel){
+    if(forceModel) return forceModel;
+    const st = videoStyle(style);
+    return (st && st.model) || VIDEO_MODEL;
+  }
+
+  function videoModel(key){ return VIDEO_MODELS[key||VIDEO_MODEL] || VIDEO_MODELS.VEO3; }
+  function getVideoModel(){ return VIDEO_MODEL; }
+  function setVideoModel(key){ if(VIDEO_MODELS[key]) VIDEO_MODEL = key; return VIDEO_MODEL; }
+
+  // Credit / spend estimate — shown BEFORE any API call (hard spend gate).
+  function videoCostEstimate(opts){
+    const m = videoModel(opts && opts.model);
+    const seconds = Math.max(1, (opts && opts.seconds) || 8);
+    const usd = +(m.usdPerSec * seconds).toFixed(2);
+    return { model:m.label, modelKey:(opts&&opts.model)||VIDEO_MODEL, seconds, usdPerSec:m.usdPerSec, usd, audio:m.audio };
+  }
+
+  // QC checklist — the auto-flag list the UI ticks off after a clip returns.
+  // Items 6–11 = the NHB "Video Ads That Convert" six-point pass/fail (pacing beats production).
+  function videoQCChecklist(){
+    return [
+      'Pack stays crisp & sharp — real German tube, no blur, no English therapeutic text',
+      'No mirror / reflection bug (inverted readable text)',
+      'No banned ingredient or ion label on screen (only fluoride / hydroxyapatite)',
+      'On-screen text is not garbled',
+      'Product form stays consistent with the SKU',
+      'Hook survives the first frame — no logo open, no slow build',
+      'Attention resets every 4–8 seconds (visual + audio + curiosity together)',
+      'Visual, audio and written hooks all present in the opening moment',
+      'An open loop is set early and resolves at the proof beat',
+      'Ending does a job — clear direct CTA, not just a stop',
+      'CTA points to the right destination'
+    ];
+  }
+
+  function blobToDataUrl(blob){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
+  function base64ToBlob(b64,mime){ const bin=atob(b64); const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i); return new Blob([u8],{type:mime||'video/mp4'}); }
+
+  /* ═══ VIDEO PROMPT BUILD (DOM-free) — mirrors buildPrompt's brand + compliance locks ═══ */
+  function buildVideoPrompt(opts){
+    const sku = opts.sku, brain = opts.brain;
+    const brief = (opts.brief||'').trim();
+    const advNeg = opts.advNeg !== false;
+    const seconds = opts.seconds || 8;
+    const ar = opts.aspectRatio || '9:16';
+    const s = SKUS[sku] || SKUS['aktiv'];
+    const g = getGuide(sku);
+    const bans = [...GLOBAL_BAN, ...s.ban];
+    const fx = (g.formula||[]).filter(x=>x.on!==false).map(x=>x.text);
+
+    let p = `Animate the SUPPLIED still image into a ${seconds}-second premium social-media MARKETING VIDEO for LACALUT ${s.name} (German pharmacy oral-care brand). Tone: ${s.voice}. `;
+    const packless = opts.hasPack===false;
+    p += packless
+      ? `IMAGE-TO-VIDEO — the supplied frame is the hero: keep its exact composition, setting, person and any on-image text as the anchor. Add tasteful MOTION only; do NOT redraw, restyle or reinvent anything already in the frame. `
+      : `IMAGE-TO-VIDEO — the supplied frame is the hero: keep its exact composition, product, packaging, colours, logo and any on-image text as the anchor. Add tasteful MOTION only; do NOT redraw, restyle, relabel or reinvent anything already in the frame. `;
+    const st = videoStyle(opts.style);
+    p += (st ? st.motion : 'MOTION: a subtle premium camera move (slow push-in / gentle parallax / smooth orbit or dolly), soft light shimmer, delicate floating formula particles or a slow water/ingredient drift, and a gentle product hero reveal. Keep motion smooth and controlled — no fast whip pans, no chaotic morphing, no warping of the product or text.') + ' ';
+    p += `STRICT brand colours — ${g.colours||s.palette}. `;
+    if(brain) p += `CREATIVE STRATEGY — "${brain.name}". `;
+    if(brief) p += `Art-director motion note (priority): ${brief}. `;
+    if(packless) p += `NO PRODUCT IN THIS SCENE (hard rule): this scene contains NO toothpaste tube, box, bottle or branded product — and NONE may appear, be revealed, held up or materialise at any point; the product lives in OTHER scenes of this ad only. `;
+    else p += `PRODUCT FIDELITY (mandatory, every frame): the real GERMAN packaging stays razor-sharp and identical throughout — exact tube/box shape, label layout, logo and printed wording; the CAP is ALWAYS WHITE. NEVER blur, melt, warp, duplicate or re-letter the pack; NEVER fabricate an English tube or English health text; NEVER flip the pack so any text becomes a mirrored/reversed reflection. `;
+    p += `SKU ANGLE LOCK: this clip is EXCLUSIVELY for LACALUT ${s.name}; every visual and any on-screen word is about THIS product's own benefit only — ${s.say}. Never borrow another LACALUT product's angle (no whitening unless White & Repair, no gum-firmness unless a gum product, no cold-twinge comfort unless Sensitive, no fresh-breath unless Flora). `;
+    if(fx.length && !packless) p += `SIGNATURE FORMULA ELEMENTS (only if formula/ingredient props move in-frame): use ONLY ${fx.join(', ')} for ${s.name}; never another formula's elements (no herbs unless Aktiv Herbal, no silver zinc granules unless Flora, no blue soothing crystals unless Sensitive, no diamond/pearl minerals unless White & Repair). `;
+    p += `COSMETIC-ONLY COMPLIANCE (non-negotiable): LACALUT is a cosmetic, not a medicine. NO therapeutic or disease claims, NO "treat", "cure" or "clinically proven", NO statistics or percentages on screen. The ONLY active ingredients that may ever be named are "fluoride" and "hydroxyapatite" — NEVER strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc, or any ion label (e.g. Sr2+, K+). `;
+    if(advNeg) p += `NEVER show or write any of these words/claims anywhere in the video: ${bans.join(', ')}. `;
+    p += `Any on-screen text is ENGLISH (Australian English) only, minimal, correctly spelled and never garbled; keep the product's own printed German packaging text unchanged and softly out of focus. German heritage descriptors (Crème Paste / Mund-Elixier) are allowed, but "toothpaste" / "mouthwash" stay the plain English words. `;
+    p += `${ar} aspect ratio, ${seconds} seconds, high-end premium finish, smooth natural motion, no flicker, no artefacts.`;
+    return p;
+  }
+
+  /* ═══ VEO 3 CALL (Gemini predictLongRunning + poll) — image-to-video ═══ */
+  async function callVeoVideo(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const m = videoModel(opts.model);
+    const seconds = opts.seconds || 8;
+    const ar = opts.aspectRatio || '9:16';
+    const onProg = opts.onProgress || function(){};
+    const imgPart = dataUrlToInlinePart(opts.imgDataUrl);
+    // no image = text-to-video (used by the safety-retry ladder's final rung)
+    const instance = imgPart
+      ? { prompt: opts.prompt, image:{ bytesBase64Encoded: imgPart.inlineData.data, mimeType: imgPart.inlineData.mimeType } }
+      : { prompt: opts.prompt };
+    const parameters = { aspectRatio: ar, durationSeconds: seconds, sampleCount:1 };
+    parameters.negativePrompt = mergeNegative(opts.negativePrompt, opts.allowMultiPack);   // global brain list + per-render Avoid box
+    if(imgPart) parameters.personGeneration='allow_adult';   // t2v rejects allow_adult — only valid for image-to-video
+    const base = 'https://generativelanguage.googleapis.com/v1beta/';
+    const start = await fetch(base+'models/'+m.id+':predictLongRunning?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ instances:[instance], parameters }) });
+    const sd = await start.json();
+    if(!start.ok) throw new Error(sd.error?.message || ('HTTP '+start.status));
+    const opName = sd.name; if(!opName) throw new Error('Veo did not return an operation id');
+    let done=null, tries=0;
+    while(tries < 60){
+      await new Promise(r=>setTimeout(r, 10000)); tries++;
+      onProg('⏳ rendering video… '+(tries*10)+'s');
+      const pr = await fetch(base+opName+'?key='+apiKey);
+      const pj = await pr.json();
+      if(!pr.ok) throw new Error(pj.error?.message || ('poll HTTP '+pr.status));
+      if(pj.done){ done=pj; break; }
+    }
+    if(!done) throw new Error('Video timed out (still rendering after 10 min).');
+    if(done.error) throw new Error(done.error.message || 'Video generation failed');
+    const resp = done.response || {};
+    const gv = resp.generateVideoResponse || {};
+    const samples = gv.generatedSamples || gv.generatedVideos || resp.generatedVideos || [];
+    const first = samples[0] || {};
+    const inline = first.video?.bytesBase64Encoded || first.bytesBase64Encoded;
+    if(inline) return opts.asBlob ? base64ToBlob(inline,'video/mp4') : 'data:video/mp4;base64,'+inline;
+    const uri = first.video?.uri || first.video?.videoUri || first.uri;
+    if(!uri){
+      // done:true + no error + zero samples = Veo's silent RAI/safety filter. Surface the reason
+      // if the API gave one (keeps the "no video" substring so the safety-retry ladder still fires).
+      const rai = gv.raiMediaFilteredReasons || resp.raiMediaFilteredReasons
+               || gv.raiMediaFilteredCount || resp.raiMediaFilteredCount;
+      throw new Error('No video returned by Veo' + (rai ? ' — filtered: '+[].concat(rai).join('; ').slice(0,180) : ' (silent safety filter)'));
+    }
+    const dl = await fetch(uri + (uri.indexOf('?')>=0?'&':'?') + 'key=' + apiKey);
+    if(!dl.ok) throw new Error('Could not download the rendered video (HTTP '+dl.status+')');
+    const blob = await dl.blob();
+    return opts.asBlob ? blob : await blobToDataUrl(blob);
+  }
+
+  /* ═══ FAL.AI CALL (Seedance / Kling) — swappable alt engine ═══ */
+  async function callFalVideo(opts){
+    const key = opts.falKey || (global.localStorage && localStorage.getItem('lc_fal_key')) || '';
+    if(!key) throw new Error('No fal.ai API key — add one to use Seedance / Kling');
+    const m = videoModel(opts.model);
+    const onProg = opts.onProgress || function(){};
+    // Some fal models (Kling 2.5) only accept a fixed duration enum and derive aspect from the
+    // source image. Clamp the requested seconds to the model's allowed set (largest that fits,
+    // else the smallest) and omit aspect_ratio when the model derives it — sending "8" or an
+    // unsupported aspect makes the request fail validation.
+    const reqSec = opts.seconds||8;
+    let dur = String(reqSec);
+    if(Array.isArray(m.durations) && m.durations.length){
+      const nums = m.durations.map(Number);
+      const fit = nums.filter(n=>n<=reqSec);
+      dur = String(fit.length ? Math.max(...fit) : Math.min(...nums));
+    }
+    // Kling / Seedance reject prompts over their char cap (fal 422 string_too_long) — hard-trim to fit,
+    // keeping the front of the prompt (brand + motion + scene) and dropping only the tail boilerplate.
+    let promptText = opts.prompt || '';
+    if(m.maxPrompt && promptText.length > m.maxPrompt){
+      promptText = promptText.slice(0, m.maxPrompt - 1).replace(/\s+\S*$/, '') + '…';
+    }
+    const body = { prompt: promptText, duration: dur };
+    body[m.imgParam||'image_url'] = opts.imgDataUrl;             // Kling v3 uses start_image_url; others image_url
+    if(!m.noNegative) body.negative_prompt = mergeNegative(opts.negativePrompt, opts.allowMultiPack);   // Seedance 2.5 has no negative_prompt param
+    if(m.genAudioOff) body.generate_audio = false;              // never let the engine bake its own audio (we add VO/music in post)
+    if(m.resolution)  body.resolution = m.resolution;           // Seedance 2.5 resolution tier
+    if(m.aspectAuto)  body.aspect_ratio = 'auto';               // Seedance 2.5 derives aspect from the image via 'auto'
+    else if(!m.deriveAR) body.aspect_ratio = opts.aspectRatio||'9:16';
+    const submit = await fetch('https://queue.fal.run/'+m.id,
+      { method:'POST', headers:{'Authorization':'Key '+key,'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const sj = await submit.json();
+    if(!submit.ok) throw new Error(sj.detail||sj.error||('fal HTTP '+submit.status));
+    const statusUrl = sj.status_url, respUrl = sj.response_url;
+    let tries=0, out=null;
+    while(tries < 60){
+      await new Promise(r=>setTimeout(r, 8000)); tries++;
+      onProg('⏳ rendering video… '+(tries*8)+'s');
+      const st = await fetch(statusUrl, { headers:{'Authorization':'Key '+key} });
+      const stj = await st.json();
+      if(stj.status==='COMPLETED'){ const rr = await fetch(respUrl, { headers:{'Authorization':'Key '+key} }); out = await rr.json(); break; }
+      if(stj.status==='FAILED') throw new Error('fal generation failed');
+    }
+    if(!out) throw new Error('Video timed out.');
+    const url = out.video?.url || out.video_url || out.videos?.[0]?.url
+              || out.data?.video?.url || out.output?.video?.url || out.output?.[0]?.url
+              || out.images?.[0]?.url || out.url;
+    if(!url){ try{ console.error('[fal debug] response keys:', JSON.stringify(out).slice(0,600)); }catch(_){}
+              throw new Error('No video URL from fal'); }
+    const blob = await (await fetch(url)).blob();
+    return opts.asBlob ? blob : await blobToDataUrl(blob);
+  }
+
+  /* ═══ ONE-UP LOOP (video motion brief) ═══ */
+  async function oneUpVideoPrompt(opts){
+    const basePrompt = (opts.basePrompt||'').trim();
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const model = opts.textModel || 'gemini-2.5-flash';
+    const rounds = opts.rounds || 3;
+    if(!apiKey || !basePrompt) return basePrompt;
+    const meta =
+`You are the best performance-video ART DIRECTOR alive for LACALUT, a premium 100-year German pharmacy oral-care brand. Turn this image-to-video motion brief into a THUMB-STOPPING ${opts.seconds||8}s social clip brief. Run an internal one-up loop (at least ${rounds} rounds), each round more cinematic, premium and scroll-stopping than the last, then output ONLY the pinnacle.
+
+HARD RULES you must keep from the base brief, never trade away for drama:
+- IMAGE-TO-VIDEO: the supplied still is the anchor — keep its exact product, packaging, colours, logo and on-image text; add MOTION only, never redraw or relabel. The pack stays razor-sharp every frame, real GERMAN packaging, white cap; never blur/warp/mirror the pack or its text, never fabricate an English tube or English health text.
+- Motion stays smooth and controlled — no chaotic morphing, no warping product or type.
+- PACK MOTION LOCK: the pack NEVER flips, spins, turns over or rotates away from camera — the printed front label faces camera the entire clip (subtle tilt max); keep the pack's real tall slim proportions; move the camera or environment for dynamism, never the pack itself.
+- CHARACTER LOCK: if the base brief describes a person, keep EXACTLY that person — never swap, restyle or introduce a different actor.
+- WORLD LOCK: if the base brief names the ad's single location/set, keep EXACTLY that location — same surfaces, lighting mood and palette; add drama through camera and action, never by moving the scene somewhere else.
+- STYLE LOCK: keep the base brief's VISUAL LOOK exactly — a lo-fi handheld phone-shot look STAYS lo-fi (your "one-up" makes it a better lo-fi shot, more authentic and scroll-native); never upgrade it to cinematic studio polish.
+- AUDIO: quiet ambience and subtle sound effects only — NO music (one continuous soundtrack is added in post) and zero human vocal sounds of any kind (no speech, singing, whispering, humming, male or female voices, background chatter).
+- MIRROR LOCK: no mirrored, reversed or doubled lettering anywhere, including reflections.
+- COSMETIC-ONLY: no therapeutic/disease claims, no "treat/cure/clinically proven", no stats/percentages. Only "fluoride" and "hydroxyapatite" may be named — never strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc or any ion label.
+- Keep the SKU angle lock and any banned-word constraints from the base brief.
+- Any on-screen text: Australian English only, minimal, correctly spelled, never garbled.
+- CONTENT LOCK: NEVER add any action, object, prop, person or shot the base brief does not contain — no brushing, no drinking, no new products, no cutaways, nothing materialising; one-up the CRAFT (light, timing, camera feel), never the content.
+- Keep the exact aspect ratio and duration.
+
+Return ONLY valid JSON: {"prompt":"<final pinnacle motion brief, fully self-contained>"}.
+
+BASE BRIEF:
+"""
+${basePrompt}
+"""`;
+    try{
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:1.0 } }) });
+      const data = await res.json();
+      if(!res.ok) return basePrompt;
+      let txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+      let obj; try{ obj = JSON.parse(txt); }catch(e){ return basePrompt; }
+      let refined = (obj && obj.prompt) ? String(obj.prompt).trim() : '';
+      if(!refined || refined.length < 40) return basePrompt;
+      const bans = (opts.bans && opts.bans.length) ? opts.bans.join(', ') : '';
+      let tail = '';
+      if(bans && !/never show or write|compliance/i.test(refined)) tail += ` NEVER show or write any of these words/claims: ${bans}.`;
+      if(opts.aspectRatio && refined.indexOf(opts.aspectRatio)===-1) tail += ` ${opts.aspectRatio} aspect ratio, ${opts.seconds||8} seconds.`;
+      return refined + tail;
+    }catch(e){ return basePrompt; }
+  }
+
+  /* ═══ HIGH-LEVEL: one marketing clip from a card image (or packshot) ═══ */
+  async function generateVideo(opts){
+    // Model resolution order: explicit opts.model → the style's recommended model → global default.
+    const st = videoStyle(opts.style);
+    const modelKey = opts.model || (st && st.model) || VIDEO_MODEL;
+    const m = videoModel(modelKey);
+    let prompt = buildVideoPrompt({ sku:opts.sku, brain:opts.brain, brief:opts.brief, advNeg:opts.advNeg, seconds:opts.seconds, aspectRatio:opts.aspectRatio, style:opts.style });
+    if(opts.oneUp){
+      const bans = opts.advNeg!==false ? [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])] : [];
+      prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:opts.seconds, apiKey:opts.apiKey });
+    }
+    const call = m.route==='fal' ? callFalVideo : callVeoVideo;
+    const video = await call({ prompt, imgDataUrl:opts.imgDataUrl, model:modelKey, seconds:opts.seconds, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey, negativePrompt:opts.avoid||opts.negativePrompt||'', onProgress:opts.onProgress, asBlob:opts.asBlob });
+    return { video, prompt, model:m.label, modelKey, style:opts.style||null, seconds:opts.seconds||8, aspectRatio:opts.aspectRatio||'9:16', cost:videoCostEstimate({model:modelKey,seconds:opts.seconds}), qc:videoQCChecklist() };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════
+     STORYBOARD PIPELINE — 15–32s ads from scratch (Video Generator mode).
+     Gemini text writes an N-scene script → user approves (compliance-
+     gated, editable) → scenes render sequentially on Veo (native VO
+     audio) → clips stitch client-side (ffmpeg injected by the UI).
+     ═══════════════════════════════════════════════════════════════════ */
+  /* Archetypes rebuilt 23/09/2026 from conversion research (Motion Creative Benchmarks
+     2026 · Hismile teardown · TikTok Creative Codes · Meta lift studies). Ranked:
+     1–3 are the volume engines, 4–6 proven diversifiers, 7 trust rotation. */
+  const VIDEO_TYPES = {
+    routine:   { label:'🪥 Silent Routine + VO (render-safe default)', style:'lofi_native', postCaptions:true, nativeProduct:true, narrative:'a SILENT DAILY-ROUTINE ad: the LACALUT pack sits on the counter / sink edge and STAYS IN FRAME the whole ad (constant product presence), while ONE person silently does ONE calm everyday grooming task and the VOICEOVER carries 100% of the message (like an aesthetic "get ready with me" reel). THE ONE RULE THAT MAKES IT RENDER CLEANLY — the person\'s hands stay UP and OCCUPIED and NEVER travel toward the counter or the pack:\n  • GOOD actions (hands stay high, away from the pack) — WOMEN: running fingers through / brushing their hair, tying their hair up into a bun or ponytail, applying serum or moisturiser to their face, applying makeup (blush, mascara or foundation to the cheek), applying lip balm, putting on earrings, fastening a necklace, smoothing / brushing an eyebrow, dabbing perfume at the neck, adjusting a collar, buttoning a shirt, sliding on a headband. MEN: patting on aftershave or moisturiser, combing or finger-styling their hair, smoothing or oiling a beard, knotting or adjusting a tie, buttoning a shirt / adjusting a collar, fastening a watch on the wrist, adjusting glasses, rolling up a shirt sleeve.\n  • BANNED actions (hands drop to counter level next to the pack OR an object goes to the mouth — the model then grabs / mangles it): brushing teeth or any brush near the mouth, raising a glass / cup / mug to the lips, drying the face with a towel at the bench, washing / splashing at the sink, wiping the counter, reaching across the bench, picking anything up off the counter, any hand touching or lifting the pack.\n  Framing: put the pack in a STABLE spot in the foreground / to one side of the counter, the person behind or beside it, so pack and busy hands are clearly separated in space. The pack STAYS PUT — it never slides, drifts, repositions or is touched, and no toothpaste, paste or droplet EVER appears. The person is ALWAYS actively doing something — never idle, never "looking pensive" or just standing. End on the pack clearly featured with the spoken CTA. Absolutely no demo, mirror or VFX. Each scene = ONE simple concrete hands-up action with the pack resting calmly in shot; the simpler and stiller, the cleaner it renders.',
+      voStyle:'VOICEOVER SCRIPT STYLE (this format LIVES OR DIES on the VO — the visuals are just a calm silent moment, the voiceover does 100% of the selling; write it like the confessional voiceover on a viral "get ready with me" / day-in-my-life reel, NEVER an announcer or an ad read):\n- Voice = ONE real person quietly telling a friend the truth: warm, casual, first-person ("I used to…", "nobody tells you…", "honestly…"), everyday spoken Australian English, contractions, short punchy sentences, calm and real — never hyped, never listing features.\n- Scene 1 "vo" is the HOOK: open on a relatable confession or the hidden everyday problem the calm visual does NOT show ("I stopped smiling in photos and no one knew why.") — never the brand, never the product.\n- Middle scenes: sit in the feeling, then the quiet turn ("so I changed the one thing I do every single morning"). Name LACALUT '+'the product ONCE, naturally, as simply the thing sitting on her counter — never a hard pitch, never twice.\n- Land the FEELING (cosmetic feel-language only — how the mouth/gums FEEL, "feels firmer and properly looked-after", never a clinical or guaranteed result).\n- Final "vo" = a soft, direct CTA in the same casual voice ("honestly… just try it — it\'s the easiest swap you\'ll make.").\n- One idea per scene, max 18 words, reads comfortably in 8 seconds, and every "vo" line matches the calm thing happening on screen at that moment.' },
+    pas:       { label:'🎯 Problem→Solve',     style:'lofi_native',     narrative:'a PROBLEM-AGITATE-SOLVE cold-traffic ad (the proven DTC workhorse): open on the specific everyday pain so the viewer self-identifies (~60% of runtime on the problem, product appears only after), agitate the social/confidence cost (cosmetic framing only), then the product reveal with its mechanism in one plain sentence, a proof beat, and an offer/CTA close' },
+    demo:      { label:'🔬 Demo / Anatomy',    style:'polished_hybrid', narrative:'a DEMO-MECHANISM ad (the #1 oral-care format — Hismile runs it at scale): open on an extreme product-in-action macro (tube squeeze, paste texture, foam, rinse swirl — never gross clinical imagery), SHOW what it does rather than say it, a mechanism beat with on-screen ingredient labels (fluoride / hydroxyapatite ONLY), the result state, then pack + CTA' },
+    vs:        { label:'⚖️ Old Way vs New',    style:'polished_hybrid', narrative:'an OLD-WAY-vs-NEW-WAY comparison: side-by-side or split-screen framing of "ordinary toothpaste" (NEVER a named competitor brand) against this product, 3 rapid comparison beats (texture, ingredient, feel), a clear winner beat with benefit overlays, social-proof line + CTA' },
+    transform: { label:'✨ Transformation',    style:'lofi_native',     narrative:'a TRANSFORMATION story: open on the confident after-state as a pattern interrupt, hard cut to the relatable before (coffee cup, hiding a smile), a routine montage showing the switch, the how (product + mechanism line), honest cosmetic result framing (never a guaranteed-result claim) + CTA' },
+    mashup:    { label:'🔥 Social-Proof Mashup', style:'lofi_native',   narrative:'a fast-cut SOCIAL-PROOF MASHUP: rapid multi-setting montage feel ("everyone is switching"), a chain of 2–4 second micro-moments each landing ONE captioned benefit, different settings/angles per beat, a bold social-proof caption + product hero (NEVER an invented numeric rating or star score), then CTA — high energy, one idea per cut' },
+    founder:   { label:'🇩🇪 Brand Story',      style:'cinematic_ad',    narrative:'a BRAND STORY trust ad told through narration over cinematic product and heritage imagery (NO people on camera): why this German pharmacy formula exists, ONE credible differentiator (German pharmacy heritage since 1925), premium product beats and formula macro moments, closing on the pack + CTA — sincere, no hype' }
+  };
+
+  // VO-safe sanitise: replace DISEASE NOUNS only. Never blind-replace verbs like
+  // "treats" — spoken copy uses them innocently ("cold treats" = ice cream), and the
+  // generation prompt already bans therapeutic verbs. Survivors get flagged instead.
+  const VO_REPLACEMENTS = [
+    [/periodontal disease/gi,'gum health issues'],[/periodontitis/gi,'gum health issues'],
+    [/gingivitis/gi,'gum problems'],[/gum disease/gi,'gum problems'],[/halitosis/gi,'bad breath']
+  ];
+  function sanitizeCopyVO(t){ if(!t) return t; let out=String(t); for(const [re,rep] of VO_REPLACEMENTS) out=out.replace(re,rep);
+    return out.replace(/([a-z])([A-Z])/g,'$1 $2'); }   // un-jam model joins like "AktivAvailable" → "Aktiv Available"
+  // Sanitise every written line of a storyboard; flag any scene whose copy
+  // still carries a banned disease/therapeutic term (UI blocks approval).
+  function sanitizeStoryboard(sb){
+    if(!sb) return sb;
+    sb.hook = sanitizeCopyVO(sb.hook||''); sb.cta = sanitizeCopyVO(sb.cta||''); sb.world = sanitizeCopyVO(sb.world||'');
+    (sb.scenes||[]).forEach(sc=>{
+      sc.vo = sanitizeCopyVO(sc.vo||''); sc.text = sanitizeCopyVO(sc.text||'');
+      sc.visual = sanitizeCopyVO(sc.visual||''); sc.motion = sc.motion||'';
+      // "around the pack" is the mandated-reword phrase (never orbit the pack). The model keeps
+      // writing it for benign spatial framing ("spaciousness around the pack") and self-repair
+      // is unreliable on it — deterministically swap to "near the pack". A REAL orbit keeps its
+      // "orbit/circles/spins" verb, so the lint's orbit branch still catches those.
+      const nearSwap = t => t.replace(/\baround the (pack|tube|box|product|bottle)\b/gi, 'near the $1');
+      sc.visual = nearSwap(sc.visual); sc.motion = nearSwap(sc.motion);
+      sc.flagged = hasBannedTerm(sc.vo)||hasBannedTerm(sc.text)||hasBannedTerm(sc.visual);
+    });
+    sb.flagged = hasBannedTerm(sb.hook)||hasBannedTerm(sb.cta)||(sb.scenes||[]).some(s=>s.flagged);
+    return sb;
+  }
+
+  /* ═══ STORYBOARD LINT — deterministic scan for the known render-killers,
+     run BEFORE any money is spent. Violations loop back to Gemini for a
+     targeted free rewrite; whatever survives is shown in the approval modal. ═══ */
+  const SB_LINT_RULES = [
+    { re:/\b(pearls?|beads?|capsules?|tablets?|pills?)\b/i, f:['visual','motion','text'], msg:'white round objects — Veo safety filter reads them as pills and silently returns nothing; use angular crystal shards / mineral streams instead' },
+    { re:/(?<!no )(?<!without a )mirrors?\b(?![- ]free)|\bvanity\b/i, f:['visual','motion'], msg:'mirror shot — reflections mangle the pack and the person; restage without a mirror' },
+    { re:/\b(fingers?|fingertips?)\b/i, f:['visual','motion'], msg:'finger action — a hand may only steady the pack; fingers never touch mouth or gums' },
+    { re:/\btongue\b/i, f:['visual','motion'], msg:'tongue shot — uncanny; use a facial expression instead' },
+    { re:/(close-?up|CU|ECU|macro|tight shot|extreme)[^.]{0,50}\b(face|mouth|lips|teeth|gums?)\b|\b(face|mouth|lips|teeth|gums?)\b[^.]{0,50}(close-?up|CU|ECU|macro|tight shot)/i, f:['visual','motion'], msg:'facial/mouth close-up — nothing tighter than a chest-up mid-shot on a person' },
+    { re:/\b(uhm|umm|hmm|mmm|sighs?|gasps?|whispers?|hums|humming|says|speaks|sings|singing|chatter|murmur)\b/i, f:['visual','motion'], msg:'human vocal sound written into a scene — scenes are voice-free (narrator is added in post)' },
+    { re:/\b(pack|tube|box)('s)? (side|back|rear)\b|\b(side|back|rear) (face |panel )?of the (pack|tube|box)\b|reveal\w*[^.]{0,30}\b(back|side|rear|german)\b[^.]{0,18}\b(text|label|wording|printed)\b/i, f:['visual','motion'], msg:'side/back pack text reveal — side text is German and stays unreadable; front label only' },
+    { re:/\b(pack|tube|box|product)\b[^.]{0,60}\b(rotat\w+|spins?|spinning|flips?|flipping|turns? (over|around))\b|\b(rotat\w+|spins?|spinning|flips?|flipping)\b[^.]{0,60}\b(pack|tube|box|product)\b/i, f:['visual','motion'], msg:'pack rotation — the pack never rotates; move the camera instead' },
+    { re:/\b(effective(ly)?|firms(?! (&|and) cares)|firming|firmness|strengthens?|supports?|protect(s|ion|ive|ed)?|prevents?|fights?|combats?|repairs?|treat(s|ments?)?|cures?|heals?|regenerat\w*|clinical(ly)?|proven|health(y|ier)?(?![- ]look))\b/i, f:['vo','text'], msg:'efficacy/therapeutic wording — cosmetic feel-language only ("feels firm", "cared-for")' },
+    { re:/\b(powder|vial|syringe|dropper)\b/i, f:['visual','motion'], msg:'powder/vial imagery — the safety filter reads white powder + glassware as drugs; use settling crystal shards with no hands instead' },
+    { re:/\b(orbit\w*|circl(?:es|ing)|360)\b[^.,;]{0,40}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.,;]{0,40}\b(orbit\w*|360|circl(?:es|ing))\b|\baround the (pack|tube|box|product)\b/i, f:['visual','motion'], msg:'camera or elements circling "around" the pack — the camera never orbits (exposes the German side/back text) and formula elements move NEAR the pack, never around/wrapping it; reword to "near the pack" with a static front-on camera' },
+    { re:/\b(zoom|push)[^.]{0,25}\b(into|onto|toward)\b[^.]{0,20}\b(face|her face|his face|eyes|mouth|gaze|expression)\b/i, f:['visual','motion'], msg:'camera pushing into the face — nothing tighter than a chest-up framing on a person' },
+    { re:/fade to black/i, f:['visual','motion'], msg:'fade-to-black — the final beat holds bright on the pack + CTA; never waste the close' },
+    { re:/\bhands?\b(?!-drawn|-craft|made)[^.,;]{0,45}\b(mouth|lips|chin|jaw\w*|cheeks?|gums?|face|temple)\b|\b(mouth|lips|chin|jaw\w*|cheeks?|gums?|face|temple)\b[^.,;]{0,45}\bhands?\b(?!-drawn|-craft|made)/i, f:['visual','motion'], msg:'hand touching the mouth/face/jaw — hand-to-face contact renders badly; convey the feeling with expression only, the pack is never touched' },
+    { re:/\b(pick(?:s|ing)? up|picks? up|hold(?:s|ing)?|lift(?:s|ing)?|grab(?:s|bing)?|squeez\w+|press(?:es|ing)?|dispens\w+|carr(?:y|ies|ying)|present(?:s|ing)?|reach(?:es|ing)? for|stead(?:y|ies|ying)|touch(?:es|ing)?|grip(?:s|ping)?|cup(?:s|ping)?|cradl(?:e|es|ing))\b[^.,;]{0,30}\b(pack|tube|box|bottle|product|lacalut)\b|\b(pack|tube|box|bottle|product|lacalut)\b[^.,;]{0,25}\b(?:in|from|out of) (?:her|his|their|the) hands?\b|\b(?:her|his|their) hands?\b[^.,;]{0,25}\b(?:pick(?:s|ing)? up|hold(?:s|ing)?|lift(?:s|ing)?|squeez\w+|dispens\w+|press(?:es|ing)?|stead(?:y|ies|ying)|touch(?:es|ing)?)\b[^.,;]{0,20}\b(pack|tube|box|bottle|product)\b/i, f:['visual','motion'], msg:'a hand touching / holding / lifting / dispensing from the product — HANDS-OFF PRODUCT rule: the pack STANDS untouched on a surface every scene while the person does their routine elsewhere; no hand ever contacts it (hand contact is the #1 cause of the pack morphing / a tube emerging from a box)' },
+    { re:/\b(dispens\w+|squeez\w+|extrud\w+|ooz\w+|applies?|applying)\b[^.,;]{0,25}\b(paste|toothpaste|foam|gel)\b|\b(paste|toothpaste|foam|blob|dollop|droplet|ribbon)\b[^.,;]{0,30}\b(dispens\w+|squeez\w+|extrud\w+|ooz\w+|appears?|forms?|sits?|land(?:s|ing)?|on the (?:table|bench|counter|surface|brush|sink))\b|\bblob of (?:paste|toothpaste)\b|\btoothpaste on (?:the|a) (?:brush|table|bench|counter|surface)\b/i, f:['visual','motion'], msg:'toothpaste being dispensed or a paste blob/droplet appearing — NO PASTE rule: the product is never opened or dispensed and no paste, foam, blob or droplet is ever shown (a stray droplet on the bench is a known hallucination)' },
+    { re:/\b(snap zoom|zoom(s|ing)?|push(es|ing)?)\b[^.]{0,70}\b(label|pack text|wording|logo)\b/i, f:['visual','motion'], msg:'camera zooming onto the label — mid-motion text zooms warp the lettering; keep camera moves on the pack slow and gentle, the still guarantees label fidelity' },
+    { re:/\b(snap zoom|zoom(s|ing)?|push(es|ing)?)\b[^.]{0,40}\b(face|eyes|mouth|lips|teeth)\b/i, f:['visual','motion'], msg:'camera zooming onto the face/eyes — nothing tighter than a chest-up framing on a person' },
+    { re:/\b(gel|glow|mist|aura|energy|effect|particles?)\b[^.]{0,45}\b(face|skin|cheeks?)\b|\b(face|skin)\b[^.]{0,45}\b(gel|glow|mist|aura|energy|effect)\b/i, f:['visual','motion'], msg:'visual effect overlaying a person\'s face/skin — renders as smeared or melted skin; keep effects away from people' },
+    { re:/\b(aura|energy|halo|glow(s|ing)?|shimmer\w*)\b[^.,;]{0,40}\b(pack|tube|box|product|paste)\b|\b(pack|tube|box|product)\b[^.,;]{0,40}\b(aura|energy|halo)\b|\benvelop\w+/i, f:['visual','motion'], msg:'energy/aura/glow enveloping the pack — the banned halo effect; crystals may move NEAR the pack but never wrap or envelop it' },
+    { re:/\b(pack|tube|box|product)\b(?:(?!\b(crystals?|shards?|elements?|minerals?|particles?|accents?|ribbons?|dust)\b)[^.,;]){0,40}(?<!not )(?<!never )(?<!n't )(?<!no longer )\b(glides?|gliding|slides?|sliding|floats?|floating|drifts?|transitions?|moves? (in|into|across)|bursts? (in|into)|pops? (in|into)|flies|flying)\b(?!\s+(crystals?|shards?|elements?|minerals?|particles?|accents?|geometric|light|dust|ribbons?))/i, f:['visual','motion'], msg:'the pack moving itself (glide/slide/float/fly-in) — the pack is ALWAYS static and already in place; the camera or environment moves, never the pack' },
+    { re:/\b(waterfall|cascad\w+)\b|\b(water|liquid|stream|droplets?|drips?)\b[^.]{0,55}\b(wall|rock|stone|panel|backdrop|shelf|shelves)\b|\b(wall|rock|stone|panel)\b[^.]{0,40}\b(water|stream|drips?|trickl\w+)\b/i, f:['visual','motion'], msg:'sourceless/decorative water — water may ONLY appear from a running tap or in a clear drinking glass; scenic water (down walls/rocks, hidden basins) renders fake and auto-tanks QC' },
+    { re:/\b(music(al)?|melody|jingle|soundtrack|flourish|orchestral|crescendo|score swells?)\b/i, f:['visual','motion'], msg:'music written into a scene — scenes render MUSIC-FREE (one bed is added at stitch); diegetic SFX (click, tap running) are fine, musical sounds are not' },
+    { re:/\b(for|gives?|provides?|delivers?|leaves?)\b[^.]{0,30}\bfirm\w*\b[^.]{0,15}\bgums\b/i, f:['vo','text'], msg:'implies a physical firming RESULT — cosmetic feel-language only: say "gums that FEEL firm and cared-for"' },
+    { re:/\b(close-?up|CU|ECU|macro|tight shot)\b[^.]{0,80}\b(hands?|fingers?|knuckles?)\b(?!\s*(towels?|soaps?|creams?|washes?|sanitiser|sanitizer|rails?|dryers?|bags?|cloths?|mirrors?))|\bhands?\b[^.]{0,20}\bfills? the frame\b/i, f:['visual','motion'], msg:'hand close-up — hands are the worst AI subject; hands appear only inside mid-shots, never as the subject of a frame' },
+    { re:/\b(hands?|she|he|her|his|fingers?)\b[^.]{0,25}\b(holds?|holding|lifts?|lifting|raises?|raising|presents?|presenting|picks? up|carr(y|ies|ying)|stead(y|ies|ying)|press(es|ing)?|touch(es|ing)?|grips?|gripping|cups?|cupping|cradles?|cradling|rest(s|ing)? (?:a |her |his |one )?hand on)\b[^.]{0,25}\b(pack|tube|box|bottle|product|lacalut)\b|\b(pack|tube|box|bottle)\b[^.]{0,20}\b(in|into) (her|his|one|a) hand\b/i, f:['visual','motion'], msg:'a hand touching the pack (hold / lift / STEADY / press / touch / grip) — HANDS-OFF rule (non-negotiable): the pack STANDS untouched on the surface in every scene and NO hand ever contacts it — hand contact is the #1 cause of the tube morphing and looking fake/photoshopped. Convey confidence with expression only; hands stay high and busy elsewhere (hair, earring, collar). The CAMERA may hold on the pack, a hand may not.' },
+    { re:/\b(icon|badge|sticker|emoji|UI (element|chrome)|graphic (overlay|element)|highlight (circle|ring)|circle highlight|arrow overlay|progress bar)\b/i, f:['visual','motion'], msg:'graphic/UI element written into the scene — design-engine image vocabulary; video scenes contain only real physical objects and light, all graphics are added in post' },
+    { re:/\b(grips?|gripping|tightens?|tightening|clench\w*|squeez\w*|white-?knuckl\w*)\b/i, f:['visual','motion'], msg:'gripping/clenching hand mechanics — tension is shown in the FACE (expression), never in hand choreography' },
+    { re:/\b(alumini?um( |-)?lactate|strontium|potassium( |-)?(nitrate|chloride)?|chlorhexidine|bisabolol|zinc( |-)?(gluconate|lactate)?|lactate|sr2\+?|titanium dioxide)\b/i, f:['vo','text'], msg:'forbidden ingredient name — ONLY fluoride and hydroxyapatite may ever be named; say "a special German gum-care formula" instead' },
+    // "gives gums firmness" = outcome claim; "give you gums that FEEL firm" = mandated feel-language — only fire when no FEEL sits between gums and firm (r3 false-positive fix)
+    { re:/\b(gives?|giving|provides?|delivers?|restores?|brings?|helps? keeps?|keeps?|keeping|makes?|making|leaves?)\b[^.]{0,25}\bgums?\b(?![^.]{0,25}\bfeel\w*\b)[^.]{0,25}\b(firm\w*|strength|strong)\b/i, f:['vo','text'], msg:'physical firming-outcome claim — cosmetic feel-language only: "gums that FEEL firm"' },
+    { re:/\b\d(\.\d)?\s*[/]\s*5\b|\bstar[- ]?rated\b|review stars?|rating overlay/i, f:['visual','motion','text','vo'], msg:'invented rating or review overlay — never fabricate social proof; real review data is added in post from Judge.me only' },
+    { re:/\b(water|liquid|stream|droplets?|drips?|pours?|pouring)\b[^.]{0,55}\b(crystals?(?![- ]clear)|shards?|minerals?)\b|\b(crystals?(?![- ]clear)|shards?)\b[^.]{0,40}\b(water|stream|drips?)\b/i, f:['visual','motion'], msg:'water interacting with crystals/minerals — the rejected rock-water fault; water exists ONLY as tap-into-sink or a drinking glass' },
+    { re:/\b(pack|tube|box|product|it)\b[^.]{0,25}\btowards? the (camera|lens|viewer)\b/i, f:['visual','motion'], msg:'pack presented/thrust toward the camera — moving the pack at the lens warps the label; the pack stays where it is, the camera does the work' },
+    { re:/\b(push(es|ing)?[- ]?in|zoom(s|ing)?[- ]?in)\b (on|at) [^.]{0,18}\b(face|gaze|eyes|expression|smile)\b/i, f:['visual','motion'], msg:'camera pushing in on the face/gaze — nothing tighter than a chest-up framing on a person' },
+    { re:/\b(pulsing|pulsating|throbbing|gritty|granular|lumpy|grainy|speckle\w*)\b/i, f:['visual','motion'], msg:'unappetising/organic texture word — paste and product always look smooth, creamy and appealing; nothing pulses or throbs' },
+    { re:/\b(visual (representation|metaphor)|represent(s|ing)? (care|confidence|freshness|comfort|trust|health|strength|protection|vulnerability|enamel|gums?)|abstract (concept|arrangement|swirl))\b/i, f:['visual','motion'], msg:'abstract concept written as a visual — scenes show real, concrete, nameable objects only' },
+    { re:/\b(paste|foam|ribbon)\b[^.]{0,45}\b(in|into|inside|within)\b[^.]{0,25}\b(glass|cup|mug|tumbler)\b|\b(glass|cup|mug|tumbler)\b[^.]{0,30}\b(of|filled with|holding)\b[^.]{0,20}\b(paste|foam)\b/i, f:['visual','motion'], msg:'paste/foam inside a drinking glass — paste only ever sits dispensed on a clean surface; a glass holds clear water only (24/09 fault)' },
+    { re:/\b(unseen|invisible|off-?screen|hidden) (hands?|tap|source)\b|by an unseen hand/i, f:['visual','motion'], msg:'unseen hand/tap — objects acting with no visible agent read as haunted; show the hand or the tap in frame, or restage without the action' },
+    { re:/held by [^.]{0,25}out of (the )?frame|hands?,? (just )?out of (the )?frame[^.]{0,20}(hold|grip|tube|pack)/i, f:['visual','motion'], msg:'product held by an out-of-frame hand — reads as a floating tube; show the hand in frame or rest the pack on a surface' },
+    { re:/\b(toothbrush|brush)\b[^.]{0,35}\b(mouth|lips|teeth|face)\b|\b(brush(es|ing)?)\b[^.]{0,20}\b(her|his) teeth\b/i, f:['visual','motion'], msg:'brushing / brush-at-mouth action — object-to-face renders mangled; imply the routine with a before/after expression, never the act' },
+    // sq:true — test with QUOTED spans stripped first: kinetic/caption styles legitimately quote
+    // on-screen text ("caption 'GUMS THAT FEEL FIRM' slides in") and quoted words are captions,
+    // not depicted anatomy (r1 sweep false-positive class, 24/09).
+    { sq:true, re:/\b(gums(?! care)|gum ?line|gum tissue|anatomical\w*[^.]{0,30}\bgums?\b)/i, f:['visual','motion'], msg:'gums visually depicted — gums are NEVER shown on screen (uncanny); they live in the voiceover and captions only' },
+    { re:/\b(lasers?|laser-\w+|robots?|robotic\w*|mechanical arm|drone)\b/i, f:['visual','motion'], msg:'sci-fi/robotic prop — renders weird and fights the heritage/home story; use light, glass and real objects instead' },
+    { re:/\b(crystals?|shards?)\b[^.]{0,22}\b(embedded|within|inside|in (the )?(paste|ribbon)|on (the )?paste)\b|\b(embedded|studded|infused|speckled|mixed|integrated)\b[^.]{0,30}\b(crystals?|shards?)\b|\b(paste|toothpaste)\b[^.]{0,60}\b(embedded|studded|infused|speckled) /i, f:['visual','motion'], msg:'crystals inside/on the paste — paste is always pure, smooth, glossy white; formula elements live NEAR the product, never in the paste' },
+    { re:/\b(water|tap|stream)\b[^.]{0,40}\b(continuously|keeps? running|still (running|present|flowing)|left running|runs? throughout)\b/i, f:['visual','motion'], msg:'tap left running through the scene — wasteful and distracting; a tap runs briefly WHILE being used, then is off' },
+    { re:/(opens? )?(tight(er)?|close) on [^.]{0,15}\bhands?\b/i, f:['visual','motion'], msg:'framing tight on a hand — hands are never the subject of a frame; hands appear only inside mid-shots' },
+    { re:/\b(rins\w+|gargl\w+|spits?|spitting|mouthful)\b|\bswish\w*[^.]{0,20}\b(mouth|water|liquid)\b|\bmouth[^.]{0,20}swish\w*\b/i, f:['visual','motion'], msg:'rinsing/swishing/mouth-liquid action — liquid at or in the mouth renders horribly; show the fresh feeling with expression only' },
+    { re:/\b(dental|dentist(s|'s)?) (tray|trays|tool\w*|instrument\w*|chair|mirror|probe)\b|\bclinic(al)? (tray|table|bench)|petri dish(es)?|beakers?|test tubes?\b/i, f:['visual','motion'], msg:'clinical/dental prop — medical imagery breaches the cosmetic positioning; use everyday home objects only' },
+    { re:/\b(sips?|sipping|drinks?(?! glass)|drinking(?! glass))\b|\b(brings?|raises?|lifts?)\b[^.]{0,35}\b(glass|cup|mug|bottle|tumbler)\b|\b(glass|cup|mug|tumbler)\b[^.]{0,25}\bto (her|his) (lips|mouth)\b/i, f:['visual','motion'], msg:'drinking / object raised to the face — objects merging with a face render badly; the glass stays on the counter or held at chest height, never at the lips' },
+    { re:/\breach\w*[^.]{0,25}\boff-?(camera|screen|frame)\b|\breach\w* (for|toward|towards) something\b/i, f:['visual','motion'], msg:'a hand reaching for nothing/off-camera — ghost-hand actions render as mutated hands; every hand action targets a named visible object' },
+    { re:/\b(zoom\w*|push\w*|close-?up|CU|ECU|macro)\b[^.]{0,50}\b(plant|pot|towel|mug|cup|glass|tumbler|window|prop|shelf|toothbrush|bristles?)\b/i, f:['visual','motion'], msg:'camera feature on a PROP — every beat must serve the product story; cut the prop beat and give the time to the problem or the pack' },
+    { re:/\b(twirls?|twirling|spins? (the|a|her|his)|fiddl\w+|juggl\w+|tosses|tossing|flips? (the|a)|swirls? (the|a))\b/i, f:['visual','motion'], msg:'complex hand-object choreography — AI mangles fine hand actions; ONE simple hand action max per scene (pick up, put down, hold, turn tap)' },
+    { re:/\b(tap|faucet|water)\b[^.]{0,60}\b(by itself|on its own|then stops|starts and stops|stops on its own)\b/i, f:['visual','motion'], msg:'tap/water starting or stopping by itself — water only runs while a hand visibly operates the tap' },
+    { re:/\b(?<!feels )(?<!feel )firm(?!s (&|and) cares)\w*[^.]{0,28}?gums?\b/i, f:['vo','text'], msg:'bare firming-result phrase ("firm gums") — feel-language only: "gums that FEEL firm"' },
+    { re:/\b(snap[- ]?zoom|zoom(s|ing)?|close-?up|CU|ECU|macro|crash zoom)\b[^.]{0,45}\b(pack|tube|box|product)\b|\b(pack|tube|box|product)\b[^.]{0,45}\b(snap[- ]?zoom|close-?up|CU|ECU|macro)\b/i, f:['visual','motion'], msg:'zoom/close-up on the pack — the pack stays UNDER A THIRD of the frame, straight-on and static (zooms warp the label lettering); hold the camera steady instead' }
+  ];
+  // Look-conditional traps — fantasy VFX elements are fine in polished/cinematic looks but
+  // scream "AI ad" inside a lo-fi handheld world (the navy-wall/shard-stream failure, 23/09).
+  const SB_LOFI_RULES = [
+    { re:/\b(crystals?(?![- ]clear)|shards?|minerals?|salt[- ]?mineral\w*|rock clusters?|ribbons? of light|particles?|shimmer\w*|glow(ing)? panels?|light panels?|levitat\w+|floating elements?)\b/i, f:['visual','motion'], msg:'fantasy VFX element in a LO-FI ad — lo-fi realism means real everyday objects only; formula VFX belongs to polished/cinematic looks' },
+    { re:/\b(studio|architectural|matte (navy|black|dark) walls?|colour-?blocked|color-?blocked|seamless backdrop|minimalist shelv\w+|branded wall|set design)\b/i, f:['visual','motion'], msg:'designed-set wording in a LO-FI ad — the world must be a real everyday location (home bathroom, kitchen, bedroom) in natural light' }
+  ];
+  // Baked-text traps — Veo garbles any words it has to draw (the typo class that binned the
+  // 24/09 PAS renders). All on-screen wording lives in the "text" caption field (overlaid in
+  // post); only the kinetic_type look, whose whole language is typography, is exempt.
+  const SB_BAKED_TEXT_RULES = [
+    { re:/\b(on-?screen (text|labels?|words?|titles?)|(captions?|text|labels?|words?|letter(s|ing)|typography|titles?) (appears?|animates?|materiali[sz]es?|fades? in|slides? in|pops? (in|up)|floats? in|glows? in)|animated (text|labels?|typography|lettering)|glowing (text|labels?|letters?)|title card|ingredient labels?)\b/i, f:['visual','motion'], msg:'baked text/labels written into the scene — Veo garbles any words it draws (the 24/09 typo fault); ALL on-screen wording lives ONLY in the "text" caption field, added in post' }
+  ];
+  const SB_WORLD_RULES = [
+    { re:/(?<!no )(?<!without a )mirrors?\b(?![- ]free)|\bvanity\b/i, msg:'mirror/vanity in the WORLD — reflections mangle renders; frame the set so no mirror is ever in shot' },
+    { re:/\b(pearls?|beads?|pills?)\b/i, msg:'round white objects in the WORLD — Veo safety filter reads them as pills' },
+    { re:/\b(powder|vials?)\b/i, msg:'powder/vial in the WORLD — safety filter reads it as drug imagery' },
+    { re:/\b(waterfall|fountain|cascad\w+|water (feature|stream|wall)|hidden basin)\b|\bwater\b[^.]{0,45}\b(wall|rock|stone|panel)\b/i, msg:'decorative water feature in the WORLD — the rock-water fault; water exists only as a tap or a drinking glass' }
+  ];
+  const SB_LOFI_WORLD_RULES = [
+    { re:/\b(studio|architectural|matte (navy|black|dark) walls?|glow(ing)? panels?|light panels?|seamless backdrop|minimalist shelv\w+|branded wall|colour-?blocked|color-?blocked|diagonal blocks?|set design|crystals?|shards?|mineral)\b/i, msg:'designed set / VFX prop in the WORLD of a LO-FI ad — must be a real everyday Australian location (home bathroom framed mirror-free, kitchen, bedroom) in natural light' }
+  ];
+  const SB_ONE_WORLD_RE = /(bathroom[\s\S]{0,110}kitchen|kitchen[\s\S]{0,110}bathroom|bedroom[\s\S]{0,110}(kitchen|bathroom)|(kitchen|bathroom)[\s\S]{0,110}bedroom|adjacent (kitchen|bathroom|bedroom|room|corner|space)|two (rooms|locations|settings|spaces))/i;
+  // Cross-SKU angle themes — a script may ONLY use its own SKU's angle. Tonight's bug: a per-scene
+  // rewrite of an AKTIV (gum) ad grabbed a SENSITIVITY hook ("wince after a sip of water"), leaving
+  // the ad incongruent (sensitivity problem, gum solution). Keyword sets are TIGHT to avoid false
+  // positives (e.g. "cold water" in a glass must NOT trip sensitivity — only twinge/wince language).
+  const ANGLE_THEMES = [
+    { key:'SENSITIVITY', owners:['sensitive'], re:/\b(sensitiv\w+|winc\w+|twinges?|twinging|zing|nerve twinge|sharp (?:twinge|sting)|cold[- ]and[- ]hot|hot[- ]and[- ]cold|cold or hot)\b/i },
+    { key:'WHITENING',   owners:['white-repair'], re:/\b(whiten\w+|whiter|brighter smile|surface stains?|coffee stains?|shades? whiter|yellow\w* teeth)\b/i },
+    { key:'FRESH-BREATH',owners:['flora'], re:/\b(bad breath|fresh breath|freshens? breath|halitosis|mouth odou?r|breath odou?r)\b/i },
+    { key:'GUM-CARE',    owners:['aktiv','aktiv-herbal'], re:/\b(gum[- ]care|gum[- ]firmness|firm(?:er)? gums|gums that feel firm|cared-for gums|receding gums|gum recession|loose gums|gum ?line)\b/i },
+  ];
+  const SKU_ANGLE_SAY = { aktiv:"AKTIV's gum-care angle (gums that FEEL firm and cared-for)", 'aktiv-herbal':"AKTIV Herbal's natural gum-care angle", flora:"Flora's fresh-breath angle", sensitive:"Sensitive's cold/hot-twinge comfort angle", 'white-repair':"White & Repair's surface-stain / whiteness angle" };
+  function lintStoryboard(sb, styleId, typeId, sku){
+    const out=[];
+    const lofi = String(styleId||'')==='lofi_native';
+    // SKU ANGLE LOCK — flag any foreign-SKU angle language in the spoken/written copy.
+    if(sku && SKU_ANGLE_SAY[sku]){
+      const copyAll=[sb.hook,sb.cta,...(sb.scenes||[]).flatMap(s=>[s.vo,s.text,s.visual])].join(' \n ');
+      for(const th of ANGLE_THEMES){
+        if(th.owners.includes(sku)) continue;
+        const m=copyAll.match(th.re);
+        if(m) out.push('SKU ANGLE: "'+m[0]+'" is '+th.key+' language (that belongs to another LACALUT product) — this ad is ONLY '+SKU_ANGLE_SAY[sku]+'. Rewrite that line back onto this product\'s own angle; never borrow another SKU\'s problem or benefit.');
+      }
+    }
+    const contrastType = typeId==='vs'||typeId==='transform'||typeId==='mashup';
+    if(!contrastType){ const m=String(sb.world||'').match(SB_ONE_WORLD_RE); if(m) out.push('WORLD: "'+m[0]+'" — TWO locations in the world — this ad format is ONE location only; pick a single room and stage every scene inside it'); }
+    if(/lacalut|aktiv|lakalut/i.test(String(sb.hook||''))) out.push('HOOK: mentions the brand — the hook opens on the PROBLEM, never the brand or product name');
+    const kinetic = String(styleId||'')==='kinetic_type';
+    const rules = [...(lofi ? [...SB_LINT_RULES, ...SB_LOFI_RULES] : SB_LINT_RULES), ...(kinetic ? [] : SB_BAKED_TEXT_RULES)];
+    const stripQuoted = t => String(t||'').replace(/'[^']{0,140}'|"[^"]{0,140}"|‘[^’]{0,140}’|“[^”]{0,140}”/g,' ');
+    (sb.scenes||[]).forEach((sc,i)=>{
+      // For caption-aware (sq) traps also remove the scene's OWN caption wording from the field —
+      // apostrophes inside prose ("pack's") break naive quote-pairing (r3 false-positive fix).
+      const capRe = String(sc.text||'').trim().length>3 ? new RegExp(String(sc.text).trim().replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi') : null;
+      for(const r of rules) for(const f of r.f){
+        let src = String(sc[f]||'');
+        if(r.sq){ if(capRe) src = src.replace(capRe,' '); src = stripQuoted(src); }
+        const m=src.match(r.re);
+        if(m) out.push('Scene '+(i+1)+' '+f.toUpperCase()+': "'+m[0]+'" — '+r.msg);
+      }
+      if(!String(sc.text||'').trim()) out.push('Scene '+(i+1)+': missing on-screen caption — SOUND-OFF law: every scene carries a short bold 3-7 word caption; the ad must fully work muted');
+      const handHits=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(picks? up|sets? down|places?|reach(es|ing)?|dispens\w+|appl(y|ies|ying)|grabs?|lifts?|puts? down|lowers?)\b/gi)||[];
+      // one action re-described ("dispenses… as she dispenses") is ONE action — count distinct verb stems
+      const handActs=[...new Set(handHits.map(a=>a.toLowerCase().replace(/(ing|ied|ies|ed|es|s)\b/,'').replace(/e\b/,'').replace(/\s+(up|down)$/,'')))];
+      if(String(sc.motion||'').trim().length<60) out.push('Scene '+(i+1)+' MOTION: too thin ('+String(sc.motion||'').trim().length+' chars) — 8 seconds needs 2-3 distinct visual beats (angle change, action, cut-feel), never one static hold');
+      if(handActs.length>=3) out.push('Scene '+(i+1)+': '+handActs.length+' hand actions ('+handActs.slice(0,4).join(', ')+') — max ONE simple hand action per scene; cut the choreography');
+      const w=String(sc.vo||'').trim().split(/\s+/).filter(Boolean).length;
+      if(w>20) out.push('Scene '+(i+1)+' VO: '+w+' words — max 18 for an 8s scene; trim it');
+      // Scenes render as ISOLATED clips — any reference to another scene is meaningless to the
+      // renderer and drags in cross-scene drift (the exact bug hand-fixed on 24/09).
+      const xref=(String(sc.visual||'')+' '+String(sc.motion||'')).match(/\b(previous|prior|last|earlier|next|opening|first) scene\b|\bscene \d\b|\bs\d\b|\bcontinu(ing|es?) from\b|\bas before\b|\bsame as (the )?(previous|last)\b|\(?the ['‘"]?(before|after)['’"]? (beat|state|shot|moment|version)\)?/i);
+      if(xref) out.push('Scene '+(i+1)+': "'+xref[0]+'" — cross-scene reference; every scene renders independently and must describe its shot fully from scratch, never point at another scene');
+      // State-change words in a VISUAL imply a prior state the isolated renderer can't see
+      // ("the paste NOW swirling", "NOW filled" — the 24/09 hand-fixed fault). Motion may use
+      // "now" for within-scene sequencing, so this fires on the visual field only.
+      const stch=String(sc.visual||'').match(/\b(now|no longer|once again|has (become|changed|transformed))\b/i);
+      if(stch) out.push('Scene '+(i+1)+' VISUAL: "'+stch[0]+'" — state-change wording implies a previous state; each scene is an isolated clip — describe what IS in shot absolutely, from scratch');
+      // HANDS-AWAY ZONE — the pack may share the frame, but an action that brings the hands DOWN to the
+      // counter/sink next to the pack is what makes the video model grab it (the 27/09 failure). Block those
+      // before spend; the pack stays put and hands stay up. Free rewrite steers to a hands-up action.
+      const scVM=String(sc.visual||'')+' '+String(sc.motion||'');
+      const hasProd=/\b(pack|tube|box|bottle|product|lacalut)\b/i.test(scVM);
+      let handsLow=scVM.match(/\b(towel|dry(?:ing|s|ies)?|dab\w*|wipe\w*|reach\w*|pick\w*|grab\w*|wash\w*|splash\w*|rins\w*|scrub\w*)\b/i);
+      // ALSO catch hands RESTING / LEANING / PLACED / LOWERED onto the counter/bench/sink (27/09 Scene-2
+      // gap) — a hand at counter level next to the pack is the grab trigger, even without an action verb.
+      // Only fires on rest/lean/place/lower + a bench surface; "hands staying high/away" never matches.
+      if(!handsLow) handsLow=scVM.match(/\b(rest\w*|lean\w*|plac\w*|lower\w*|settl\w*)\b[^.]{0,20}\b(?:her|his|their)?\s*(?:hands?|palms?|fingers?)\b[^.]{0,30}\b(counter|bench|sink|slab|vanity|surface|tabletop|table)\b/i)
+                          || scVM.match(/\b(hands?|palms?)\b[^.]{0,25}\b(rest\w*|lean\w*|placed?|lowered?|settl\w*)\b[^.]{0,25}\b(counter|bench|sink|slab|vanity|surface|tabletop|table)\b/i);
+      if(hasProd && handsLow) out.push('Scene '+(i+1)+': "'+handsLow[0]+'" brings the hands DOWN toward the counter where the pack sits — the video model will grab it. Keep the pack in frame but switch to a hands-UP action away from the counter (brushing/touching hair, applying serum or moisturiser to the face, putting on an earring, adjusting a collar).');
+      // IDLE person — no concrete action reads as a boring, broken clip (Quan's 27/09 note).
+      const hasPerson=/\b(she|he|her|him|they|woman|man|person|girl|guy|lady|model|face|smil\w*|expression|gaz\w*|look\w*|pensive|stand\w*)\b/i.test(scVM);
+      const concreteAction=/\b(brush\w*|comb\w*|appl(?:y|ies|ying)|serum|moisturi[sz]\w*|makeup|mascara|blush|foundation|conceal\w*|lipstick|lip ?balm|perfume|fragrance|aftershave|after-shave|beard|oil\w*|dab\w*|pat\w*|styl\w*|knot\w*|necktie|watch|glasses|spectacl\w*|headband|ponytail|bun|sleeve|cheek|button\w*|adjust\w*|fasten\w*|smooth\w*|tie\w*|tuck\w*|touch\w*(?:es|ing)? (?:her|his|their)? ?hair|run\w* (?:her|his|their)? ?fingers|earring|collar|necklace|towel|dry\w*|wash\w*|splash\w*|wipe\w*)\b/i.test(scVM);
+      if(hasPerson && !concreteAction) out.push('Scene '+(i+1)+': the person has no concrete action (idle / looking / smiling / standing only) — every scene must show ONE specific hands-up everyday task actively happening (brushing hair, applying moisturiser, putting on an earring). A person doing nothing renders as a boring, broken clip.');
+    });
+    // PRODUCT-FORM CONSISTENCY — the pack must be ONE single form the whole way through; a box in
+    // one scene and a tube in another is the 26/09 morph bug (mirror of the ONE-character rule).
+    {
+      const forms=new Set();
+      (sb.scenes||[]).forEach(sc=>{
+        const t=(String(sc.visual||'')+' '+String(sc.motion||'')).toLowerCase();
+        if(/\btubes?\b/.test(t)) forms.add('tube');
+        if(/\b(box(es)?|cartons?)\b/.test(t)) forms.add('box');
+        if(/\bbottles?\b/.test(t)) forms.add('bottle');
+      });
+      if(forms.size>1) out.push('PRODUCT FORM: the ad mixes '+[...forms].join(' + ')+' across scenes — the pack must be ONE single form (all tube OR all box OR all bottle) in every scene, exactly like the ONE locked character; pick one form and use it throughout');
+    }
+    // Repeated distinctive word across the ad's spoken/written copy (house rule: never the same
+    // distinctive word twice in one creative — 3+ uses reads as copy on autopilot).
+    {
+      const copy=[sb.hook,sb.cta,...(sb.scenes||[]).flatMap(s=>[s.vo,s.text])].join(' ').toLowerCase();
+      // 4+ letters, not 6+ — "firm ×4" and "care ×4" sailed under the old 6-letter floor (24/09).
+      // STOP = function words + mandated/brand vocabulary that legitimately repeats (feel-language, SKU names).
+      const STOP=new Set(['lacalut','gums','online','toothpaste','german','germany','feeling','little','really','everyday','routine','morning','because','should','always','never','their','there','about','would','could','something','coffee',
+        'that','this','your','with','from','into','then','them','they','have','will','more','when','what','over','only','just','like','very','some','each','most','than','been','while','where','after','before','under','every','once','back','down','same','also','here','onto','near','upon','into','does','doesn','don','were','it',
+        'feel','feels','felt','aktiv','flora','herbal','sensitive','teeth','mouth','oral']);
+      const freq={}; for(const wd of (copy.match(/[a-z][a-z-]{3,}/g)||[])) if(!STOP.has(wd)) freq[wd]=(freq[wd]||0)+1;
+      const rep=Object.entries(freq).filter(([,n])=>n>=3).map(([wd,n])=>wd+' ×'+n);
+      if(rep.length) out.push('COPY: repeated distinctive word'+(rep.length>1?'s':'')+' — '+rep.join(', ')+' — a distinctive word appears at most TWICE across the whole ad; REWRITE the extra uses with different wording (e.g. for cared-for: looked-after, pampered, at their best, given real attention)');
+    }
+    for(const r of SB_LINT_RULES){ if(r.f.indexOf('vo')>=0||r.f.indexOf('text')>=0){
+      const h=String(sb.hook||'').match(r.re); if(h) out.push('HOOK: "'+h[0]+'" — '+r.msg);
+      const c=String(sb.cta||'').match(r.re);  if(c) out.push('CTA: "'+c[0]+'" — '+r.msg);
+    }}
+    const wRules = lofi ? [...SB_WORLD_RULES, ...SB_LOFI_WORLD_RULES] : SB_WORLD_RULES;
+    // Strip NEGATED clauses first — "devoid of mirrors, powders or vials" is compliance language,
+    // not a violation (r3 false-positive fix). A negation claims absence up to the clause boundary.
+    const worldSrc = String(sb.world||'').replace(/\b(no|without|devoid of|free of|never any?|never)\b[^.;]{0,80}/gi,' ');
+    for(const r of wRules){ const m=worldSrc.match(r.re); if(m) out.push('WORLD: "'+m[0]+'" — '+r.msg); }
+    return out;
+  }
+
+  async function generateStoryboard(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const model = opts.textModel || 'gemini-2.5-flash';
+    const sku = opts.sku||'aktiv', s = SKUS[sku]||SKUS['aktiv'], g = getGuide(sku);
+    const type = VIDEO_TYPES[opts.type]||VIDEO_TYPES.routine;
+    const st = videoStyle(opts.style)||videoStyle(type.style);
+    const nScenes = Math.max(2, Math.min(5, Math.round((opts.seconds||32)/8)));
+    const bans = [...GLOBAL_BAN, ...s.ban];
+    const brief = (opts.brief||'').trim();
+    const fx = (g.formula||[]).filter(x=>x.on!==false).map(x=>x.text);
+    const meta =
+`You are a world-class performance-video creative director for LACALUT ${s.name} (premium 100-year German pharmacy oral-care brand, tone: ${s.voice}). Write a ${nScenes*8}-second Australian social-media video AD as EXACTLY ${nScenes} scenes of 8 seconds each.
+
+ONE-UP LOOP (run internally BEFORE you answer — never show the drafts):
+1. Write the full script v1. 2. One-up it: v2 must have a more thumb-stopping hook, more product-anchored scenes and a stronger build to the pack than v1. Then v3 > v2. Do at least 3 rounds. 3. Each round ask: "Is scene 1 impossible to scroll past? Is EVERY scene unmistakably about ${s.name}? Does the story climax on the pack? Does EVERY scene's VISUAL literally SHOW what its VO line is SAYING at that moment — feeling-copy shown as the character's chest-up payoff expression, mechanism-copy shown as the mechanism macro, problem-copy shown as the problem moment? (VO about gums over yet another product shot = the ad does not sell — restage the visual to match the words; gums/teeth/mouth interiors themselves are never shown.)" 4. Output ONLY the pinnacle version.
+
+AD FORMAT: ${type.narrative}.
+VISUAL LOOK (every scene): ${st?st.motion:''}
+${type.voStyle?('\n'+type.voStyle+'\n'):''}
+${brief?`CLIENT BRIEF (highest priority): ${brief}.`:`ANGLE SEED (no client brief given — build the ad around this proven angle): "${pickRand(g.headlines,1)[0]||s.say}".`}
+
+BRAND GUIDE for ${s.name} — two layers:
+HARD LOCKS (never bend): brand colours ${g.colours||s.palette} own every scene's light, accents and grade; the real GERMAN pack with WHITE cap; only ${s.name}'s own formula elements and benefit angle.
+CREATIVE FREEDOM (video thrives on it): ${String(opts.style||type.style)==='lofi_native'
+  ? `the world MUST be a REAL everyday Australian location a phone video would actually be shot in — a home bathroom (framed so no mirror is ever in shot), kitchen or bedroom, natural daylight, lived-in and believable. NO designed sets, NO studio, NO branded/coloured feature walls, NO glowing panels, NO decorative props, NO fantasy elements — lo-fi realism is the whole point. Brand colours appear only naturally (the pack, a towel, a mug).`
+  : `you are NOT limited to studio setups — invent ONE bold cinematic world for the WHOLE ad (dramatic scale and unexpected moments welcome), as long as it lives inside the locked palette and stays premium.`} Every scene is staged INSIDE that one world. Use these as INSPIRATION, not a cage: product truths like ${pickRand(g.usps,3).join(' · ')||s.say}; trust cues like ${pickRand(g.trust,2).join(' · ')||'Made in Germany'}.
+- WATER LAW (hard rule): water may ONLY appear from a real everyday source — a running tap or a clear drinking glass. NEVER scenic/decorative water: streams down walls or rocks, waterfalls, fountains, hidden basins, floating water. Sourceless water renders fake and auto-fails QC. AND water and the formula crystals/minerals NEVER appear in the SAME scene — not touching, not side by side, not bridged by a camera move ("pans from the water to the crystal" is banned); a scene shows EITHER water (tap/glass) OR crystals, never both.
+
+COSMETIC-ONLY COMPLIANCE (non-negotiable — LACALUT is a cosmetic, not a medicine):
+- NO therapeutic or disease claims. NEVER use: ${bans.join(', ')}. NEVER "treat", "cure", "clinically proven", statistics or percentages.
+- The ONLY ingredients that may ever be named are "fluoride" and "hydroxyapatite" — NEVER strontium, potassium, aluminium lactate, bisabolol, chlorhexidine, zinc, or any ion label (Sr2+, K+).
+- This product's ONLY allowed benefit angle: ${s.say}. Never borrow another LACALUT product's angle.
+- All copy in plain Australian English, everyday language, cosmetic feel-benefits only. NEVER the words "healthy", "health", "heal" in any hook, caption, VO or CTA — say "feels cared-for" / "at their best" instead.
+
+CRAFT RULES (built from what is PROVEN to convert — Motion 2026 benchmarks, TikTok Creative Codes, Meta lift studies):
+- PRODUCT LOCK (hard rule): the ONLY product or object that may ever be a scene's subject is the LACALUT ${s.name} pack itself (the real GERMAN pack with its WHITE cap — a TOOTHPASTE TUBE/BOX unless the reference is a mouthwash bottle) or its SIGNATURE FORMULA ELEMENTS: ${fx.join(', ')||'clean water and minerals'}. NEVER build a scene around a toothbrush, a different product, generic props or stock objects. Every scene must be unmistakably about ${s.name} or its benefit.
+- PACK MOTION LOCK (hard rule): the pack NEVER flips, spins, turns over or rotates away from camera — its printed front label FACES CAMERA the entire time it is on screen (a subtle tilt of a few degrees is the maximum). If you want dynamism, move the CAMERA or the environment around the pack instead. NEVER write motion like "rotates to show the label", "spins into frame", "360-degree turn" — AI video mangles the logo the moment the pack rotates. PACK SCALE (hard rule): the pack NEVER fills more than a THIRD of the frame — no pack close-ups, macros or snap-zooms onto it; a steady straight-on framing under a third of frame is what keeps the label lettering perfect.
+- CHARACTER LOCK (hard rule): at most ONE person appears in the whole ad. Invent that ONE person once and describe them in rich detail in the "character" field (age, ethnicity, hair colour+style, outfit, distinguishing look). EVERY scene that shows a person shows EXACTLY that person — same face, same hair, same outfit, same age. A different actor appearing between scenes destroys the ad. Scenes may also show no person at all.
+- PRODUCT-FORM LOCK (hard rule — the product's equivalent of the CHARACTER LOCK): the ad shows ONE single product form for its ENTIRE length. Decide ONCE in the "product" field whether every scene shows the TUBE or the BOX (default: the TUBE; a mouthwash SKU shows its bottle), then describe that exact pack there (which form, real German label, WHITE cap, tall slim proportions). EVERY scene that shows the product shows EXACTLY that same form — NEVER a box in one scene and a tube in another, NEVER swapping, morphing or a "different tube" between scenes. A product that changes form between scenes destroys the ad the same way a different actor would. Scenes may also show no product at all.
+- HANDS-OFF PRODUCT (hard rule — this is what kills the hallucination): NO hand ever touches, holds, lifts, picks up, carries, presents, squeezes, presses, steadies or dispenses from the product — hands NEVER make contact with the pack at all. The pack simply STANDS on a surface (the sink edge, the bench) in shot while the ONE character does an ordinary routine ELSEWHERE in the frame (brushing, looking in front of them, drying their face). A hand on the pack is the #1 cause of the pack morphing, a tube emerging from a box, or a fake replacement pack appearing — keep every hand away from it.
+- NO PASTE (hard rule): the product is NEVER opened, squeezed or dispensed — NO toothpaste, paste blob, ribbon, foam or droplet is EVER shown: not on the pack, not on a brush, not on a surface, not on the table, nowhere. There is simply no paste in these ads (a stray paste blob materialising on the bench is a known render fault). A tap only runs in the instant a hand uses it, never left running.
+- HANDS-AWAY ZONE (hard rule — the #1 reason renders fail): the pack may (and should) stay in frame with the person, BUT the person's hands must stay UP and OCCUPIED and NEVER travel toward the counter, the sink or the pack. The moment a hand comes DOWN to counter level next to the pack, the video model bridges them into an unwanted grab — the exact failure. So the person's action ALWAYS keeps hands high and away — WOMEN: brushing/touching their hair, tying hair into a bun or ponytail, applying serum/moisturiser or makeup (blush, mascara, foundation) to the face, applying lip balm, putting on earrings, fastening a necklace, smoothing an eyebrow, dabbing perfume at the neck, adjusting a collar, buttoning a shirt; MEN: patting on aftershave or moisturiser, combing/finger-styling their hair, smoothing or oiling a beard, knotting/adjusting a tie, fastening a watch on the wrist, adjusting glasses, buttoning a shirt. NEVER write an action that lowers the hands to the bench OR takes an object to the mouth: no brushing teeth or brush near the mouth, no raising a glass/cup/mug to the lips, no towel-drying at the counter, no washing/splashing at the sink, no wiping the counter, no reaching across it, no picking anything up. Frame the pack in a STABLE foreground/side spot with the person behind or beside it so hands and pack are clearly separated in space.
+- PRODUCT STAYS PUT (hard rule): the pack rests in ONE fixed spot on the counter and NEVER slides, repositions, floats, rotates, grows or moves toward the lens during a scene; the camera may gently move for the person's action, but the pack itself is rock-steady — motion belongs to the person and the light, never the pack.
+- CONCRETE ACTION (hard rule): every scene\'s "visual" and "motion" must describe ONE specific, continuous, hands-UP everyday action the person is actively DOING — e.g. brushing or tying up hair, applying makeup or moisturiser to a cheek, applying lip balm, putting on an earring, fastening a necklace or a watch, knotting a tie, smoothing a beard, adjusting glasses, buttoning a shirt — NEVER a passive "standing", "looking pensive", "gazing", "playing with her face/earrings" or "holding an expression" beat with no real action, and NEVER an object-to-mouth beat (brushing teeth, sipping from a glass). A person doing nothing is boring and reads as a broken clip.
+- WORLD LOCK (hard rule — the #1 congruence rule): this ad happens in EXACTLY ONE location/set. Invent it once and describe it in rich concrete detail in the "world" field: the place, its surfaces and props, the lighting setup, colour palette and time of day. EVERY scene is staged inside THAT world — what changes between scenes is the CAMERA (angle, distance, macro vs wide) and the ACTION, never the location, lighting mood or palette. A background or setting change between scenes destroys the ad: the scenes must read as ONE continuous film shot on ONE set, never separate clips taped together. Each scene's "visual" must explicitly name where in the world the camera is. ONLY exception: an ad type whose format demands a contrast beat (Old Way vs New, Transformation before/after) may add ONE deliberate second setting — introduced once, reused for every one of its beats, both settings described in "world".
+- CONTINUITY: each scene's opening beat visually echoes the previous scene's closing beat — same palette, same light, same world.
+- SCENE INDEPENDENCE (hard rule): every scene is rendered as its own isolated clip by a generator that cannot see any other scene — each scene's "visual" and "motion" must describe the shot COMPLETELY from scratch and may NEVER reference another scene ("from the previous scene", "continuing the zoom", "as before", "same as scene 1", "the 'after' beat" are all forbidden — restate the content instead). A scene's "visual" also never uses state-change words ("now", "no longer", "once again", "has become") — they imply a previous state the renderer cannot see; describe what IS in shot, absolutely.
+- NO COPY AUTOPILOT: never use the same distinctive word three or more times across the ad's hook, captions, VO and CTA — vary the wording (e.g. "cared-for" once or twice, never in every line). Short words count too: "firm", "care", "fresh" obey the same max-twice rule. Before you output, COUNT every distinctive word across hook+captions+VO+CTA; rewrite any third use. Rotation palette: firm → resilient / at their best / comfortable; care/cared-for → looked-after / pampered / given real attention; fresh → clean-feeling / revitalised.
+${String(opts.style||type.style)==='kinetic_type' ? '' : `- ON-SCREEN TEXT LOCK (hard rule): the ONLY on-screen wording in the whole ad is each scene's "text" caption field (overlaid in post). NEVER write text, words, labels, titles or typography appearing INSIDE a scene's "visual" or "motion" — no "labels appear", no animated ingredient names, no glowing words: the video engine garbles any text it has to draw.
+`}- GLASS CONTENTS (hard rule): a glass, cup or tumbler only ever holds clear still water — never paste, foam or anything else. (Paste is never shown at all — see NO PASTE above.)
+- BENEFIT-PAYOFF BEAT (hard rule — sells the feeling, not the tube): whenever the VO/captions promise how gums or the mouth FEEL, at least ONE scene (ideally the second-to-last or final) must SHOW the human payoff — the ad's ONE character at chest-up framing with a genuinely warm, relaxed, confident closed-or-soft smile, radiating "my mouth feels amazing", with the pack visible under a third of the frame. An ad that is 100% product/formula shots while the copy talks about people's gums does NOT convert and is a FAIL. (Gums, teeth and mouth interiors are still NEVER shown — the smile and expression carry the feeling.)
+- AI-WEAKNESS AVOIDANCE (hard rules — these shots ALWAYS render badly): NEVER write mirror-reflection shots (reflections mangle the pack and the person); NEVER extreme face close-ups filling the frame (uncanny valley) — nothing tighter than a chest-up mid-shot on a person, no mouth-only or teeth-macro framing, NEVER a tongue; keep hands minimal and simple — at most ONE hand visible in frame at any moment (two hands double the AI's failure rate), at most ONE simple hand action per scene (pick up, put down, hold, turn a tap), never twirling/fiddling/tossing objects, never fine finger actions and never touches the mouth, jaw, chin, cheek or any part of the face; NEVER overlay visual effects (gels, mists, glows, particles) on a person's face or skin — effects live in the environment, away from people; the product is lit naturally, never wrapped, enveloped or surrounded by a glow/halo/energy effect — crystals and streams move NEAR the pack, never around or onto it — always write the words "near the pack", never the phrase "around the pack".
+- VEO SAFETY FILTER (hard rule — breaching it silently kills the render and wastes the day's quota): NEVER write white pearls, spheres, beads, droplets-as-pearls or ANY small round white objects (the video engine's safety filter reads them as pills and returns nothing). ${String(opts.style||type.style)==='lofi_native' ? 'In this LO-FI look there are NO substitute VFX either — no crystal shards, mineral streams, ribbons of light or particles; use real everyday objects and the pack itself only.' : 'Use angular mineral CRYSTAL SHARDS, flowing mineral streams or ribbons of light instead.'}
+- VOICE-FREE SCENES (hard rule): never write human vocal sounds into any scene's visual or motion ('uhm', sighs, gasps, humming, whispering, chatter) — scenes are voice-free; the narrator is recorded separately in post.
+- PACK TEXT: never reveal, read or glide to the pack's SIDE or BACK text (it is German and must stay unreadable) — the front label facing camera is the only pack face ever shown.
+- TAPS: a tap only runs in the moment a hand uses it — never left running through a scene. Never show brushing or a brush near the mouth. (Paste itself is never dispensed or shown — see NO PASTE and HANDS-OFF PRODUCT above.)
+- PACK STAYS GROUNDED (hard rule): the pack always STANDS on a surface and NO hand ever contacts it (see HANDS-OFF PRODUCT) — never held, lifted, carried, presented, pressed, steadied or dispensed from. A hand-held or hand-touched pack drifts toward the lens and garbles the label.
+- NO GRAPHICS IN SCENES (hard rule): scenes contain only real physical objects and light — never icons, badges, highlight circles, arrows, UI elements or any graphic overlay (all graphics and text are added in post).
+- PASTE APPEARANCE: whenever toothpaste itself is shown it looks smooth, creamy, glossy and appealing — never gritty, granular, lumpy, or pulsing/animated as if alive.
+- FEEL-LANGUAGE ONLY: every benefit is sensory ("feels firm", "feels clean", "cared-for") — never physiological verbs (firms, strengthens, repairs, protects) and never "effective" or "results".
+- HOOK RULES (scene 1, the first 3 seconds decide everything): NEVER open on the logo, the brand name or a pack hero — open on the problem, a bold claim, a confession, a contrast or a pattern interrupt. Scene 1's "text" caption must carry the payoff promise on its own (most viewers watch MUTED). Put a strong visual interrupt in the first second.
+- RE-HOOK RHYTHM (a hook buys 3 seconds, not 30 — the ad must re-earn attention): every scene boundary fires a TRIPLE RESET in the same moment — a VISUAL reset (new angle, object or motion), an AUDIO reset (a SOUND EFFECT or deliberate beat of silence — write it into "motion"; never music, music is one continuous bed added in post), and a CURIOSITY reset (a new open question the viewer wants answered). Inside a scene, something must change every 4–8 seconds.
+- OPEN LOOP, CLOSE LATE: scene 1 opens a curiosity question ("how is that possible?") that is deliberately NOT answered until the PROOF beat in the second-to-last scene. Revealing the answer early kills the reason to keep watching. The FINAL scene closes with a clear direct CTA — never a loop-back ending (that is for organic, not paid).
+- SOUND-OFF DESIGN (mandatory): 70–85% of viewers watch muted. EVERY scene's "text" is REQUIRED — a short bold caption (3–7 words) carrying that scene's message; the ad must fully work with the sound off. VO is a layer on top, never the carrier.
+- Each scene's "vo" is the EXACT spoken voiceover line — max 18 words, natural spoken Australian English, fits comfortably in 8 seconds.
+- "voice" describes ONE consistent voiceover artist (gender, age, accent, pace) reused in every scene — always UPBEAT and smiling: warm, uplifting, energised delivery with dynamic intonation, never flat or monotone.
+- "styleAnchor" is ONE sentence describing the shared visual style (lighting, grade, mood) that every scene repeats verbatim — it MUST embody the VISUAL LOOK given above (a lo-fi handheld look stays lo-fi in the anchor and every scene; never drift toward studio polish the look didn't ask for).
+- "world" is 2–3 sentences describing the ONE location/set in concrete physical detail — reused verbatim by every scene (plus the single contrast setting if the format demands one). The world must NEVER contain a mirror, vanity mirror or large reflective glass (reflections mangle AI renders — a bathroom set is framed so no mirror is ever in shot), and never white round objects, powders or vials.
+- "visual" describes what we see; "motion" the camera/subject movement — write motion with a visual change every 2–3 seconds, never a static hold over 4 seconds (pacing is where retention dies).
+- Final scene ends on the product + call to action. The real GERMAN pack with its WHITE cap is the only product ever shown.
+- SENSITIVITY GUARD: never claim to reduce/treat sensitivity or present remineralisation as therapy — always comfort/feel language.
+
+Return ONLY valid JSON:
+{"hook":"...","cta":"...","voice":"...","character":"...","product":"the ONE product form shown in every scene — e.g. 'the LACALUT AKTIV tube standing upright on the sink edge, real German label, white cap'","world":"...","styleAnchor":"...","scenes":[{"n":1,"seconds":8,"visual":"...","motion":"...","vo":"...","text":""}]}`;
+    let lastErr;
+    for(let attempt=0; attempt<2; attempt++){
+      try{
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+          { method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:1.0 } }) });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.error?.message||('HTTP '+res.status));
+        const txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+        let sb = JSON.parse(txt);
+        if(!sb || !Array.isArray(sb.scenes) || sb.scenes.length<2) throw new Error('Storyboard came back malformed');
+        sb.scenes = sb.scenes.slice(0,5).map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+        sb = sanitizeStoryboard(sb);
+        // TYPE + LOOK CONFORMANCE AUDIT — does the script actually read as the chosen ad type, in the chosen look?
+        try{
+          const auditMeta = `AUDIT this LACALUT video-ad storyboard for FORMAT CONFORMANCE.
+
+CHOSEN AD TYPE — the storyboard must follow this structure: ${type.narrative}
+
+CHOSEN VISUAL LOOK — every scene's visual/motion wording and the styleAnchor must read as: ${st?st.motion:'(no specific look)'}
+
+TYPE CHECKLIST (structural musts): Problem-Agitate-Solve = ~60% of runtime on the problem, product appears only after; Demo = the product physically IN ACTION in macro; Old-vs-New = BOTH sides actually shown in contrast; Transformation = an explicit BEFORE beat and AFTER beat (no before/after = fail, restructure); Social-Proof Mashup = rapid micro-beats each landing ONE captioned benefit; Brand Story = no people on camera, heritage narrative. Scene 1's MOTION must contain a literal visual interrupt inside its first second (snap cut, fast reveal, sharp move) — a passive hold is a hook fail; BENEFIT-PAYOFF: if the VO/captions promise how gums/the mouth FEEL, at least one scene must show the character's chest-up confident-smile payoff beat (an all-product ad with feeling-copy is a fail — restage one scene, never showing gums/teeth/mouth interiors); ALSO: the character wears THE SAME outfit in every scene AND on both sides of any split/contrast (an outfit change between sides is a fail); every scene has 2-3 distinct visual beats (a single static hold for 8s is a pacing fail) but never more than 3 shots;  paste never dispenses itself; the WORLD must be physically concrete, and for contrast formats it must describe BOTH settings in detail.
+
+ALSO judge VO-VISUAL CONGRUENCE scene by scene: each scene's visual must SHOW what that scene's VO is SAYING (feeling-copy → the character's chest-up payoff expression; mechanism-copy → the mechanism macro; problem-copy → the problem moment). A scene whose VO talks about how gums feel while the visual is just another product shot is a CONGRUENCE FAIL — restage that visual (never showing gums/teeth/mouth interiors; the smile and expression carry the feeling).
+
+Judge two things:
+1. TYPE: does each scene serve that narrative structure? (e.g. a Problem-Agitate-Solve ad spends ~60% of runtime on the problem, product appears only after; a demo ad SHOWS the mechanism; a comparison has clear old-vs-new beats.)
+2. LOOK: does the literal WORDING of every visual/motion line + the styleAnchor speak that look's language? A lo-fi handheld look must say handheld/candid/real-world-light/phone-shot in the scene text — words like "cinematic", "elegant", "premium studio", "dramatic lighting" mean the look has drifted.
+3. WORLD: does the WORLD itself belong to the look? A lo-fi look's world must be a REAL everyday location (home bathroom framed mirror-free, kitchen, bedroom, natural light) — a designed set, studio, branded/coloured feature walls, glowing panels, decorative water features or fantasy props (crystals, mineral streams) are a LOOK FAIL: rewrite the world to a real location and restage every scene inside it.
+
+If FULLY conformant, return the JSON unchanged. Otherwise return corrected JSON — rewrite only what breaks conformance; keep the world, character, product, VO meaning and schema identical. Never introduce: mirrors, pearls/beads/powder, finger/tongue/hand-to-face contact, ANY hand touching/holding/lifting/dispensing the product (the pack stands untouched on a surface every scene), ANY dispensed toothpaste/paste/foam/blob/droplet (there is no paste in these ads), the product changing form between scenes (a box in one scene and a tube in another — it is ONE form throughout, exactly like the ONE locked character), pack motion or label zooms, framing tighter than chest-up, VO over 18 words, non-cosmetic wording, text/labels/typography drawn inside a scene's visual or motion, state-change words ("now", "no longer") in a visual, cross-scene references, or paste/foam in a glass.
+
+Return ONLY valid JSON, exact same schema:
+${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',product:sb.product||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+          const ar = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+            { method:'POST', headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({ contents:[{role:'user',parts:[{text:auditMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.3 } }) });
+          const ad = await ar.json();
+          if(ar.ok){
+            const at = (ad.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+            const ax = JSON.parse(at);
+            if(ax && Array.isArray(ax.scenes) && ax.scenes.length===sb.scenes.length){
+              ax.scenes = ax.scenes.map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+              sb = sanitizeStoryboard(ax);
+            }
+          }
+        }catch(e){ /* audit is best-effort — lint repair still runs below */ }
+        // SELF-REPAIR LOOP — text is free; fix lint violations BEFORE the human ever reads the script
+        // (3 rounds, not 2 — r8 showed repetition/VFX faults regularly surviving two passes)
+        for(let round=0; round<3; round++){
+          const issues = lintStoryboard(sb, opts.style||type.style, opts.type||'routine', sku);
+          if(!issues.length) break;
+          try{
+            const fixMeta = `You wrote this LACALUT video-ad storyboard JSON. A hard production lint found these violations:\n- ${issues.join('\n- ')}\n\nRewrite the storyboard fixing ONLY those violations — keep every other word, the world, the character, the hook, the structure and the JSON schema identical. The rules behind them: no white pearls/beads/round objects and no powders/vials (safety filter reads them as pills/drugs — use angular crystal shards or mineral streams); no mirrors or vanities anywhere, including the world description (reframe the set so no mirror exists); no finger actions, tongue shots or hands touching the mouth/face; nothing tighter than a chest-up mid-shot on a person; the camera never zooms onto the label, never close-ups/snap-zooms the pack (pack stays under a third of the frame, straight-on, static) and never circles the pack; no human vocal sounds written into scenes; never reveal the pack's side/back text; the pack never rotates (move the camera); no fade-to-black (hold bright on pack + CTA); at most ONE simple hand action per scene, never twirling/gripping/clenching or fiddling with objects; hands never in close-up and never the subject of a frame; the world is ONE single room (never bathroom+kitchen or any second space); never drinking or raising a glass to the lips; hands only reach for named visible objects; the camera never features a prop (plant/towel/mug); the hook opens on the problem, never the brand name; taps never start/stop by themselves — a hand operates them; never the bare phrase "firm gums" — always "gums that FEEL firm"; never "treatment"/"protects"/"supports"/"firmness" or any physical-outcome wording (feel-language only); never invented ratings or star overlays; water and the formula crystals/minerals never appear in the SAME scene (not touching, not side by side, not bridged by a camera pan — a scene shows EITHER water OR crystals); the pack never moves toward the camera; paste always smooth and creamy, never granular or pulsing; formula crystals NEVER sit in, on or inside the paste (near the product only); water ONLY from a tap or drinking glass, never scenic water down walls/rocks; no music words in scenes (music is added at stitch); in a LO-FI look no VFX elements (crystals/shards/streams/particles) and the world is a real everyday home location; each VO max 18 words; cosmetic feel-language only (say "feels firm" / "cared-for", never firms/effective/repairs); every scene describes its shot fully from scratch and never references another scene ("from the previous scene", "continuing", "as before", "the 'after' beat" — restate the content instead); a scene's visual never uses state-change words ("now", "no longer", "once again", "has become") — describe what IS in shot absolutely; never write text, words, labels or typography appearing inside a scene's visual/motion (the engine garbles drawn words) — on-screen wording lives ONLY in the "text" caption field; paste/foam never goes in a glass (a glass holds clear water only — paste sits dispensed on a clean surface); never use the same distinctive word 3+ times across the ad's copy — short words like "firm"/"care" count too — COUNT each named overused word's occurrences across hook+captions+VO+CTA and rewrite every use beyond the second (palette: firm → resilient/at their best/comfortable; care → looked-after/pampered/given real attention; fresh → clean-feeling/revitalised); never "healthy"/"health" in any copy (cosmetic feel-language only); EVERY scene has a short bold 3-7 word on-screen caption in "text" (sound-off law — the ad must fully work muted).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',product:sb.product||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+            const fr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+              { method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({ contents:[{role:'user',parts:[{text:fixMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.4 } }) });
+            const fd = await fr.json();
+            if(!fr.ok) break;
+            const ft = (fd.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+            const fx = JSON.parse(ft);
+            if(!fx || !Array.isArray(fx.scenes) || fx.scenes.length!==sb.scenes.length) break;
+            fx.scenes = fx.scenes.map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+            sb = sanitizeStoryboard(fx);
+          }catch(e){ break; }
+        }
+        // TARGETED FINAL PASS (B+C) — copy-repetition and sourceless-water are the two stochastic
+        // residuals that occasionally outlive the broad 3-round loop, because that rewrite juggles
+        // ~30 rules at once and lets a stubborn one slip. Re-lint; if ONLY these classes remain,
+        // do ONE focused low-temp rewrite that touches nothing else — clears the residual without
+        // the false-positive risk of tightening the general lint.
+        try{
+          const survivors = lintStoryboard(sb, opts.style||type.style, opts.type||'routine', sku);
+          const targeted = survivors.filter(x=>/^COPY: repeated|sourceless|decorative water|scenic water|rock-water|water may ONLY|no natural source|emerges from|interacting with crystals/i.test(x));
+          if(targeted.length){
+            const focusMeta = `You wrote this LACALUT video-ad storyboard JSON. Two stubborn faults remain — fix ONLY these, change NOTHING else; keep every other word, the world, character, hook, CTA, structure and JSON schema byte-for-byte identical:\n- ${targeted.join('\n- ')}\n\nHOW TO FIX:\n• COPY repetition: COUNT the named word across hook + every caption + every VO + CTA; keep the first TWO uses and REWRITE every later use with different wording (firm → resilient / at their best / comfortable; care → looked-after / pampered / given real attention; fresh → clean-feeling / revitalised; clean → spotless / just-brushed; smile → grin / bright expression). The named word must end up appearing at most TWICE in the whole ad.\n• Sourceless / scenic water: water may ONLY appear as a running tap operated by a visible hand, a pour from directly above, or clear still water in a drinking glass. DELETE any water down walls / rocks / panels, any water feature or hidden basin, any droplets on objects, and any water touching crystals or minerals — replace it with a DRY premium beat instead (soft light shimmer, formula particles drifting NEAR the pack, a gentle push-in).\n\nReturn ONLY the corrected JSON, exact same schema:\n${JSON.stringify({hook:sb.hook,cta:sb.cta,voice:sb.voice,character:sb.character||'',product:sb.product||'',world:sb.world||'',styleAnchor:sb.styleAnchor,scenes:sb.scenes.map(sc=>({n:sc.n,seconds:8,visual:sc.visual,motion:sc.motion,vo:sc.vo,text:sc.text}))})}`;
+            const tr = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+              { method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({ contents:[{role:'user',parts:[{text:focusMeta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.2 } }) });
+            const td = await tr.json();
+            if(tr.ok){
+              const tt = (td.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+              const tx = JSON.parse(tt);
+              if(tx && Array.isArray(tx.scenes) && tx.scenes.length===sb.scenes.length){
+                tx.scenes = tx.scenes.map((sc,i)=>({ n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') }));
+                sb = sanitizeStoryboard(tx);
+              }
+            }
+          }
+        }catch(e){ /* targeted pass is best-effort — whatever survives is surfaced amber below */ }
+        sb.postCaptions = !!type.postCaptions;   // render-safe types keep frames clean; captions added in post (only ≤3-word headline words are baked in)
+        sb.nativeProduct = !!type.nativeProduct;   // render the pack natively integrated (single pass) instead of paste-insert — avoids the photoshopped look
+        sb.lint = lintStoryboard(sb, opts.style||type.style, opts.type||'routine', sku);   // whatever survived repair — surfaced amber in the approval modal
+        return sb;
+      }catch(e){ lastErr=e; }
+    }
+    throw new Error('Could not write the script: '+(lastErr?lastErr.message:'unknown'));
+  }
+
+  /* ═══ REGENERATE ONE BEAT (A) — the scene-level escape hatch ═══
+     When a single scene's exact content trips Veo's silent RAI/safety filter, Resume just refails
+     the identical beat forever. This rewrites ONLY that beat — deliberately RAI-safe, same world /
+     character / look / narrative slot — so the ad can finish without discarding the paid scenes
+     around it. Returns a sanitised single scene {n,seconds,visual,motion,vo,text}. */
+  async function rewriteSceneBeat(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const model = opts.textModel || 'gemini-2.5-flash';
+    const sku = opts.sku||'aktiv', s = SKUS[sku]||SKUS['aktiv'];
+    const sb = opts.storyboard||{}; const scenes = sb.scenes||[];
+    const i = Math.max(0, Math.min(scenes.length-1, opts.index|0));
+    const cur = scenes[i]||{}, prev = scenes[i-1], next = scenes[i+1];
+    const bans = [...GLOBAL_BAN, ...(s.ban||[])];
+    const reason = String(opts.reason||'Veo returned no video — silent safety filter').slice(0,180);
+    const meta =
+`You wrote this ${scenes.length}-scene LACALUT ${s.name} video ad. Scene ${i+1} was BLOCKED by the AI video model's safety filter and would not render (${reason}). Rewrite SCENE ${i+1} ONLY so it renders cleanly, keeping its job in the story and its continuity with the neighbouring scenes.
+
+WHY IT LIKELY BLOCKED — rewrite AROUND these triggers: any mouth / teeth / lips / tongue / gum interior in shot; framing tighter than a relaxed chest-up; anything medical, clinical, cosmetic-surgical or suggestive; hands to the face or mouth; small round white beads / pearls / powder (read as pills/drugs); a person in pain or distress. Make the beat WHOLESOME and everyday: a relaxed person with a gentle natural closed-mouth smile, or a clean product / formula beat, in an ordinary setting.
+
+KEEP IDENTICAL: the world, the character (same face / hair / outfit), the product (same single pack form, standing untouched), the shared look, the palette, and this scene's narrative purpose + VO meaning. This scene sits ${prev?`AFTER: "${String(prev.visual||'').slice(0,140)}"`:'as the OPENING scene'} and ${next?`BEFORE: "${String(next.visual||'').slice(0,140)}"`:'as the FINAL scene'} — it must flow between them.
+
+WORLD: ${sb.world||''}
+CHARACTER: ${sb.character||''}
+${sb.product?('PRODUCT (same form every scene, standing untouched — no hand contact, no paste): '+sb.product):''}
+LOOK: ${sb.styleAnchor||''}
+THE BLOCKED SCENE (its intent to preserve): VO="${cur.vo||''}" · caption="${cur.text||''}" · visual="${cur.visual||''}"
+
+HARD RULES (unchanged): cosmetic feel-language only, NEVER use ${bans.join(', ')}; only "fluoride" / "hydroxyapatite" may be named; ${s.name}'s own benefit angle only (${s.say}); the pack stays front-on, static, under a third of frame, WHITE cap, real German label never re-lettered; at most ONE hand action; water only from a tap or a clear drinking glass, never scenic and never in the same scene as crystals / minerals; a short bold 3-7 word English caption in "text"; VO max 18 words; never draw text / typography inside the visual; no cross-scene references or state-change words ("now" / "no longer"); no mirrors.
+
+Return ONLY this one scene as JSON, exactly this schema: {"visual":"...","motion":"...","vo":"...","text":"..."}`;
+    let last;
+    for(let a=0;a<2;a++){
+      try{
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+          { method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ contents:[{role:'user',parts:[{text:meta}]}], generationConfig:{ responseMimeType:'application/json', temperature:0.6 } }) });
+        const d = await r.json();
+        if(!r.ok) throw new Error(d.error?.message||('HTTP '+r.status));
+        const t = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+        const sc = JSON.parse(t);
+        const beat = { n:i+1, seconds:8, visual:String(sc.visual||''), motion:String(sc.motion||''), vo:String(sc.vo||''), text:String(sc.text||'') };
+        if(!beat.visual || !beat.motion) throw new Error('rewritten beat came back empty');
+        // sanitise inside the FULL storyboard context so cross-field rules apply, then hand back the one beat
+        const clone = { ...sb, scenes: scenes.map((x,ix)=> ix===i ? beat : x) };
+        const clean = sanitizeStoryboard(clone);
+        return clean.scenes[i];
+      }catch(e){ last=e; }
+    }
+    throw new Error('Could not rewrite the scene: '+(last?last.message:'unknown'));
+  }
+
+  /* ═══ SCENE PROMPT — buildVideoPrompt + continuity + exact VO lock ═══ */
+  function buildScenePrompt(opts){
+    const sb = opts.storyboard, sc = opts.scene, i = opts.index, total = opts.total;
+    const hasPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
+    let p = buildVideoPrompt({ sku:opts.sku, style:opts.style, aspectRatio:opts.aspectRatio, seconds:8, advNeg:true, hasPack,
+      brief: sc.visual + '. ' + sc.motion });
+    p += ` SCENE ${i+1} of ${total} of ONE continuous ad. SHARED STYLE (identical in every scene of this ad): ${sb.styleAnchor}. `;
+    p += sb.world ? `WORLD LOCK: the entire ad happens inside EXACTLY this one location (identical in every scene): ${sb.world} — same set, same surfaces, same lighting mood, same palette; only the camera and the action change between scenes; NEVER drift to a different location or background. ` : '';
+    p += sb.character ? `CHARACTER LOCK: any person on screen is EXACTLY this person (identical in every scene): ${sb.character} — same face, hair, outfit; never a different actor. ` : '';
+    p += sb.product ? `PRODUCT LOCK (identical in every scene): the ONLY product form shown is ${sb.product} — the exact same pack in every scene, NEVER a different form, never a box in place of the tube or vice-versa, never a second or replacement pack. It STANDS on a surface, UNTOUCHED — no hand holds, lifts, picks up, presses or dispenses from it, and NO toothpaste, paste blob, ribbon, foam or droplet ever appears anywhere in the frame. ` : '';
+    const personlessScene = !/\b(she|he|her|him|they|their|woman|man|person|girl|guy|lady|model|hands?|face|smil\w*|towel|serum|moisturi[sz]\w*|brush\w*|wash\w*|splash\w*|shav\w*|dry\w*|dab\w*|apply\w*|applies|button\w*)\b/i.test((sc.visual||'')+' '+(sc.motion||''));
+    if(personlessScene && hasPack){
+      p += `LOCKED-OFF PRODUCT SHOT (hard rule): this is a still-life of the pack on the counter with NO person acting — the camera is LOCKED OFF on a tripod. The pack stays PERFECTLY STILL in its exact spot for the whole clip: it NEVER slides, drifts, repositions, floats, rotates, grows or moves toward the lens, and NOTHING enters the frame to touch it. The ONLY motion allowed is the faintest ambient life (a soft shift of daylight, a barely-there slow drift) — if in doubt, hold the shot completely still. The pack must look like a real object filmed on a tripod, fully part of the scene like the plant beside it, never a pasted or floating cut-out. `;
+    } else if(hasPack){
+      p += `HANDS-AWAY / PRODUCT STAYS PUT (hard rule): the pack rests in ONE fixed spot on the counter and does NOT move, slide, reposition, float or drift during the clip. The person's hands stay UP and OCCUPIED with their own action (hair, face, collar, earring) and NEVER travel down toward the counter, the sink or the pack — no hand ever reaches for, touches, lifts, grabs or brushes against the pack. Keep the pack and the busy hands clearly separated in space for the whole clip. `;
+    }
+    p += `AUDIO (mandatory): quiet ambient room tone and subtle SOUND EFFECTS only — NO MUSIC of any kind (each scene composing its own music destroys the ad at the joins; one continuous soundtrack is mixed over the finished ad in post) and ABSOLUTELY NO human vocal sounds of ANY kind: no spoken words, no voiceover, no narration, no talking, no singing, no whispering, no humming, no male voice, no female voice, no background chatter or crowd murmur (one consistent narrator is recorded separately and mixed in post). Open the scene on a subtle sound-effect cue landing together with the visual change. `;
+    const bakeCap = sc.text && String(sc.text).trim() && (!sb.postCaptions || String(sc.text).trim().split(/\s+/).filter(Boolean).length<=3);
+    p += bakeCap ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — rendered as a LARGE, bold, high-contrast caption instantly readable on a muted phone screen; correctly spelled, never garbled. ` : `NO on-screen text in this scene — render a completely clean frame with NO words, captions or lettering anywhere (the caption is added in post). `;
+    p += `PACK MOTION LOCK: while the pack is on screen its printed front label stays FACING CAMERA, perfectly legible and pixel-stable — NEVER flip, spin, turn over or rotate the pack (a subtle tilt of a few degrees is the maximum); never warp, redraw, re-letter, mirror or reverse the label during motion; keep the pack's real tall slim proportions unchanged in every frame; the pack stays at its opening-frame SIZE — the camera never pushes so close that the label fills the frame. `;
+    p += `LIQUID PHYSICS: any water or liquid has a visible natural source and obeys gravity — never emerging from rocks, crystals or objects; no small white beads, pearls or droplet-strings may form. `;
+    p += `BRIEF FIDELITY (hard rule): render ONLY what this scene's brief describes — NEVER invent extra shots, cutaways, inserts, new objects, props, products, people or locations the brief does not name; nothing may materialise out of thin air (no ice, cubes, crystals or objects appearing in hands); an object may only enter frame carried by a visible hand or revealed by the camera move. `;
+    p += `NO UI OVERLAYS: never render a phone camera interface, recording indicator, timestamp, watermark, subtitles or any UI chrome — the frame is clean footage. `;
+    p += `MIRROR LOCK: no mirrors and no reflective surface showing a readable reflection anywhere in the scene. `;
+    p += `HANDS: at most ONE hand visible in frame at any moment, relaxed and simple — fingers never grip tightly, never interact with another hand, never merge with objects, and NEVER touch, hold, lift, pick up, press or dispense from the product (the pack stays on its surface, untouched). `;
+    return p;
+  }
+
+  /* Compact scene prompt for fal models (Kling / Seedance) which HARD-CAP the prompt at 2500 chars.
+     Keeps every essential lock (motion, character, world, product fidelity, compliance) in priority
+     order, tersely — so nothing important is lost to truncation. Veo (no cap) still uses the full one. */
+  function buildScenePromptFal(opts){
+    const sb = opts.storyboard, sc = opts.scene, i = opts.index, total = opts.total;
+    const s = SKUS[opts.sku]||SKUS['aktiv'];
+    const hasPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
+    const personless = !/\b(she|he|her|him|they|their|woman|man|person|girl|guy|lady|model|hands?|face|smil\w*|shav\w*|apply\w*|button\w*|brush\w*)\b/i.test((sc.visual||'')+' '+(sc.motion||''));
+    let p = `8-second image-to-video ad for LACALUT ${s.name} (German pharmacy oral-care), scene ${i+1} of ${total} of one continuous film. The SUPPLIED image is the final opening frame — keep its exact person, location, props, lighting and framing; add MOTION only; never redraw, re-letter, restyle or morph anything in it. `;
+    p += `MOTION: ${sc.motion || sc.visual}. `;
+    if(!personless) p += `CHARACTER LOCK: keep the EXACT same person as the frame — identical face, hair, age, build; real human skin and texture, natural expression, never a different face and never plastic or uncanny. `;
+    if(hasPack && opts.allowMultiPack){
+      p += `PRODUCT (multi-pack comedy): show MANY IDENTICAL real German LACALUT ${s.name} tubes — same red-white pack, WHITE cap, tall-slim proportions. The FRONT/nearest tubes are razor-sharp with the real German label facing camera, correctly rendered; tubes deeper in the pile may soften with depth-of-field / motion blur. NEVER a fabricated or English-language front label. Tubes may stack, pile, multiply and tumble exactly as the MOTION describes. No paste, foam or droplet appears. `;
+    } else if(hasPack){
+      p += `PRODUCT: the real German LACALUT pack stays razor-sharp and identical — exact label, WHITE cap, tall-slim proportions, front label to camera; never blur, warp, duplicate, re-letter, translate or mirror it. It STANDS untouched — no hand holds or lifts it, and no paste, foam or droplet appears. `;
+      p += personless ? `Locked-off tripod shot: the pack holds perfectly still. ` : `Hands stay up and away from the pack. `;
+    }
+    p += `COMPLIANCE: cosmetic only — no therapeutic/disease claims, no percentages; only fluoride and hydroxyapatite may be named. `;
+    p += `TEXT/MIRROR LOCK: no on-screen words except the post caption; the pack's German label stays soft and unreadable; never render mirrored, reversed or reflected text. `;
+    p += `AUDIO: ambient room tone and light sound effects only — no music and NO human voice, speech or narration (voiceover added in post). `;
+    p += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal, smooth natural motion, no flicker or artefacts.`;
+    return p;
+  }
+
+  function storyboardCostEstimate(opts){
+    const m = videoModel(opts.model||'VEO3');
+    const scenes = Math.max(1, opts.scenes||3);
+    const perSceneUsd = +(m.usdPerSec*8).toFixed(2);
+    return { scenes, perSceneUsd, usd:+(perSceneUsd*scenes).toFixed(2), model:(opts.model||'VEO3'), label:m.label, usdPerSec:m.usdPerSec };
+  }
+
+  /* ═══ SEQUENTIAL RENDER — one scene, then the whole board ═══ */
+  /* Two-step scene render (the Higgsfield-fidelity fix): Veo treats its input image as
+     the literal FIRST FRAME — feeding it a bare packshot + a different scene brief makes
+     it redraw (and mangle) the pack. So: STEP 1 pin fidelity by generating the scene's
+     opening STILL with the image engine (packshot refs = source of truth, caption baked
+     in, text accurate); STEP 2 hand Veo that finished still and ask for MOTION only. */
+  async function renderScene(opts){
+    const sc = opts.scene, sb = opts.storyboard;
+    const s = SKUS[opts.sku]||SKUS['aktiv'];
+    const g = getGuide(opts.sku);
+    const onProg = opts.onProgress||function(){};
+    // STEP 1 — scene still, pack-accurate (multiple packshot refs = tube AND box when saved).
+    // Packshot refs go ONLY to scenes whose script actually shows the pack — feeding them to a
+    // pack-free scene makes the image model paint the tube in uninvited (redrawn = garbled label).
+    // v2 PACKSHOT COMPOSITING (24/09/2026 — the S3-class drift fix): generating scene + pack in
+    // ONE pass makes the studio packshot refs fight the world/continuity refs — the world drifts
+    // toward generic studio and the person mutates. v2 splits the job: PASS A renders the scene
+    // as a product-free BASE PLATE anchored on the WORLD STILL (scene 1's frame) + the previous
+    // scene's still; PASS B inserts the EXACT packshot into that finished plate via editImage,
+    // which is ordered to keep every other pixel identical. Pack fidelity and world fidelity
+    // stop competing. Any PASS failure falls back to the proven v1 single-pass.
+    const sceneWantsPack = /(pack|tube|box|bottle|product|lacalut)/i.test((sc.visual||'')+' '+(sc.motion||''));
+    const packRefs = (opts.refImgs && opts.refImgs.length ? opts.refImgs : [opts.refImgDataUrl]).filter(Boolean).slice(0,3);
+    const refs = sceneWantsPack ? packRefs : [];
+    // PRODUCT-ONLY (person-free) scenes render NATIVELY (packshot as a real photographed object in the
+    // scene) instead of the PASS-A/B paste-insert — the composite-insert is what made the tube look
+    // photoshopped and let it drift. A still-life product shot with the packshot as reference integrates
+    // into the real light/surface and stays put. Person present → keep the PASS-A/B path (person fidelity).
+    const scenePersonless = !/\b(she|he|her|him|they|their|woman|man|person|girl|guy|lady|model|hands?|face|smil\w*|towel|serum|moisturi[sz]\w*|brush\w*|wash\w*|splash\w*|shav\w*|dry\w*|dab\w*|apply\w*|applies|button\w*)\b/i.test((sc.visual||'')+' '+(sc.motion||''));
+    // World-anchor first, then previous still (deduped) — re-anchoring every scene to scene 1's
+    // frame stops drift accumulating down the chain.
+    const anchors = [opts.worldStill, opts.prevStill].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).slice(0,2);
+    let still = refs[0]||null, stillOk = false;
+    try{
+      onProg('🖼️ composing scene still…');
+      const vlook = videoStyle(opts.style);
+      // MULTI-PACK COMEDY (allowMultiPack) — the whole single-pack fidelity pipeline (native compose,
+      // PASS-A/B insert, "never a second pack", 30% scale cap) fights an intentional pile of tubes.
+      // Compose the multi-tube still in ONE pass with the packshot as the identity reference instead.
+      if(opts.allowMultiPack && sceneWantsPack){
+        onProg('🧴 composing multi-pack still…');
+        const capM = sc.text && String(sc.text).trim() && (!sb.postCaptions || String(sc.text).trim().split(/\s+/).filter(Boolean).length<=3);
+        let spM = `Opening FRAME of a comedic PRODUCT-ONLY video ad for LACALUT ${s.name} (German pharmacy oral-care brand), no people. `;
+        spM += vlook ? `VISUAL LOOK: ${vlook.motion} ` : '';
+        spM += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
+        spM += `Show MANY IDENTICAL real German LACALUT ${s.name} tubes — the SAME red-white pack, WHITE cap, tall-slim proportions, matching the reference packshot EXACTLY. The NEAREST/front tubes are razor-sharp with the real German label facing camera and correctly rendered; tubes deeper in the pile soften with natural depth of field. NEVER a fabricated, translated or English-language front label. `;
+        spM += capM ? `ON-SCREEN CAPTION (exact wording): "${sc.text}" — LARGE, bold, clean, high-contrast, correctly spelled. ` : `No on-screen text — clean frame, caption added in post. `;
+        spM += `No other invented text or signage; never mirrored, reversed or reflected lettering. Cosmetic product only — no therapeutic claims, no percentages. ${opts.aspectRatio||'9:16'} aspect ratio, photoreal, bright clean satisfying comedic product-shot look, composed with headroom for motion.`;
+        try{
+          still = await callGemini({ prompt:spM, productImgs:packRefs, styleImgs:anchors,
+            render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+          stillOk = true;
+        }catch(eM){ /* fall through to raw packshot animate */ }
+        throw { __multiPackDone:true };   // skip the single-pack still paths below
+      }
+      let sp = `Opening FRAME of a video ad scene for LACALUT ${s.name} (German pharmacy oral-care brand). `;
+      sp += vlook ? `VISUAL LOOK (hard rule — this defines the entire frame and OVERRIDES any default polish): ${vlook.motion} If this look is lo-fi/handheld, the frame must read as a candid smartphone photo a real person took — natural imperfect framing, real-world light — NOT a glossy studio ad. ` : '';
+      sp += `SCENE: ${sc.visual}. SHARED STYLE: ${sb.styleAnchor}. STRICT brand colours — ${g.colours||s.palette}. `;
+      sp += (sb && sb.world) ? `WORLD LOCK (the #1 rule of this ad): every scene of this ad is shot inside EXACTLY this one location — ${sb.world} — same set, same surfaces and props, same lighting setup, same colour palette, same time of day; compose THIS scene's brief within that world (change only the camera angle/distance and the action), NEVER a different or generic background. ` : '';
+      sp += anchors.length ? `CONTINUITY REFERENCE (hard rule): the ${anchors.length===2?'TWO style-reference images are earlier frames':'style-reference image is an earlier frame'} of this SAME ad${anchors.length===2?' — the FIRST is scene 1 (the ad\'s world anchor), the SECOND is the previous scene':''} — match ${anchors.length===2?'their':'its'} exact location, surfaces, props, lighting, colour grade and world so every scene cuts together seamlessly as one continuous film; do not copy ${anchors.length===2?'their':'its'} composition, stage this scene's own brief inside the identical world. ` : '';
+      const bakeCap = sc.text && String(sc.text).trim() && (!sb.postCaptions || String(sc.text).trim().split(/\s+/).filter(Boolean).length<=3);
+      sp += bakeCap ? `ON-SCREEN CAPTION (exact wording, mandatory): "${sc.text}" — LARGE, bold, clean sans-serif, high-contrast, instantly readable on a phone, EVERY word correctly spelled (render fewer words perfectly rather than more words garbled). ` : `No on-screen text — render a completely clean frame with NO words, captions or lettering anywhere (the caption is added in post). `;
+      sp += `TEXT LOCK: besides that caption and the product's own real label, there is NO other text anywhere in the scene — no invented signage, posters, panels, banners or decorative words. MIRROR LOCK: every piece of text reads in correct left-to-right orientation — NEVER mirrored, reversed, doubled or reflected lettering (mirror and reflection shots must not flip any text). `;
+      sp += (sb && sb.character) ? `CHARACTER LOCK: if a person appears, it is EXACTLY this person (identical in every scene of this ad): ${sb.character} — same face, hair, outfit and age; NEVER a different actor. ` : '';
+      sp += `HUMAN REALISM: any person must be indistinguishable from a real filmed human — natural skin with visible texture and pores, natural asymmetric expression, genuine relaxed smile, real eye depth; never plastic-smooth skin, never uncanny, never overly perfect teeth. `;
+      sp += `EFFECTS REALISM: fluids and particles behave physically — water splashes with true liquid dynamics (never jelly-like or plastic), no generic glow halos around the product; light and reflections integrate naturally. `;
+      sp += `PRODUCT FORM LOCK: ${(sb&&sb.product) ? 'the ONLY product form in this ad is '+sb.product+' — show EXACTLY that same pack, the identical form used in every other scene, never a box in place of the tube (or vice-versa) and never a different or second pack.' : 'one consistent form for the whole ad — show the TUBE (or the bottle for a mouthwash) as the on-screen product in every scene; never alternate the tube with a box between scenes.'} It STANDS on the surface UNTOUCHED — no hand holds, lifts, picks up, presses or dispenses from it, and NO toothpaste, paste blob, ribbon or droplet appears anywhere in the frame. If the product appears: reproduce the reference packshot EXACTLY — real German packaging, exact label text and layout, WHITE cap; keep the pack's REAL PROPORTIONS from the reference (a tall, slim toothpaste tube — never shortened, widened, squat or stubby); front label FACING CAMERA; never invent, garble, translate or re-letter pack text. GERMAN PACK LOCK (legal requirement): all small descriptive pack text stays in GERMAN exactly as the reference AND softly out of focus / too small to read — NEVER render legible ENGLISH words on the pack (especially health words like "protects", "bleeding", "gums", "periodontitis", "inflammation", "prevents"); only the LACALUT wordmark and variant name may read clearly. `;
+      sp += sceneWantsPack ? '' : `NO PRODUCT IN THIS SCENE (hard rule): this scene's script does NOT include the pack — the LACALUT tube/box must NOT appear anywhere in this frame; no toothpaste product at all, only the scene as described. `;
+      sp += `STRICT COMPLIANCE — never show or write: ${[...GLOBAL_BAN, ...s.ban].join(', ')}. `;
+      sp += `PACK SCALE (hard rule — big packs garble): the pack occupies NO MORE than about 30% of the frame's height, standing upright with the label straight-on to camera (no tilt) — a modest, believable product presence, NEVER a label-filling macro; the smaller and straighter the pack, the sharper its text survives. `;
+      sp += `WATER/LIQUID PHYSICS: any water or liquid must have a visible, natural source (a tap, a pour from above, a splash landing) and obey gravity — water NEVER emerges from rocks, crystals or objects. `;
+      sp += `${opts.aspectRatio||'9:16'} aspect ratio, photoreal, faithful to the VISUAL LOOK above (candid phone-shot realism when the look is lo-fi; polished finish only when the look asks for it), composed with headroom for motion.`;
+      if(sceneWantsPack && packRefs.length && (scenePersonless || sb.nativeProduct)){
+        // NATIVE render — generate the scene (person + pack together, or pack alone) in ONE pass with the
+        // packshot as reference, so the pack is a real photographed object baked into the scene's own light
+        // (never the PASS-A/B paste-insert that made it look photoshopped and let it drift).
+        onProg('🧴 composing scene natively…');
+        const spHero = sp + `INTEGRATED PRODUCT (hard rule for THIS frame): the LACALUT pack rests in its spot on the counter as a REAL photographed object that is genuinely PART of this photo — sitting in the scene's own light, casting a soft natural contact shadow onto the surface, with the same focus, grain and colour grade as everything around it (as believably real as the plant or the basin beside it). It must NEVER look pasted, cut-out, flat, floating or 2D. The pack sits perfectly still in ONE fixed spot; the person's hands stay up and away from it. Reproduce the reference packshot EXACTLY — real German label, WHITE cap, true tall-slim proportions.`;
+        try{
+          still = await callGemini({ prompt:spHero, productImgs:packRefs, styleImgs:anchors,
+            render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+        }catch(e2){
+          still = await callGemini({ prompt:sp, productImgs:packRefs, styleImgs:anchors,
+            render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+        }
+      } else if(sceneWantsPack && packRefs.length){
+        // PASS A — product-free base plate (world/person fidelity)
+        const spPlate = sp + `BASE PLATE (hard rule for THIS render): stage the scene exactly as described but WITHOUT the LACALUT pack or any toothpaste product anywhere in the frame — the real product photo is composited in afterwards; leave its resting spot clear, naturally lit and in focus.`;
+        const plate = await callGemini({ prompt:spPlate, productImgs:[], styleImgs:anchors,
+          render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+        try{
+          // PASS B — insert the EXACT packshot into the finished plate (pack fidelity)
+          onProg('📦 compositing the real packshot…');
+          still = await editImage({ imgDataUrl:plate, refImgs:packRefs, sku:opts.sku, apiKey:opts.apiKey,
+            model:'gemini-3-pro-image-preview', aspectRatio:opts.aspectRatio,
+            instruction:`INSERT the LACALUT ${s.name} product from the reference packshot into this scene — ${sc.visual}. It stands upright with its front label facing camera dead-on, keeping the reference pack's EXACT physical format and proportions (tube, box or bottle exactly as photographed — never morph one format into another), real GERMAN label, WHITE cap, occupying no more than 30% of the frame height, lit by the scene's existing light with a soft natural contact shadow grounding it on the surface. Place it fully CLEAR of any on-screen caption text — the pack and the caption must never overlap and the caption stays fully readable. Reproduce the reference label EXACTLY — never re-letter, translate, enlarge or garble it; small German pack text stays soft and unreadable` });
+        }catch(e2){
+          onProg('📦 compositing failed — v1 single-pass fallback…');
+          still = await callGemini({ prompt:sp, productImgs:packRefs, styleImgs:anchors,
+            render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+        }
+      } else {
+        still = await callGemini({ prompt:sp, productImgs:refs, styleImgs:anchors,
+          render:'photoreal', model:'gemini-3-pro-image-preview', apiKey:opts.apiKey, aspectRatio:opts.aspectRatio });
+      }
+      stillOk = true;
+    }catch(e){ /* fall back to animating the raw packshot rather than failing the scene */ }
+    // STEP 2 — animate the still (motion only)
+    const engineKey = videoEngineForStyle(opts.style, opts.forceModel);   // style auto-picks its engine — no mismatch, no wasted credits
+    const engineHasCap = !!videoModel(engineKey).maxPrompt;               // fal (Kling/Seedance) hard-cap the prompt at 2500 chars
+    let prompt = engineHasCap ? buildScenePromptFal(opts) : buildScenePrompt(opts);
+    if(stillOk && !engineHasCap) prompt += ' The supplied image IS the finished opening frame of this scene — composition, product and caption are final; add MOTION only, never redraw or re-letter anything.';
+    if(opts.oneUp && !opts.scene && !engineHasCap){   // one-up ONLY for single-image animate flow — an approved storyboard scene is already the locked creative
+      const bans = [...GLOBAL_BAN, ...((SKUS[opts.sku]||{}).ban||[])];
+      prompt = await oneUpVideoPrompt({ basePrompt:prompt, bans, aspectRatio:opts.aspectRatio, seconds:8, apiKey:opts.apiKey });
+    }
+    if(opts.fixNote){ prompt += ' QC CORRECTION (highest priority — the previous render failed on exactly this): ' + opts.fixNote; }
+    const call = videoModel(engineKey).route==='fal' ? callFalVideo : callVeoVideo;
+    const callOpts = p => ({ prompt:p, imgDataUrl:still, model:engineKey, allowMultiPack:opts.allowMultiPack,
+      seconds:8, aspectRatio:opts.aspectRatio, apiKey:opts.apiKey, falKey:opts.falKey,
+      negativePrompt:opts.avoid||opts.negativePrompt||'',   // per-render Avoid box → merged with the global brain list
+      onProgress:onProg, asBlob:true });
+    let videoBlob;
+    try{ videoBlob = await call(callOpts(prompt)); }
+    catch(e){
+      if(!/no video/i.test(e.message||'')) throw e;
+      // An empty Veo response is sometimes TRANSIENT (LRO race / server hiccup), not a real filter.
+      // Try the SAME prompt once more before altering the creative — a transient empty clears here
+      // and the scene renders exactly as authored.
+      onProg('⚠️ empty response — one identical retry…');
+      try{ videoBlob = await call(callOpts(prompt)); }
+      catch(eRetry){
+        if(!/no video/i.test(eRetry.message||'')) throw eRetry;
+      // Persistent empty = Veo's safety filter blocking silently. Retrying identical content
+      // blocks identically — so retry ONCE with an explicit wholesome reframe, and if that is
+      // also blocked, once more as text-to-video without the still (the image itself may trip it).
+      onProg('🛡️ safety-filter block — retrying with a safe reframe…');
+      const safe = prompt + ' SAFETY REFRAME (the previous render was blocked): this is a wholesome, family-safe everyday COSMETIC toothpaste advertisement — nothing medical, clinical or suggestive; the person is relaxed and casual with a gentle natural closed-mouth smile; the product is an ordinary toothpaste tube held casually at chest height, away from the face; keep the scene otherwise identical.';
+      try{ videoBlob = await call(callOpts(safe)); }
+      catch(e2){
+        if(!/no video/i.test(e2.message||'')) throw e2;
+        onProg('🛡️ still blocked — final retry without the opening still…');
+        const o=callOpts(safe); o.imgDataUrl=null;
+        videoBlob = await call(o);
+      }
+      }
+    }
+    return { prompt, videoBlob, still: stillOk ? still : null };
+  }
+
+  /* ═══ AUTO-QC — Gemini WATCHES every scene clip before it is accepted.
+     Mirrors ~/.claude/scripts/gemini_watch_video.py, but per-scene, in-engine,
+     and closed-loop: a fail feeds its fixNote straight back into the re-render.
+     8s clips are small enough to send inline (no Files API / CORS risk). ═══ */
+  const QC_THRESHOLD = 7.5;        // per-scene pass bar ≈ 75/100 overall target
+  const QC_MAX_REROLLS = 1;        // hard cost cap: worst case = 2× scene spend, disclosed at the approve gate
+  const QC_INLINE_LIMIT = 15*1024*1024;   // raw bytes; base64 ×1.33 stays under the 20MB inline request cap
+
+  function blobToBase64(blob){ return new Promise((res,rej)=>{ const fr=new FileReader();
+    fr.onload=()=>res(String(fr.result).split(',')[1]); fr.onerror=()=>rej(fr.error); fr.readAsDataURL(blob); }); }
+
+  async function qcSceneClip(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    const blob = opts.videoBlob;
+    if(!apiKey || !blob || blob.size > QC_INLINE_LIMIT) return null;   // null = QC unavailable, never blocks the pipeline
+    const sc = opts.scene||{}, sb = opts.storyboard||{};
+    const s = SKUS[opts.sku]||SKUS['aktiv'];
+    const bakeCap = sc.text && String(sc.text).trim() && (!sb.postCaptions || String(sc.text).trim().split(/\s+/).filter(Boolean).length<=3);
+    const rubric =
+`You are a ruthless performance-video QC director for LACALUT ${s.name} (premium German oral-care brand, COSMETIC-ONLY regulatory regime, Australia). This is ONE 8-second AI-generated scene of a paid Facebook ad. Watch it fully, WITH AUDIO.
+
+SCENE BRIEF: ${sc.visual||'(none)'}
+EXPECTED CAPTION: ${bakeCap?('"'+sc.text+'"'):'(NO on-screen text expected — this scene is deliberately caption-free, the caption is added in post; a clean frame with no words is CORRECT, do NOT fault it for missing text)'}
+${sb.character?('CHARACTER LOCK: '+sb.character):''}
+${sb.world?('WORLD LOCK — the scene MUST take place inside exactly this location: '+sb.world):''}
+${sb.product?('PRODUCT LOCK — the on-screen pack MUST be exactly this ONE form, standing untouched (no hand contact, no paste dispensed): '+sb.product):''}
+
+Score against every item:
+1. PACK — real GERMAN pack, WHITE cap, front label facing camera, razor-sharp, real tall-slim proportions; never warped, melted, re-lettered, duplicated, flipped or rotated away; NO legible English health words on the pack.
+2. TEXT — caption matches the expected wording, correctly spelled, not garbled; NO mirrored/reversed/doubled lettering anywhere (including reflections); no invented signage.
+3. HUMANS — indistinguishable from a real filmed person: no uncanny faces, teeth or hands, no plastic skin, no morphing; if a character lock is given, it is EXACTLY that person. ANATOMY (check every frame): exactly TWO arms, TWO hands and five fingers per hand — any extra, duplicated, missing, fused, floating or malformed limb / hand / finger (e.g. two left arms, a phantom third hand, a hand melting into a prop) is a severe fail.
+4. MOTION — smooth and controlled; no morphing, warping, flicker or artefacts.
+5. EFFECTS — fluids behave physically; NO glow/halo around the product.
+6. AUDIO — ambience and music ONLY; ANY human vocal sound (speech, singing, humming, chatter) is a fail.
+7. LEGAL — NO therapeutic or disease words visible or audible (treat, cure, clinically proven, gingivitis, periodontitis, plaque, statistics/percentages) in any VO, caption, overlay or invented graphic; only "fluoride" and "hydroxyapatite" may be named. EXEMPTION: the REAL German pack's own printed label text (e.g. "Parodontose-Schutz", "Festigt das Zahnfleisch") is pre-approved packaging and NEVER a legal issue — never fail or deduct for words printed on the physical pack itself.
+8. WORLD — if a WORLD LOCK is given above, the scene visibly takes place inside THAT exact location (same set, surfaces, lighting mood, palette); a different or generic background is a major fail.
+9. PRODUCT INTEGRITY — if a PRODUCT LOCK is given, the pack is exactly that ONE form (never a box where the tube belongs, never a different/second/fake or photoshopped-looking pack), it STANDS on its surface UNTOUCHED (no hand holds, lifts, squeezes or dispenses from it, no tube emerging from a box), and NO toothpaste, paste blob, ribbon, foam or droplet appears anywhere in the frame.
+10. PRODUCT REALISM & STABILITY — the pack looks like a REAL object genuinely filmed in the scene (integrated into the scene's own light, in focus, casting a natural contact shadow, as believably part of the shot as the plant or basin) — NEVER pasted-in, cut-out, flat, 2D, floating or photoshopped-looking. And it STAYS PUT — the pack never slides, drifts, repositions or moves from its resting spot during the clip.
+11. ACTION — if a person is on screen they are actively DOING one clear everyday task; a person just standing / looking / idling with no real action is a fail (a boring, broken-looking clip).
+
+Be harsh: a real premium brand would only run this at 8+/10.
+HARD CAPS (non-negotiable): if a person shows extra, duplicated, missing, fused, floating or malformed limbs, hands or fingers at ANY frame (e.g. two left arms, a phantom third hand), the score is capped at 3 — broken human anatomy is the most brand-damaging fault. If the pack's label text is garbled, invented, pseudo-lettered or degrades during motion at ANY moment, the score is capped at 4. If small white beads, pearls or droplet-strings appear anywhere, the score is capped at 5. If a hand touches/holds/lifts/dispenses from the pack, or the pack morphs / changes form / a tube emerges from a box / a different or fake pack appears, or any toothpaste blob, ribbon or droplet materialises, the score is capped at 5. If the pack looks pasted-in / cut-out / flat / floating / photoshopped (not integrated into the scene), or the pack slides / drifts / repositions / moves from its spot during the clip, the score is capped at 5. If a person is on screen doing no real action (just standing or idling), the score is capped at 6. If water emerges from an object with no natural source, the score is capped at 6.
+
+Return ONLY valid JSON:
+{"score": <0-10 overall, one decimal>, "legalFail": <true if ANY item-7 breach>, "issues": ["<max 5, most damaging first, each with a timestamp>"], "fixNote": "<ONE imperative sentence telling the video generator what to do differently on a re-render, targeting the single most damaging issue>"}`;
+    try{
+      const b64 = await blobToBase64(blob);
+      const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+(opts.model||'gemini-2.5-flash')+':generateContent?key='+apiKey,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({ contents:[{role:'user',parts:[{inlineData:{mimeType:'video/mp4',data:b64}},{text:rubric}]}],
+            generationConfig:{ responseMimeType:'application/json', temperature:0.2 } }) });
+      const data = await res.json();
+      if(!res.ok) return null;
+      const txt = (data.candidates?.[0]?.content?.parts||[]).map(p=>p.text).filter(Boolean).join('').replace(/```json|```/g,'').trim();
+      const q = JSON.parse(txt);
+      if(typeof q.score !== 'number') return null;
+      return { score:Math.max(0,Math.min(10,q.score)), legalFail:!!q.legalFail,
+               issues:Array.isArray(q.issues)?q.issues.slice(0,5).map(String):[], fixNote:String(q.fixNote||'') };
+    }catch(e){ return null; }
+  }
+
+  /* Render a scene, QC it, and auto-reroll on fail — the QC verdict's fixNote
+     is injected into the retry prompt so the second attempt targets the exact
+     failure instead of rolling the same dice twice. Keeps the BEST attempt. */
+  async function renderSceneQC(opts){
+    const onProg = opts.onProgress||function(){};
+    const threshold = opts.qcThreshold!=null ? opts.qcThreshold : QC_THRESHOLD;
+    const maxRerolls = opts.qcMaxRerolls!=null ? opts.qcMaxRerolls : QC_MAX_REROLLS;
+    let best = null, fixNote = null, attempts = 0;
+    for(let a=0; a<=maxRerolls; a++){
+      attempts++;
+      const r = await renderScene({ ...opts, fixNote });
+      onProg('🔍 QC-watching the clip…');
+      const qc = await qcSceneClip({ videoBlob:r.videoBlob, scene:opts.scene, storyboard:opts.storyboard,
+        sku:opts.sku, apiKey:opts.apiKey });
+      const cand = { ...r, qc, attempts };
+      if(!qc){ best = best||cand; break; }                    // QC unavailable — accept, never block
+      // non-legal beats legal; then higher score wins
+      if(!best || (best.qc && ((best.qc.legalFail && !qc.legalFail) || (best.qc.legalFail===qc.legalFail && qc.score>best.qc.score)))) best = cand;
+      if(!qc.legalFail && qc.score >= threshold) break;       // passed — done
+      if(a < maxRerolls){ fixNote = qc.fixNote || (qc.issues[0]||''); onProg('♻️ QC '+qc.score.toFixed(1)+'/10'+(qc.legalFail?' LEGAL FAIL':'')+' → auto re-roll…'); }
+    }
+    best.attempts = attempts;
+    return best;
+  }
+
+  /* Final-ad QC — the stitched video through the same watcher, full-ad rubric. */
+  async function qcFinalVideo(opts){
+    const blob = opts.videoBlob;
+    if(!blob || blob.size > QC_INLINE_LIMIT) return null;
+    const sb = opts.storyboard||{};
+    return qcSceneClip({ ...opts, scene:{ visual:'FULL '+((opts.totalSeconds||24))+'s ad — all scenes stitched with the single TTS narrator mixed over the top. ALSO judge: CONGRUENCE (the #1 check — do ALL scenes share ONE location, ONE person and ONE lighting/grade so it reads as a single continuous film? If it feels like separate clips taped together, cap the score at 6 and say so); is the narrator ONE consistent voice; do scene joins cut cleanly; does the ad work sound-off; does it end on pack + CTA ("'+(sb.cta||'')+'")', text:'' } });
+  }
+
+  async function renderStoryboard(opts){
+    const sb = opts.storyboard, total = sb.scenes.length;
+    const onScene = opts.onScene || function(){};
+    const out = { scenes:[], cost:storyboardCostEstimate({scenes:total, model:opts.model}), qc:videoQCChecklist(), failedAt:null };
+    let prevStill = null;   // each scene's finished still anchors the next — hard world continuity
+    let worldStill = null;  // scene 1's still = the ad's WORLD ANCHOR; every later scene re-anchors
+                            // to it so drift never accumulates down the still chain
+    for(let i=0;i<total;i++){
+      const sc = sb.scenes[i];
+      try{
+        onScene(i, total, '🎬 scene '+(i+1)+'/'+total+' starting…');
+        const doQC = opts.qc !== false;
+        const fn = doQC ? renderSceneQC : renderScene;
+        const r = await fn({ sku:opts.sku, storyboard:sb, scene:sc, index:i, total,
+          style:opts.style, model:opts.model, forceModel:opts.forceModel, avoid:opts.avoid,
+          aspectRatio:opts.aspectRatio, refImgDataUrl:opts.refImgDataUrl, refImgs:opts.refImgs,
+          apiKey:opts.apiKey, falKey:opts.falKey, oneUp:opts.oneUp, prevStill, worldStill,
+          qcThreshold:opts.qcThreshold, qcMaxRerolls:opts.qcMaxRerolls,
+          onProgress:m=>onScene(i,total,'scene '+(i+1)+'/'+total+' · '+m) });
+        out.scenes.push({ ...sc, prompt:r.prompt, videoBlob:r.videoBlob, still:r.still||null, qc:r.qc||null, attempts:r.attempts||1 });
+        prevStill = r.still || prevStill;
+        if(!worldStill && r.still) worldStill = r.still;
+      }catch(e){
+        out.failedAt = i; out.error = e.message;
+        return out;   // partial — paid scenes are never lost; UI offers a retry from scene i
+      }
+    }
+    return out;
+  }
+
+  /* ═══ NARRATOR TTS — one consistent voice for the whole ad (Gemini TTS, same key).
+     Veo generates each scene's audio independently, so per-scene spoken VO drifts
+     between voices/accents. Scenes now render speech-free; ONE narrator reads every
+     line via TTS and is mixed over the stitched video. ═══ */
+  function pcmToWavBlob(b64, rate){ const bin=atob(b64); const n=bin.length;
+    const buf=new ArrayBuffer(44+n); const dv=new DataView(buf);
+    const ws=(o,str)=>{ for(let i=0;i<str.length;i++) dv.setUint8(o+i,str.charCodeAt(i)); };
+    ws(0,'RIFF'); dv.setUint32(4,36+n,true); ws(8,'WAVE'); ws(12,'fmt '); dv.setUint32(16,16,true);
+    dv.setUint16(20,1,true); dv.setUint16(22,1,true); dv.setUint32(24,rate,true); dv.setUint32(28,rate*2,true);
+    dv.setUint16(32,2,true); dv.setUint16(34,16,true); ws(36,'data'); dv.setUint32(40,n,true);
+    for(let i=0;i<n;i++) dv.setUint8(44+i,bin.charCodeAt(i));
+    return new Blob([buf],{type:'audio/wav'}); }
+  async function ttsLine(opts){
+    const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
+    if(!apiKey) throw new Error('No Gemini API key');
+    const model = opts.model || 'gemini-2.5-flash-preview-tts';
+    const desc = opts.voiceDesc || 'a warm Australian female voice, natural pace';
+    const voiceName = /(\bmale\b|\bman\b|\bbloke\b|\bguy\b)/i.test(desc) && !/female|woman/i.test(desc) ? 'Puck' : 'Kore';
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ contents:[{parts:[{text:`Speak as ${desc}. Australian English pronunciation. Delivery: bright, warm, UPLIFTING and smiling — energised with dynamic intonation, like sharing great news with a friend; never flat, never monotone. Read this ad line:\n${opts.text}`}]}],
+          generationConfig:{ responseModalities:['AUDIO'], speechConfig:{ voiceConfig:{ prebuiltVoiceConfig:{ voiceName } } } } }) });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.error?.message||('TTS HTTP '+res.status));
+    const part = data.candidates?.[0]?.content?.parts?.find(p=>p.inlineData);
+    if(!part) throw new Error('No audio returned');
+    const rate = parseInt((/rate=(\d+)/.exec(part.inlineData.mimeType||'')||[])[1]||'24000');
+    return pcmToWavBlob(part.inlineData.data, rate);
+  }
+
+  /* ═══ STITCH — concat N same-codec mp4s; optionally mix a per-scene narrator VO track ═══ */
+  async function stitchScenes(ffmpeg, blobs, opts){
+    opts = opts||{};
+    const reencodeOnFail = opts.reencodeOnFail !== false;
+    const names = [];
+    for(let i=0;i<blobs.length;i++){ const n='s'+i+'.mp4'; names.push(n);
+      await ffmpeg.writeFile(n, new Uint8Array(await blobs[i].arrayBuffer())); }
+    await ffmpeg.writeFile('list.txt', new TextEncoder().encode(names.map(n=>"file '"+n+"'").join('\n')));
+    let code = await ffmpeg.exec(['-f','concat','-safe','0','-i','list.txt','-c','copy','out.mp4']);
+    if(code!==0 && reencodeOnFail){
+      code = await ffmpeg.exec(['-f','concat','-safe','0','-i','list.txt','-c:v','libx264','-preset','ultrafast','-crf','23','-c:a','aac','-movflags','+faststart','out.mp4']);
+    }
+    if(code!==0) throw new Error('Stitch failed (ffmpeg exit '+code+')');
+    let final='out.mp4';
+    const vo=(opts.voBlobs||[]).filter(Boolean);
+    // MUSIC LOCK — one continuous soundtrack for the whole ad (scenes render music-free;
+    // per-scene Veo music is roulette, exactly like the voices were)
+    let hasMusic=false;
+    if(opts.musicBlob){ try{ await ffmpeg.writeFile('music.wav', new Uint8Array(await opts.musicBlob.arrayBuffer())); hasMusic=true; }catch(e){} }
+    if(vo.length===blobs.length){
+      try{
+        const secs=String(opts.secondsPerScene||8);
+        for(let i=0;i<vo.length;i++){
+          await ffmpeg.writeFile('v'+i+'.wav', new Uint8Array(await vo[i].arrayBuffer()));
+          await ffmpeg.exec(['-i','v'+i+'.wav','-af','apad','-t',secs,'p'+i+'.wav']);   // pad each line to its exact 8s scene slot
+        }
+        const ins=[]; vo.forEach((_,i)=>{ ins.push('-i','p'+i+'.wav'); });
+        await ffmpeg.exec([...ins,'-filter_complex', vo.map((_,i)=>'['+i+':a]').join('')+'concat=n='+vo.length+':v=0:a=1[vo]','-map','[vo]','vo.wav']);
+        let mc=1;
+        if(hasMusic){   // ambience ducked hard + one music bed + narrator on top
+          mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-i','music.wav','-filter_complex','[0:a]volume=0.10[amb];[2:a]volume=0.35[mus];[amb][mus][1:a]amix=inputs=3:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);
+        }
+        if(mc!==0) mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-filter_complex','[0:a]volume=0.12[bg];[bg][1:a]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);   // bg ducked hard — stray Veo voices must never compete with the narrator
+        if(mc!==0) mc = await ffmpeg.exec(['-i','out.mp4','-i','vo.wav','-map','0:v','-map','1:a','-c:v','copy','-c:a','aac','final.mp4']);   // no ambience track — VO only
+        if(mc===0) final='final.mp4';
+      }catch(e){ /* narrator mix failed — ship the plain stitch rather than nothing */ }
+    } else if(hasMusic){
+      try{   // no narrator — still lay the one continuous bed under the ambience
+        const mc = await ffmpeg.exec(['-i','out.mp4','-i','music.wav','-filter_complex','[0:a]volume=0.15[amb];[1:a]volume=0.35[mus];[amb][mus]amix=inputs=2:duration=first:normalize=0[a]','-map','0:v','-map','[a]','-c:v','copy','-c:a','aac','final.mp4']);
+        if(mc===0) final='final.mp4';
+      }catch(e){}
+    }
+    const data = await ffmpeg.readFile(final);
+    try{ for(const n of names) await ffmpeg.deleteFile(n); await ffmpeg.deleteFile('list.txt'); await ffmpeg.deleteFile('out.mp4'); if(final!=='out.mp4') await ffmpeg.deleteFile('final.mp4'); }catch(e){}
+    return new Blob([data.buffer||data], {type:'video/mp4'});
+  }
+
+  global.LacalutEngine = {
+    BRAINS, SKUS, MODES, GLOBAL_BAN, DEFAULT_GUIDES, GUIDE_SECTIONS,
+    getGuide, pickStr, pickRand,
+    resolveBrain, brainUsesProduct, pickBrainForCategories,
+    buildPrompt, buildMultiPrompt, callGemini, generateImage, editImage, dataUrlToInlinePart,
+    resolveArchetype, archetypeBlock, ARCHS, briefOwnsCopy, COPY_LOCK, buildLiteralPrompt,
+    describeAd, buildCopyPrompt, nearestAspect,
+    oneUpImagePrompt,
+    sanitizeCopy, sanitizeHashtags, hasBannedTerm,
+    VIDEO_MODELS, VIDEO_ASPECTS, VIDEO_DURATIONS, VIDEO_STYLES, VIDEO_TYPES,
+    videoModel, videoStyle, videoEngineForStyle, getVideoModel, setVideoModel, videoCostEstimate, videoQCChecklist,
+    VIDEO_ARTIFACT_NEGATIVE, mergeNegative,
+    buildVideoPrompt, callVeoVideo, callFalVideo, oneUpVideoPrompt, generateVideo,
+    sanitizeStoryboard, generateStoryboard, rewriteSceneBeat, lintStoryboard, buildScenePrompt, buildScenePromptFal, storyboardCostEstimate,
+    renderScene, renderStoryboard, stitchScenes, ttsLine,
+    qcSceneClip, renderSceneQC, qcFinalVideo, QC_THRESHOLD, QC_MAX_REROLLS
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.LacalutEngine;
+
+})(typeof window !== 'undefined' ? window : globalThis);
