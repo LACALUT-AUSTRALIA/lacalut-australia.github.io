@@ -105,6 +105,7 @@
   <button class="btn" onclick="importBackup()" title="Load a backup file — adds its images/videos/references/settings into this browser">📥 Restore</button>
   <button class="btn" onclick="importCliRenders()" title="Load videos rendered by the terminal CLI — pick the design-engine/_cli-renders folder; each render imports into the gallery and auto-stitches (VO + music)">🎬 Load Renders</button>
   <button class="btn" onclick="importCliImageRenders()" title="Load static images rendered by the terminal batch script (same buildPrompt/One-Up/HARD_RULES pipeline as Generate) — pick the design-engine/_cli-renders-images/<batch> folder; each PNG imports into the gallery, Edit-ready">🖼️ Load Image Renders</button>
+  <button class="btn" onclick="$('finVidIn').click()" title="Add a FINISHED, already-edited video (voice-over, captions and all) straight into the gallery of the SKU tab you are on — no re-stitch, nothing changed. A copy is also saved to the cloud.">📤 Upload Finished Video</button><input type="file" id="finVidIn" accept="video/*" hidden onchange="uploadFinishedVideo(this)">
 </header>
 
 <div class="tabs" id="topMode" style="border-bottom:none;padding-bottom:0"></div>
@@ -1706,6 +1707,23 @@ async function importCliRenders(){
   }
   renderVideoGallery(curSku);
   toast(imported? ('✅ Imported '+imported+' render(s) — check the gallery'):'⚠️ Nothing imported');
+}
+
+/* ── Upload a FINISHED video (Quan 15/10/2026) ────────────────────────────
+   Drops an already-edited MP4 (VO + captions baked in) into the gallery of the current SKU tab
+   AS-IS — no re-stitch, no VO/music regeneration (unlike Load Renders). qcAutoUpload then saves
+   a cloud copy to Supabase ad-images/video-qc/ and stores qcUrl on the record. */
+async function uploadFinishedVideo(inp){
+  const f=inp.files&&inp.files[0]; inp.value=''; if(!f) return;
+  const dur=await new Promise(r=>{ const v=document.createElement('video'); v.preload='metadata'; v.onloadedmetadata=()=>{ r(Math.round(v.duration||0)); URL.revokeObjectURL(v.src); }; v.onerror=()=>r(0); v.src=URL.createObjectURL(f); });
+  const rec={ id:'v'+Date.now()+'_up', sku:curSku, refSku:curSku, type:'finished', style:'finished', modelKey:'upload', aspect:'9:16', avoid:'',
+    duration:dur, storyboard:{hook:'',cta:'',voice:'',styleAnchor:''}, sbScenes:[], scenes:[], stitchedBlob:f, status:'done',
+    qc:[...E.videoQCChecklist()], oneUp:false, source:'upload', fileName:f.name, ts:Date.now() };
+  await vidPut(rec);
+  if(curTop!=='video'){ try{ pickTopMode('video'); }catch(_){} }
+  renderVideoGallery(curSku);
+  toast('📤 Added to '+(SKUS[curSku]?.name||curSku)+' — saving cloud copy…');
+  qcAutoUpload(rec,{ main:f, put:vidPut, after:()=>renderVideoGallery(curSku) });
 }
 
 /* ── import STATIC images rendered by the terminal batch script (_rig/gen_batch.mjs) ──
