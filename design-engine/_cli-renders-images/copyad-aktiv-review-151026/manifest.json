@@ -93,5 +93,24 @@
    "copyMode": true,
    "cli": true
   }
+ },
+ {
+  "id": "g1792042567642_0",
+  "filename": "AD_aktiv_copyad_review-benefits_v6_german-icon.png",
+  "sku": "aktiv",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "📋 Copy Ad · AKTIV GOLDEN v6 (german icon)",
+  "ts": 1792042567642,
+  "brief": "COPY AD — AKTIV v6 GOLDEN STANDARD (pixel edit, no render)",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "4:5",
+   "copyMode": true,
+   "cli": true
+  }
  }
 ]
