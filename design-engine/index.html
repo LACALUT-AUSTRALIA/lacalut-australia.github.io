@@ -2180,7 +2180,7 @@ async function exportBackup(){
     const [gens,reflib,vidsRaw,prodslots]=await Promise.all([idbAllStore('gens'),idbAllStore('reflib'),idbAllStore('vids'),idbAllStore('prodslots').catch(()=>[])]);
     const stamp=new Date().toISOString().slice(0,10), ts=Date.now();
     const files=[]; let parts=[], size=0, open=null, first=true;
-    const head=(store)=>{ if(open!==store){ if(open) parts.push(']'); parts.push((open?',':'')+'"'+store+'":['); open=store; } };
+    const head=(store)=>{ if(open!==store){ if(open) parts.push(']'); parts.push(',"'+store+'":['); open=store; } };   // header always precedes → always a comma
     const start=()=>{ parts=['{"app":"lacalut-design-engine","ver":5,"ts":'+ts+',"part":'+(files.length+1)+(first?',"ls":'+JSON.stringify(ls):'')]; size=0; open=null; first=false; };
     const finish=()=>{ if(open) parts.push(']'); parts.push('}'); files.push(new Blob(parts,{type:'application/json'})); };
     const push=(store,s)=>{ if(size+s.length>BK_CHUNK && size>0){ finish(); start(); } head(store); const sep=parts[parts.length-1].endsWith('[')?'':','; parts.push(sep+s); size+=s.length; };
