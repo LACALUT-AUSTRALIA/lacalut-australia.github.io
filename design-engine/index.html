@@ -1224,7 +1224,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
    ${rec.sentToCalendar
      ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
-     : ``}   /* 📅 Send to Calendar hidden 15/10/2026 — browser-inbox handoff is per-origin and dead on engine.lacalut.com.au; use 📁 Send to Drive until a Supabase bridge lands. sendToCalendar() kept. */
+     : `<button class="markybtn" id="marky-${rec.id}" title="Send this image to the Social Content Calendar to add copy + schedule + push" onclick="sendToCalendar('${rec.id}')">📅 Send to Calendar</button>`}
    ${rec.sentToFacy
      ? `<button class="markybtn pushed" id="facy-${rec.id}" title="Queued for Facy (copy-pending) — click to queue again" onclick="sendToFacy('${rec.id}')" style="background:#16a34a;color:#fff;border-color:#16a34a">✅ Queued for Facy</button>`
      : `<button class="markybtn" id="facy-${rec.id}" title="Queue this image for Facy (copy-pending) — Facy builds the ad only after copy is approved in the terminal; nothing goes live on this click" onclick="sendToFacy('${rec.id}')" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🚀 Queue for Facy</button>`}
