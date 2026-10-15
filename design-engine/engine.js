@@ -493,7 +493,8 @@ Be exhaustive and literal. Never summarise. Every word on the ad must appear in 
     p += `\nLACALUT PRODUCT (from the SECOND attached image onward): reproduce the real packaging EXACTLY — shape, label layout, colours, logo and wording; real proportions (a tall slim 75ml tube, never squat); only the LACALUT wordmark and variant name may read clearly, all small printed pack text stays in its ORIGINAL GERMAN and softly out of focus — NEVER legible English health words on the pack. Never invent, add or duplicate any other product, tube, box, bottle or brush. `;
     if(o.advNeg!==false) p += `STRICT COMPLIANCE (cosmetic-only, non-negotiable): never show or write ${bans.join(', ')}; never a medical cross, never a disease or treatment claim, never "clinically proven", never a doctor endorsement unless the reference's equivalent line was explicitly rewritten by the art director. If a competitor line would breach this, keep its size/position but soften the wording to a cosmetic feel/benefit. `;
     p += `TEXT RULES: all text in Australian English, spelled exactly as given, crisp and legible at thumbnail size. Do NOT add any headline, badge, trust seal, star row, review, CTA pill, URL, price or logo that the reference does not have. Do NOT remove any element the reference has. `;
-    p += `${o.ar||'4:5'} aspect ratio, matching the reference's framing edge to edge. Output ONE finished image.`;
+    p += `OUTPUT FORMAT — ALWAYS 4:5 PORTRAIT (1080×1350), even when the reference is square or landscape (Quan 15/10/2026, never break). Keep the reference's element order and styling top to bottom, and use the extra vertical space to make the main elements BIGGER — never add new elements, never leave an empty band. `;
+    p += `4:5 portrait aspect ratio, full-bleed edge to edge. Output ONE finished image.`;
     return p;
   }
 
@@ -518,7 +519,9 @@ Be exhaustive and literal. Never summarise. Every word on the ad must appear in 
       const instrC = `The FIRST attached image is the REFERENCE AD to recreate near-identically. ` +
         (pRefs.length ? `The NEXT ${pRefs.length} image${pRefs.length>1?'s are':' is'} the real LACALUT product packshot${pRefs.length>1?'s':''} — the ONLY source of truth for OUR product's packaging; place it exactly where, how big and at what angle the reference's product sits. ` : ``) +
         SCALE_LOCK;
-      const partsC=[{text:instrC+prompt}, cRef, ...pRefs];
+      const xRefs=(opts.copyExtras||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,3);
+      const instrX = xRefs.length ? `The LAST ${xRefs.length} attached image${xRefs.length>1?'s are':' is'} EXTRA REFERENCE${xRefs.length>1?'S':''} (e.g. a real customer's profile photo) — use ${xRefs.length>1?'them':'it'} EXACTLY where the art director's notes say (e.g. as the Facebook comment avatar, cropped into the circle, same face, same colours, sharpened cleanly — never replace it with a different or invented person). ` : ``;
+      const partsC=[{text:instrC+instrX+prompt}, cRef, ...pRefs, ...xRefs];
       const gcfgC = { responseModalities:['TEXT','IMAGE'] };
       if (opts.aspectRatio && /gemini-3/.test(model)) gcfgC.imageConfig = { aspectRatio: opts.aspectRatio };
       const resC=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,

@@ -360,6 +360,8 @@
       <label class="row" style="margin:0 0 4px;font-size:12px;font-weight:700">🧴 Our packshot <span style="color:#999;font-weight:600">— the ✓ product photos on the main page (<span id="copyPackSku"></span>)</span></label>
       <div id="copyPackStrip" style="display:flex;gap:6px;flex-wrap:wrap;min-height:54px;border:1px solid var(--line);border-radius:8px;padding:6px;background:#fafafa"></div>
       <div style="font-size:11px;color:#888;margin-top:4px">Wrong product? Close, pick the product tab + ✓ the packshot, reopen.</div>
+      <label class="row" style="margin:12px 0 4px;font-size:12px;font-weight:700">👤 Extra image <span style="color:#999;font-weight:600">— optional, e.g. the customer's real profile photo. Drag in or click to paste. Say in your notes where it goes.</span></label>
+      <div id="copyExtraSlot" class="slots" style="grid-template-columns:repeat(3,1fr);margin:0"></div>
     </div>
     <div>
       <button class="btn" id="readAdBtn" style="width:100%;font-size:13px;padding:9px;font-weight:700" onclick="readCopyAd()">2️⃣ 🔎 Read the ad → editable spec</button>
@@ -800,14 +802,14 @@ function renderCopyPackStrip(){
 }
 function openCopyDlg(){
   if(!KEYS.gemini){ openKeys(); return; }
-  renderCopySlot(); renderCopyPackStrip(); restoreCopyDraft();
+  renderCopySlot(); renderCopyPackStrip(); renderCopyExtras(); restoreCopyDraft();
   copyDlg.showModal();
 }
 function renderCopySlot(){
   const el=$('copySlot'); if(!el) return;
   el.innerHTML = `<div class="slot" style="aspect-ratio:auto;min-height:200px;max-height:380px" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropCopyRef(event)" onclick="${copyRefImg?'':'pasteCopyRef()'}" title="Copy the competitor's ad image, then click here (or Ctrl+V anywhere while this popup is open).">${copyRefImg?`<img src="${copyRefImg}" style="max-height:370px;width:100%;object-fit:contain"><button class="rm" onclick="event.stopPropagation();delCopyRef()">×</button>`:'📋 paste the competitor ad here<br><span style="font-size:10px">(Ctrl+V or click)</span>'}</div>`;
   const ca=$('copyAspect');
-  if(copyRefImg){ const im=new Image(); im.onload=()=>{ copyAR=E.nearestAspect(im.width,im.height); if(ca) ca.textContent='📐 Reference '+im.width+'×'+im.height+' → render aspect '+copyAR+' (auto-matched)'; }; im.src=copyRefImg; }
+  if(copyRefImg){ const im=new Image(); im.onload=()=>{ copyAR='4:5'; if(ca) ca.textContent='📐 Reference '+im.width+'×'+im.height+' → always renders 4:5 (1080×1350) — extra height makes the elements bigger'; }; im.src=copyRefImg; }
   else if(ca) ca.textContent='';
 }
 function setCopyRef(d){ copyRefImg=d;
@@ -816,6 +818,20 @@ function setCopyRef(d){ copyRefImg=d;
   renderCopySlot();
   if(!copyDlgOpen()) openCopyDlg();
 }
+let copyExtras=[null,null,null]; try{ const _x=JSON.parse(localStorage.getItem('lc_copy_extras')||'null'); if(Array.isArray(_x)) copyExtras=_x.concat([null,null,null]).slice(0,3); }catch(_){}
+function saveCopyExtras(){ try{ localStorage.setItem('lc_copy_extras', JSON.stringify(copyExtras)); }catch(_){} }
+function renderCopyExtras(){ const el=$('copyExtraSlot'); if(!el) return;
+  el.innerHTML = copyExtras.map((im,i)=>`<div class="slot" style="aspect-ratio:1" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="dropCopyExtra(event,${i})" onclick="${im?'':'pasteCopyExtra('+i+')'}">${im?`<img src="${im}" style="width:100%;height:100%;object-fit:cover"><button class="rm" onclick="event.stopPropagation();copyExtras[${i}]=null;saveCopyExtras();renderCopyExtras()">×</button>`:'👤 add'}</div>`).join(''); }
+function setCopyExtra(i,d){ copyExtras[i]=d; saveCopyExtras(); renderCopyExtras(); }
+function dropCopyExtra(e,i){ e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('drag');
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f&&f.type&&f.type.startsWith('image/')){ const r=new FileReader(); r.onload=async()=>setCopyExtra(i, await compressRef(r.result,1024)); r.readAsDataURL(f); } }
+async function pasteCopyExtra(i){
+  try{ const items=await navigator.clipboard.read();
+    for(const it of items){ const t=it.types.find(x=>x.startsWith('image/'));
+      if(t){ const blob=await it.getType(t); const r=new FileReader(); r.onload=async()=>{ setCopyExtra(i, await compressRef(r.result,1024)); toast('👤 Extra image attached'); }; r.readAsDataURL(blob); return; } }
+    toast('⚠️ No image on the clipboard — copy one first, or drag the file in');
+  }catch(e){ toast('⚠️ Clipboard blocked — drag the file onto the box instead'); } }
 function delCopyRef(){ copyRefImg=null; try{ localStorage.removeItem('lc_copy_ref'); }catch(_){} renderCopySlot(); }
 function dropCopyRef(e){ e.preventDefault(); e.currentTarget.classList.remove('drag');
   const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
@@ -849,7 +865,7 @@ async function runCopyGenerate(){
   const qty=parseInt(($('copyQty')&&$('copyQty').value)||'1')||1; const btn=$('genBtn');
   copyDlg.close();
   const S = { curSku, curModel, genPtype:curPtype, spec:$('copySpec').value.trim(), changes:$('copyChanges').value.trim(),
-    advNeg:$('advNeg').checked, geminiKey:KEYS.gemini, ar:copyAR, ref:copyRefImg, packs:packs.slice() };
+    advNeg:$('advNeg').checked, geminiKey:KEYS.gemini, ar:copyAR, ref:copyRefImg, packs:packs.slice(), extras:copyExtras.filter(Boolean) };
   const prompt = E.buildCopyPrompt({ sku:S.curSku, spec:S.spec, changes:S.changes, advNeg:S.advNeg, ar:S.ar });
   btn.disabled=true; btn.textContent='📋 Copying ad…'; const _cb=$('copyAdBtn'); if(_cb){ _cb.disabled=true; _cb.textContent='📋 Copying ad…'; }
   if($('output').querySelector('.empty')) $('output').innerHTML='';
@@ -858,7 +874,7 @@ async function runCopyGenerate(){
     pendingImgGens.push({id, sku:S.curSku, ptype:S.genPtype, ar:_ar});
     if(curTop==='image') insertCardTop(`<div class="card" id="${id}"><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5'%3E%3C/svg%3E" style="aspect-ratio:${_ar}"><div class="meta"><span class="t">📋 recreating the reference ad…</span></div></div>`);
     try{
-      const url=await E.callGemini({ prompt, productImgs:S.packs, copyRef:S.ref, model:S.curModel, apiKey:S.geminiKey, aspectRatio:S.ar });
+      const url=await E.callGemini({ prompt, productImgs:S.packs, copyRef:S.ref, copyExtras:S.extras, model:S.curModel, apiKey:S.geminiKey, aspectRatio:'4:5' });
       const label='📋 Copy Ad'+(S.changes?' · edited':' · straight swap');
       const briefTxt=(S.changes?('COPY AD — changes: '+S.changes):'COPY AD — straight product + wording swap');
       const rec={id:'g'+Date.now()+'_'+i, sku:S.curSku, mode:curMode, ptype:S.genPtype, label, ts:Date.now(), url, fav:false, brief:briefTxt, angle:facyAngleVal(), brain:null,
