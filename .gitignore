@@ -4,3 +4,4 @@ design-engine/_rig/winner-ads/raw/
 design-engine/_rig/winner-ads/*.png
 design-engine/_rig/winner-ads/*.json
 __pycache__/
+design-engine/_copyad_work/

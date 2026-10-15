@@ -19,10 +19,13 @@ const AR = '4:5';
   const ref = toData(refP), pack = toData(packP);
   const extras = (process.env.COPYAD_EXTRAS || '').split(',').map(s => s.trim()).filter(Boolean).map(toData);
   const spec = await E.describeAd({ refImg: ref, apiKey: key });
-  fs.writeFileSync(outP.replace(/\.png$/, '_spec.txt'), spec);
+  // Working files (spec/prompt) NEVER go to Downloads (Quan 15/10) — they live in design-engine/_copyad_work/
+  const WORK = DE + '/_copyad_work'; fs.mkdirSync(WORK, { recursive: true });
+  const stem = path.basename(outP, '.png');
+  fs.writeFileSync(WORK + '/' + stem + '_spec.txt', spec);
   const changes = changesP ? fs.readFileSync(changesP, 'utf8') : '';
   const prompt = E.buildCopyPrompt({ sku, spec, changes, advNeg: true, ar: AR });
-  const promptFile = outP.replace(/\.png$/, '_prompt.txt');
+  const promptFile = WORK + '/' + stem + '_prompt.txt';
   fs.writeFileSync(promptFile, prompt);
   console.log('aspect', AR, '| extras', extras.length, '| spec chars', spec.length, '| prompt chars', prompt.length);
   const url = await E.callGemini({ prompt, productImgs: [pack], copyRef: ref, copyExtras: extras, apiKey: key, model: 'gemini-3-pro-image-preview', aspectRatio: AR });
