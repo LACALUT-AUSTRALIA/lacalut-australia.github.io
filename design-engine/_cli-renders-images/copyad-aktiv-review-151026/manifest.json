@@ -55,5 +55,24 @@
    "copyMode": true,
    "cli": true
   }
+ },
+ {
+  "id": "g1792039681573_0",
+  "filename": "AD_aktiv_copyad_review-benefits_v4_headline-swap.png",
+  "sku": "aktiv",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "📋 Copy Ad · AKTIV review v4 (free headline swap)",
+  "ts": 1792039681573,
+  "brief": "COPY AD — AKTIV v4 headline swap (pixel edit, no render)",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "4:5",
+   "copyMode": true,
+   "cli": true
+  }
  }
 ]
