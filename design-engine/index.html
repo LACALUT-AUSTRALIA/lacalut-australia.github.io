@@ -357,9 +357,9 @@
       <label class="row" style="margin:0 0 4px;font-size:12px;font-weight:700">1️⃣ Competitor ad <span style="color:#999;font-weight:600">— Ctrl+V anywhere while this is open, or click the box</span></label>
       <div class="slots" id="copySlot" style="grid-template-columns:1fr;margin:0"></div>
       <div id="copyAspect" style="font-size:11px;color:#666;margin:4px 0 10px"></div>
-      <label class="row" style="margin:0 0 4px;font-size:12px;font-weight:700">🧴 Our packshot <span style="color:#999;font-weight:600">— the ✓ product photos on the main page (<span id="copyPackSku"></span>)</span></label>
+      <label class="row" style="margin:0 0 4px;font-size:12px;font-weight:700">🧴 Our packshot <span style="color:#999;font-weight:600">— click to pick which one goes in the ad (<span id="copyPackSku"></span>)</span></label>
       <div id="copyPackStrip" style="display:flex;gap:6px;flex-wrap:wrap;min-height:54px;border:1px solid var(--line);border-radius:8px;padding:6px;background:#fafafa"></div>
-      <div style="font-size:11px;color:#888;margin-top:4px">Wrong product? Close, pick the product tab + ✓ the packshot, reopen.</div>
+      <div id="copyPackHint" style="font-size:11px;color:#555;font-weight:600;margin-top:4px"></div>
       <label class="row" style="margin:12px 0 4px;font-size:12px;font-weight:700">👤 Extra image <span style="color:#999;font-weight:600">— optional, e.g. the customer's real profile photo. Drag in or click to paste. Say in your notes where it goes.</span></label>
       <div id="copyExtraSlot" class="slots" style="grid-template-columns:repeat(3,1fr);margin:0"></div>
     </div>
@@ -793,12 +793,38 @@ let copyAR = '4:5';
 function copyDlgOpen(){ const d=$('copyDlg'); return !!(d && d.open); }
 function saveCopyDraft(){ try{ localStorage.setItem('de_copy_draft', JSON.stringify({ spec:$('copySpec').value, changes:$('copyChanges').value })); }catch(_){} }
 function restoreCopyDraft(){ try{ const d=JSON.parse(localStorage.getItem('de_copy_draft')||'null'); if(d){ if($('copySpec')) $('copySpec').value=d.spec||''; if($('copyChanges')) $('copyChanges').value=d.changes||''; } }catch(_){} }
+/* Packshot picker (Quan 15/10/2026): the popup shows EVERY packshot for the current SKU (main-page slots + uploads)
+   as clickable tiles — click = select/deselect, highlighted = goes into the render. One selected by default so
+   the engine never guesses between three. 📤 tile uploads a custom packshot for this SKU (saved in this browser). */
+let copyPackCustom = {}; try{ copyPackCustom = JSON.parse(localStorage.getItem('lc_copy_pack_custom')||'{}')||{}; }catch(_){}
+let copyPackSel = {};    try{ copyPackSel    = JSON.parse(localStorage.getItem('lc_copy_pack_sel')||'{}')||{}; }catch(_){}
+function copyPackList(){ const base = curSku==='multi' ? [] : productImgs.filter(Boolean); return base.concat(copyPackCustom[curSku]||[]); }
+function copyPacksSelected(){ const list=copyPackList(); const sel=copyPackSel[curSku]||[]; const out=list.filter((_,i)=>sel[i]); return out.length?out:(list.length?[list[0]]:[]); }
+function toggleCopyPack(i){ const list=copyPackList(); let sel=(copyPackSel[curSku]||[]).slice(0,list.length); while(sel.length<list.length) sel.push(false);
+  const cur=sel[i]||(copyPacksSelected().indexOf(list[i])>=0 && !sel.some(Boolean));   // default-selected first tile counts as selected
+  sel[i]=!cur; if(!sel.some(Boolean)) sel[i]=true;   // never zero selected
+  copyPackSel[curSku]=sel; try{ localStorage.setItem('lc_copy_pack_sel', JSON.stringify(copyPackSel)); }catch(_){} renderCopyPackStrip(); }
+async function uploadCopyPack(input){ const f=input.files&&input.files[0]; if(!f) return; const r=new FileReader();
+  r.onload=async()=>{ const d=await compressRef(r.result,1280); (copyPackCustom[curSku]=copyPackCustom[curSku]||[]).push(d);
+    try{ localStorage.setItem('lc_copy_pack_custom', JSON.stringify(copyPackCustom)); }catch(e){ toast('⚠️ Saved for this session only — browser storage full'); }
+    const list=copyPackList(); copyPackSel[curSku]=list.map((_,i)=>i===list.length-1); try{ localStorage.setItem('lc_copy_pack_sel', JSON.stringify(copyPackSel)); }catch(_){}
+    renderCopyPackStrip(); toast('🧴 Packshot added + selected'); };
+  r.readAsDataURL(f); input.value=''; }
+function removeCopyPack(i){ const base=(curSku==='multi'?[]:productImgs.filter(Boolean)).length; const ci=i-base; if(ci<0) return;
+  (copyPackCustom[curSku]||[]).splice(ci,1); try{ localStorage.setItem('lc_copy_pack_custom', JSON.stringify(copyPackCustom)); }catch(_){} delete copyPackSel[curSku]; renderCopyPackStrip(); }
 function renderCopyPackStrip(){
   const el=$('copyPackStrip'); if(!el) return;
-  const packs = curSku==='multi' ? [] : selectedProductImgs();
+  const list=copyPackList(), sel=copyPacksSelected();
+  const base=(curSku==='multi'?[]:productImgs.filter(Boolean)).length;
   const lbl=$('copyPackSku'); if(lbl) lbl.textContent = curSku==='multi' ? 'Multi — not supported' : (SKUS[curSku]?.name||curSku);
-  el.innerHTML = packs.length ? packs.map(im=>`<img src="${im}" style="height:48px;border-radius:6px;border:1px solid var(--line);background:#fff;object-fit:contain">`).join('')
-    : `<span style="font-size:11px;color:#c0392b;font-weight:700;align-self:center">⚠️ No packshot ✓-selected on the main page — the engine needs one to swap in.</span>`;
+  let h = list.map((im,i)=>{ const on=sel.indexOf(im)>=0;
+    return `<div onclick="toggleCopyPack(${i})" title="${on?'Selected — click to deselect':'Click to select'}" style="position:relative;cursor:pointer;border:3px solid ${on?'#16a34a':'#ddd'};border-radius:8px;background:#fff;padding:2px;opacity:${on?1:.55}">
+      <img src="${im}" style="height:60px;max-width:150px;object-fit:contain;display:block">
+      ${on?'<span style="position:absolute;top:-7px;left:-7px;background:#16a34a;color:#fff;font-size:11px;font-weight:800;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center">✓</span>':''}
+      ${i>=base?`<button class="rm" onclick="event.stopPropagation();removeCopyPack(${i})">×</button>`:''}</div>`; }).join('');
+  h += `<label title="Upload another packshot for this product (saved in this browser)" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:70px;height:66px;border:2px dashed #bbb;border-radius:8px;cursor:pointer;font-size:11px;color:#777;background:#fff">📤<span>upload</span><input type="file" accept="image/*" hidden onchange="uploadCopyPack(this)"></label>`;
+  el.innerHTML = h;
+  const hint=$('copyPackHint'); if(hint) hint.textContent = list.length ? (sel.length+' selected of '+list.length+' — click a tile to change; the ✓ one is what gets swapped into the ad') : '⚠️ No packshot yet — upload one with 📤';
 }
 function openCopyDlg(){
   if(!KEYS.gemini){ openKeys(); return; }
@@ -859,8 +885,8 @@ async function readCopyAd(){
    No format, no brief, no archetype, no One-Up, no HARD_RULES / brand-brain / perf-brain furniture. */
 async function runCopyGenerate(){
   if(!copyRefImg){ alert('No competitor ad attached — paste it into the box on the left (Ctrl+V).'); return; }
-  const packs = selectedProductImgs();
-  if(!packs.length){ alert('Select our packshot (✓) in a Product photo slot — the engine swaps it into the reference ad.'); return; }
+  const packs = copyPacksSelected();
+  if(!packs.length){ alert('Pick or upload our packshot in the popup (🧴 Our packshot) — the engine swaps it into the reference ad.'); return; }
   if(curSku==='multi'){ alert('Copy Ad mode works per SKU — pick a product tab (Aktiv, Flora…), not Multi.'); return; }
   const qty=parseInt(($('copyQty')&&$('copyQty').value)||'1')||1; const btn=$('genBtn');
   copyDlg.close();
