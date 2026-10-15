@@ -1,0 +1,105 @@
+{
+  "canvasRatio": "3:5",
+  "styleFamily": "illustration",
+  "gridDNA": "A two-part vertical layout featuring a full-bleed cartoon illustration in the top 65% and a solid color band with product and offer text in the bottom 25%, separated by a small white margin at the very bottom for legal text.",
+  "zones": [
+    {
+      "role": "background",
+      "position": "top-left, starting 0% from top",
+      "sizePct": 65,
+      "align": "left",
+      "treatment": "full-bleed cartoon illustration",
+      "note": "The primary visual narrative, occupying the majority of the canvas."
+    },
+    {
+      "role": "headline",
+      "position": "top-left, starting 10% from top, 5% from left",
+      "sizePct": 2.5,
+      "align": "left",
+      "treatment": "black text, bold, inside white speech bubble, uppercase",
+      "note": "First narrative element, drawing attention to the 'problem'."
+    },
+    {
+      "role": "headline",
+      "position": "top-center, starting 15% from top, 35% from left",
+      "sizePct": 1.6,
+      "align": "center",
+      "treatment": "black text, bold, inside white speech bubble, uppercase",
+      "note": "Second narrative element, building tension."
+    },
+    {
+      "role": "headline",
+      "position": "top-right, starting 10% from top, 60% from left",
+      "sizePct": 2.5,
+      "align": "right",
+      "treatment": "black text, bold, inside white speech bubble, uppercase",
+      "note": "Third narrative element, revealing the 'solution' or 'deal' within the story."
+    },
+    {
+      "role": "product",
+      "position": "mid-right, starting 35% from top, 60% from left",
+      "sizePct": 2,
+      "align": "right",
+      "treatment": "multiple product units, illustrated",
+      "note": "Product integrated into the narrative scene, held by a character."
+    },
+    {
+      "role": "offer",
+      "position": "bottom-center, starting 65% from top",
+      "sizePct": 25,
+      "align": "center",
+      "treatment": "solid red colour block, full width",
+      "note": "A strong, contrasting band for the main offer."
+    },
+    {
+      "role": "product",
+      "position": "bottom-left, starting 60% from top, 5% from left",
+      "sizePct": 2.5,
+      "align": "left",
+      "treatment": "single product unit, photo-realistic",
+      "note": "Hero product shot, slightly overlapping the illustration and the offer band."
+    },
+    {
+      "role": "headline",
+      "position": "bottom-center, starting 70% from top, 20% from left",
+      "sizePct": 7,
+      "align": "left",
+      "treatment": "white text, very bold, no container, mixed case",
+      "note": "The primary call-to-value, large and prominent on the red band."
+    },
+    {
+      "role": "subheadline",
+      "position": "bottom-center, starting 80% from top, 20% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "white text, medium weight, no container, mixed case",
+      "note": "Clarifies the main offer with additional detail."
+    },
+    {
+      "role": "caption",
+      "position": "bottom-left, starting 92% from top, 5% from left",
+      "sizePct": 4.5,
+      "align": "left",
+      "treatment": "black text, light weight, no container, mixed case",
+      "note": "Legal disclaimer/fine print, small and unobtrusive."
+    }
+  ],
+  "typeScale": "headline (offer) ~10% of canvas height, subheadline ~5%, body (speech bubbles) ~8-10%, caption ~2%",
+  "colourBlocking": "Top 65% is a detailed, multi-colour illustration; bottom 25% is a solid red band; the very bottom 10% is a white background for legal text.",
+  "hierarchy": [
+    "offer",
+    "background",
+    "headline",
+    "product",
+    "subheadline",
+    "caption"
+  ],
+  "negativeSpace": "Strategic negative space within the illustration allows characters and speech bubbles to stand out. The white space below the red offer band provides a clean break for the disclaimer, preventing visual clutter.",
+  "eyePath": "The eye is first drawn to the action and faces in the top illustration, then follows the speech bubbles from left to right, before dropping down to the large, bold offer on the red band, then to the hero product, and finally the subheadline.",
+  "whyItWins": "The layout effectively uses a two-tier structure to first engage with a relatable, humorous narrative and then immediately deliver a clear, high-impact offer, creating a strong emotional and logical hook.",
+  "productPresence": "hero",
+  "humanPresence": "full-body",
+  "textDensity": "moderate",
+  "id": "hismile-1775721163666999-23-sep-2026",
+  "sourceFile": "hismile_1775721163666999_23-Sep-2026.png"
+}

@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "founder",
+    "style": "lofi_native",
+    "seconds": 24,
+    "nScenes": 3,
+    "brief": "man early 30s talks straight to camera, piece-to-camera testimonial, holds AKTIV tube still label-out at chest, calm bathroom, personal story about ignoring bleeding gums, single static subject, no gags, no hand close-ups on product"
+  },
+  "storyboard": {
+    "hook": "Gum well-being can feel like a constant battle.",
+    "cta": "Experience the ultimate in gum care.",
+    "voice": "A male Australian voiceover artist, early 30s, upbeat, warm, and smiling with dynamic intonation.",
+    "character": "",
+    "product": "The LACALUT AKTIV toothpaste tube, real German label facing camera, white cap, tall slim proportions, standing upright on a surface in all scenes.",
+    "world": "A bright, modern Australian home bathroom in the morning. Natural daylight streams in from an unseen window. White tiled walls with a light grey grout. A light oak wooden benchtop with a sleek white ceramic sink. A fresh navy hand towel (matching brand navy #004A88) is folded neatly beside the sink. No mirrors or reflective surfaces are visible in the frame.",
+    "styleAnchor": "Authentic lo-fi smartphone footage with natural imperfect handheld movement, real-world lighting, and a native social-feed feel, never glossy studio polish.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "A chest-up mid-shot, handheld, of a man in his early 30s talking directly to the camera, hands relaxed and out of frame below the chest. His expression is candid and slightly concerned. The LACALUT Aktiv tube stands upright and clearly in focus, label facing camera, on the light oak benchtop in the foreground.",
+        "motion": "A subtle, natural handheld sway only. The man speaks to camera; the tension reads purely in his face — a slight furrow of the brow, an honest, confiding look. Hands stay out of frame; nothing is touched or picked up.",
+        "vo": "I ignored the early warning signs for years, just hoping they would sort themselves out.",
+        "text": "I ignored the early signs.",
+        "flagged": false
+      },
+      {
+        "n": 2,
+        "seconds": 8,
+        "visual": "A chest-up mid-shot, handheld, of the same man still talking directly to the camera, hands relaxed and out of frame. His expression softens into calm reassurance. The LACALUT Aktiv tube stands upright, label facing camera, clearly in focus on the light oak benchtop in the foreground.",
+        "motion": "A subtle, natural handheld sway only. The man gives a small, reassuring nod as he speaks. Expression shifts from concern to trust. Hands stay out of frame; the tube is never touched.",
+        "vo": "Then I switched to a formula built on a century of German pharmacy expertise.",
+        "text": "German pharmacy expertise.",
+        "flagged": false
+      },
+      {
+        "n": 3,
+        "seconds": 8,
+        "visual": "A chest-up mid-shot, handheld, of the same man talking to the camera, finishing with a relaxed, confident closed-mouth smile. Hands relaxed and out of frame. The LACALUT Aktiv tube stands upright, label facing camera, prominently in focus on the light oak benchtop in the foreground.",
+        "motion": "A subtle, natural handheld sway only. The man holds a warm, confident closed-mouth smile for the final three seconds. Hands stay out of frame; the tube is never touched or picked up.",
+        "vo": "Now my gums actually feel looked-after. I only wish I had started sooner.",
+        "text": "Gums that feel looked-after.",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": false,
+    "nativeProduct": false,
+    "lint": []
+  }
+}

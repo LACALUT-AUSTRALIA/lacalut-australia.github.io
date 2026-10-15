@@ -1,0 +1,100 @@
+{
+  "canvasRatio": "9:16",
+  "styleFamily": "studio-product",
+  "gridDNA": "A top-heavy, centered text block is positioned above two distinct, angled product clusters in the mid-canvas, connected by a central graphic, all on a solid background with fine print at the bottom.",
+  "zones": [
+    {
+      "role": "headline",
+      "position": "top-center, starting 8% from top",
+      "sizePct": 1,
+      "align": "center",
+      "treatment": "black, serif, normal weight, title case",
+      "note": "First line of a multi-line headline, smaller than the main headline."
+    },
+    {
+      "role": "headline",
+      "position": "center, below first headline, starting 12% from top",
+      "sizePct": 4,
+      "align": "center",
+      "treatment": "red, bold serif, all caps",
+      "note": "The dominant visual element of the headline, uses a period for emphasis."
+    },
+    {
+      "role": "subheadline",
+      "position": "center, below main headline, starting 24% from top",
+      "sizePct": 1,
+      "align": "center",
+      "treatment": "black, serif, normal weight, lowercase",
+      "note": "Reinforces the main headline's message."
+    },
+    {
+      "role": "offer",
+      "position": "top-left of Product Group 1, starting 30% from top, 15% from left edge",
+      "sizePct": 1,
+      "align": "center",
+      "treatment": "white text on light grey pill shape with black outline, rotated -15 degrees",
+      "note": "Highlights the quantity for the first product bundle."
+    },
+    {
+      "role": "product",
+      "position": "mid-left, starting 35% from top, horizontally centered within left 40% of canvas",
+      "sizePct": 12,
+      "align": "left",
+      "treatment": "studio product shot, angled and overlapping",
+      "note": "Three bottles arranged dynamically, creating a sense of volume."
+    },
+    {
+      "role": "other",
+      "position": "mid-center, starting 55% from top, horizontally centered",
+      "sizePct": 0.5,
+      "align": "center",
+      "treatment": "black, bold, simple graphic",
+      "note": "Visually links the two product bundles."
+    },
+    {
+      "role": "offer",
+      "position": "top-right of Product Group 2, starting 30% from top, 15% from right edge",
+      "sizePct": 1,
+      "align": "center",
+      "treatment": "white text on black pill shape with black outline, rotated 15 degrees",
+      "note": "Highlights the bonus quantity for the second product bundle."
+    },
+    {
+      "role": "product",
+      "position": "mid-right, starting 35% from top, horizontally centered within right 40% of canvas",
+      "sizePct": 20,
+      "align": "right",
+      "treatment": "studio product shot, angled and overlapping",
+      "note": "Five bottles arranged dynamically, visually larger than the first group to emphasize 'free'."
+    },
+    {
+      "role": "body",
+      "position": "bottom-left, starting 90% from top, 5% from left edge",
+      "sizePct": 5,
+      "align": "left",
+      "treatment": "small black text, normal weight",
+      "note": "Legal disclaimers and offer details, low visual hierarchy."
+    }
+  ],
+  "typeScale": "headline ('IDIOT.') ~10% of canvas height, sub-headlines ~3%, offer badges ~3%, body ~1%",
+  "colourBlocking": "The entire canvas is a single, light, warm off-white/beige background color, with text and product colors providing the primary contrast.",
+  "hierarchy": [
+    "headline (IDIOT.)",
+    "product (5 free group)",
+    "product (Buy 3 group)",
+    "headline (Don't Be An)",
+    "subheadline",
+    "offer (5 free)",
+    "offer (Buy 3)",
+    "other (connector)",
+    "body"
+  ],
+  "negativeSpace": "Ample negative space surrounds the headline block and separates the two product groups, allowing key elements to breathe and stand out. The bottom 10% also provides clear separation for the fine print.",
+  "eyePath": "The eye is immediately drawn to the bold headline ('IDIOT.'), then moves to the left product group ('Buy 3'), across the connector to the larger right product group ('5 free'), then up to the smaller subheadline, and finally to the fine print at the bottom.",
+  "whyItWins": "The layout uses a provocative, high-contrast headline to immediately grab attention, followed by a clear, visually distinct presentation of a compelling bundle offer, creating a strong value proposition.",
+  "productPresence": "hero",
+  "humanPresence": "none",
+  "textDensity": "moderate",
+  "id": "hismile-1094785449609586-24-sep-2026",
+  "sourceFile": "hismile_1094785449609586_24-Sep-2026.png"
+}

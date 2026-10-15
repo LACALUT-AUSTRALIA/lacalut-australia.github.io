@@ -1,0 +1,90 @@
+{
+  "canvasRatio": "1:1",
+  "styleFamily": "flat-graphic",
+  "gridDNA": "A solid vibrant blue background with a dominant left-aligned text block in the top-left quadrant, a hero product shot angled in the mid-right, a prominent call-to-action button below the main text, and a distinct footer band containing secondary brand information and a disclaimer.",
+  "zones": [
+    {
+      "role": "background",
+      "position": "full-bleed",
+      "sizePct": 100,
+      "align": "N/A",
+      "treatment": "solid vibrant blue",
+      "note": "Primary canvas colour"
+    },
+    {
+      "role": "headline",
+      "position": "top-left, starting 10% from top, 8% from left",
+      "sizePct": 10,
+      "align": "left",
+      "treatment": "bold, sans-serif, white, no container, title case",
+      "note": "Multi-line, primary offer statement"
+    },
+    {
+      "role": "subheadline",
+      "position": "below headline, starting 30% from top, 8% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "regular weight, sans-serif, white, no container, title case",
+      "note": "Clarifies offer context"
+    },
+    {
+      "role": "product",
+      "position": "mid-right, starting 35% from top, 40% from left, angled upwards",
+      "sizePct": 25,
+      "align": "N/A",
+      "treatment": "clean studio shot, isolated, light purple product and packaging",
+      "note": "Product and its packaging, angled for dynamism"
+    },
+    {
+      "role": "cta",
+      "position": "mid-left, starting 65% from top, 8% from left",
+      "sizePct": 5,
+      "align": "centre",
+      "treatment": "pill-shaped button, solid terracotta background, white bold sans-serif text, title case",
+      "note": "Clear, actionable button"
+    },
+    {
+      "role": "body",
+      "position": "bottom-left, starting 85% from top, 8% from left",
+      "sizePct": 4,
+      "align": "left",
+      "treatment": "bold, sans-serif, dark blue, no container, title case",
+      "note": "Secondary brand/location information"
+    },
+    {
+      "role": "logo",
+      "position": "bottom-right, starting 85% from top, 70% from left",
+      "sizePct": 3,
+      "align": "right",
+      "treatment": "graphic logo, dark blue",
+      "note": "Secondary brand identifier"
+    },
+    {
+      "role": "caption",
+      "position": "bottom-left, starting 95% from top, 8% from left",
+      "sizePct": 1,
+      "align": "left",
+      "treatment": "very small, regular weight, dark blue, no container, sentence case",
+      "note": "Legal fine print/disclaimer"
+    }
+  ],
+  "typeScale": "headline ~10-12% of canvas height, sub ~3-4%, body ~4%, caption ~1%",
+  "colourBlocking": "Full-bleed solid vibrant blue for the top ~80% of the canvas, with an implied white/light footer band at the bottom ~20% where dark text is placed. The CTA button is a distinct terracotta colour.",
+  "hierarchy": [
+    "headline",
+    "product",
+    "cta",
+    "body",
+    "subheadline",
+    "logo",
+    "caption"
+  ],
+  "negativeSpace": "Ample negative space in the top-right and bottom-left (above footer) allows the headline and product to breathe and stand out, creating a clean, uncluttered feel. The blue background itself is a large negative space.",
+  "eyePath": "Headline (top-left) -> Product (mid-right) -> CTA (mid-left) -> Footer text (bottom-left).",
+  "whyItWins": "The clear visual hierarchy, strong contrast, and strategic placement of the offer, product, and call-to-action create an immediate understanding of value and a direct path to conversion.",
+  "productPresence": "hero",
+  "humanPresence": "none",
+  "textDensity": "moderate",
+  "id": "hismile-2520029418399944-4-may-2026",
+  "sourceFile": "hismile_2520029418399944_4-May-2026.png"
+}

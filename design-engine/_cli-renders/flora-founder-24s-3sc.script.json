@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "sku": "flora",
+    "type": "founder",
+    "style": "cinematic_ad",
+    "seconds": 24,
+    "nScenes": 3,
+    "brief": "Cinematic German-pharmacy HERITAGE brand story for LACALUT Flora fresh-breath toothpaste. ABSOLUTELY NO people, NO hands, NO body parts anywhere in any scene. NEVER open, squeeze or dispense the tube; NO paste, foam, ribbon, blob or droplet ever. Only cinematic macro beats of the real German Flora tube standing untouched, plus clean fresh-breath cues (fresh mint leaves, a bright water droplet, crisp morning light, premium stone surfaces). Language is COSMETIC ONLY — fresh breath, all-day freshness, tackles everyday mouth odour at the source, clean confident feeling — NEVER 'bad breath', never a disease, cure, treatment, solution or medical claim. German pharmacy craftsmanship since 1925, trusted quality."
+  },
+  "storyboard": {
+    "hook": "For lasting fresh confidence, discovered through a century of German expertise.",
+    "cta": "LACALUT Flora. A century of German craft — try it for yourself.",
+    "voice": "A composed, warm Australian male narrator, mid-40s, deep and trustworthy, measured documentary pace with quiet confidence.",
+    "character": "None (no people on camera per brief).",
+    "product": "the LACALUT Flora toothpaste tube standing upright on a polished dark stone surface, real German label facing camera, white cap, tall slim proportions.",
+    "world": "A sleek, minimalist German pharmacy-inspired 'wellness sanctuary' with dark grey natural stone surfaces (e.g., polished slate or basalt) and subtle brushed chrome accents. Ambient light streams from a high window, suggesting crisp morning, complemented by moody, directional spotlights that highlight details.",
+    "styleAnchor": "A dramatic cinematic ad moment with moody directional lighting, a smooth crafted camera move, rich colour grade, and a strong hero beat on the product, embodying a film-grade, premium, and emotive aesthetic.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "A close-up on an antique, brass-bound German pharmacy ledger, its pages filled with elegant, handwritten script, illuminated by a soft, directional beam of light that casts deep shadows, hinting at history. This transitions to a crisp, modern detail: a single, dewy mint leaf resting on polished dark slate, dramatically lit by a focused, moody spotlight, creating strong contrasts.",
+        "motion": "A rapid, sharp push-in to the antique ledger, holding for a beat. Then, a swift, almost imperceptible snap-cut transition to a smooth, slow track-right, revealing the mint leaf on the slate. The camera then gently cranes up to frame the leaf with elegant precision. A subtle, crisp 'shimmer' sound effect underscores the transition.",
+        "vo": "For nearly a hundred years, German expertise has mastered lasting fresh confidence.",
+        "text": "A Century of German Craft.",
+        "flagged": false
+      },
+      {
+        "n": 2,
+        "seconds": 8,
+        "visual": "An extreme macro shot opens on a cluster of delicate, sparkling silver-grey mineral crystal shards, sharply in focus. A subtle, almost imperceptible shift in light reveals a second, larger cluster of crystals further along the dark basalt surface, catching the light differently. Finally, a third beat shows the crystals appearing to gently dissolve or integrate into the smooth, dark basalt surface, leaving a pristine finish.",
+        "motion": "A smooth, slow track moves alongside the initial crystal cluster, then subtly glides to reveal the second cluster. The camera then executes a deliberate, slow push-in towards the dissolving crystals, holding the final beat. A gentle 'sizzle' sound effect underscores the active formula.",
+        "vo": "LACALUT Flora's unique formula targets everyday mouth odour where it starts.",
+        "text": "German Revitalised Breath Formula.",
+        "flagged": false
+      },
+      {
+        "n": 3,
+        "seconds": 8,
+        "visual": "The LACALUT Flora toothpaste tube stands prominently on the polished dark stone counter, its label catching a precise, moody beam of light that emphasizes its premium finish. A second beat reveals a pristine, highly polished section of the stone surface nearby, reflecting the subtle glow of the light, suggesting ultimate cleanliness. The final beat shows the tube framed against a softly diffused background, hinting at a serene, expansive space.",
+        "motion": "A deliberate, smooth crane-down and track-in camera movement focuses on the LACALUT Flora tube, settling to frame it clearly under a third of the frame. The camera then subtly tracks left to highlight the pristine polished stone surface. Finally, a slow, elegant pull-back reveals the tube in its serene setting. A soft 'click' sound effect cues the end of the shot.",
+        "vo": "Experience that clean, assured feeling all day. LACALUT Flora — try it for yourself.",
+        "text": "LACALUT Flora. German Quality.",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": false,
+    "nativeProduct": false,
+    "lint": []
+  }
+}

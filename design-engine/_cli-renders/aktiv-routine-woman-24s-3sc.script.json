@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "routine",
+    "style": "lofi_native",
+    "seconds": 24,
+    "nScenes": 3,
+    "brief": "woman early 30s calm morning routine at bright bathroom bench, doing simple everyday actions (tying hair, adjusting earring, buttoning cuff) NOT touching mouth or product, AKTIV tube stands untouched label-to-camera on bench, VO plays over the top, benign feelings-based VO no medical words no spoken brand name, single subject, no gags"
+  },
+  "storyboard": {
+    "hook": "I was noticing myself hold back, avoiding smiling fully. Nobody says why.",
+    "cta": "Honestly, just try LACALUT Aktiv — it’s the easiest swap you’ll make.",
+    "voice": "Woman, early 30s, Australian accent, warm, casual, upbeat and smiling pace.",
+    "character": "Woman, early 30s, Australian, long wavy light-brown hair, wearing a soft white linen shirt. Calm, natural look.",
+    "product": "the LACALUT AKTIV tube standing upright on the sink edge, real German label, white cap",
+    "world": "A bright, sunlit Australian home bathroom. Cream-tiled benchtop, a potted green plant to the side. Natural light streams from an unseen window.",
+    "styleAnchor": "Authentic lo-fi smartphone footage, natural imperfect handheld movement, real-world lighting, native social-feed feel, never glossy studio polish.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Wide shot of the woman in a bright bathroom, gently brushing her long hair with a hairbrush, her gaze thoughtful. The LACALUT Aktiv tube is visible on the cream-tiled bench to her right, label facing camera.",
+        "motion": "A quick, subtle snap zoom on her thoughtful expression at 0.5s. Camera then has a slight, natural handheld sway as the woman gently brushes her long hair, moving the brush smoothly from mid-length to the ends. A slight angle shift to a lower perspective at 6s. Sound of a soft 'swish' as her hairbrush moves through her hair.",
+        "vo": "I was holding back my smile. It felt like a silent thing, changing how I felt.",
+        "text": "Quietly holding back?",
+        "flagged": false
+      },
+      {
+        "n": 2,
+        "seconds": 8,
+        "visual": "Mid-shot of the woman, facing more directly towards the camera, putting on a small earring. Her hair is behind her shoulders. The LACALUT Aktiv tube remains on the bench, in the bottom left of the frame.",
+        "motion": "Camera gently pushes in as she carefully secures her earring with a soft 'click' sound at 2s. Her other hand gently holds her hair away from her ear. Camera pans slightly right at 5s, maintaining the overall composition while keeping her in frame.",
+        "vo": "I changed one simple morning thing, and now it is just part of my routine.",
+        "text": "My German pharmacy secret.",
+        "flagged": false
+      },
+      {
+        "n": 3,
+        "seconds": 8,
+        "visual": "Chest-up shot of the woman, confidently facing the camera with a relaxed, warm smile. The LACALUT Aktiv tube stands clearly visible on the bench in the bottom third of the frame, label perfect.",
+        "motion": "Camera holds steady, a subtle, confident nod from the woman at 2s. Her hands move up to adjust the collar of her soft white shirt at 4s, settling it comfortably. A soft, clear 'ding' sound at 6s, as the camera subtly pulls back slightly, widening the shot to include her confident posture.",
+        "vo": "Honestly, my gums feel firmer, so much more resilient. It’s given them real attention.",
+        "text": "Gums that feel firmer and resilient.",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": true,
+    "nativeProduct": true,
+    "lint": []
+  }
+}

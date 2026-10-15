@@ -1,0 +1,126 @@
+{
+  "canvasRatio": "9:16",
+  "styleFamily": "flat-graphic",
+  "gridDNA": "A vertical stack of distinct content blocks: a two-line headline, a horizontal product comparison section with associated badges and a connector, a two-line offer statement, and a bottom call-to-action band with fine print. The background is a solid color with a contrasting bottom band.",
+  "zones": [
+    {
+      "role": "headline",
+      "position": "top-left, starting 7% from top, 8% from left",
+      "sizePct": 2,
+      "align": "left",
+      "treatment": "black, bold, sans-serif, normal case",
+      "note": "First line of a two-line headline."
+    },
+    {
+      "role": "headline",
+      "position": "below previous headline, left-aligned, starting 12% from top, 8% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "red, bold, serif, normal case",
+      "note": "Second line of a two-line headline, visually distinct."
+    },
+    {
+      "role": "offer",
+      "position": "above Product Group 1, centered horizontally above its group, starting 23% from top",
+      "sizePct": 0,
+      "align": "center",
+      "treatment": "white pill background with black outline, black text, normal case",
+      "note": "Badge associated with the first product group."
+    },
+    {
+      "role": "product",
+      "position": "mid-canvas, left-aligned within its horizontal section, starting 28% from top, 10% from left",
+      "sizePct": 8,
+      "align": "center",
+      "treatment": "studio shot, outlined",
+      "note": "Group of 3 identical products."
+    },
+    {
+      "role": "other",
+      "position": "horizontal center, between product groups, starting 35% from top",
+      "sizePct": 0,
+      "align": "center",
+      "treatment": "black, bold",
+      "note": "Visually connects the two product groups."
+    },
+    {
+      "role": "offer",
+      "position": "above Product Group 2, centered horizontally above its group, starting 23% from top",
+      "sizePct": 0,
+      "align": "center",
+      "treatment": "green pill background with black outline, white text, normal case",
+      "note": "Badge associated with the second product group."
+    },
+    {
+      "role": "product",
+      "position": "mid-canvas, right-aligned within its horizontal section, starting 28% from top, 10% from right",
+      "sizePct": 10,
+      "align": "center",
+      "treatment": "studio shot, outlined",
+      "note": "Group of 5 identical products, slightly overlapping."
+    },
+    {
+      "role": "subheadline",
+      "position": "below product groups, centered, starting 55% from top",
+      "sizePct": 2,
+      "align": "center",
+      "treatment": "black, normal weight, sans-serif, normal case",
+      "note": "Introduces the main offer."
+    },
+    {
+      "role": "offer",
+      "position": "below subheadline, centered, starting 60% from top",
+      "sizePct": 6,
+      "align": "center",
+      "treatment": "large, green outline, black fill, bold, sans-serif, uppercase",
+      "note": "The primary call-to-value, highly prominent."
+    },
+    {
+      "role": "background",
+      "position": "bottom 20% of canvas, starting 80% from top",
+      "sizePct": 20,
+      "align": "none",
+      "treatment": "solid bright green fill",
+      "note": "Distinct colour block for the call to action."
+    },
+    {
+      "role": "cta",
+      "position": "centered within the green band, starting 85% from top",
+      "sizePct": 1,
+      "align": "center",
+      "treatment": "black, normal weight, sans-serif, normal case",
+      "note": "The actionable text for the call to action."
+    },
+    {
+      "role": "caption",
+      "position": "bottom-left, starting 92% from top, 8% from left",
+      "sizePct": 2,
+      "align": "left",
+      "treatment": "small, black, light weight, sans-serif, normal case",
+      "note": "Legal disclaimers or fine print."
+    }
+  ],
+  "typeScale": "headline (red) ~6% of canvas height, headline (black) ~5%, offer (green) ~8%, subheadline/cta ~3%, fine print ~1.5%",
+  "colourBlocking": "Top 80% light grey solid background, bottom 20% bright green solid background band.",
+  "hierarchy": [
+    "offer (green text)",
+    "headline (red)",
+    "product (5 items)",
+    "product (3 items)",
+    "headline (black)",
+    "cta",
+    "subheadline",
+    "offer (green badge)",
+    "offer (white badge)",
+    "other (plus device)",
+    "caption"
+  ],
+  "negativeSpace": "Ample negative space around the headline and between the product groups, allowing each element to stand out clearly and preventing visual clutter, especially around the main offer text.",
+  "eyePath": "Headline (red) -> Offer (green text) -> Product Group 2 (5 Free) -> Product Group 1 (Buy 3) -> CTA Text.",
+  "whyItWins": "The clear visual comparison of product quantities combined with a highly contrasting, oversized offer statement immediately communicates value and urgency.",
+  "productPresence": "hero",
+  "humanPresence": "none",
+  "textDensity": "moderate",
+  "id": "hismile-1974651150134539-24-sep-2026",
+  "sourceFile": "hismile_1974651150134539_24-Sep-2026.png"
+}

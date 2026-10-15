@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "routine",
+    "style": "lofi_native",
+    "seconds": 8,
+    "nScenes": 2,
+    "brief": "woman late 20s with dark curly hair, wearing a relaxed chambray denim shirt, in a cosy plant-filled ensuite with sage-green tiles and warm morning light, doing ONE simple everyday action (putting on a pair of glasses) NOT touching mouth or product, AKTIV tube stands untouched label-to-camera on the vanity ledge, VO plays over the top, benign feelings-based VO no medical words no spoken brand name, single subject single shot no gags"
+  },
+  "storyboard": {
+    "hook": "Feeling a little unsure about your gums? Discover the easy swap.",
+    "cta": "Honestly, just try it. It's the easiest swap you'll make.",
+    "voice": "A warm woman in her early 40s who immigrated to Australia from East Africa — a soft, natural African-Australian accent with a gentle lilt over her Australian English; unhurried, genuine, kind.",
+    "character": "A woman in her early 40s, dark-skinned Black woman with dark naturally curly hair styled casually, gentle laugh lines, a calm mature presence. She wears a relaxed chambray denim shirt, approachable and warm.",
+    "product": "The LACALUT AKTIV tube standing upright on the sink edge, its real German label facing camera and its white cap clearly visible, reflecting its tall, slim proportions.",
+    "world": "A cosy, plant-filled ensuite bathroom with soft sage-green tiles on the walls and warm morning light streaming in from a nearby window. The counter surface is a light, natural stone with a few essential, tidy toiletries, and no mirror is visible in the frame.",
+    "styleAnchor": "Authentic lo-fi smartphone footage with natural, imperfect handheld movement, real-world lighting from a bathroom, and a native social-feed feel, never glossy studio polish.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Chest-up wide shot of the early-40s woman in her cosy sage-green ensuite, calmly sliding on a pair of glasses. The LACALUT AKTIV tube stands untouched on the light stone ledge in the lower third of the frame, label facing camera.",
+        "motion": "Soft handheld movement in warm morning light. She settles the glasses onto her nose, lowers her hands, and gives a relaxed, genuine smile toward camera at 5s. Camera stays steady; the tube remains static in the lower third, never in close-up. Quiet ambient tone.",
+        "vo": "I stopped feeling self-conscious about my gums. The easiest change I have made, and now they feel cared-for.",
+        "text": "The easiest change",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": true,
+    "nativeProduct": true,
+    "lint": []
+  }
+}

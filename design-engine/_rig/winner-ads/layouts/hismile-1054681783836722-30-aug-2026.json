@@ -1,0 +1,81 @@
+{
+  "canvasRatio": "1:1",
+  "styleFamily": "flat-graphic",
+  "gridDNA": "Central vertical stack of bold text blocks and horizontal pill-shaped CTAs, anchored by a prominent price block at the bottom, all overlaid on a vibrant gradient background with scattered, angled product cards providing visual texture and implied social proof.",
+  "zones": [
+    {
+      "role": "background",
+      "position": "full-bleed",
+      "sizePct": 100,
+      "align": "none",
+      "treatment": "gradient from purple to orange/pink",
+      "note": "dynamic, vibrant gradient covering the entire canvas"
+    },
+    {
+      "role": "headline",
+      "position": "centre-top, starting 20% from top",
+      "sizePct": 24,
+      "align": "center",
+      "treatment": "bold, uppercase, white text",
+      "note": "dominant, multi-line headline"
+    },
+    {
+      "role": "cta",
+      "position": "centre, starting 50% from top",
+      "sizePct": 4,
+      "align": "center",
+      "treatment": "white text on rounded purple pill container",
+      "note": "first of two sequential call-to-action steps"
+    },
+    {
+      "role": "cta",
+      "position": "centre, starting 58% from top",
+      "sizePct": 5,
+      "align": "center",
+      "treatment": "white text on rounded purple pill container",
+      "note": "second of two sequential call-to-action steps, wider than the first"
+    },
+    {
+      "role": "body",
+      "position": "centre-bottom, starting 68% from top",
+      "sizePct": 8,
+      "align": "center",
+      "treatment": "white text",
+      "note": "supporting benefit statement"
+    },
+    {
+      "role": "offer",
+      "position": "centre-bottom, bottom edge 5% from bottom",
+      "sizePct": 8,
+      "align": "center",
+      "treatment": "bold red/orange text on rounded white rectangle container",
+      "note": "prominent price and offer statement"
+    },
+    {
+      "role": "proof",
+      "position": "scattered across canvas, top-left, top-right, mid-left, mid-right",
+      "sizePct": 18,
+      "align": "none",
+      "treatment": "angled, semi-transparent product cards with brand logos and small text",
+      "note": "background elements providing implied social proof and visual interest"
+    }
+  ],
+  "typeScale": "headline ~30% of canvas height, offer ~10%, cta text ~6%, body ~4%",
+  "colourBlocking": "full-bleed gradient background, white text for main content, distinct purple pills for CTAs, and a prominent white/red block for the offer.",
+  "hierarchy": [
+    "headline",
+    "offer",
+    "cta",
+    "body",
+    "proof",
+    "background"
+  ],
+  "negativeSpace": "Ample negative space around the central text stack allows each element to stand out, particularly between the headline, CTAs, and the final offer, creating clear visual breaks.",
+  "eyePath": "The eye is immediately drawn to the large, bold headline, then follows the sequential CTA pills, down to the supporting body text, and finally lands on the highly contrasted and prominent offer at the bottom.",
+  "whyItWins": "The layout wins by using a bold, attention-grabbing headline, a clear sequential call-to-action, and a highly contrasted, prominent offer, all within a visually dynamic but uncluttered central stack.",
+  "productPresence": "cameo",
+  "humanPresence": "none",
+  "textDensity": "moderate",
+  "id": "hismile-1054681783836722-30-aug-2026",
+  "sourceFile": "hismile_1054681783836722_30-Aug-2026.png"
+}

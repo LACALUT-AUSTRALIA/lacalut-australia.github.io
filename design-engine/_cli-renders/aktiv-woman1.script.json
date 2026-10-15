@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "routine",
+    "style": "lofi_native",
+    "seconds": 8,
+    "nScenes": 2,
+    "brief": "woman early 30s, warm minimalist Australian bathroom with cream tiles and a small trailing plant, wearing a soft oatmeal knit jumper, calm morning, doing ONE simple everyday action (buttoning a cuff) NOT touching mouth or product, AKTIV tube stands untouched label-to-camera on the bench, VO plays over the top, benign feelings-based VO no medical words no spoken brand name, single subject single shot no gags"
+  },
+  "storyboard": {
+    "hook": "My gums used to feel so vulnerable, I hated smiling fully.",
+    "cta": "Honestly, just try LACALUT Aktiv. You'll notice the difference.",
+    "voice": "A woman in her early 30s, warm, upbeat Australian accent, calm and real delivery.",
+    "character": "A woman in her early 30s, fair skin, light brown hair styled in soft waves, wearing a comfortable oatmeal knit jumper.",
+    "product": "The LACALUT AKTIV tube standing upright on the sink edge, real German label clearly visible, with its signature white cap.",
+    "world": "A warm minimalist Australian bathroom with cream subway tiles, a light wooden counter, and a small trailing plant in a ceramic pot. Natural daylight streams in from a hidden window.",
+    "styleAnchor": "Authentic lo-fi smartphone footage, captured with natural imperfect handheld movement, real-world lighting, creating a native social-feed feel, never glossy studio polish.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Chest-up wide shot of the woman in her warm cream-tiled bathroom, calmly buttoning the cuff of her oatmeal knit jumper. The LACALUT AKTIV tube stands untouched on the light wooden counter in the lower third of the frame, label facing camera.",
+        "motion": "Gentle natural handheld sway. She finishes buttoning her cuff, lowers her hands, then looks toward camera with a soft closed-mouth smile at 5s. Camera holds steady; the tube stays static in the lower third throughout, never zooming onto it. Soft ambient room tone.",
+        "vo": "I used to hold back my smile. One small morning swap, and now my gums just feel looked-after.",
+        "text": "One small morning swap",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": true,
+    "nativeProduct": true,
+    "lint": []
+  }
+}

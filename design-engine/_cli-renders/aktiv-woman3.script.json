@@ -1,0 +1,34 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "routine",
+    "style": "lofi_native",
+    "seconds": 8,
+    "nScenes": 2,
+    "brief": "elegant woman around 40 with sleek shoulder-length hair, wearing a soft champagne silk robe, in a bright airy marble bathroom with brass fittings and a white orchid, doing ONE simple everyday action (fastening a delicate necklace clasp at her collarbone) NOT touching mouth or product, AKTIV tube stands untouched label-to-camera on the marble ledge, VO plays over the top, benign feelings-based VO no medical words no spoken brand name, single subject single shot no gags"
+  },
+  "storyboard": {
+    "hook": "Feeling self-conscious about your gums? A simple swap can change everything.",
+    "cta": "Discover LACALUT Aktiv: experience gums that FEEL firm and cared-for.",
+    "voice": "A warm, upbeat Australian female voice, mid-30s to 40s, with a friendly, casual, and confident pace, genuinely smiling throughout.",
+    "character": "An elegant woman around 40, light skin, sleek shoulder-length dark blonde hair, wearing a soft champagne silk robe.",
+    "product": "the LACALUT AKTIV tube standing upright on the sink edge, real German label, white cap, tall slim proportions",
+    "world": "A bright, airy marble bathroom with natural daylight streaming in. The counter is pristine white marble with subtle grey veining. Brass fittings (tap, handles) are visible. A single white orchid in a simple pot sits in the background. No mirrors in shot.",
+    "styleAnchor": "Authentic lo-fi smartphone footage, natural imperfect handheld movement, real-world lighting (bathroom, daylight), native social-feed feel, never glossy studio polish.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Chest-up wide shot of the elegant woman in her bright marble bathroom, calmly fastening a delicate necklace clasp at her collarbone. The LACALUT AKTIV tube stands untouched on the marble ledge in the lower third of the frame, label facing camera.",
+        "motion": "Slow natural handheld drift in soft daylight. She fastens the clasp, lowers her hands, then meets the camera with a calm, confident closed-mouth smile at 5s. Camera holds; the tube stays static in the lower third, never zoomed. Gentle ambient room tone.",
+        "vo": "My gums used to feel vulnerable. Now they feel resilient and at their best — a simple swap.",
+        "text": "A simple swap",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": true,
+    "nativeProduct": true,
+    "lint": []
+  }
+}

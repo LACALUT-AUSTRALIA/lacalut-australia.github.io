@@ -1,0 +1,63 @@
+{
+  "canvasRatio": "9:16",
+  "styleFamily": "flat-graphic",
+  "gridDNA": "Solid red background with a large, angled, multi-line headline at the top, a receding row of multiple products centered below, and a large, angled offer statement at the bottom, complemented by a circular badge in the top-right.",
+  "zones": [
+    {
+      "role": "headline",
+      "position": "top-centre, starting ~10% from top, angled up slightly to the right",
+      "sizePct": 18,
+      "align": "centre",
+      "treatment": "White, bold, sans-serif. Key numbers/words larger and contained within a red pill shape with white outline.",
+      "note": "Multi-line headline with dynamic sizing and container for emphasis on the core offer."
+    },
+    {
+      "role": "product",
+      "position": "mid-canvas, starting ~35% from top, centered horizontally, arranged in a receding line",
+      "sizePct": 35,
+      "align": "centre",
+      "treatment": "Studio-lit product photography, silver bottles with red caps.",
+      "note": "Multiple products shown in a group to imply quantity and a bundle. Small vertical text labels on individual bottles."
+    },
+    {
+      "role": "offer",
+      "position": "bottom-centre, starting ~78% from top, angled up slightly to the right",
+      "sizePct": 10,
+      "align": "centre",
+      "treatment": "White, bold, sans-serif, with a thick white outline.",
+      "note": "Acts as a clear, direct call to action and summary of the offer, mirroring the headline's angle."
+    },
+    {
+      "role": "badge",
+      "position": "top-right, starting ~20% from top, ~15% from right edge, circular",
+      "sizePct": 4,
+      "align": "centre",
+      "treatment": "Red circle with white, bold, uppercase, sans-serif text.",
+      "note": "Provides additional context or value proposition for the offer."
+    },
+    {
+      "role": "background",
+      "position": "full-bleed",
+      "sizePct": 100,
+      "align": "N/A",
+      "treatment": "Solid red.",
+      "note": "Provides high contrast for white text and product elements, likely a brand colour."
+    }
+  ],
+  "typeScale": "Headline's largest element (~15% of canvas height), bottom offer (~8%), headline's secondary elements (~5%), badge text (~2%), small product text (~1%).",
+  "colourBlocking": "The entire canvas is a solid red background, providing a high-contrast stage for white text elements and the silver/red product photography.",
+  "hierarchy": [
+    "headline",
+    "offer",
+    "product",
+    "badge"
+  ],
+  "negativeSpace": "Ample negative space in the top-left and bottom-left corners, and between the main text blocks and the product group. This breathing room allows the bold, angled text and prominent product display to stand out without clutter, enhancing immediate impact.",
+  "eyePath": "The eye is immediately drawn to the large, angled headline at the top-centre, then drops to the equally bold, angled offer at the bottom-centre, then moves up to scan the product group, and finally registers the badge in the top-right.",
+  "whyItWins": "This layout converts by using large, high-contrast, angled text elements to aggressively communicate a compelling offer, supported by a clear visual of the product quantity, all on a striking brand-colour background.",
+  "productPresence": "hero",
+  "humanPresence": "none",
+  "textDensity": "moderate",
+  "id": "hismile-1383307873789152-21-sep-2026",
+  "sourceFile": "hismile_1383307873789152_21-Sep-2026.png"
+}

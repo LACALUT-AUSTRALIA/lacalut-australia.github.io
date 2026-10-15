@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "routine",
+    "style": "lofi_native",
+    "seconds": 24,
+    "nScenes": 3,
+    "brief": "man early 30s calm morning routine at bright bathroom bench, simple everyday actions, AKTIV tube untouched label-to-camera, VO over the top, single subject, no gags"
+  },
+  "storyboard": {
+    "hook": "Ever feel like your gums just aren't quite at their best? Like something's missing from your routine?",
+    "cta": "Honestly, just try it — it's such an easy daily choice.",
+    "voice": "A male Australian voiceover artist, early 30s, warm, natural, confiding tone.",
+    "character": "A man in his early 30s, fair skin, short sandy blonde hair styled casually, wearing a light grey Henley shirt.",
+    "world": "A calm, bright Australian bathroom. Clean white subway tiles on one wall, a timber cabinet with a light grey stone countertop. Natural morning light streams in from a frosted window, creating soft shadows. A plain navy hand towel hangs neatly on a rail.",
+    "styleAnchor": "Authentic lo-fi smartphone footage with natural imperfect handheld movement, real-world lighting, and a native social-feed feel, never glossy studio polish.",
+    "product": "the LACALUT AKTIV tube standing upright on the countertop, real German label, white cap",
+    "postCaptions": false,
+    "nativeProduct": false,
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Mid-shot of the man at the bathroom counter, chest-up framing. He is adjusting the cuffs of his Henley shirt sleeves, pulling them up slightly on his forearms, with a thoughtful, slightly concerned expression. The LACALUT AKTIV tube stands clearly visible on the right side of the light grey stone countertop in the foreground.",
+        "motion": "A very slight, natural handheld sway begins as he adjusts his sleeves, continuing as he maintains a thoughtful expression. His hands perform the simple adjustment, then rest casually.",
+        "vo": "Ever feel like your gums just aren't quite at their best? Like something's missing from your routine?",
+        "text": "Gums not feeling their most comfortable?",
+        "flagged": false
+      },
+      {
+        "n": 2,
+        "seconds": 8,
+        "visual": "A slightly wider mid-shot of the man, still at the counter. He is adjusting the collar of his Henley shirt. His hands remain at chest level. The LACALUT AKTIV tube is visible on the countertop, slightly to the left in the foreground.",
+        "motion": "The camera executes a gentle, natural handheld shift. As he adjusts his collar he pauses briefly with a subtle furrow in his brow, then resumes. His hands stay at chest level.",
+        "vo": "It's easy to overlook, but that feeling just lingers. You know, when things just don't feel completely right.",
+        "text": "A small swap, big confidence.",
+        "flagged": false
+      },
+      {
+        "n": 3,
+        "seconds": 8,
+        "visual": "A chest-up shot of the man. He is adjusting the strap of his watch on his left wrist, securing it. He finishes, then looks up at the camera with a relaxed, confident closed-mouth smile. The LACALUT AKTIV tube is clearly featured in the foreground, label facing camera, on the light grey stone countertop.",
+        "motion": "A very gentle, natural handheld float. The camera holds on his confident expression for about 3 seconds. His hands remain high, securing his watch, then rest casually near his chest.",
+        "vo": "Now my gums feel calm, comfortable and properly looked-after every single day.",
+        "text": "Gums that feel looked-after.",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": false,
+    "nativeProduct": false,
+    "lint": []
+  }
+}

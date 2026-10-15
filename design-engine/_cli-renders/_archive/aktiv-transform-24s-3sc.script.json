@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "transform",
+    "style": "lofi_native",
+    "seconds": 24,
+    "nScenes": 3,
+    "brief": "A distinguished, handsome, silver-fox man in his early 50s (strong jaw, fit, charismatic) shaving at a warm bathroom sink. He starts with heavy salt-and-pepper stubble and by the end is clean-shaven and sharp — the stubble visibly clears across the ad. A German LACALUT AKTIV tube rests on the counter by the sink, always in shot. Silent scene, voiceover carries the message. Angle: precision morning ritual / German precision / same care he gives his smile. Warm cinematic real-life bathroom. NO mirror in frame (avoids reflected/inverted label). Model = Kling v3 Pro for realistic man + hands."
+  },
+  "storyboard": {
+    "hook": "He never misses a detail. Except one.",
+    "cta": "Your smile deserves the same attention. LACALUT AKTIV — the German original.",
+    "voice": "Male, 50s, calm, warm, assured Australian accent — unhurried, premium.",
+    "character": "A distinguished, handsome, silver-fox man in his early 50s with a strong jaw, fit physique and charismatic presence. Neatly styled salt-and-pepper hair. Bare-chested or in a plain white crew-neck t-shirt under a dark grey waffle-knit robe. THE SAME man appears in every scene — identical face, hair and build.",
+    "product": "the LACALUT AKTIV tube standing upright on the sink edge, real German label, white cap, tall slim proportions",
+    "world": "A warm, inviting home bathroom in an Australian house. Soft natural morning daylight from a frosted window. Warm-toned wooden counter with a white ceramic sink and a chrome tap. A small pot of shaving cream and a shaving brush sit to one side; the LACALUT AKTIV tube stands upright on the sink edge, always in shot. NO mirror is visible in frame (camera sits where the mirror would be, so the man looks toward lens as he shaves).",
+    "styleAnchor": "Warm, authentic near-cinematic footage with natural handheld movement, real morning daylight and a premium unpolished feel — like a beautifully shot grooming reel.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Tight, warm portrait of the man's face at the bathroom sink — HEAVY salt-and-pepper stubble across his jaw and cheeks, both cheeks softly lathered with white shaving foam. Calm, self-assured, looking just off-lens. NO hands and NO razor anywhere in frame — face only. The LACALUT AKTIV tube stands softly out of focus on the sink edge in the lower foreground.",
+        "motion": "Warm, near-still portrait. A very slow, gentle push-in on his FACE only (never on the tube). No hands, no razor, no shaving action — just the calm foamed face and a soft drift of morning light. Keep the face natural and stable; the tube sits still and untouched in the soft foreground.",
+        "vo": "He never misses a detail. The shave. The jawline. All of it.",
+        "text": "",
+        "flagged": false
+      },
+      {
+        "n": 2,
+        "seconds": 8,
+        "visual": "The SAME man's face, now MOST of the stubble gone — cheeks and jaw largely clean and smooth, just a light trace of foam remaining near the jawline. Sharp, composed, looking just off-lens. NO hands and NO razor in frame — face only. The LACALUT AKTIV tube sits softly out of focus on the sink edge.",
+        "motion": "Hard cut. Warm portrait, slightly different angle, near-still. No hands, no razor, no shaving action — the face simply reads as further along in the shave. A gentle, barely-there push-in on the face. The on-screen caption 'Except one.' fades in during the BACK HALF of the scene as a beat. Tube stays still and untouched in the soft foreground.",
+        "vo": "The kind of man who does the small things properly.",
+        "text": "Except one.",
+        "flagged": false
+      },
+      {
+        "n": 3,
+        "seconds": 8,
+        "visual": "The SAME man, now fully CLEAN-SHAVEN and sharp, jaw smooth, no foam. A calm, confident CLOSED-LIP smirk toward the lens (mouth closed — no visible teeth). NO hands in frame. The LACALUT AKTIV tube stands hero on the sink edge beside him, real German label clearly readable and crisp, at a fixed comfortable size.",
+        "motion": "Hard cut. Warm portrait at slight distance, LOCKED-OFF (no push-in, no zoom). He settles into a calm, confident CLOSED-LIP smirk — mouth stays closed, no teeth-to-lens grin. The LACALUT AKTIV tube stands still and hero on the counter the whole time at its fixed size — the camera NEVER pushes in on it, so the label stays razor-sharp and never warps. No hands, no zoom, minimal motion.",
+        "vo": "But the one most men forget? Their smile. LACALUT Aktiv — German gum care. Fluoride. Hydroxyapatite.",
+        "text": "LACALUT AKTIV — Look After Your Smile",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": false,
+    "nativeProduct": false,
+    "lint": []
+  }
+}

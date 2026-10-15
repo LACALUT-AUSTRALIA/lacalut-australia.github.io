@@ -1,0 +1,99 @@
+{
+  "canvasRatio": "9:16",
+  "styleFamily": "studio-product",
+  "gridDNA": "Full-bleed textured background, a dominant left-aligned text column in the upper-left, a stylized product presentation with a human hand in the upper-right, and a secondary text line in the lower-left, with a fine print footer.",
+  "zones": [
+    {
+      "role": "background",
+      "position": "full-bleed",
+      "sizePct": 100,
+      "align": "none",
+      "treatment": "textured velvet curtain",
+      "note": "provides a rich, deep, single-colour backdrop"
+    },
+    {
+      "role": "logo",
+      "position": "top-left, starting 3% from top, 5% from left",
+      "sizePct": 1,
+      "align": "left",
+      "treatment": "small, white, sans-serif, uppercase",
+      "note": "minimal brand presence, almost a watermark"
+    },
+    {
+      "role": "headline",
+      "position": "top-left, starting 20% from top, 8% from left",
+      "sizePct": 11,
+      "align": "left",
+      "treatment": "large, bold, white, sans-serif, sentence case",
+      "note": "occupies a significant portion of the left half, multi-line"
+    },
+    {
+      "role": "offer",
+      "position": "mid-left, starting 45% from top, 8% from left",
+      "sizePct": 2,
+      "align": "left",
+      "treatment": "white text on a rounded-rectangle (pill) background, bold, sans-serif, sentence case",
+      "note": "acts as a prominent call-out for the deal"
+    },
+    {
+      "role": "product",
+      "position": "mid-right, starting 30% from top, extending to 90% from right",
+      "sizePct": 15,
+      "align": "right",
+      "treatment": "stylized gift bag with multiple product units spilling out",
+      "note": "visually balanced against the headline, occupies upper-right quadrant"
+    },
+    {
+      "role": "human",
+      "position": "upper-right, integrated with product, starting 28% from top",
+      "sizePct": 1,
+      "align": "right",
+      "treatment": "red gloved hand",
+      "note": "adds a human touch and implies gifting/receiving"
+    },
+    {
+      "role": "product",
+      "position": "mid-right, on the product bag, starting 48% from top",
+      "sizePct": 1,
+      "align": "center",
+      "treatment": "dark text on a light pink circular badge, rotated slightly",
+      "note": "identifies the specific product bundle"
+    },
+    {
+      "role": "subheadline",
+      "position": "lower-left, starting 78% from top, 8% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "medium weight, white, sans-serif, sentence case",
+      "note": "engages the viewer with a question, reinforces the offer"
+    },
+    {
+      "role": "disclaimer",
+      "position": "bottom, starting 93% from top, 5% from left",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "small, white, sans-serif, fine print",
+      "note": "legally required details, minimal visual impact"
+    }
+  ],
+  "typeScale": "headline ~14% of canvas height, subheadline ~5%, offer ~3.5%, product label ~3%, logo/disclaimer ~1%",
+  "colourBlocking": "The entire canvas is dominated by a deep, rich red/burgundy background. Text is primarily white. The offer pill is a distinct pink/red, and the product bag is light pink, creating a contrast against the background.",
+  "hierarchy": [
+    "headline",
+    "product",
+    "offer",
+    "subheadline",
+    "human",
+    "product",
+    "logo",
+    "disclaimer"
+  ],
+  "negativeSpace": "Ample negative space on the left side of the canvas around the headline and subheadline, allowing the text to breathe and stand out against the dark background. The right side is more occupied by the product, but the background still provides breathing room around it.",
+  "eyePath": "Logo -> Headline -> Offer -> Product -> Human -> Product Label -> Subheadline -> Disclaimer",
+  "whyItWins": "The clear left-aligned text hierarchy combined with a visually engaging, stylized product presentation on the right creates a balanced yet dynamic composition that guides the eye efficiently through the offer.",
+  "productPresence": "hero",
+  "humanPresence": "hands-only",
+  "textDensity": "moderate",
+  "id": "hismile-1486662106628907-24-sep-2026",
+  "sourceFile": "hismile_1486662106628907_24-Sep-2026.png"
+}

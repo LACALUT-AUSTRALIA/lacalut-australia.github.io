@@ -1,0 +1,100 @@
+{
+  "canvasRatio": "9:16",
+  "styleFamily": "meme-native",
+  "gridDNA": "The layout features a top-heavy illustrated narrative scene with a speech bubble, leading down to a central product display within a bag, anchored by a strong, full-width offer banner at the bottom with a hero product shot.",
+  "zones": [
+    {
+      "role": "headline",
+      "position": "top-centre, starting 5% from top",
+      "sizePct": 6,
+      "align": "center",
+      "treatment": "black bold text in white speech bubble with black outline, uppercase",
+      "note": "Acts as an immediate hook, question format, drawing attention to the quantity."
+    },
+    {
+      "role": "human",
+      "position": "top-right, starting 15% from top, pointing towards centre",
+      "sizePct": 2,
+      "align": "right",
+      "treatment": "illustrated, cartoon style",
+      "note": "Directs eye flow towards the products in the bag."
+    },
+    {
+      "role": "product",
+      "position": "mid-canvas, starting 25% from top, filling central 40% vertically",
+      "sizePct": 20,
+      "align": "center",
+      "treatment": "illustrated, multiple units (8), numbered",
+      "note": "Visual representation of the quantity being discussed, central to the narrative."
+    },
+    {
+      "role": "human",
+      "position": "bottom-mid, starting 60% from top, flanking the bag",
+      "sizePct": 3,
+      "align": "center",
+      "treatment": "illustrated, cartoon style",
+      "note": "Frames the product display in the bag, grounding the scene."
+    },
+    {
+      "role": "offer",
+      "position": "bottom-centre, starting 65% from top, full width",
+      "sizePct": 20,
+      "align": "left",
+      "treatment": "solid red rectangular block",
+      "note": "High contrast, dominant block for the primary value proposition."
+    },
+    {
+      "role": "product",
+      "position": "bottom-left, starting 65% from top, overlapping red banner and background",
+      "sizePct": 3,
+      "align": "left",
+      "treatment": "photo-realistic product shot, slightly angled",
+      "note": "Hero product shot, contrasts with the illustrated style of the upper canvas."
+    },
+    {
+      "role": "headline",
+      "position": "bottom-left of banner, starting 68% from top",
+      "sizePct": 5,
+      "align": "left",
+      "treatment": "white bold text, black outline, uppercase",
+      "note": "Primary value proposition, highly prominent within the offer banner."
+    },
+    {
+      "role": "subheadline",
+      "position": "below main offer text, starting 76% from top",
+      "sizePct": 2,
+      "align": "left",
+      "treatment": "white text, black outline, title case",
+      "note": "Clarifies the offer's benefit and scale."
+    },
+    {
+      "role": "caption",
+      "position": "bottom-centre, starting 88% from top, full width",
+      "sizePct": 2,
+      "align": "center",
+      "treatment": "small black text",
+      "note": "Essential legal details or disclaimers, minimal visual weight."
+    }
+  ],
+  "typeScale": "headline (speech bubble) ~10% of canvas height, main offer (banner) ~8%, sub-offer ~4%, caption ~2%",
+  "colourBlocking": "Top 65% features a light, neutral background with illustrated elements. The bottom 25% is dominated by a solid, high-contrast red banner, with the very bottom 10% returning to the light background for the disclaimer.",
+  "hierarchy": [
+    "offer",
+    "headline (on banner)",
+    "headline (speech bubble)",
+    "product (in bag)",
+    "human (pointing hand)",
+    "product (hero shot)",
+    "subheadline",
+    "human (hands holding bag)",
+    "caption"
+  ],
+  "negativeSpace": "Ample negative space in the top-left and top-right corners, and around the central bag, allowing the illustrated narrative and the high-impact bottom offer to stand out clearly against the light background.",
+  "eyePath": "The eye travels from the intriguing speech bubble headline -> to the pointing hand -> to the products in the bag (visual proof) -> then drops to the high-contrast red offer banner (main value proposition) -> the hero product -> the subheadline -> and finally the disclaimer.",
+  "whyItWins": "The layout converts by first engaging the viewer with a relatable, curiosity-driven narrative illustration, then immediately resolving the implied question with a clear, high-value offer presented in a visually dominant bottom banner.",
+  "productPresence": "hero",
+  "humanPresence": "hands-only",
+  "textDensity": "moderate",
+  "id": "hismile-923659350467986-23-sep-2026",
+  "sourceFile": "hismile_923659350467986_23-Sep-2026.png"
+}

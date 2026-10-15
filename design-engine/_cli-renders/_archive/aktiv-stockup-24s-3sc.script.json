@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "sku": "aktiv",
+    "type": "mashup",
+    "style": "product",
+    "seconds": 24,
+    "nScenes": 3,
+    "allowMultiPack": true,
+    "brief": "PRODUCT-ONLY escalation meme (NO person). Locked-off camera on the same bathroom counter. The number of LACALUT AKTIV tubes multiplies scene by scene — a neat few, then a growing pile, then an absurd overflowing mountain that starts to topple. Comedy = the absurd abundance. Caption + VO carry the 'never run out of the one that works' joke. Render-safe: personless, locked tripod, product only.",
+    "note": "MANY-TUBES concept: this ad intentionally shows duplicated tubes (the joke). At render time the product-fidelity 'never duplicate' lock must be relaxed for this ad; front tubes should stay readable, the deep pile can garble (acceptable comedy)."
+  },
+  "storyboard": {
+    "hook": "When you finally find the toothpaste you actually love…",
+    "cta": "Don't run out. Stock up — LACALUT AKTIV, the German original.",
+    "voice": "Male, warm, dry-comedic Australian accent — deadpan, builds with the absurdity.",
+    "character": "",
+    "product": "the LACALUT AKTIV tube — REAL GERMAN pack (German label exactly as the reference packshot), WHITE cap, tall slim proportions. EVERY sharp/front tube must be this identical German pack — NEVER a fabricated or English-language tube; only distant, blurred tubes deep in the pile may soften. Many identical German tubes fill the frame as the ad escalates.",
+    "world": "A clean, warm home bathroom counter with a white ceramic sink and soft morning daylight. Locked-off tripod framing on the counter — the SAME framing every scene, only the quantity of tubes changes.",
+    "styleAnchor": "Clean, bright, slightly comedic product-shot look — crisp daylight, shallow-ish depth, satisfying and absurd, like a viral 'how it started vs how it's going' product reel.",
+    "scenes": [
+      {
+        "n": 1,
+        "seconds": 8,
+        "visual": "Locked-off shot of the bathroom counter. FOUR IDENTICAL LACALUT AKTIV tubes (same red-white pack) stand in a tidy, evenly-spaced row beside the sink, all front labels facing camera, crisp and readable. Clean, calm, ordinary. The tubes are perfectly still.",
+        "motion": "Camera LOCKED OFF on a tripod, completely still. The tubes DO NOT move at all — no popping in, no sliding, no bouncing. The ONLY motion is a soft, gentle drift of morning light across the scene. Keep all four German AKTIV packs perfectly still, front-facing and razor-sharp the entire clip (still labels = no garble). The 'How it starts…' caption is added in post.",
+        "vo": "When you finally find the toothpaste you actually love… you don't take chances.",
+        "text": "How it starts…",
+        "flagged": false
+      },
+      {
+        "n": 2,
+        "seconds": 8,
+        "visual": "Hard cut. Same locked-off counter, now MORE tubes — about EIGHT IDENTICAL LACALUT AKTIV tubes (same red-white pack) all STANDING UPRIGHT directly on the counter surface in a wide, evenly-spaced double row across the bench (like bottles lined up on a shelf). CRITICAL: every tube stands on its own base on the flat counter — NONE is stacked, leaned or resting on top of another, so nothing can topple. Tubes are spaced apart so each label is clearly separate and legible. Front tubes tack-sharp, labels to camera. Perfectly still.",
+        "motion": "Hard cut to more upright tubes (escalation is the CUT, not motion). Camera LOCKED OFF, completely still — a frozen still-life. The tubes are a STABLE row standing flat on the counter: nothing falls, tumbles, leans, slides or collapses (there is no stack to fall). Only a faint drift of light moves. Keep every tube upright, separated and razor-sharp so no two labels blend.",
+        "vo": "So you stock up. Then you stock up again.",
+        "text": "…how it's going.",
+        "flagged": false
+      },
+      {
+        "n": 3,
+        "seconds": 8,
+        "visual": "Hard cut. Same counter, now COVERED in tubes — around SIXTEEN IDENTICAL LACALUT AKTIV tubes (same red-white pack) all STANDING UPRIGHT directly on the counter surface, packed in neat rows filling the whole bench edge to edge (like a fully-stocked shop shelf). CRITICAL: every tube stands on its own base on the flat surface — NONE stacked, leaned or on top of another, nothing can topple. ONE hero tube razor-sharp and label-forward in the near foreground; the rows behind recede in soft depth of field. Comedically many, but orderly and stable. Completely still.",
+        "motion": "Hard cut to the counter packed with upright tubes (escalation is the CUT, not motion). Camera LOCKED OFF, framed a touch wider, completely still — a frozen comedic still-life like a stocked shelf. NOTHING tumbles, leans, slides, rolls or collapses (there is no stack to fall). Only a soft drift of light. The one front hero tube stays crisp, readable and separated; the rows behind stay soft with depth so no two labels blend or garble.",
+        "vo": "Because running out? Not an option. LACALUT Aktiv — German gum care. Fluoride. Hydroxyapatite.",
+        "text": "LACALUT AKTIV — Never Run Out",
+        "flagged": false
+      }
+    ],
+    "flagged": false,
+    "postCaptions": false,
+    "nativeProduct": true,
+    "lint": []
+  }
+}
