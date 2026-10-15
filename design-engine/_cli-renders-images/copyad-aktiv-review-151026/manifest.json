@@ -74,5 +74,24 @@
    "copyMode": true,
    "cli": true
   }
+ },
+ {
+  "id": "g1792040343499_0",
+  "filename": "AD_aktiv_copyad_review-benefits_v5_red-highlights.png",
+  "sku": "aktiv",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "📋 Copy Ad · AKTIV review v5 (red highlights, free edit)",
+  "ts": 1792040343499,
+  "brief": "COPY AD — AKTIV v5 red highlights (pixel edit, no render)",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "4:5",
+   "copyMode": true,
+   "cli": true
+  }
  }
 ]
