@@ -434,10 +434,10 @@ const $ = id => document.getElementById(id);
 /* ═══ PRODUCT-TYPE SUB-FILTER (second filter level under the formula tabs) ═══
    Tag-and-filter ONLY — never deletes/moves saved outputs. Stored items with no
    ptype are treated as toothpaste (legacy = all toothpaste), never hidden. */
-const PTYPES=[['toothpaste','🦷 Toothpaste'],['mouthwash','💧 Mouthwash'],['toothbrush','🪥 Toothbrush']];
-const PTYPE_LABEL={toothpaste:'🦷 Toothpaste', mouthwash:'💧 Mouthwash', toothbrush:'🪥 Toothbrush'};
-// Reference-library row → product type: Box/Tube/Box+Tube = toothpaste · Bottle/Bottle+Box = mouthwash · Box/Brush/Box+Brush = toothbrush
-const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mw_box','mouthwash'], toothbrush:['tb_box','toothbrush','tb_boxbrush'] };
+const PTYPES=[['toothpaste','🦷 Toothpaste'],['mouthwash','💧 Mouthwash'],['toothbrush','🪥 Toothbrush'],['bundles','🎁 Bundles']];
+const PTYPE_LABEL={toothpaste:'🦷 Toothpaste', mouthwash:'💧 Mouthwash', toothbrush:'🪥 Toothbrush', bundles:'🎁 Bundles'};
+// Reference-library row → product type: Box/Tube/Box+Tube = toothpaste · Bottle/Bottle+Box = mouthwash · Box/Brush/Box+Brush = toothbrush · Kit/Duo/Gift Box = bundles
+const PTYPE_REF_ROWS={ toothpaste:['tp_box','toothpaste','tp_boxtube'], mouthwash:['mw_bottle','mw_box','mouthwash'], toothbrush:['tb_box','toothbrush','tb_boxbrush'], bundles:['bd_kit','bd_duo','bd_box'] };
 function getPtype(sku){ return localStorage.getItem('de_ptype_'+(sku||curSku)) || 'toothpaste'; }
 let curPtype = getPtype(curSku);
 function ptypeOf(rec){ return (rec && rec.ptype) || 'toothpaste'; }   // missing tag = toothpaste, never hidden
@@ -1108,6 +1108,9 @@ const REF_TYPES=[
   ['tb_box','🪥 Box'],
   ['toothbrush','🪥 Brush'],
   ['tb_boxbrush','🪥 Box+Brush'],
+  ['bd_kit','🎁 Full Kit'],
+  ['bd_duo','🎁 Duo'],
+  ['bd_box','🎁 Gift Box'],
 ];
 let _refLib={};   // key `${sku}_${type}` -> dataUrl
 async function refPut(key,url){ const db=await idb(); return new Promise((res,rej)=>{ const t=db.transaction('reflib','readwrite'); t.objectStore('reflib').put({key,url}); t.oncomplete=res; t.onerror=()=>rej(t.error); }); }
@@ -1129,9 +1132,9 @@ function renderRefLibGrid(){
   const wrap=$('refLibGrid'); if(!wrap) return;
   const skus=Object.entries(SKUS);
   // This grid only lives inside the Edit dialog — ALWAYS show the FULL library (all product
-  // types) so one edit can mix toothpaste + mouthwash + toothbrush refs. No pill filter here.
+  // types) so one edit can mix toothpaste + mouthwash + toothbrush + bundle refs. No pill filter here.
   const rows=REF_TYPES;
-  let h=`<div style="font-size:11px;font-weight:700;color:var(--navy);margin:0 0 4px">All references — 🦷 toothpaste · 💧 mouthwash · 🪥 toothbrush — click to attach to this edit</div>`;
+  let h=`<div style="font-size:11px;font-weight:700;color:var(--navy);margin:0 0 4px">All references — 🦷 toothpaste · 💧 mouthwash · 🪥 toothbrush · 🎁 bundles — click to attach to this edit</div>`;
   h+=`<div class="reflib" style="grid-template-columns:78px repeat(${skus.length},1fr)">`;
   h+=`<div></div>`+skus.map(([k,v])=>`<div class="refhdr">${v.name}</div>`).join('');
   for(const [type,tlabel] of rows){
@@ -1220,7 +1223,7 @@ function cardHTML(rec, versions){ _recById[rec.id]=rec;   // register for the la
    <button class="iconbtn" title="Resize — pick ONE size (Story / Square / Feed / Landscape); one paid render for just that size" onclick="makeSizes('${rec.id}')">📐</button>
    <button class="iconbtn" title="Archive — park this creative indefinitely for later (leaves the gallery, restore anytime from the 📦 Archive chip)" onclick="archiveGen('${rec.id}')">📦</button>
    <button class="iconbtn" title="delete (goes to the 🗑 Bin — restorable)" onclick="delGen('${rec.id}')">🗑</button>
-   <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
+   <select class="iconbtn moveSel" title="Move this image to another SKU + form (Toothpaste / Mouthwash / Toothbrush / Bundles)" onchange="moveGen('${rec.id}',this.value);this.selectedIndex=0" style="padding:5px 4px;max-width:48px;-webkit-appearance:menulist">${moveOptions(rec.sku,ptypeOf(rec))}</select></div>
    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
    ${rec.sentToCalendar
      ? `<button class="markybtn pushed" id="marky-${rec.id}" disabled title="Already sent to the Social Content Calendar" style="background:#16a34a;color:#fff;cursor:default;border-color:#16a34a">✅ Sent to Calendar</button>`
@@ -1321,13 +1324,13 @@ async function dlCard(id,name){try{const url=await compositeCard(id);dl(url,name
    ═══════════════════════════════════════════════════════════════════ */
 function packshotFor(sku){
   // Best available reference photo for a SKU from the saved reference library, then the Main slot.
-  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','toothbrush','tb_box','tb_boxbrush'];
+  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','toothbrush','tb_box','tb_boxbrush','bd_kit','bd_duo','bd_box'];
   for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) return u; }
   const pm=productImgs.filter(Boolean); return pm[0]||null;
 }
 function packshotsFor(sku){
   // Up to 3 refs (tube + box + combo) — more angles = tighter pack fidelity in scene stills.
-  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','tb_box','toothbrush','tb_boxbrush'];
+  const order=['toothpaste','tp_box','tp_boxtube','mw_bottle','mw_box','mouthwash','tb_box','toothbrush','tb_boxbrush','bd_kit','bd_duo','bd_box'];
   const out=[]; for(const t of order){ const u=_refLib[sku+'_'+t]; if(u) out.push(u); }
   if(!out.length){ const pm=productImgs.filter(Boolean); if(pm[0]) out.push(pm[0]); }
   return out.slice(0,3);
@@ -2286,7 +2289,7 @@ async function openBin(){
 }
 /* ═══ MOVE IMAGE TO ANOTHER SKU TAB ═══ */
 function moveOptions(curSkuOfCard, curPtypeOfCard){
-  // Each SKU is an <optgroup> with its 3 forms (Toothpaste / Mouthwash / Toothbrush) as a submenu.
+  // Each SKU is an <optgroup> with its 4 forms (Toothpaste / Mouthwash / Toothbrush / Bundles) as a submenu.
   // value = "<sku>|<ptype>". The card's current spot is disabled + ticked so you can't no-op onto it.
   const here = curPtypeOfCard || 'toothpaste';
   const o=['<option value="" selected>↗</option>'];

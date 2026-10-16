@@ -504,8 +504,22 @@ Be exhaustive and literal. Never summarise. Every word on the ad must appear in 
   function nearestAspect(w,h){ const r=w/h; let best=COPY_ASPECTS[0]; for(const a of COPY_ASPECTS){ if(Math.abs(a[1]-r)<Math.abs(best[1]-r)) best=a; } return best[0]; }
   const TYPE_CHECK = ` FINAL LEGIBILITY CHECK (do this before outputting): mentally shrink the finished design to a tiny Facebook Marketplace thumbnail. Scan EVERY text element — reviewer names, star rows, trust pills, stat descriptors, badges, CTA. Any line too small to read at thumbnail size: make it bigger or delete it, THEN output. Medium-to-large type on every element, no exceptions.`;
   const SCALE_LOCK = `TRUE PRODUCT SCALE (hard rule, every image and every edit): LACALUT products keep their real-world size relative to each other and to hands, sinks and props. Toothbrush and 300ml mouthwash bottle are about the SAME height (the brush may be slightly taller, never shorter or stubby). A 75ml toothpaste tube standing upright is AS TALL AS the 300ml bottle or slightly TALLER (never shorter), but far slimmer and flatter, so the bottle stays the bulkier product. A 10ml travel tube is tiny (about a finger long); a 50ml travel mouthwash is about a third of the 300ml bottle's height. A product box is slightly larger than the product inside it. Never enlarge one product to make it the hero at the expense of real relative scale. `;
+  // 🇩🇪 LOCKED 100 YEARS BADGE (16/10/2026, Quan): official red LACALUT® wordmark + black "1" + German-flag-striped "00" + black "Years".
+  // Served from ./_assets/lacalut-100-years-badge.png; auto-attached as the LAST reference whenever the brief/prompt mentions 100 years / 1925 / a century.
+  let _badge100=null;
+  async function badge100(){
+    if(_badge100) return _badge100;
+    try{ const b=await (await fetch('./_assets/lacalut-100-years-badge.png',{cache:'force-cache'})).blob();
+      _badge100=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(b); }); }catch(_){ _badge100=null; }
+    return _badge100;
+  }
+  const BADGE100_RX=/100[\s-]*(years?|yrs?|jahre)|100th|since\s*1925|a\s+century|century\s+of|hundred\s+years/i;
+  const BADGE100_INSTR=`The LAST attached image is the OFFICIAL LACALUT "100 Years" badge (red LACALUT® wordmark above a black 1 and two 0s filled with the German flag stripes black/red/gold, then "Years" in black). Reproduce this badge EXACTLY as supplied — same typography, same colours, same proportions, never redraw, restyle, recolour or add effects. Place it where the brief says; if unspecified, place it as a compact badge in a clear corner at roughly 18-22% of the canvas width, on a flat light background patch so it stays legible. `;
+
   async function callGemini(opts){
     const prompt = opts.prompt;
+    const _wants100 = BADGE100_RX.test(String(opts.prompt||'')+' '+String(opts.brief||''));
+    const bRef = _wants100 ? dataUrlToInlinePart(await badge100()) : null;
     const apiKey = opts.apiKey || (global.localStorage && localStorage.getItem('lc_gemini_key')) || '';
     const model  = opts.model  || (global.localStorage && localStorage.getItem('de_model')) || 'gemini-3-pro-image-preview';
     const render = opts.render || 'photoreal';
@@ -522,7 +536,7 @@ Be exhaustive and literal. Never summarise. Every word on the ad must appear in 
         SCALE_LOCK;
       const xRefs=(opts.copyExtras||[]).map(dataUrlToInlinePart).filter(Boolean).slice(0,3);
       const instrX = xRefs.length ? `The LAST ${xRefs.length} attached image${xRefs.length>1?'s are':' is'} EXTRA REFERENCE${xRefs.length>1?'S':''} (e.g. a real customer's profile photo) — use ${xRefs.length>1?'them':'it'} EXACTLY where the art director's notes say (e.g. as the Facebook comment avatar, cropped into the circle, same face, same colours, sharpened cleanly — never replace it with a different or invented person). ` : ``;
-      const partsC=[{text:instrC+instrX+prompt}, cRef, ...pRefs, ...xRefs];
+      const partsC=[{text:instrC+instrX+(bRef?BADGE100_INSTR:'')+prompt}, cRef, ...pRefs, ...xRefs, ...(bRef?[bRef]:[])];
       const gcfgC = { responseModalities:['TEXT','IMAGE'] };
       if (opts.aspectRatio && /gemini-3/.test(model)) gcfgC.imageConfig = { aspectRatio: opts.aspectRatio };
       const resC=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+apiKey,
@@ -553,7 +567,8 @@ Be exhaustive and literal. Never summarise. Every word on the ad must appear in 
       if(opts.closeUp) instr+=`CLOSE-UP SHOT (requested): frame the product as a TIGHT MACRO close-up — the pack fills most of the frame, razor-sharp label detail and typography, shallow depth of field, premium studio lighting. `;
     }
     if(sRefs.length) instr+=`The NEXT ${sRefs.length} reference image(s) show the DESIGN STYLE to emulate — match their layout, typography, colour-blocking and composition, but do NOT copy their product, logos or wording. `;
-    const parts=[{text:(instr?instr+'Now create the following: ':'')+prompt+TYPE_CHECK}, ...pRefs, ...sRefs];
+    if(bRef) instr+=BADGE100_INSTR;
+    const parts=[{text:(instr?instr+'Now create the following: ':'')+prompt+TYPE_CHECK}, ...pRefs, ...sRefs, ...(bRef?[bRef]:[])];
     // Aspect ratio: gemini-3 pro image supports imageConfig.aspectRatio natively (4:5, 9:16, 1:1…).
     // Nano (2.5-flash-image) ignores it — relies on the prompt text instead — so only send it to Pro to avoid a 400.
     const gcfg = { responseModalities:['TEXT','IMAGE'] };
