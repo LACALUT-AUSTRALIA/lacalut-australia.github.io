@@ -1,0 +1,21 @@
+[
+ {
+  "id": "g1792196354922_0",
+  "filename": "AD_aktiv-herbal_duo-forest_v1.png",
+  "sku": "aktiv-herbal",
+  "mode": "ad",
+  "ptype": "toothpaste",
+  "label": "Herbal Duo · forest · real packshots",
+  "ts": 1792196354922,
+  "brief": "Intensive Herbal Gum Care Duo, real Herbal box+tube and Aktiv bottle composited onto approved forest render, red number circles",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ }
+]
