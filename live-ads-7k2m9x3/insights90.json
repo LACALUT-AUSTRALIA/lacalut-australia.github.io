@@ -19,8 +19,8 @@
   "purchase_conversions": 93,
   "purchase_conversion_value": 5216.66,
   "roas": 1.6635871662324326,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244410306420229",
@@ -42,8 +42,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 304.7,
   "roas": 2.2997962110347947,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244706626530229",
@@ -65,8 +65,8 @@
   "purchase_conversions": 15,
   "purchase_conversion_value": 733.46,
   "roas": 2.679208065458796,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244717430770229",
@@ -88,8 +88,8 @@
   "purchase_conversions": 101,
   "purchase_conversion_value": 5458.94,
   "roas": 1.39100411266773,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244734531380229",
@@ -111,8 +111,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 98.6,
   "roas": 1.0289053532296775,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244825358840229",
@@ -122,20 +122,20 @@
   "campaign_id": "120244825358780229",
   "campaign_name": "OLD | MOF",
   "account_id": "act_2157906551266386",
-  "impressions": 719,
+  "impressions": 697,
   "clicks": 54,
-  "spend": 11.3,
-  "ctr": 7.510431,
-  "cpc": 0.209259,
-  "cpm": 15.716273,
-  "reach": 543,
+  "spend": 11.01,
+  "ctr": 7.747489,
+  "cpc": 0.203889,
+  "cpm": 15.79627,
+  "reach": 533,
   "conversions": 2,
   "conversion_value": 76.95,
   "purchase_conversions": 2,
   "purchase_conversion_value": 76.95,
-  "roas": 6.8097345132743365,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 6.989100817438692,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244825358850229",
@@ -145,20 +145,20 @@
   "campaign_id": "120244825358780229",
   "campaign_name": "OLD | MOF",
   "account_id": "act_2157906551266386",
-  "impressions": 2624,
-  "clicks": 225,
-  "spend": 29.6,
-  "ctr": 8.574695,
-  "cpc": 0.131556,
-  "cpm": 11.280488,
-  "reach": 1430,
+  "impressions": 2500,
+  "clicks": 212,
+  "spend": 28.46,
+  "ctr": 8.48,
+  "cpc": 0.134245,
+  "cpm": 11.384,
+  "reach": 1388,
   "conversions": 6,
   "conversion_value": 183.22,
   "purchase_conversions": 6,
   "purchase_conversion_value": 183.22,
-  "roas": 6.189864864864864,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 6.4378074490512995,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120244825358890229",
@@ -168,20 +168,20 @@
   "campaign_id": "120244825358780229",
   "campaign_name": "OLD | MOF",
   "account_id": "act_2157906551266386",
-  "impressions": 3270,
-  "clicks": 212,
-  "spend": 36.54,
-  "ctr": 6.48318,
-  "cpc": 0.172358,
-  "cpm": 11.174312,
-  "reach": 1811,
+  "impressions": 3180,
+  "clicks": 205,
+  "spend": 35.54,
+  "ctr": 6.446541,
+  "cpc": 0.173366,
+  "cpm": 11.176101,
+  "reach": 1770,
   "conversions": 9,
   "conversion_value": 337.03,
   "purchase_conversions": 8,
   "purchase_conversion_value": 337.03,
-  "roas": 9.22359058565955,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 9.483117613956106,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120245931114650229",
@@ -203,8 +203,8 @@
   "purchase_conversions": 40,
   "purchase_conversion_value": 1981.14,
   "roas": 4.761440107671602,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120245931647150229",
@@ -221,8 +221,8 @@
   "cpc": 1.25,
   "cpm": 16.025641,
   "reach": 206,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246003800980229",
@@ -239,8 +239,8 @@
   "cpc": 0.472143,
   "cpm": 15.775656,
   "reach": 396,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246004085520229",
@@ -262,8 +262,8 @@
   "purchase_conversions": 36,
   "purchase_conversion_value": 1020.41,
   "roas": 1.6480554299373344,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246024212290229",
@@ -285,8 +285,8 @@
   "purchase_conversions": 94,
   "purchase_conversion_value": 3902.54,
   "roas": 2.771454137431469,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246026845100229",
@@ -308,8 +308,8 @@
   "purchase_conversions": 126,
   "purchase_conversion_value": 4807.33,
   "roas": 3.3402561127285106,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246026981540229",
@@ -326,8 +326,8 @@
   "cpc": 0.4,
   "cpm": 18.791946,
   "reach": 128,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246046599190229",
@@ -349,8 +349,8 @@
   "purchase_conversions": 103,
   "purchase_conversion_value": 5229.57,
   "roas": 1.444421120664654,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246088640750229",
@@ -360,20 +360,20 @@
   "campaign_id": "120241478653830229",
   "campaign_name": "MAIN | TOF",
   "account_id": "act_2157906551266386",
-  "impressions": 10350,
-  "clicks": 396,
-  "spend": 124.41,
-  "ctr": 3.826087,
-  "cpc": 0.314167,
-  "cpm": 12.02029,
-  "reach": 4098,
-  "conversions": 26,
-  "conversion_value": 1327.69,
-  "purchase_conversions": 26,
-  "purchase_conversion_value": 1327.69,
-  "roas": 10.671891327063742,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 8051,
+  "clicks": 329,
+  "spend": 95.58,
+  "ctr": 4.086449,
+  "cpc": 0.290517,
+  "cpm": 11.871817,
+  "reach": 2906,
+  "conversions": 23,
+  "conversion_value": 1075.7,
+  "purchase_conversions": 23,
+  "purchase_conversion_value": 1075.7,
+  "roas": 11.254446536932413,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246648486410229",
@@ -390,8 +390,8 @@
   "cpc": 0.25878,
   "cpm": 13.761349,
   "reach": 720,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120246989855570229",
@@ -413,8 +413,8 @@
   "purchase_conversions": 35,
   "purchase_conversion_value": 1578.91,
   "roas": 1.60732755110351,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120247827146710229",
@@ -436,8 +436,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 40.15,
   "roas": 0.866235167206041,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120247827504070229",
@@ -459,8 +459,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 392.82,
   "roas": 1.9120911214953271,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120249915990310229",
@@ -477,8 +477,8 @@
   "cpc": 0.215,
   "cpm": 15.925926,
   "reach": 50,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120249921688820229",
@@ -500,8 +500,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 92.6,
   "roas": 52.316384180790955,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120249921688850229",
@@ -518,8 +518,8 @@
   "cpc": 0.261667,
   "cpm": 22.112676,
   "reach": 67,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120249921752310229",
@@ -536,8 +536,8 @@
   "cpc": 0,
   "cpm": 0,
   "reach": 2,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120249921752320229",
@@ -554,8 +554,8 @@
   "cpc": 0.204286,
   "cpm": 23.442623,
   "reach": 56,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250330619130229",
@@ -572,8 +572,8 @@
   "cpc": 3.435,
   "cpm": 7.745209,
   "reach": 502,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521272760229",
@@ -595,8 +595,8 @@
   "purchase_conversions": 53,
   "purchase_conversion_value": 2197.73,
   "roas": 1.4769591602206975,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521315170229",
@@ -606,20 +606,20 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 3826,
-  "clicks": 124,
-  "spend": 52.16,
-  "ctr": 3.240983,
-  "cpc": 0.420645,
-  "cpm": 13.633037,
-  "reach": 2478,
-  "conversions": 7,
-  "conversion_value": 366.09,
-  "purchase_conversions": 7,
-  "purchase_conversion_value": 366.09,
-  "roas": 7.018596625766871,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 3231,
+  "clicks": 112,
+  "spend": 44.21,
+  "ctr": 3.466419,
+  "cpc": 0.394732,
+  "cpm": 13.68307,
+  "reach": 2154,
+  "conversions": 6,
+  "conversion_value": 311.94,
+  "purchase_conversions": 6,
+  "purchase_conversion_value": 311.94,
+  "roas": 7.055869712734675,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521318700229",
@@ -636,8 +636,8 @@
   "cpc": 0.26,
   "cpm": 12.093023,
   "reach": 79,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521319230229",
@@ -647,15 +647,15 @@
   "campaign_id": "120250521225610229",
   "campaign_name": "02 | SCALING | Pooled | AU",
   "account_id": "act_2157906551266386",
-  "impressions": 26,
+  "impressions": 25,
   "clicks": 0,
-  "spend": 0.61,
+  "spend": 0.59,
   "ctr": 0,
   "cpc": 0,
-  "cpm": 23.461538,
-  "reach": 26,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "cpm": 23.6,
+  "reach": 25,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521319740229",
@@ -665,15 +665,15 @@
   "campaign_id": "120250521225610229",
   "campaign_name": "02 | SCALING | Pooled | AU",
   "account_id": "act_2157906551266386",
-  "impressions": 217,
-  "clicks": 10,
-  "spend": 3.03,
-  "ctr": 4.608295,
-  "cpc": 0.303,
-  "cpm": 13.963134,
-  "reach": 205,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 202,
+  "clicks": 9,
+  "spend": 2.89,
+  "ctr": 4.455446,
+  "cpc": 0.321111,
+  "cpm": 14.306931,
+  "reach": 192,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521426810229",
@@ -683,20 +683,20 @@
   "campaign_id": "120250521422040229",
   "campaign_name": "03 | DABA | Catalog | AU",
   "account_id": "act_2157906551266386",
-  "impressions": 6096,
+  "impressions": 5972,
   "clicks": 181,
-  "spend": 65.16,
-  "ctr": 2.96916,
-  "cpc": 0.36,
-  "cpm": 10.688976,
-  "reach": 3167,
+  "spend": 64.14,
+  "ctr": 3.03081,
+  "cpc": 0.354365,
+  "cpm": 10.740121,
+  "reach": 3125,
   "conversions": 8,
   "conversion_value": 379.85,
   "purchase_conversions": 8,
   "purchase_conversion_value": 379.85,
-  "roas": 5.829496623695519,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 5.922201434362333,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521581870229",
@@ -706,20 +706,20 @@
   "campaign_id": "120250521225610229",
   "campaign_name": "02 | SCALING | Pooled | AU",
   "account_id": "act_2157906551266386",
-  "impressions": 4965,
-  "clicks": 274,
-  "spend": 70.58,
-  "ctr": 5.51863,
-  "cpc": 0.257591,
-  "cpm": 14.215509,
-  "reach": 3861,
+  "impressions": 4891,
+  "clicks": 268,
+  "spend": 69.89,
+  "ctr": 5.479452,
+  "cpc": 0.260784,
+  "cpm": 14.289511,
+  "reach": 3830,
   "conversions": 7,
   "conversion_value": 321.64,
   "purchase_conversions": 7,
   "purchase_conversion_value": 321.64,
-  "roas": 4.557098328138283,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 4.602088996995278,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521582510229",
@@ -741,8 +741,8 @@
   "purchase_conversions": 31,
   "purchase_conversion_value": 1459.36,
   "roas": 5.553120243531202,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250521583900229",
@@ -764,8 +764,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 12.25,
   "roas": 4.166666666666667,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588574700229",
@@ -782,8 +782,8 @@
   "cpc": 0.439394,
   "cpm": 13.004484,
   "reach": 776,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588579160229",
@@ -805,8 +805,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 9.144144144144144,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588579790229",
@@ -823,8 +823,8 @@
   "cpc": 0.21881,
   "cpm": 11.721939,
   "reach": 667,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588580070229",
@@ -834,15 +834,15 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 205,
-  "clicks": 7,
-  "spend": 3.27,
-  "ctr": 3.414634,
-  "cpc": 0.467143,
-  "cpm": 15.95122,
-  "reach": 169,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 188,
+  "clicks": 6,
+  "spend": 3.11,
+  "ctr": 3.191489,
+  "cpc": 0.518333,
+  "cpm": 16.542553,
+  "reach": 153,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588580400229",
@@ -859,8 +859,8 @@
   "cpc": 1.225,
   "cpm": 15.217391,
   "reach": 136,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588580760229",
@@ -870,20 +870,20 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 246,
+  "impressions": 236,
   "clicks": 16,
-  "spend": 4.69,
-  "ctr": 6.504065,
-  "cpc": 0.293125,
-  "cpm": 19.065041,
-  "reach": 194,
+  "spend": 4.64,
+  "ctr": 6.779661,
+  "cpc": 0.29,
+  "cpm": 19.661017,
+  "reach": 185,
   "conversions": 2,
   "conversion_value": 136.38,
   "purchase_conversions": 2,
   "purchase_conversion_value": 136.38,
-  "roas": 29.078891257995732,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 29.392241379310345,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588581780229",
@@ -905,8 +905,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 50.75,
   "roas": 126.875,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588583320229",
@@ -923,8 +923,8 @@
   "cpc": 0,
   "cpm": 13.793103,
   "reach": 27,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588584280229",
@@ -941,8 +941,8 @@
   "cpc": 0.34,
   "cpm": 15.813953,
   "reach": 40,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588585410229",
@@ -952,15 +952,15 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 74,
+  "impressions": 70,
   "clicks": 3,
-  "spend": 0.78,
-  "ctr": 4.054054,
-  "cpc": 0.26,
-  "cpm": 10.540541,
-  "reach": 69,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "spend": 0.76,
+  "ctr": 4.285714,
+  "cpc": 0.253333,
+  "cpm": 10.857143,
+  "reach": 65,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588586330229",
@@ -970,15 +970,15 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 95,
+  "impressions": 93,
   "clicks": 6,
-  "spend": 2.11,
-  "ctr": 6.315789,
-  "cpc": 0.351667,
-  "cpm": 22.210526,
-  "reach": 81,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "spend": 2.08,
+  "ctr": 6.451613,
+  "cpc": 0.346667,
+  "cpm": 22.365591,
+  "reach": 79,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588586800229",
@@ -1000,8 +1000,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 83.39,
   "roas": 33.223107569721115,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588587410229",
@@ -1011,15 +1011,15 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 30,
+  "impressions": 28,
   "clicks": 0,
-  "spend": 0.45,
+  "spend": 0.41,
   "ctr": 0,
   "cpc": 0,
-  "cpm": 15,
-  "reach": 30,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "cpm": 14.642857,
+  "reach": 28,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588589560229",
@@ -1029,15 +1029,15 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 35,
+  "impressions": 34,
   "clicks": 2,
-  "spend": 0.74,
-  "ctr": 5.714286,
-  "cpc": 0.37,
-  "cpm": 21.142857,
-  "reach": 32,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "spend": 0.72,
+  "ctr": 5.882353,
+  "cpc": 0.36,
+  "cpm": 21.176471,
+  "reach": 31,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588591000229",
@@ -1054,8 +1054,8 @@
   "cpc": 0.195,
   "cpm": 21.666667,
   "reach": 18,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588592740229",
@@ -1065,20 +1065,20 @@
   "campaign_id": "120250521224510229",
   "campaign_name": "TOF | Testing",
   "account_id": "act_2157906551266386",
-  "impressions": 36405,
-  "clicks": 1319,
-  "spend": 460.57,
-  "ctr": 3.623129,
+  "impressions": 36373,
+  "clicks": 1318,
+  "spend": 460.22,
+  "ctr": 3.623567,
   "cpc": 0.349181,
-  "cpm": 12.651284,
+  "cpm": 12.652792,
   "reach": 17999,
   "conversions": 54,
   "conversion_value": 2813.38,
   "purchase_conversions": 54,
   "purchase_conversion_value": 2813.38,
-  "roas": 6.10847428186812,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "roas": 6.1131198122637,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588593330229",
@@ -1100,8 +1100,8 @@
   "purchase_conversions": 18,
   "purchase_conversion_value": 834.8,
   "roas": 2.6783021591966376,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588593920229",
@@ -1118,8 +1118,8 @@
   "cpc": 0.5,
   "cpm": 23.809524,
   "reach": 18,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588594340229",
@@ -1136,8 +1136,8 @@
   "cpc": 0,
   "cpm": 25.666667,
   "reach": 25,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120250588596580229",
@@ -1154,8 +1154,8 @@
   "cpc": 0.146667,
   "cpm": 14.505495,
   "reach": 80,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251614178910229",
@@ -1177,8 +1177,8 @@
   "purchase_conversions": 26,
   "purchase_conversion_value": 1375.69,
   "roas": 2.7478627356983063,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251614182140229",
@@ -1200,8 +1200,8 @@
   "purchase_conversions": 28,
   "purchase_conversion_value": 1099.95,
   "roas": 2.6319000789605917,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251614185810229",
@@ -1223,8 +1223,8 @@
   "purchase_conversions": 45,
   "purchase_conversion_value": 2242.74,
   "roas": 2.948258183252267,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251614188660229",
@@ -1246,8 +1246,8 @@
   "purchase_conversions": 49,
   "purchase_conversion_value": 2151.48,
   "roas": 3.2771972581873574,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251614215010229",
@@ -1269,8 +1269,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 524.62,
   "roas": 3.7486245087531262,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251616176800229",
@@ -1292,8 +1292,8 @@
   "purchase_conversions": 17,
   "purchase_conversion_value": 918.88,
   "roas": 6.044865469377015,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251616180580229",
@@ -1315,8 +1315,8 @@
   "purchase_conversions": 9,
   "purchase_conversion_value": 435.1,
   "roas": 3.28948363196492,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251616182560229",
@@ -1338,8 +1338,8 @@
   "purchase_conversions": 14,
   "purchase_conversion_value": 741.73,
   "roas": 4.957094165608501,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251619450500229",
@@ -1361,8 +1361,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 158.29,
   "roas": 1.2201495413551222,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251619452080229",
@@ -1384,8 +1384,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 223.8,
   "roas": 1.6249183184491398,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251619453250229",
@@ -1407,8 +1407,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 522.87,
   "roas": 3.915749269827005,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251625945610229",
@@ -1430,8 +1430,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 76.05,
   "roas": 1.9924024102698452,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251625946410229",
@@ -1448,8 +1448,8 @@
   "cpc": 0.320909,
   "cpm": 15.347826,
   "reach": 1526,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251625949570229",
@@ -1466,8 +1466,8 @@
   "cpc": 0.815,
   "cpm": 21.032258,
   "reach": 271,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251625951140229",
@@ -1489,8 +1489,8 @@
   "purchase_conversions": 90,
   "purchase_conversion_value": 3336.16,
   "roas": 1.824853132623702,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251625953520229",
@@ -1512,8 +1512,8 @@
   "purchase_conversions": 88,
   "purchase_conversion_value": 3760.73,
   "roas": 2.450386056360971,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251626859320229",
@@ -1535,8 +1535,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 214.43,
   "roas": 5.908790300358226,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251626861530229",
@@ -1558,8 +1558,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 37.36,
   "roas": 1.0263736263736265,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251682147040229",
@@ -1576,8 +1576,8 @@
   "cpc": 1.15102,
   "cpm": 22.222222,
   "reach": 1910,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251682147680229",
@@ -1599,8 +1599,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 317.12,
   "roas": 2.997920211760257,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251682147840229",
@@ -1617,8 +1617,8 @@
   "cpc": 1.313256,
   "cpm": 21.777863,
   "reach": 1666,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251682148480229",
@@ -1640,8 +1640,8 @@
   "purchase_conversions": 14,
   "purchase_conversion_value": 754.94,
   "roas": 6.981135565008323,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251682148880229",
@@ -1663,8 +1663,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 52.4,
   "roas": 0.937555913401324,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251682149320229",
@@ -1686,8 +1686,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 90.9,
   "roas": 1.6252458430180583,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251686498970229",
@@ -1709,8 +1709,8 @@
   "purchase_conversions": 13,
   "purchase_conversion_value": 672.3,
   "roas": 6.834400731930466,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251700688260229",
@@ -1732,8 +1732,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 0.6631386384424408,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701572350229",
@@ -1755,8 +1755,8 @@
   "purchase_conversions": 15,
   "purchase_conversion_value": 684.18,
   "roas": 1.6180588402232523,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701793120229",
@@ -1778,8 +1778,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 427.82,
   "roas": 1.9227865168539326,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701793560229",
@@ -1801,8 +1801,8 @@
   "purchase_conversions": 32,
   "purchase_conversion_value": 1200.62,
   "roas": 1.75157925450434,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701826100229",
@@ -1824,8 +1824,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 72.05,
   "roas": 2.4145442359249327,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701826940229",
@@ -1847,8 +1847,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 35.97,
   "roas": 1.1606969990319458,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701828690229",
@@ -1870,8 +1870,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 96.85,
   "roas": 3.344267955801105,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701830490229",
@@ -1888,8 +1888,8 @@
   "cpc": 1.036538,
   "cpm": 21.716358,
   "reach": 955,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701831580229",
@@ -1911,8 +1911,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 111.83,
   "roas": 3.982549857549858,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701836240229",
@@ -1934,8 +1934,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 183.83,
   "roas": 5.768120489488547,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701843030229",
@@ -1957,8 +1957,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 26.2,
   "roas": 0.7674282366725249,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701844550229",
@@ -1980,8 +1980,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 26.2,
   "roas": 0.8658294778585591,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701846460229",
@@ -2003,8 +2003,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 150.59,
   "roas": 4.828150048092337,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701854370229",
@@ -2021,8 +2021,8 @@
   "cpc": 1.257826,
   "cpm": 28.671952,
   "reach": 823,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701855470229",
@@ -2039,8 +2039,8 @@
   "cpc": 1.3444,
   "cpm": 39.172494,
   "reach": 674,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701857010229",
@@ -2062,8 +2062,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 99.4,
   "roas": 3.3144381460486834,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701865290229",
@@ -2080,8 +2080,8 @@
   "cpc": 0.864444,
   "cpm": 28.895079,
   "reach": 893,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701867740229",
@@ -2098,8 +2098,8 @@
   "cpc": 1.331429,
   "cpm": 25.769585,
   "reach": 931,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701876450229",
@@ -2121,8 +2121,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 70.05,
   "roas": 2.364956110735989,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701879990229",
@@ -2144,8 +2144,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 56.1,
   "roas": 1.7747548244226512,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701887330229",
@@ -2167,8 +2167,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 1.626602564102564,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251701901040229",
@@ -2185,8 +2185,8 @@
   "cpc": 1.578333,
   "cpm": 22.782678,
   "reach": 990,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251721333280229",
@@ -2208,8 +2208,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 110.99,
   "roas": 0.6843208582526666,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251721333980229",
@@ -2231,8 +2231,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 82.54,
   "roas": 1.10185556000534,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251721334840229",
@@ -2254,8 +2254,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 61.09,
   "roas": 0.8557220899285615,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251721335710229",
@@ -2277,8 +2277,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 205.47,
   "roas": 1.2770043505282784,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251721336130229",
@@ -2300,8 +2300,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 76.69,
   "roas": 1.0672140272752575,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251731622020229",
@@ -2318,8 +2318,8 @@
   "cpc": 0.42375,
   "cpm": 16.699507,
   "reach": 942,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251731622670229",
@@ -2341,8 +2341,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 101.5,
   "roas": 2.380952380952381,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251731623340229",
@@ -2359,8 +2359,8 @@
   "cpc": 3.65,
   "cpm": 23.101266,
   "reach": 138,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251731624150229",
@@ -2377,8 +2377,8 @@
   "cpc": 0.703684,
   "cpm": 18.964539,
   "reach": 636,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251731625110229",
@@ -2395,8 +2395,8 @@
   "cpc": 0.33,
   "cpm": 18,
   "reach": 39,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251736814920229",
@@ -2413,8 +2413,8 @@
   "cpc": 0,
   "cpm": 10,
   "reach": 4,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251736815460229",
@@ -2431,8 +2431,8 @@
   "cpc": 0,
   "cpm": 22.857143,
   "reach": 7,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251736816400229",
@@ -2449,8 +2449,8 @@
   "cpc": 0.18,
   "cpm": 18,
   "reach": 10,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251736816790229",
@@ -2467,8 +2467,8 @@
   "cpc": 0,
   "cpm": 21.666667,
   "reach": 6,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251736817620229",
@@ -2485,8 +2485,8 @@
   "cpc": 0,
   "cpm": 42.5,
   "reach": 7,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251736840130229",
@@ -2503,8 +2503,8 @@
   "cpc": 0.22,
   "cpm": 31.428571,
   "reach": 7,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746354010229",
@@ -2521,8 +2521,8 @@
   "cpc": 0,
   "cpm": 10.555556,
   "reach": 64,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746366520229",
@@ -2544,8 +2544,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 293.83,
   "roas": 2.0427558398220245,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746367070229",
@@ -2567,8 +2567,8 @@
   "purchase_conversions": 17,
   "purchase_conversion_value": 508.2,
   "roas": 1.5428051001821494,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746367880229",
@@ -2590,8 +2590,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 96.15,
   "roas": 1.5175189393939394,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746368930229",
@@ -2608,8 +2608,8 @@
   "cpc": 2.59,
   "cpm": 20.393701,
   "reach": 104,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746369610229",
@@ -2626,8 +2626,8 @@
   "cpc": 0.69,
   "cpm": 18.449198,
   "reach": 166,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746369980229",
@@ -2644,8 +2644,8 @@
   "cpc": 0,
   "cpm": 16.470588,
   "reach": 31,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746371080229",
@@ -2662,8 +2662,8 @@
   "cpc": 0.774,
   "cpm": 15.795918,
   "reach": 181,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746372870229",
@@ -2685,8 +2685,8 @@
   "purchase_conversions": 56,
   "purchase_conversion_value": 2453.69,
   "roas": 2.151114267178651,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746374210229",
@@ -2708,8 +2708,8 @@
   "purchase_conversions": 28,
   "purchase_conversion_value": 1492.09,
   "roas": 3.5236509623332153,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746375480229",
@@ -2731,8 +2731,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 197.75,
   "roas": 1.2661672429248303,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746376320229",
@@ -2754,8 +2754,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 54,
   "roas": 4.141104294478528,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746377610229",
@@ -2772,8 +2772,8 @@
   "cpc": 0.5025,
   "cpm": 14.944238,
   "reach": 203,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251746378570229",
@@ -2795,8 +2795,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 378.1,
   "roas": 1.286929884275017,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251810116290229",
@@ -2813,8 +2813,8 @@
   "cpc": 0,
   "cpm": 45,
   "reach": 47,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251810117350229",
@@ -2831,8 +2831,8 @@
   "cpc": 0.865,
   "cpm": 25.693069,
   "reach": 145,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251810118810229",
@@ -2849,8 +2849,8 @@
   "cpc": 1.193333,
   "cpm": 25.755396,
   "reach": 106,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251810119010229",
@@ -2867,8 +2867,8 @@
   "cpc": 0.792143,
   "cpm": 29.338624,
   "reach": 267,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251810119660229",
@@ -2885,8 +2885,8 @@
   "cpc": 0.895,
   "cpm": 40.681818,
   "reach": 40,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251810120380229",
@@ -2903,8 +2903,8 @@
   "cpc": 0.58,
   "cpm": 20.863309,
   "reach": 117,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811459350229",
@@ -2921,8 +2921,8 @@
   "cpc": 0.7875,
   "cpm": 23.333333,
   "reach": 119,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811460180229",
@@ -2944,8 +2944,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 32.14,
   "roas": 1.1864156515319306,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811461160229",
@@ -2967,8 +2967,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 349.99,
   "roas": 1.833944665688535,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811464210229",
@@ -2985,8 +2985,8 @@
   "cpc": 0.21,
   "cpm": 24,
   "reach": 32,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811465760229",
@@ -3003,8 +3003,8 @@
   "cpc": 1.3,
   "cpm": 28.26087,
   "reach": 43,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811466590229",
@@ -3026,8 +3026,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 326.67,
   "roas": 3.647498883430103,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811467900229",
@@ -3049,8 +3049,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 280.61,
   "roas": 1.3899841489994056,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811470690229",
@@ -3067,8 +3067,8 @@
   "cpc": 0.568333,
   "cpm": 39.883041,
   "reach": 136,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811474400229",
@@ -3085,8 +3085,8 @@
   "cpc": 1.071429,
   "cpm": 24.429967,
   "reach": 531,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811477760229",
@@ -3108,8 +3108,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 38.15,
   "roas": 1.1220588235294118,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811487590229",
@@ -3131,8 +3131,8 @@
   "purchase_conversions": 9,
   "purchase_conversion_value": 406.29,
   "roas": 2.437983798379838,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251811493010229",
@@ -3149,8 +3149,8 @@
   "cpc": 0.885,
   "cpm": 45.384615,
   "reach": 36,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251813371940229",
@@ -3172,8 +3172,8 @@
   "purchase_conversions": 39,
   "purchase_conversion_value": 1802.1,
   "roas": 2.2390785746235276,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251813373090229",
@@ -3195,8 +3195,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 201.08,
   "roas": 3.010179640718563,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251813373550229",
@@ -3218,8 +3218,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 223.76,
   "roas": 1.9301302510135425,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251813375330229",
@@ -3241,8 +3241,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 120.45,
   "roas": 0.7424186390532544,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251813414850229",
@@ -3264,8 +3264,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 602.06,
   "roas": 3.1572709633436467,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251816651980229",
@@ -3287,8 +3287,8 @@
   "purchase_conversions": 64,
   "purchase_conversion_value": 3097.14,
   "roas": 2.684248842973774,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251816653310229",
@@ -3310,8 +3310,8 @@
   "purchase_conversions": 46,
   "purchase_conversion_value": 2155.83,
   "roas": 2.2213830127049223,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251816654500229",
@@ -3333,8 +3333,8 @@
   "purchase_conversions": 46,
   "purchase_conversion_value": 2044.45,
   "roas": 1.6967657335402644,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251816656120229",
@@ -3356,8 +3356,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 332.91,
   "roas": 0.4702517162471396,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251816658710229",
@@ -3379,8 +3379,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 410.15,
   "roas": 0.7818337781166602,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251862212960229",
@@ -3402,8 +3402,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 29.9,
   "roas": 0.22464312546957174,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251862221060229",
@@ -3425,8 +3425,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 114.31,
   "roas": 0.9765077737912182,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251867795670229",
@@ -3448,8 +3448,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 248.33,
   "roas": 3.7152902453620587,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251877229970229",
@@ -3471,8 +3471,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 42.25,
   "roas": 0.8975993201614616,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251887627470229",
@@ -3489,8 +3489,8 @@
   "cpc": 0,
   "cpm": 15.555556,
   "reach": 9,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251887629850229",
@@ -3507,8 +3507,8 @@
   "cpc": 0,
   "cpm": 10,
   "reach": 1,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251887632000229",
@@ -3525,8 +3525,8 @@
   "cpc": 0,
   "cpm": 20,
   "reach": 2,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251900884840229",
@@ -3548,8 +3548,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 0.7793304668304668,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251900885360229",
@@ -3571,8 +3571,8 @@
   "purchase_conversions": 50,
   "purchase_conversion_value": 2388.58,
   "roas": 1.5506131484474912,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251900885660229",
@@ -3594,8 +3594,8 @@
   "purchase_conversions": 20,
   "purchase_conversion_value": 1126.57,
   "roas": 3.949689724082319,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251923591080229",
@@ -3617,8 +3617,8 @@
   "purchase_conversions": 266,
   "purchase_conversion_value": 15577.82,
   "roas": 2.012232676618149,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251923592000229",
@@ -3640,8 +3640,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 49.92,
   "roas": 0.7662317728319262,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120251958579810229",
@@ -3663,8 +3663,8 @@
   "purchase_conversions": 13,
   "purchase_conversion_value": 670.31,
   "roas": 1.3387457559416815,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252009915370229",
@@ -3686,8 +3686,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 398.03,
   "roas": 2.206374722838137,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252009915390229",
@@ -3709,8 +3709,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 354.91,
   "roas": 2.413368693050456,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252009915400229",
@@ -3732,8 +3732,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 87.87,
   "roas": 1.9380238200264666,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252009915440229",
@@ -3750,8 +3750,8 @@
   "cpc": 0.84,
   "cpm": 19.84252,
   "reach": 112,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252009938140229",
@@ -3768,8 +3768,8 @@
   "cpc": 1.142,
   "cpm": 13.96088,
   "reach": 372,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252011634340229",
@@ -3791,8 +3791,8 @@
   "purchase_conversions": 22,
   "purchase_conversion_value": 1093.5,
   "roas": 1.7208548407402744,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252012417590229",
@@ -3810,8 +3810,8 @@
   "cpm": 10.32882,
   "reach": 878,
   "conversions": 85,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252012535580229",
@@ -3829,8 +3829,8 @@
   "cpm": 10.391978,
   "reach": 2016,
   "conversions": 213,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252013154170229",
@@ -3847,8 +3847,8 @@
   "cpc": 1.037895,
   "cpm": 17.870412,
   "reach": 1454,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252019948110229",
@@ -3870,8 +3870,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 216.97,
   "roas": 20.5853889943074,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252020962630229",
@@ -3889,8 +3889,8 @@
   "cpm": 5.09915,
   "reach": 337,
   "conversions": 19,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252020965040229",
@@ -3908,8 +3908,8 @@
   "cpm": 8.703025,
   "reach": 1818,
   "conversions": 140,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252020966850229",
@@ -3927,8 +3927,8 @@
   "cpm": 6.442308,
   "reach": 278,
   "conversions": 13,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252021555960229",
@@ -3946,8 +3946,8 @@
   "cpm": 6.436567,
   "reach": 473,
   "conversions": 25,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252021557820229",
@@ -3965,8 +3965,8 @@
   "cpm": 6.382979,
   "reach": 497,
   "conversions": 29,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252021559920229",
@@ -3984,8 +3984,8 @@
   "cpm": 6.975565,
   "reach": 1763,
   "conversions": 156,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252021563540229",
@@ -4003,8 +4003,8 @@
   "cpm": 6.2,
   "reach": 141,
   "conversions": 6,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252021568820229",
@@ -4022,8 +4022,8 @@
   "cpm": 6.647315,
   "reach": 1610,
   "conversions": 113,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252021569890229",
@@ -4041,8 +4041,8 @@
   "cpm": 6.07055,
   "reach": 1038,
   "conversions": 53,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252064059290229",
@@ -4059,8 +4059,8 @@
   "cpc": 1.265714,
   "cpm": 18.652632,
   "reach": 401,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252064207700229",
@@ -4082,8 +4082,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 492.68,
   "roas": 2.0499292668719313,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252065515310229",
@@ -4105,8 +4105,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 24.81,
   "roas": 3.519148936170213,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252065515680229",
@@ -4128,8 +4128,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 52.99,
   "roas": 6.234117647058824,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252065529140229",
@@ -4146,8 +4146,8 @@
   "cpc": 1.210833,
   "cpm": 16.797688,
   "reach": 707,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252065572930229",
@@ -4164,8 +4164,8 @@
   "cpc": 0.54,
   "cpm": 23.478261,
   "reach": 19,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252065633970229",
@@ -4187,8 +4187,8 @@
   "purchase_conversions": 15,
   "purchase_conversion_value": 787.35,
   "roas": 2.177646863591105,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081320040229",
@@ -4205,8 +4205,8 @@
   "cpc": 0.6525,
   "cpm": 19.772727,
   "reach": 119,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081321000229",
@@ -4223,8 +4223,8 @@
   "cpc": 1.252,
   "cpm": 21.69844,
   "reach": 513,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081673820229",
@@ -4246,8 +4246,8 @@
   "purchase_conversions": 20,
   "purchase_conversion_value": 1217.56,
   "roas": 2.4882185845952627,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081675630229",
@@ -4269,8 +4269,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 40.15,
   "roas": 0.652315190901706,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081682290229",
@@ -4292,8 +4292,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 262.27,
   "roas": 3.0581856343283578,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081682740229",
@@ -4315,8 +4315,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 198.39,
   "roas": 0.995234273101234,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081687370229",
@@ -4333,8 +4333,8 @@
   "cpc": 0,
   "cpm": 11.2,
   "reach": 24,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252081687880229",
@@ -4351,8 +4351,8 @@
   "cpc": 0.355,
   "cpm": 11.833333,
   "reach": 57,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252084784250229",
@@ -4369,8 +4369,8 @@
   "cpc": 0.445,
   "cpm": 9.270833,
   "reach": 91,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087815870229",
@@ -4392,8 +4392,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 64.45,
   "roas": 1.0686453324490135,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087817460229",
@@ -4415,8 +4415,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 423.67,
   "roas": 2.563502148000242,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087820150229",
@@ -4438,8 +4438,8 @@
   "purchase_conversions": 16,
   "purchase_conversion_value": 835.06,
   "roas": 1.7723490958485437,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087820570229",
@@ -4461,8 +4461,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 26.2,
   "roas": 0.6594512962496855,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087821820229",
@@ -4484,8 +4484,8 @@
   "purchase_conversions": 32,
   "purchase_conversion_value": 1648.22,
   "roas": 1.6543742722929298,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087822400229",
@@ -4507,8 +4507,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 213.04,
   "roas": 1.4871902268760906,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252087826340229",
@@ -4530,8 +4530,8 @@
   "purchase_conversions": 43,
   "purchase_conversion_value": 2670.15,
   "roas": 2.0515312629654106,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252101268580229",
@@ -4548,8 +4548,8 @@
   "cpc": 0.61,
   "cpm": 14.52381,
   "reach": 41,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252101275190229",
@@ -4571,8 +4571,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 41.6,
   "roas": 2.4821002386634845,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252101278100229",
@@ -4594,8 +4594,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 107.7,
   "roas": 1.440417279657617,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252101283000229",
@@ -4617,8 +4617,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 58.1,
   "roas": 0.7920927062031358,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252101285550229",
@@ -4640,8 +4640,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 338.47,
   "roas": 1.783768115942029,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252103414130229",
@@ -4658,8 +4658,8 @@
   "cpc": 4.683333,
   "cpm": 28.673469,
   "reach": 422,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252103420940229",
@@ -4681,8 +4681,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 352.28,
   "roas": 2.4118855264959604,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252103938940229",
@@ -4704,8 +4704,8 @@
   "purchase_conversions": 9,
   "purchase_conversion_value": 427.82,
   "roas": 1.7754814077025232,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252104043400229",
@@ -4727,8 +4727,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 172.71,
   "roas": 1.6398594758830234,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252104082670229",
@@ -4750,8 +4750,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 445.25,
   "roas": 3.4095259973964316,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252104085550229",
@@ -4773,8 +4773,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 0.9844810863239574,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252104098650229",
@@ -4796,8 +4796,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 214.55,
   "roas": 2.015121630506246,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252106862120229",
@@ -4819,8 +4819,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 395.19,
   "roas": 1.9184911888926646,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252106877550229",
@@ -4842,8 +4842,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 40.15,
   "roas": 0.7510288065843621,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252106889370229",
@@ -4860,8 +4860,8 @@
   "cpc": 1.531667,
   "cpm": 38.776371,
   "reach": 201,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252106889390229",
@@ -4883,8 +4883,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 69.5,
   "roas": 3.0309638028783255,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252107025650229",
@@ -4906,8 +4906,8 @@
   "purchase_conversions": 34,
   "purchase_conversion_value": 2309.2,
   "roas": 2.098852956681391,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252107028770229",
@@ -4924,8 +4924,8 @@
   "cpc": 0.782051,
   "cpm": 19.677419,
   "reach": 1368,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252113947000229",
@@ -4947,8 +4947,8 @@
   "purchase_conversions": 194,
   "purchase_conversion_value": 9800.83,
   "roas": 1.2709698753776923,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252132889950229",
@@ -4970,8 +4970,8 @@
   "purchase_conversions": 13,
   "purchase_conversion_value": 753.03,
   "roas": 1.0563356572727145,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133227110229",
@@ -4993,8 +4993,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 76.8,
   "roas": 1.1777334764606655,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133227140229",
@@ -5011,8 +5011,8 @@
   "cpc": 1.735484,
   "cpm": 15.698862,
   "reach": 2129,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133227160229",
@@ -5034,8 +5034,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 70.96,
   "roas": 0.7711367094109975,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133227370229",
@@ -5057,8 +5057,8 @@
   "purchase_conversions": 11,
   "purchase_conversion_value": 792.98,
   "roas": 2.377537253020718,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133227400229",
@@ -5075,8 +5075,8 @@
   "cpc": 2.227143,
   "cpm": 21.798098,
   "reach": 2315,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133228680229",
@@ -5098,8 +5098,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 136.41,
   "roas": 0.9377191173437822,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133228780229",
@@ -5121,8 +5121,8 @@
   "purchase_conversions": 38,
   "purchase_conversion_value": 1989.57,
   "roas": 1.3194747488145373,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133228790229",
@@ -5144,8 +5144,8 @@
   "purchase_conversions": 14,
   "purchase_conversion_value": 875.52,
   "roas": 2.352915882827197,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133228820229",
@@ -5167,8 +5167,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 90.84,
   "roas": 0.9302611367127496,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133229030229",
@@ -5190,8 +5190,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 373.16,
   "roas": 1.7505277478069148,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133229820229",
@@ -5213,8 +5213,8 @@
   "purchase_conversions": 80,
   "purchase_conversion_value": 4739.87,
   "roas": 1.5092435743943755,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252133230060229",
@@ -5231,8 +5231,8 @@
   "cpc": 0.458498,
   "cpm": 18.559483,
   "reach": 3722,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252134549900229",
@@ -5254,8 +5254,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 105.2,
   "roas": 1.677295918367347,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170110990229",
@@ -5277,8 +5277,8 @@
   "purchase_conversions": 21,
   "purchase_conversion_value": 1409.16,
   "roas": 1.75238142611983,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170115130229",
@@ -5300,8 +5300,8 @@
   "purchase_conversions": 76,
   "purchase_conversion_value": 4822.63,
   "roas": 1.1076040798234312,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170124110229",
@@ -5323,8 +5323,8 @@
   "purchase_conversions": 14,
   "purchase_conversion_value": 848.07,
   "roas": 1.2663053216269486,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170124450229",
@@ -5346,8 +5346,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 26.2,
   "roas": 0.608312050150917,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170124460229",
@@ -5369,8 +5369,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 99.4,
   "roas": 0.8289550496205488,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170124670229",
@@ -5392,8 +5392,8 @@
   "purchase_conversions": 9,
   "purchase_conversion_value": 466.39,
   "roas": 1.702774735304856,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252170124850229",
@@ -5415,8 +5415,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 346.33,
   "roas": 1.215704858185903,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252207278360229",
@@ -5438,8 +5438,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 98.58,
   "roas": 1.4366074030894782,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252207343680229",
@@ -5461,8 +5461,8 @@
   "purchase_conversions": 19,
   "purchase_conversion_value": 1203.36,
   "roas": 1.1655608612690447,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252207347310229",
@@ -5484,8 +5484,8 @@
   "purchase_conversions": 7,
   "purchase_conversion_value": 558.69,
   "roas": 2.2290536227258224,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252207351330229",
@@ -5502,8 +5502,8 @@
   "cpc": 0.805536,
   "cpm": 27.101232,
   "reach": 2445,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252253506020229",
@@ -5525,8 +5525,8 @@
   "purchase_conversions": 46,
   "purchase_conversion_value": 2359.53,
   "roas": 1.4666123829118056,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252264092610229",
@@ -5548,8 +5548,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 94.6,
   "roas": 1.8419003115264796,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252264481780229",
@@ -5571,8 +5571,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 322.99,
   "roas": 0.7685846183133448,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252264724230229",
@@ -5589,8 +5589,8 @@
   "cpc": 3.095909,
   "cpm": 22.478548,
   "reach": 2230,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252265285140229",
@@ -5607,8 +5607,8 @@
   "cpc": 3.178889,
   "cpm": 23.97486,
   "reach": 2502,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252265324100229",
@@ -5625,8 +5625,8 @@
   "cpc": 0,
   "cpm": 12.222222,
   "reach": 9,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252265515140229",
@@ -5648,8 +5648,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 250.87,
   "roas": 1.3087959098497495,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252265515450229",
@@ -5671,8 +5671,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 85.63,
   "roas": 0.7530560196992349,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252272543090229",
@@ -5694,8 +5694,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 28.2,
   "roas": 0.5439814814814814,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252272720070229",
@@ -5717,8 +5717,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 294,
   "roas": 1.2516497083741327,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252272721010229",
@@ -5740,8 +5740,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 68.35,
   "roas": 1.4661089661089661,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252357615840229",
@@ -5763,8 +5763,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 246.35,
   "roas": 1.7208018999720593,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252357874320229",
@@ -5786,8 +5786,8 @@
   "purchase_conversions": 16,
   "purchase_conversion_value": 962.89,
   "roas": 1.1152692356695275,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252357912980229",
@@ -5809,8 +5809,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 269.99,
   "roas": 1.2532609200204243,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252357936140229",
@@ -5832,8 +5832,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 112.44,
   "roas": 0.5338777835810264,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252357952280229",
@@ -5855,8 +5855,8 @@
   "purchase_conversions": 36,
   "purchase_conversion_value": 1831.92,
   "roas": 1.3155808341951052,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252373130070229",
@@ -5878,8 +5878,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 79.19,
   "roas": 0.4464930085701398,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252373360930229",
@@ -5901,8 +5901,8 @@
   "purchase_conversions": 13,
   "purchase_conversion_value": 500.43,
   "roas": 0.9078095238095238,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252373399110229",
@@ -5924,8 +5924,8 @@
   "purchase_conversions": 15,
   "purchase_conversion_value": 1017.69,
   "roas": 0.8610918382887991,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252373973340229",
@@ -5947,8 +5947,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 107.39,
   "roas": 0.34282521947326416,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252374055790229",
@@ -5970,8 +5970,8 @@
   "purchase_conversions": 57,
   "purchase_conversion_value": 3806.57,
   "roas": 1.9504767858332352,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252374238600229",
@@ -5993,8 +5993,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 63,
   "roas": 0.4864864864864865,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252403246350229",
@@ -6016,8 +6016,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 433.57,
   "roas": 0.8123395724429955,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252403365200229",
@@ -6039,8 +6039,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 26.2,
   "roas": 0.132156368221942,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252403393810229",
@@ -6062,8 +6062,8 @@
   "purchase_conversions": 66,
   "purchase_conversion_value": 2543.96,
   "roas": 1.2679352864362683,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252403450150229",
@@ -6085,8 +6085,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 466.14,
   "roas": 0.7823635051442575,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252403555090229",
@@ -6108,8 +6108,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 32.14,
   "roas": 0.21739718614718614,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252404007450229",
@@ -6131,8 +6131,8 @@
   "purchase_conversions": 16,
   "purchase_conversion_value": 579.7,
   "roas": 1.4590989176944376,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252404007480229",
@@ -6154,8 +6154,8 @@
   "purchase_conversions": 18,
   "purchase_conversion_value": 1046.13,
   "roas": 1.0858278668105954,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252404007490229",
@@ -6165,20 +6165,20 @@
   "campaign_id": "120252404007400229",
   "campaign_name": "CreativeTesting_HERBAL_ABO_Acq_Aus_061026",
   "account_id": "act_2157906551266386",
-  "impressions": 235104,
-  "clicks": 4884,
-  "spend": 4129.43,
-  "ctr": 2.077379,
-  "cpc": 0.845502,
-  "cpm": 17.564269,
-  "reach": 78520,
-  "conversions": 147,
-  "conversion_value": 7568.71,
-  "purchase_conversions": 147,
-  "purchase_conversion_value": 7568.71,
-  "roas": 1.8328703961563702,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 246494,
+  "clicks": 5093,
+  "spend": 4325.64,
+  "ctr": 2.066176,
+  "cpc": 0.84933,
+  "cpm": 17.548662,
+  "reach": 79700,
+  "conversions": 159,
+  "conversion_value": 8162.02,
+  "purchase_conversions": 159,
+  "purchase_conversion_value": 8162.02,
+  "roas": 1.8868930377932513,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448686490229",
@@ -6200,8 +6200,8 @@
   "purchase_conversions": 67,
   "purchase_conversion_value": 2945.44,
   "roas": 1.0147242222758122,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448752590229",
@@ -6223,8 +6223,8 @@
   "purchase_conversions": 52,
   "purchase_conversion_value": 2918.79,
   "roas": 2.0281910347367473,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448788140229",
@@ -6246,8 +6246,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 307.7,
   "roas": 1.0943557278514777,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448818260229",
@@ -6269,8 +6269,8 @@
   "purchase_conversions": 119,
   "purchase_conversion_value": 4973.78,
   "roas": 1.336610062909983,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448831490229",
@@ -6292,8 +6292,8 @@
   "purchase_conversions": 86,
   "purchase_conversion_value": 4370.61,
   "roas": 1.328864876040596,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448897710229",
@@ -6315,8 +6315,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 69.11,
   "roas": 0.24575939689200244,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252448923880229",
@@ -6338,8 +6338,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 298.43,
   "roas": 1.1826035268476323,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252449098550229",
@@ -6349,20 +6349,20 @@
   "campaign_id": "120252372672760229",
   "campaign_name": "GermanysInvestment_AllProd_ABO_Acq_Aus_041026",
   "account_id": "act_2157906551266386",
-  "impressions": 276054,
-  "clicks": 4051,
-  "spend": 7357.95,
-  "ctr": 1.467467,
-  "cpc": 1.816329,
-  "cpm": 26.654024,
-  "reach": 70620,
-  "conversions": 255,
-  "conversion_value": 15146.36,
-  "purchase_conversions": 255,
-  "purchase_conversion_value": 15146.36,
-  "roas": 2.058502707955341,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 308931,
+  "clicks": 4504,
+  "spend": 8129.4,
+  "ctr": 1.457931,
+  "cpc": 1.804929,
+  "cpm": 26.314614,
+  "reach": 72872,
+  "conversions": 288,
+  "conversion_value": 17456.97,
+  "purchase_conversions": 288,
+  "purchase_conversion_value": 17456.97,
+  "roas": 2.1473872610524762,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252449380410229",
@@ -6384,8 +6384,8 @@
   "purchase_conversions": 32,
   "purchase_conversion_value": 1729.51,
   "roas": 1.258063342886655,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450172400229",
@@ -6402,8 +6402,8 @@
   "cpc": 2.845,
   "cpm": 34.519717,
   "reach": 794,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450175820229",
@@ -6425,8 +6425,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 1.7185912631222484,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450177910229",
@@ -6448,8 +6448,8 @@
   "purchase_conversions": 14,
   "purchase_conversion_value": 551.41,
   "roas": 1.0359786570473077,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450179310229",
@@ -6471,8 +6471,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 347.51,
   "roas": 0.839315042024925,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450181050229",
@@ -6494,8 +6494,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 54.1,
   "roas": 0.4445722738105021,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450182910229",
@@ -6517,8 +6517,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 73.41,
   "roas": 0.7906300484652665,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252450185520229",
@@ -6535,8 +6535,8 @@
   "cpc": 3.862667,
   "cpm": 49.018613,
   "reach": 1019,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252456275400229",
@@ -6553,8 +6553,8 @@
   "cpc": 4.927778,
   "cpm": 45.674562,
   "reach": 789,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252456981550229",
@@ -6576,8 +6576,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 26.2,
   "roas": 0.13817107900010547,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252456987310229",
@@ -6599,8 +6599,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 172.83,
   "roas": 1.2639315489249672,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252456990870229",
@@ -6617,8 +6617,8 @@
   "cpc": 0.311667,
   "cpm": 21.494253,
   "reach": 78,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252456993820229",
@@ -6640,8 +6640,8 @@
   "purchase_conversions": 14,
   "purchase_conversion_value": 712.24,
   "roas": 0.8933037338049191,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252457211880229",
@@ -6663,8 +6663,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 278.19,
   "roas": 0.8109549906716418,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252457277240229",
@@ -6686,8 +6686,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 152.89,
   "roas": 0.5039720473349375,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252457526210229",
@@ -6709,8 +6709,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 42.15,
   "roas": 0.3322298415701111,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252459342570229",
@@ -6727,8 +6727,8 @@
   "cpc": 1.134872,
   "cpm": 28.024483,
   "reach": 4062,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252461307410229",
@@ -6750,8 +6750,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 69.2,
   "roas": 0.5658680186442064,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252461400300229",
@@ -6768,8 +6768,8 @@
   "cpc": 3.498333,
   "cpm": 29.469989,
   "reach": 2303,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467186380229",
@@ -6791,8 +6791,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 12.25,
   "roas": 0.07525494532497849,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467221540229",
@@ -6814,8 +6814,8 @@
   "purchase_conversions": 8,
   "purchase_conversion_value": 250.63,
   "roas": 0.6636041092988774,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467242840229",
@@ -6832,8 +6832,8 @@
   "cpc": 3.721957,
   "cpm": 34.869654,
   "reach": 3650,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467311720229",
@@ -6855,8 +6855,8 @@
   "purchase_conversions": 17,
   "purchase_conversion_value": 1006.02,
   "roas": 1.1946562166013537,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467458130229",
@@ -6878,8 +6878,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 21.28,
   "roas": 0.14115149907137173,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467512850229",
@@ -6901,8 +6901,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 50.75,
   "roas": 0.2599631185329372,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467538100229",
@@ -6924,8 +6924,8 @@
   "purchase_conversions": 12,
   "purchase_conversion_value": 517.75,
   "roas": 0.9744231565475966,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467580010229",
@@ -6942,8 +6942,8 @@
   "cpc": 2.429483,
   "cpm": 47.316991,
   "reach": 2351,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252467695870229",
@@ -6960,8 +6960,8 @@
   "cpc": 3.182857,
   "cpm": 37.082766,
   "reach": 4717,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252483881130229",
@@ -6983,8 +6983,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 162.33,
   "roas": 2.112846544318626,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252483897600229",
@@ -7006,8 +7006,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 207.18,
   "roas": 0.6638895119684687,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252483911510229",
@@ -7029,8 +7029,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 220.7,
   "roas": 0.9815432510562597,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252483996470229",
@@ -7052,8 +7052,8 @@
   "purchase_conversions": 13,
   "purchase_conversion_value": 729.24,
   "roas": 1.0061535914346422,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252484687110229",
@@ -7070,8 +7070,8 @@
   "cpc": 1.548966,
   "cpm": 43.359073,
   "reach": 1897,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252484735180229",
@@ -7093,8 +7093,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 268.29,
   "roas": 1.2096032461677186,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252484737230229",
@@ -7116,8 +7116,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 112.02,
   "roas": 0.5348548510313216,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252484883770229",
@@ -7139,8 +7139,8 @@
   "purchase_conversions": 6,
   "purchase_conversion_value": 274.79,
   "roas": 1.0898742712092968,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252484984770229",
@@ -7162,8 +7162,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 33.53,
   "roas": 0.2586592609735401,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252485544760229",
@@ -7185,8 +7185,8 @@
   "purchase_conversions": 3,
   "purchase_conversion_value": 193.97,
   "roas": 0.7772791023842917,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252533406760229",
@@ -7203,8 +7203,8 @@
   "cpc": 0.86568,
   "cpm": 41.860735,
   "reach": 1890,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252533604790229",
@@ -7226,8 +7226,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 295.64,
   "roas": 1.0809506398537476,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252533979750229",
@@ -7244,8 +7244,8 @@
   "cpc": 1.157667,
   "cpm": 39.864555,
   "reach": 2796,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252543825770229",
@@ -7267,8 +7267,8 @@
   "purchase_conversions": 20,
   "purchase_conversion_value": 1830.61,
   "roas": 1.4012308351767793,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252590763000229",
@@ -7290,8 +7290,8 @@
   "purchase_conversions": 5,
   "purchase_conversion_value": 228.83,
   "roas": 1.7420066991473813,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252593912710229",
@@ -7308,8 +7308,8 @@
   "cpc": 3.700909,
   "cpm": 37.729379,
   "reach": 1763,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252593962600229",
@@ -7331,8 +7331,8 @@
   "purchase_conversions": 2,
   "purchase_conversion_value": 38.45,
   "roas": 0.5065208799894613,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252594099930229",
@@ -7349,8 +7349,8 @@
   "cpc": 4.315714,
   "cpm": 35.921522,
   "reach": 656,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252594558500229",
@@ -7372,8 +7372,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 64.7,
   "roas": 0.9981487195310091,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252595155050229",
@@ -7395,8 +7395,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 209.13,
   "roas": 2.658657513348589,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252603255660229",
@@ -7418,8 +7418,8 @@
   "purchase_conversions": 24,
   "purchase_conversion_value": 1357.91,
   "roas": 1.3790788605088105,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252603297790229",
@@ -7436,13 +7436,13 @@
   "cpc": 2.6166,
   "cpm": 38.109525,
   "reach": 2960,
-  "conversions": 2,
-  "conversion_value": 101.5,
-  "purchase_conversions": 2,
-  "purchase_conversion_value": 101.5,
-  "roas": 0.7758159443552701,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "conversions": 3,
+  "conversion_value": 225.09,
+  "purchase_conversions": 3,
+  "purchase_conversion_value": 225.09,
+  "roas": 1.7204769548268743,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252612559800229",
@@ -7464,8 +7464,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 12.25,
   "roas": 0.21066208082545143,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252612997590229",
@@ -7487,8 +7487,8 @@
   "purchase_conversions": 10,
   "purchase_conversion_value": 427.52,
   "roas": 1.2526590289782882,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252613026720229",
@@ -7510,8 +7510,8 @@
   "purchase_conversions": 4,
   "purchase_conversion_value": 145.54,
   "roas": 0.7088102079579213,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252613099110229",
@@ -7533,8 +7533,8 @@
   "purchase_conversions": 1,
   "purchase_conversion_value": 59.18,
   "roas": 0.8493111366245694,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252613206340229",
@@ -7551,8 +7551,8 @@
   "cpc": 1.108632,
   "cpm": 18.700284,
   "reach": 5558,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  },
  {
   "ad_id": "120252718225910229",
@@ -7562,19 +7562,19 @@
   "campaign_id": "120252372672760229",
   "campaign_name": "GermanysInvestment_AllProd_ABO_Acq_Aus_041026",
   "account_id": "act_2157906551266386",
-  "impressions": 17004,
-  "clicks": 184,
-  "spend": 328.72,
-  "ctr": 1.082098,
-  "cpc": 1.786522,
-  "cpm": 19.331922,
-  "reach": 10740,
-  "conversions": 14,
-  "conversion_value": 840.15,
-  "purchase_conversions": 14,
-  "purchase_conversion_value": 840.15,
-  "roas": 2.5558225845704547,
-  "date_start": "2026-07-25",
-  "date_stop": "2026-10-22"
+  "impressions": 27334,
+  "clicks": 318,
+  "spend": 554.98,
+  "ctr": 1.163386,
+  "cpc": 1.74522,
+  "cpm": 20.303651,
+  "reach": 14033,
+  "conversions": 19,
+  "conversion_value": 1098.05,
+  "purchase_conversions": 19,
+  "purchase_conversion_value": 1098.05,
+  "roas": 1.9785397671988179,
+  "date_start": "2026-07-26",
+  "date_stop": "2026-10-23"
  }
 ]
