@@ -48,6 +48,18 @@
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/Copy_of_11_Flora_Images_4.png?v=1769556440',
     },
     {
+      name: 'LACALUT White & Repair Toothpaste',
+      keywords: ['white & repair', 'white and repair', 'white&repair', 'stained teeth', 'lifts stains'],
+      url: STORE + '/products/lacalut-white-repair-toothpaste-75ml',
+      img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/ff298fa38c18c3519039e19132bd69e2.jpg?v=1789631036',
+    },
+    {
+      name: 'LACALUT Sensitive Toothpaste',
+      keywords: ['sensitive range', 'sensitive toothpaste', 'sensitive teeth'],
+      url: STORE + '/products/lacalut-sensitive-toothpaste-75ml',
+      img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/lacalut-sensitive-listing_1.jpg?v=1790129464',
+    },
+    {
       name: 'LACALUT Aktiv Mouthwash',
       keywords: ['mouthwash', 'aktiv mouthwash', 'gum care mouthwash', 'gum mouthwash'],
       url: STORE + '/products/lacalut-aktiv-mouthwash-300ml',
@@ -66,6 +78,16 @@
       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/11_Bundle_Images_9c7a3968-1d3a-4e64-ab89-0135240ce861.png?v=1776211855',
     },
   ];
+
+  // One "shop this" card per range — the full kit where it exists (best value),
+  // the toothpaste PDP for the ranges sold as a single tube.
+  var RANGE_CARDS = {
+    'AKTIV':          { name: 'AKTIV 3-Part Gum-Care Kit',      url: STORE + '/products/lacalut-aktiv-complete-gum-care-system',  img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/lacalut-aktiv-listing_27.jpg' },
+    'HERBAL':         { name: 'HERBAL 3-Part Gum-Care Kit',     url: STORE + '/products/lacalut-herbal-complete-gum-care-system', img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/1d68b2a0-5e46-4f5f-ada9-71ba803396d6.png' },
+    'FLORA':          { name: 'FLORA 3-Part Fresh-Breath Kit',  url: STORE + '/products/lacalut-flora-complete-bad-breath-system', img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/lacalut-flora-listing_8_fc61e737-2fcf-4143-b604-b9a51e868688.jpg' },
+    'SENSITIVE':      { name: 'SENSITIVE Toothpaste',           url: STORE + '/products/lacalut-sensitive-toothpaste-75ml',       img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/lacalut-sensitive-listing_1.jpg' },
+    'WHITE & REPAIR': { name: 'WHITE & REPAIR Toothpaste',      url: STORE + '/products/lacalut-white-repair-toothpaste-75ml',    img: 'https://cdn.shopify.com/s/files/1/0635/3960/9651/files/ff298fa38c18c3519039e19132bd69e2.jpg' },
+  };
 
   // ── Session state ────────────────────────────────────────────────────────────
   var sessionId = sessionStorage.getItem('lc_sid');
@@ -688,7 +710,7 @@
         var btn = document.createElement('button');
         btn.className = 'lc-symptom-btn';
         btn.innerHTML = '<span class="lc-symptom-icon">' + s.icon + '</span><span class="lc-symptom-text">' + s.label.replace('\n', '<br>') + '</span>';
-        btn.onclick = function () { startChat(s.message); };
+        btn.onclick = function () { enterChatMode(); concernAsked = true; lastConcern = s; appendMsg('user', s.concern); runConsult(s); };
         grid.appendChild(btn);
       });
     }
@@ -841,7 +863,13 @@
     enterChatMode();
 
     if (btn.action === 'discount') { startDiscountFlow(); return; }
+    playOpenerReply(opener, btn);
+  }
 
+  // The visitor's answer as their bubble, then the scripted reply — and then the
+  // salesperson pivot: never leave them at a dead end.
+  function playOpenerReply(opener, btn) {
+    if (opener && opener.id && openersPlayed.indexOf(opener.id) === -1) openersPlayed.push(opener.id);
     appendMsg('user', btn.label);
     var typingEl = showTyping();
     setTimeout(function () {
@@ -871,9 +899,250 @@
           chat2.appendChild(offerWrap);
           chat2.scrollTop = chat2.scrollHeight;
         }
-        showProductCards(btn.reply || '');
+        var cardShown = showProductCards(btn.reply || '');
+        setTimeout(function () {
+          if (!concernAsked && !btn.offer) askConcern();
+          else nextStepChips(btn.reply || '', { cardShown: cardShown, offerShown: !!btn.offer });
+        }, 700);
       });
     }, 900);
+  }
+
+  // ── Never a dead end ─────────────────────────────────────────────────────────
+  // The quiz breaks the ice. Every reply after that ends with a next move: ask
+  // about THEIR concern, show the matching range, another quiz, 10% off, FAQs.
+  var openersPlayed = [];
+  var concernAsked = false;
+  var lastConcern = null;
+  var pitched = false;
+
+  // The consultative close: one set of adult teeth, mouth ↔ overall health,
+  // a few cents a day to upgrade, 30-day money-back guarantee.
+  var PITCH_Q = "Can I ask — have you tried a premium oral-care range like LACALUT before, or has it mostly been the supermarket stuff? 😊";
+  var PITCH_NEW = "Most people haven't — totally normal 😄 Here's the honest version: you only get ONE set of adult teeth for your whole life, and dentists keep saying what happens in your mouth doesn't stay in your mouth — gum health is linked to your overall health. LACALUT is pharmacy-grade, made in Germany since 1925, and upgrading works out to roughly 10 extra cents a day. Plus a 30-day money-back guarantee — if it isn't for you, you get your money back. Zero risk 👌";
+  var PITCH_YES = "Then you already know the difference a proper formula makes 👏 Quick reminder of why it matters: one set of adult teeth for life, and your mouth is the front door to the rest of your body. LACALUT has been pharmacy-grade and made in Germany since 1925 — and it's about 10 extra cents a day over the supermarket stuff. 30-day money-back guarantee, so nothing to lose 👌";
+  var PITCH_DIFF = "Fair question 😊 Supermarket pastes are built to a price. LACALUT is built by German pharmacists — made in Germany since 1925, sold in pharmacies, and each range targets one job properly (gums, breath, sensitivity, enamel). You only get one set of adult teeth, and your mouth is linked to your overall health — so the upgrade is about 10 cents a day well spent. And it's covered by a 30-day money-back guarantee 👌";
+
+  // ── Consultative mode ────────────────────────────────────────────────────────
+  // They named a concern. Make them feel heard, ask two questions that show we
+  // care, explain WHY it happens, then gently lead to the one right product.
+  var CONSULT = {
+    'AKTIV': {
+      q1: "Gums are the thing most of us ignore until they start complaining 😔 You're in the right place. What are you noticing?",
+      a1: [
+        { label: 'Bleeding when I brush', reply: "That's the most common one — and it's your gums asking for help, not a reason to brush softer and skip them. Usually it's plaque sitting right along the gum line, irritating the edge." },
+        { label: 'Red or puffy gums', reply: "Puffy, tender edges are the gum line reacting to plaque that's been left too long. The good news: gums respond fast once that edge is cleaned properly every day." },
+        { label: 'Gums pulling back', reply: "Receding gums often come from years of hard scrubbing or a stiff brush — the gum tissue simply retreats. The fix is gentle technique plus a formula that helps gums feel firm and tight." },
+        { label: 'Just want to look after them', reply: "Love that — prevention is the cheapest dentistry there is 👏 Healthy gums are the foundation everything else sits on." },
+      ],
+      q2: "And how long has it been like this?",
+      a2: [
+        { label: 'Just started', reply: "Perfect timing — early is when a proper routine makes the biggest difference." },
+        { label: 'A few months', reply: "Okay — a few months means the routine needs a real upgrade, not just a new brush. Worth mentioning it at your next dental check too; we're honest like that." },
+        { label: 'Years 😅', reply: "Years is very common, and still very fixable day to day. Please do mention it to your dentist as well — we'd rather you have both us AND a professional in your corner." },
+      ],
+      lead: "Here's what I'd do 👇 Our AKTIV 3-Part Kit: an astringent toothpaste that helps gums feel firm, a matching mouthwash for the bits the brush misses, and a micro-fine SOFT brush that cleans the gum line without the scrubbing. All three work on the exact spot that's bothering you.",
+    },
+    'FLORA': {
+      q1: "Bad breath is far more common than anyone admits — and it's nearly always fixable 😊 When do you notice it most?",
+      a1: [
+        { label: 'Mornings', reply: "Classic morning breath: overnight your saliva slows right down, so odour-causing bacteria party on your tongue and between your teeth. It's chemistry, not hygiene." },
+        { label: 'All day', reply: "All-day breath usually means the odour compounds are being masked, not neutralised — mint on top of the problem. You need something that deals with the source." },
+        { label: 'After coffee or food', reply: "Coffee, garlic, onion — they feed the bacteria that make sulphur compounds. A quick minty rinse hides it for 20 minutes; neutralising it is the real fix." },
+        { label: 'Someone told me 😳', reply: "Oof — but honestly, good on them; most people never find out. It's almost always bacteria on the tongue and between teeth, and it's very fixable." },
+      ],
+      q2: "Quick one — do you clean your tongue when you brush?",
+      a2: [
+        { label: 'Yes', reply: "Great — that's where most of the odour hides, so you're already ahead." },
+        { label: 'No', reply: "That's the single biggest upgrade you can make — your tongue carries most of the bacteria behind bad breath. A built-in tongue cleaner makes it a two-second habit." },
+        { label: 'Should I?', reply: "Yes! Your tongue holds most of the bacteria behind bad breath. Brush it gently each time and you'll feel the difference within days." },
+      ],
+      lead: "Here's what I'd do 👇 Our FLORA 3-Part Kit: a toothpaste and mouthwash that neutralise the odour compounds at the source instead of masking them, plus a brush with a built-in tongue cleaner. Fresh breath that actually lasts.",
+    },
+    'SENSITIVE': {
+      q1: "That sharp zing is awful — I get it 😖 What sets it off for you?",
+      a1: [
+        { label: 'Cold drinks or ice cream', reply: "Cold is the classic trigger. Under your enamel are tiny channels that lead to the nerve — when they're exposed, cold shoots straight through." },
+        { label: 'Hot drinks', reply: "Heat through exposed channels in the tooth surface — same mechanism as cold, and often a sign the protective layer has worn thin in spots." },
+        { label: 'Sweet things', reply: "Sweet triggers mean those tiny channels in the tooth surface are open — sugar draws fluid through them and the nerve feels it." },
+        { label: 'Brushing', reply: "Zinging when you brush usually means exposed dentine near the gum line — often from scrubbing hard or a worn brush. Gentler tools, better formula." },
+      ],
+      q2: "Has this been going on for a while, or is it new?",
+      a2: [
+        { label: "It's new", reply: "If it's new and sharp, worth a quick dentist check to rule out a chip or crack — and in the meantime the right paste can calm it a lot." },
+        { label: 'Ages', reply: "Long-term sensitivity is usually the daily kind — exposed channels that a normal paste doesn't seal. That's exactly what a dedicated formula is for." },
+      ],
+      lead: "Here's what I'd do 👇 Our SENSITIVE toothpaste helps seal those exposed channels and calm the zing, while still cleaning properly. Use it twice a day and don't rinse straight after — let it work.",
+    },
+    'WHITE & REPAIR': {
+      q1: "Good one to sort out — a bright, strong smile changes how you feel about photos 😁 Which is bothering you more?",
+      a1: [
+        { label: 'Stains or yellowing', reply: "Most stains sit in the surface layer and come from tea, coffee, wine and time. Harsh whiteners strip; the smart way is to lift stains gently while strengthening the surface." },
+        { label: 'Feels weak or chipped edges', reply: "Here's the hard truth: enamel can't regrow — it has no living cells. But it CAN be remineralised, which is why hydroxyapatite matters so much." },
+        { label: 'Both', reply: "They're linked — worn enamel stains more easily and looks duller. Strengthen the surface and it both looks brighter and holds up better." },
+      ],
+      q2: "Are you a big coffee, tea or red wine person?",
+      a2: [
+        { label: 'Coffee ☕', reply: "Coffee's a steady stainer — and the acidity softens enamel briefly, so brushing straight after is a trap. Brush first, or wait 30 minutes." },
+        { label: 'Tea 🍵', reply: "Tea is the sneaky one — tannins stain more than coffee. Nothing wrong with the habit; you just need a paste that lifts it daily." },
+        { label: 'Wine 🍷', reply: "Red wine stains AND is acidic — a double hit on enamel. A remineralising paste is the counter-move." },
+        { label: 'Not really', reply: "Then it's mostly time and enamel wear — which is the easier one to turn around with daily remineralising." },
+      ],
+      lead: "Here's what I'd do 👇 Our WHITE & REPAIR toothpaste has the highest hydroxyapatite in our range — it remineralises and strengthens enamel while gently lifting stains. Brighter AND stronger, no harsh bleaching.",
+    },
+  };
+
+  function runConsult(s) {
+    var c = CONSULT[s.range];
+    if (!c) { startChat(s.message); return; }
+    botSay(c.q1, function () {
+      makeChips(c.a1.map(function (a) {
+        return { label: a.label, fn: function () {
+          appendMsg('user', a.label);
+          botSay(a.reply, function () {
+            botSay(c.q2, function () {
+              makeChips(c.a2.map(function (b) {
+                return { label: b.label, fn: function () {
+                  appendMsg('user', b.label);
+                  botSay(b.reply, function () {
+                    botSay(c.lead, function () {
+                      renderProductCards([RANGE_CARDS[s.range]]);
+                      setTimeout(pitchPremium, 1200);
+                    });
+                  });
+                } };
+              }));
+            });
+          });
+        } };
+      }));
+    });
+  }
+
+  function pitchPremium() {
+    pitched = true;
+    botSay(PITCH_Q, function () {
+      makeChips([
+        { label: 'Mostly supermarket 😅', fn: function () { appendMsg('user', 'Mostly supermarket'); botSay(PITCH_NEW, afterPitch); } },
+        { label: "Yes, I've tried premium", fn: function () { appendMsg('user', "Yes, I've tried premium"); botSay(PITCH_YES, afterPitch); } },
+        { label: "What's the difference?", fn: function () { appendMsg('user', "What's the difference?"); botSay(PITCH_DIFF, afterPitch); } },
+      ]);
+    });
+  }
+
+  function afterPitch() {
+    var range = lastConcern ? lastConcern.range : null;
+    var items = [];
+    if (range) items.push({ label: '🛒 Shop ' + range, fn: function () { appendMsg('user', 'Show me ' + range); showRangeCard(range); } });
+    else items.push({ label: '🦷 Find my perfect match', fn: function () { appendMsg('user', 'Find my perfect match'); askConcern(); } });
+    if (!discountChoice) items.push({ label: '🎁 10% off my first order', fn: function () { appendMsg('user', '10% off please'); startDiscountFlow(); } });
+    items.push({ label: '🔄 How does the guarantee work?', fn: function () { appendMsg('user', 'How does the guarantee work?'); botSay("Simple: try it for 30 days. If you're not happy, email hello@lacalut.com.au and we refund the product — no forms, no fuss 👌", function () { nextStepChips(range || '', {}); }); } });
+    items.push({ label: '🎲 Another quiz', fn: function () { playOpenerInChat(nextQuizOpener()); } });
+    makeChips(items);
+  }
+
+  function rangeInText(text) {
+    var t = (text || '').toUpperCase();
+    var keys = Object.keys(RANGE_CARDS);
+    for (var i = 0; i < keys.length; i++) if (t.indexOf(keys[i]) !== -1) return keys[i];
+    return null;
+  }
+
+  function botSay(text, cb) {
+    var typingEl = showTyping();
+    setTimeout(function () {
+      typingEl.remove();
+      var d = appendMsg('bot', '');
+      typeMessage(d, text, cb);
+    }, 700);
+  }
+
+  function makeChips(items) {
+    var chat = document.getElementById('lc-chat');
+    var wrap = document.createElement('div');
+    wrap.className = 'lc-suggestions';
+    items.forEach(function (it) {
+      var c = document.createElement('button');
+      c.className = 'lc-chip';
+      c.textContent = it.label;
+      c.onclick = function () { wrap.remove(); it.fn(); };
+      wrap.appendChild(c);
+    });
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+    return wrap;
+  }
+
+  // Consultative pivot — the one question a good salesperson asks first.
+  function askConcern(intro) {
+    concernAsked = true;
+    botSay(intro || "Quick one while you're here 😊 What's bugging your mouth most right now? Pick one and I'll point you to the right fix 👇", function () {
+      var chat = document.getElementById('lc-chat');
+      var grid = document.createElement('div');
+      grid.className = 'lc-discount-choices';
+      var extra;
+      SYMPTOMS.forEach(function (s) {
+        var b = document.createElement('button');
+        b.className = 'lc-discount-choice';
+        b.innerHTML = '<span class="lc-symptom-icon">' + s.icon + '</span><span>' + s.concern + '</span>';
+        b.onclick = function () { grid.remove(); if (extra) extra.remove(); lastConcern = s; appendMsg('user', s.concern); runConsult(s); };
+        grid.appendChild(b);
+      });
+      chat.appendChild(grid);
+      extra = makeChips([
+        { label: '😁 All good, just browsing', fn: function () { appendMsg('user', 'All good, just browsing'); botSay("No worries at all 😄 I'm here if anything pops up — want to keep playing?", function () { nextStepChips('', { browsing: true }); }); } },
+        { label: '🎲 Another quiz first', fn: function () { playOpenerInChat(nextQuizOpener()); } },
+      ]);
+    });
+  }
+
+  function nextStepChips(replyText, opts) {
+    opts = opts || {};
+    var range = rangeInText(replyText);
+    var items = [];
+    if (range && !opts.cardShown) items.push({ label: '🛒 Shop ' + range, fn: function () { appendMsg('user', 'Show me ' + range); showRangeCard(range); } });
+    if (!concernAsked) items.push({ label: '🦷 Find my perfect match', fn: function () { appendMsg('user', 'Find my perfect match'); askConcern(); } });
+    else if (!opts.browsing) items.push({ label: '🦷 Which one is right for me?', fn: function () { appendMsg('user', 'Which one is right for me?'); askConcern("Happy to help 😊 What's the main thing you'd like to sort out? 👇"); } });
+    if (!pitched) items.push({ label: '💎 Why LACALUT over supermarket paste?', fn: function () { appendMsg('user', 'Why LACALUT over supermarket paste?'); botSay(PITCH_DIFF, function () { pitched = true; afterPitch(); }); } });
+    items.push({ label: '🎲 Another quiz', fn: function () { playOpenerInChat(nextQuizOpener()); } });
+    if (!discountChoice && !opts.offerShown) items.push({ label: '🎁 10% off my first order', fn: function () { appendMsg('user', '10% off please'); startDiscountFlow(); } });
+    items.push({ label: '❓ Common questions', fn: function () { appendMsg('user', 'Common questions'); showFaqChips(); } });
+    if (opts.compact) items = items.slice(0, 3);
+    makeChips(items);
+  }
+
+  function showFaqChips() {
+    var qs = [];
+    try { qs = JSON.parse(config.suggested_questions).slice(0, 5); } catch (e) {}
+    botSay('These are the ones I get asked most — tap any, or type your own 👇', function () { showSuggestions(qs); });
+  }
+
+  function showRangeCard(range) {
+    var card = RANGE_CARDS[range];
+    if (!card) { nextStepChips('', {}); return; }
+    botSay('Here you go 👇 Free shipping over $99, and a 30-day money-back guarantee if it isn\'t for you.', function () {
+      renderProductCards([card]);
+      nextStepChips('', { cardShown: true });
+    });
+  }
+
+  function nextQuizOpener() {
+    var all = getOpeners().filter(function (o) {
+      return o.q && !(o.buttons || []).some(function (b) { return b.action; });
+    });
+    var fresh = all.filter(function (o) { return openersPlayed.indexOf(o.id) === -1; });
+    if (!fresh.length) { openersPlayed = []; fresh = all; }
+    return fresh[Math.floor(Math.random() * fresh.length)];
+  }
+
+  function playOpenerInChat(opener) {
+    if (!opener) return;
+    appendMsg('user', 'Another quiz 🎲');
+    botSay(opener.q, function () {
+      makeChips((opener.buttons || []).map(function (b) {
+        return { label: b.label, fn: function () { playOpenerReply(opener, b); } };
+      }));
+    });
   }
 
   function removeTeaser() {
@@ -1030,6 +1299,16 @@
     if (card) { card.className = 'lc-code-reveal'; card.innerHTML = html; }
     var chat = document.getElementById('lc-chat');
     chat.scrollTop = chat.scrollHeight;
+    // Code in hand — now walk them to the product, never leave them here.
+    setTimeout(function () {
+      botSay(s.range ? "Nice one 🎉 Want me to show you the best " + s.range + " option to use it on?" : "Nice one 🎉 Want a hand picking the right product to use it on?", function () {
+        var items = [];
+        if (s.range) items.push({ label: '🛒 Show me ' + s.range, fn: function () { appendMsg('user', 'Show me ' + s.range); showRangeCard(s.range); } });
+        items.push({ label: '🦷 Which one is right for me?', fn: function () { appendMsg('user', 'Which one is right for me?'); askConcern("Happy to help 😊 What's the main thing you'd like to sort out? 👇"); } });
+        items.push({ label: '🎲 Play a quiz', fn: function () { playOpenerInChat(nextQuizOpener()); } });
+        makeChips(items);
+      });
+    }, 900);
   }
 
   window.lcCopyCode = function () {
@@ -1090,8 +1369,12 @@
             showSmsEscalation();
           } else {
             showSuggestions(suggestions);
-            showProductCards(reply);
+            var cardShown = showProductCards(reply);
             maybeShowCapture();
+            // Salesperson rule: the brain's answer is never the end of the chat.
+            // First answer after they named a concern → the consultative close.
+            if (concernAsked && !pitched) setTimeout(pitchPremium, 900);
+            else nextStepChips(reply, { cardShown: cardShown, compact: suggestions.length > 0 });
           }
           if (!isOpen) setUnread(unreadCount + 1);
         });
@@ -1160,8 +1443,12 @@
         matched.push(p);
       }
     }
-    if (!matched.length) return;
+    if (!matched.length) return false;
+    renderProductCards(matched);
+    return true;
+  }
 
+  function renderProductCards(matched) {
     var chat = document.getElementById('lc-chat');
     var wrap = document.createElement('div');
     wrap.className = 'lc-product-cards';
