@@ -1036,7 +1036,7 @@
     if (range) items.push({ label: '🛒 Shop ' + range, fn: function () { appendMsg('user', 'Show me ' + range); showRangeCard(range); } });
     else items.push({ label: '🦷 Find my perfect match', fn: function () { appendMsg('user', 'Find my perfect match'); askConcern(); } });
     if (!discountChoice) items.push({ label: '🎁 10% off my first order', fn: function () { appendMsg('user', '10% off please'); startDiscountFlow(); } });
-    items.push({ label: '🔄 How does the guarantee work?', fn: function () { appendMsg('user', 'How does the guarantee work?'); botSay("Simple: try it for 30 days. If you're not happy, email hello@lacalut.com.au and we refund the product — no forms, no fuss 👌", function () { nextStepChips(range || '', {}); }); } });
+    items.push({ label: '🔄 How does the guarantee work?', fn: function () { appendMsg('user', 'How does the guarantee work?'); botSay("Simple: try it for 30 days. If you're not happy, email sales@lacalut.com.au and we refund the product — no forms, no fuss 👌", function () { nextStepChips(range || '', {}); }); } });
     items.push({ label: '🎲 Another quiz', fn: function () { playOpenerInChat(nextQuizOpener()); } });
     makeChips(items);
   }
@@ -1382,7 +1382,7 @@
       .catch(function () {
         typingEl.remove();
         isBusy = false;
-        appendMsg('bot', 'I\'m having trouble connecting right now. Please email hello@lacalut.com.au.');
+        appendMsg('bot', 'I\'m having trouble connecting right now. Please email sales@lacalut.com.au.');
       });
   }
 
