@@ -346,6 +346,8 @@
     #lc-btn svg { width: 28px; height: 28px; fill: #fff; }
     #lc-btn.lc-open .lc-icon-chat { display: none; }
     #lc-btn:not(.lc-open) .lc-icon-close { display: none; }
+    #lc-btn.lc-open { background: #000; }
+    #lc-btn.lc-open .lc-icon-close { width: 30px; height: 30px; stroke: #fff; stroke-width: 2.2; stroke-linejoin: round; }
     #lc-btn.lc-pulse { animation: lc-ring 1.8s ease-out 3; }
     #lc-unread {
       position: absolute; top: -4px; right: -4px;
@@ -450,8 +452,8 @@
     .lc-head-name { font-weight: 700; font-size: 15px; }
     .lc-head-status { font-size: 12px; opacity: 0.85; display: flex; align-items: center; gap: 5px; margin-top: 1px; }
     .lc-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
-    #lc-close { background: none; border: none; cursor: pointer; color: #fff; opacity: 0.8; font-size: 20px; line-height: 1; padding: 4px; flex-shrink: 0; }
-    #lc-close:hover { opacity: 1; }
+    #lc-close { background: #fff; border: none; cursor: pointer; color: #000; opacity: 1; font-size: 18px; font-weight: 900; line-height: 1; padding: 0; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 4px rgba(0,0,0,0.25); -webkit-text-stroke: 1px #000; }
+    #lc-close:hover { background: #f1f1f1; }
 
     /* Home screen */
     #lc-home { flex: 1; overflow-y: auto; padding: 18px 16px 12px; display: flex; flex-direction: column; }
