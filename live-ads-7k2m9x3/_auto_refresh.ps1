@@ -19,6 +19,9 @@ try {
     if ($LASTEXITCODE -ne 0) { Log "pull FAILED ($LASTEXITCODE)"; exit 1 }
     python -X utf8 _pull_mer.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "MER pull failed (page keeps the last MER values)" }
+    # automatic media buyer (practice mode unless _auto_buyer_LIVE_ON.txt exists); never blocks the refresh
+    python -X utf8 _auto_buyer.py *> $null
+    if ($LASTEXITCODE -ne 0) { Log "auto buyer run failed" }
     python -X utf8 _classify_compliance.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "classify FAILED ($LASTEXITCODE)"; exit 1 }
     python -X utf8 _build_monitor.py *> $null
