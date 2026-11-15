@@ -62,7 +62,7 @@ def findings(ads):
             why = f"landing page did not open (status {k.get('st')})"
         elif k.get("soldout") is True:
             why = "product is sold out in Shopify"
-        elif "%C2%AE" in link.upper() or "\u00ae" in link:
+        elif ("%C2%AE" in link.upper() or "\u00ae" in link) and d and d["sp"] > 0:   # only when it is spending
             why = "old link with the registered symbol in it"
         if why:
             links.append((a, why))
