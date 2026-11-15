@@ -36,6 +36,8 @@ CSS = """
 .mb-banner{border-radius:12px;padding:12px 16px;margin:0 0 14px;font-weight:800;font-size:15px;border:1px solid var(--line);border-left-width:4px}
 .mb-banner small{display:block;font-weight:600;font-size:12.5px;color:var(--sub);margin-top:3px}
 .mb-banner.down{border-left-color:var(--bad);background:var(--badbg)}.mb-banner.up{border-left-color:var(--good);background:var(--goodbg)}.mb-banner.hold{border-left-color:var(--warn);background:var(--midbg)}
+.mb-days{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;font-size:13px;margin:-4px 0 14px}.mb-day{white-space:nowrap;cursor:help}
+.mb-f input:disabled{opacity:.75}
 .mb-wrap{overflow-x:auto}
 .mb-table{min-width:1560px}
 .mb-table thead th{position:static;white-space:nowrap;cursor:help}
@@ -65,9 +67,9 @@ HTML = """<section class="sec" id="mb">
 <summary>&#9881;&#65039; Setup</summary>
 <div class="mb-sgrid">
 <div class="mb-f"><label>Ideal MER %</label><input id="mb-mer" type="number" step="0.01"><small>Ad spend &divide; revenue we aim for</small></div>
-<div class="mb-f"><label>MER 3-day rolling %</label><input id="mb-mer3" type="number" step="0.01"><small>Typed in by hand (from EE or Shopify)</small></div>
-<div class="mb-f"><label>MER last 30 days %</label><input id="mb-mer30" type="number" step="0.01"><small>Typed in by hand (from EE or Shopify)</small></div>
-<div class="mb-f"><label>AOV $</label><input id="mb-aov" type="number" step="0.01"><small>Average order value</small></div>
+<div class="mb-f"><label>MER 3-day rolling %</label><input id="mb-mer3" type="number" step="0.01"><small class="mb-auto">Typed in by hand</small></div>
+<div class="mb-f"><label>MER last 30 days %</label><input id="mb-mer30" type="number" step="0.01"><small class="mb-auto">Typed in by hand</small></div>
+<div class="mb-f"><label>AOV $</label><input id="mb-aov" type="number" step="0.01"><small id="mb-aovnote">Average order value</small></div>
 <div class="mb-shead">Advanced &mdash; ideal MER targets</div>
 <div class="mb-f"><label>Ideal profit %</label><input id="mb-profit" type="number" step="0.5"><small>Changing this recalculates ideal MER</small></div>
 <div class="mb-f"><label>Ideal FCR %</label><input id="mb-fcr" type="number" step="0.5"><small>Changing this recalculates ideal MER</small></div>
@@ -84,6 +86,7 @@ HTML = """<section class="sec" id="mb">
 <button class="mb-reset" id="mb-reset">Reset Setup to the saved defaults</button>
 </details>
 <div class="mb-banner" id="mb-banner"></div>
+<div class="mb-days" id="mb-days"></div>
 <div class="kpis mb-kpis" id="mb-kpis"></div>
 <div class="mb-chips" id="mb-chips"></div>
 <div class="tablewrap mb-wrap"><table class="mb-table">
@@ -104,11 +107,12 @@ HTML = """<section class="sec" id="mb">
 <style>__CSS__</style>
 <script>
 (function(){
-var DATA=__DATA__,DEF=__DEF__,ACT="__ACT__",KEY='lacalut_mb_setup_v1',NC=17;
+var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACT="__ACT__",KEY='lacalut_mb_setup_v1',NC=17;
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','pausecpp','roasbe'];
 var S={},filt='';
 function load(){var o={};try{o=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
-  IDS.forEach(function(k){var v=parseFloat(o[k]);S[k]=isFinite(v)?v:DEF[k]})}
+  IDS.forEach(function(k){var v=parseFloat(o[k]);S[k]=isFinite(v)?v:DEF[k]});
+  if(AUTO){S.mer3=AUTO.mer3;S.mer30=AUTO.mer30;if(!isFinite(parseFloat(o.aov))&&AUTO.aov)S.aov=AUTO.aov}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function fill(){IDS.forEach(function(k){document.getElementById('mb-'+k).value=+S[k].toFixed(2)})}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -173,6 +177,13 @@ function render(){
   [].forEach.call(box.querySelectorAll('.mbf'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
 }
 load();fill();render();
+if(AUTO){var dm=function(x){return x.slice(8,10)+'/'+x.slice(5,7)};
+  ['mer3','mer30'].forEach(function(k){document.getElementById('mb-'+k).disabled=true});
+  [].forEach.call(document.querySelectorAll('.mb-auto'),function(e){e.textContent='Automatic: Meta spend ÷ Shopify retail sales incl. GST, full days to '+dm(AUTO.as_of)});
+  if(AUTO.aov)document.getElementById('mb-aovnote').textContent='Shopify last 30 days: $'+AUTO.aov.toFixed(2)+' (type to override)';
+  var h='<b>MER by day</b>';AUTO.days.forEach(function(x,i){var c=x.mer===null?'pill-none':(x.mer<=S.mer?'pill-good':(x.mer<=2*S.mer?'pill-mid':'pill-bad'));
+    h+='<span class="mb-day" title="$'+x.spend.toLocaleString()+' Meta spend ÷ $'+x.sales.toLocaleString()+' sales">'+dm(x.d)+(i===0?' (today so far)':'')+' <span class="pill '+c+'">'+(x.mer===null?'—':x.mer.toFixed(0)+'%')+'</span></span>'});
+  document.getElementById('mb-days').innerHTML=h+'<span class="mut">Sales pulled '+AUTO.pulled+'</span>'}
 IDS.forEach(function(k){document.getElementById('mb-'+k).addEventListener('change',function(e){var v=parseFloat(e.target.value);if(!isFinite(v))return;S[k]=v;
   if(k==='profit'||k==='fcr'||k==='margin'){S.mer=Math.max(0,S.margin-S.profit-S.fcr);document.getElementById('mb-mer').value=+S.mer.toFixed(2)}
   if(k==='mer'){S.margin=S.mer+S.profit+S.fcr;document.getElementById('mb-margin').value=+S.margin.toFixed(2)}
@@ -198,8 +209,15 @@ def build(SP):
         pulled = datetime.strptime(data["pulled"], "%Y-%m-%dT%H:%M:%S").strftime("%d/%m/%Y %I:%M %p")
     except Exception:
         pulled = "?"
+    auto = None
+    mp = os.path.join(SP, "mer.json")
+    if os.path.exists(mp):
+        try:
+            auto = json.load(open(mp, encoding="utf-8"))
+        except Exception:
+            auto = None
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     out = (HTML.replace("__CSS__", CSS).replace("__N__", str(len(data.get("ads", []))))
            .replace("__PULLED__", pulled).replace("__DEF__", json.dumps(DEFAULTS))
-           .replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
+           .replace("__AUTO__", json.dumps(auto)).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
     return len(data.get("ads", [])), out

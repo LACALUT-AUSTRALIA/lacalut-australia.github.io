@@ -17,6 +17,8 @@ try {
     Set-Location $dir
     python -X utf8 _pull_live.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "pull FAILED ($LASTEXITCODE)"; exit 1 }
+    python -X utf8 _pull_mer.py *> $null
+    if ($LASTEXITCODE -ne 0) { Log "MER pull failed (page keeps the last MER values)" }
     python -X utf8 _classify_compliance.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "classify FAILED ($LASTEXITCODE)"; exit 1 }
     python -X utf8 _build_monitor.py *> $null
