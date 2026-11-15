@@ -17,6 +17,8 @@ try {
     Set-Location $dir
     python -X utf8 _pull_live.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "pull FAILED ($LASTEXITCODE)"; exit 1 }
+    python -X utf8 _classify_compliance.py *> $null
+    if ($LASTEXITCODE -ne 0) { Log "classify FAILED ($LASTEXITCODE)"; exit 1 }
     python -X utf8 _build_monitor.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "build FAILED ($LASTEXITCODE)"; exit 1 }
 
@@ -26,8 +28,8 @@ try {
     if ($LASTEXITCODE -eq 0) { Log "no changes"; exit 0 }
     git -c core.hooksPath=/dev/null commit -q -m "live-ads: auto refresh
 
-Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>" | Out-Null
-    git pull --rebase -q origin main 2>$null
+Co-Authored-By: Claude <noreply@anthropic.com>" | Out-Null
+    git pull --rebase --autostash -q origin main 2>$null
     git push -q origin main
     if ($LASTEXITCODE -eq 0) { Log "pushed OK" } else { Log "push FAILED" }
 }

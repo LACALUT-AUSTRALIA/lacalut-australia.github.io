@@ -829,17 +829,29 @@ if not nodeliv_section:
     nodeliv_section = '<section class="sec"><h2>Never delivered <span class="count">0</span></h2><p class="note">Nothing here.</p></section>'
 
 # ── TABS — one view at a time, no endless scrolling (Quan 05/10) ──
+# 15/11/2026 (Quan): 10 tabs -> 5. Media Buyer (new, replaces Running) | Winners | Compliance |
+# Overview (Campaigns + Store) | Not running (not launched + paused + barely tested + never delivered + losers).
+import _buyer_tab
+_mb_n, _mb_html = _buyer_tab.build(SP)
+_NR = [("nr-stuck", "&#128679; Not launched", len(stuck), stuck_section),
+       ("nr-tested", "&#9208;&#65039; Tested (paused)", len(tested_real), tested_section),
+       ("nr-micro", "&#128300; Barely tested", len(tested_micro), micro_section),
+       ("nr-nodeliv", "&#128683; Never delivered", len(nodeliv), nodeliv_section),
+       ("nr-losers", "&#128128; Losers", len(losers), losers_section)]
+_NR = [x for x in _NR if x[3]]
+_nr_chips = '<div class="nr-chips">Jump to: ' + "".join(
+    f'<button class="tabbtn nr-jump" data-go="{i}">{l}<span class="tcount">{n}</span></button>'
+    for i, l, n, _ in _NR) + ('</div><style>.nr-chips{display:flex;gap:7px;flex-wrap:wrap;align-items:center;'
+    'margin:8px 0 4px;font-size:13px;color:var(--sub)}.nr-blk{scroll-margin-top:64px}</style>'
+    '<script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".nr-jump");'
+    'if(b){var t=document.getElementById(b.getAttribute("data-go"));if(t)t.scrollIntoView({behavior:"smooth"})}});</script>')
+_nr_html = _nr_chips + "".join(f'<div class="nr-blk" id="{i}">{c}</div>' for i, l, n, c in _NR)
 TABS = [
+    ("buyer",      "&#127919; Media Buyer",      _mb_n,                   _mb_html or running_section),
     ("winners",    "&#11088; Winners",          len(winners),            (winners_section or '<section class="sec"><p class="note">No current winners at scale.</p></section>') + hof_section),
     ("compliance", "&#9878;&#65039; Compliance", len(comp_nc),           compliance_section),
-    ("running",    "&#9654;&#65039; Running",    len(running),            running_section),
-    ("store",      "&#128722; Store",            None,                    store_section),
-    ("campaigns",  "&#128202; Campaigns",        len(camp_roll_rows),     stage_section + campaign_section),
-    ("stuck",      "&#128679; Not launched",     len(stuck),              stuck_section),
-    ("tested",     "&#9208;&#65039; Tested (paused)", len(tested_real),   tested_section),
-    ("micro",      "&#128300; Barely tested",    len(tested_micro),       micro_section),
-    ("nodeliv",    "&#128683; Never delivered",  len(nodeliv),            nodeliv_section),
-    ("losers",     "&#128128; Losers",           len(losers),             losers_section),
+    ("overview",   "&#128202; Overview",         None,                    stage_section + campaign_section + store_section),
+    ("notrunning", "&#128452;&#65039; Not running", sum(x[2] for x in _NR), _nr_html),
 ]
 TABS = [t for t in TABS if t[3]]
 tab_btns = "".join(

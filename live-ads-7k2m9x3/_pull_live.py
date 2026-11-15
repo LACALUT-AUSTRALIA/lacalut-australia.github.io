@@ -12,15 +12,11 @@ import json, os, urllib.request, urllib.parse, time
 
 ACCT = "act_2157906551266386"
 SP = os.path.dirname(os.path.abspath(__file__))
-ENV_PATH = r"C:/Users/conta/OneDrive/Documents/Claude Code/.env"
-
-def load_token():
-    for line in open(ENV_PATH, encoding="utf-8"):
-        if line.startswith("META_ACCESS_TOKEN="):
-            return line.split("=", 1)[1].strip()
-    raise SystemExit("META_ACCESS_TOKEN not found in .env")
-
-TOK = load_token()
+import sys
+sys.path.insert(0, r"C:/Users/conta/OneDrive/Documents/Claude Code")
+import meta_auth  # 15/11/2026: token from ~/.env (META_SYSTEM_USER_TOKEN) + appsecret_proof on every call
+meta_auth.install()
+TOK = meta_auth.system_token()
 GRAPH = "https://graph.facebook.com/v21.0"
 
 def get_all(url):
@@ -194,6 +190,77 @@ def pull_texts():
     json.dump(out, open(os.path.join(SP, "ad_texts.json"), "w", encoding="utf-8"), ensure_ascii=False)
     print(f"  wrote ad_texts.json: {len(out)} ads with copy")
 
+def pull_buyer():
+    # Media Buyer tab (Quan 15/11/2026): every ACTIVE ad with 7d / 3d / yesterday numbers,
+    # funnel steps, hook rate, landing page and the ad set's frequency. Writes buyer.json.
+    WANT = {"omni_purchase": "pc", "omni_add_to_cart": "atc", "omni_initiated_checkout": "ic",
+            "landing_page_view": "lpv", "video_view": "v3", "link_click": "lc"}
+    def window(preset):
+        fields = "ad_id,spend,impressions,reach,frequency,cpm,inline_link_click_ctr,actions,action_values"
+        url = (f"{GRAPH}/{ACCT}/insights?level=ad&date_preset={preset}&limit=400"
+               f"&fields={fields}&access_token={urllib.parse.quote(TOK)}")
+        out = {}
+        for r in get_all(url):
+            d = {"sp": float(r.get("spend") or 0), "imp": int(r.get("impressions") or 0),
+                 "freq": float(r.get("frequency") or 0), "cpm": float(r.get("cpm") or 0),
+                 "ctr": float(r.get("inline_link_click_ctr") or 0), "rev": 0.0}
+            for k in WANT.values():
+                d[k] = 0
+            for x in (r.get("actions") or []):
+                k = WANT.get(x.get("action_type"))
+                if k:
+                    d[k] = int(float(x.get("value") or 0))
+            for x in (r.get("action_values") or []):
+                if x.get("action_type") == "omni_purchase":
+                    d["rev"] = float(x.get("value") or 0)
+            out[r.get("ad_id")] = d
+        return out
+    w7, w3, w1 = window("last_7d"), window("last_3d"), window("yesterday")
+    # ad set frequency (7 days) decides which funnel stage the ad set is "acting like"
+    url = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset=last_7d&limit=400"
+           f"&fields=adset_id,frequency,reach&access_token={urllib.parse.quote(TOK)}")
+    sfreq = {r.get("adset_id"): float(r.get("frequency") or 0) for r in get_all(url)}
+    fields = ("id,name,created_time,campaign{name},adset{id,name},"
+              "creative{object_type,video_id,effective_object_story_id,"
+              "object_story_spec{link_data{link,child_attachments{link}},"
+              "video_data{call_to_action{value{link}}}},asset_feed_spec{link_urls{website_url}}}")
+    filt = urllib.parse.quote('[{"field":"effective_status","operator":"IN","value":["ACTIVE"]}]')
+    url = (f"{GRAPH}/{ACCT}/ads?fields={urllib.parse.quote(fields)}&filtering={filt}"
+           f"&limit=200&access_token={urllib.parse.quote(TOK)}")
+    rows = []
+    for a in get_all(url):
+        cr = a.get("creative") or {}
+        oss = cr.get("object_story_spec") or {}
+        ld = oss.get("link_data") or {}
+        vd = oss.get("video_data") or {}
+        link = ld.get("link") or (((vd.get("call_to_action") or {}).get("value") or {}).get("link")) or ""
+        if not link:
+            for ca in (ld.get("child_attachments") or []):
+                if ca.get("link"):
+                    link = ca["link"]; break
+        if not link:
+            for lu in ((cr.get("asset_feed_spec") or {}).get("link_urls") or []):
+                if lu.get("website_url"):
+                    link = lu["website_url"]; break
+        if not link and cr.get("effective_object_story_id"):
+            # existing-post ads: the link lives on the Page post (needs the Page token)
+            try:
+                pu = (f"{GRAPH}/{cr['effective_object_story_id']}?fields=call_to_action"
+                      f"&access_token={urllib.parse.quote(meta_auth.page_token())}")
+                with urllib.request.urlopen(pu, timeout=40) as r:
+                    link = (((json.load(r).get("call_to_action") or {}).get("value") or {}).get("link")) or ""
+            except Exception:
+                link = ""
+        st = a.get("adset") or {}
+        rows.append({"id": a["id"], "name": a.get("name", ""), "created_time": a.get("created_time", ""),
+                     "campaign": (a.get("campaign") or {}).get("name", ""),
+                     "adset": st.get("name", ""), "sfreq": sfreq.get(st.get("id"), 0),
+                     "video": bool(cr.get("video_id") or vd), "link": link,
+                     "d7": w7.get(a["id"]), "d3": w3.get(a["id"]), "d1": w1.get(a["id"])})
+    json.dump({"pulled": time.strftime("%Y-%m-%dT%H:%M:%S"), "ads": rows},
+              open(os.path.join(SP, "buyer.json"), "w", encoding="utf-8"))
+    print(f"  wrote buyer.json: {len(rows)} active ads")
+
 def write(name, data):
     p = os.path.join(SP, name)
     json.dump(data, open(p, "w", encoding="utf-8"))
@@ -208,6 +275,7 @@ if __name__ == "__main__":
     pull_thumbs()
     pull_big()
     pull_texts()
+    pull_buyer()
     import _pull_meta_monthly
     _pull_meta_monthly.main()
     import _pull_lifetime

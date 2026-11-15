@@ -16,7 +16,10 @@ def load_token():
             return line.split("=", 1)[1].strip()
     raise SystemExit("META_ACCESS_TOKEN not found in .env")
 
-TOK = load_token()
+import sys
+sys.path.insert(0, r"C:/Users/conta/OneDrive/Documents/Claude Code")
+import meta_auth; meta_auth.install()  # 15/11/2026
+TOK = meta_auth.system_token()
 GRAPH = "https://graph.facebook.com/v21.0"
 PURCH = ("omni_purchase", "purchase", "offsite_conversion.fb_pixel_purchase")
 
