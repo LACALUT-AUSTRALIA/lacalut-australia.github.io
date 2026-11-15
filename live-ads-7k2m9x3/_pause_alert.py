@@ -5,8 +5,7 @@ Runs once a day (Task Scheduler "Lacalut - Media Buyer Pause Alert", 7:30 AM). I
 files the Live Ads Monitor already refreshes (buyer.json, mer.json) and emails Quan ONLY when
 there is something to act on. No email on a clean day (Quan: no separate reports).
 
-  PAUSE?        a live ad with 7-day spend at or above the minimum AND (no sale OR CPP over the
-                pause line) AND ROAS under break-even    (same rule as the tab's Verdict column)
+  VILLAIN       a live ad our classes call a Villain or Supervillain (same as the tab's Class column)
   BROKEN LINK   a live ad whose landing page did not open
   SOLD OUT      a live ad whose product Shopify says cannot be bought
   (R) LINK      a live ad whose link still has the registered symbol in it
@@ -51,11 +50,10 @@ def findings(ads):
     pause, links = [], []
     for a in ads:
         d = a.get("d7")
-        if d and d["sp"] >= D["minspend"]:
-            cpp = (d["sp"] / d["pc"]) if d["pc"] else None
-            roas = d["rev"] / d["sp"]
-            if (cpp is None or cpp > D["pausecpp"]) and roas < D["roasbe"]:
-                pause.append((a, d, cpp, roas))
+        ck, cwhy = _buyer_tab.classify(a)
+        if ck in ("villain", "supervillain"):
+            x = d or a.get("d3")
+            pause.append((a, x, (x["sp"] / x["pc"]) if x["pc"] else None, x["rev"] / x["sp"]))
         k, link = a.get("lk") or {}, a.get("link") or ""
         why = ""
         if k.get("st") == 0 or (k.get("st") or 0) >= 400:
@@ -75,10 +73,10 @@ def build_email(pause, links, mer):
     td = 'style="padding:6px 10px;border:1px solid #ccc"'
     h = ['<div style="font-family:Arial,sans-serif;font-size:14px;color:#000">']
     if pause:
-        h.append(f'<p><b>Ads to consider pausing ({len(pause)})</b><br>'
-                 f'Rule: ${D["minspend"]:.0f} or more spent in 7 days, and no sale or CPP over ${D["pausecpp"]:.0f}, '
-                 f'and ROAS under {D["roasbe"]}. Check the EE class first: never pause a Hero or Sidekick.</p>')
-        h.append(f'<table style="border-collapse:collapse"><tr><th {td}>Ad</th><th {td}>Campaign</th><th {td}>Spend 7d</th>'
+        h.append(f'<p><b>Villains still live ({len(pause)})</b><br>'
+                 f'Our classes: ${D["minspend"]:.0f} or more spent in 7 days with ROAS under {D["villroas"]}, '
+                 f'or ${D["fastspend"]:.0f} or more spent in 3 days with ROAS under {D["villroas"]}.</p>')
+        h.append(f'<table style="border-collapse:collapse"><tr><th {td}>Ad</th><th {td}>Campaign</th><th {td}>Spend</th>'
                  f'<th {td}>Sales</th><th {td}>CPP</th><th {td}>ROAS</th></tr>')
         for a, d, cpp, roas in pause:
             h.append(f'<tr><td {td}>{e(a["name"])}</td><td {td}>{e(a["campaign"].split(" (")[0])}</td>'

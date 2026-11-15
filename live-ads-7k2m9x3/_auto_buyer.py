@@ -5,10 +5,12 @@ Why: `B00_TOF_VID - Funky Music` spent $786 in 7 days at ROAS 0.92 before anyone
 This job applies the playbook rules to EVERY live ad every 30 minutes, right after the
 Live Ads Monitor refresh (it reads the same buyer.json and mer.json).
 
-RULES (numbers in RULES below)
-  1. Pause an ad with 7-day spend >= $150 AND (no sale OR CPP > $45) AND ROAS < 1.5
-  2. Pause an ad with 3-day spend >= $100 AND ROAS < 1.0                      (catches fast losers)
-     Limits for 1 + 2: at most 3 ads per day, never the last live ad in an ad set.
+RULES
+  1 + 2. Pause every ad our classes call a Villain or Supervillain (_buyer_tab.classify):
+       Villain      = 7-day spend >= $150 AND ROAS < 1.0, OR 3-day spend >= $100 AND ROAS < 1.0
+       Supervillain = 7-day spend >= $300 AND ROAS < 1.0 (should never happen once this job is live)
+     Hero, Superhero, Sidekick and Civilian are never paused by this job.
+     Limits: at most 5 ads per day, never the last live ad in an ad set.
   3. MER brake: when 3-day MER AND 30-day MER are both above ideal, cut 10% from the budget of
      every campaign (CBO) or ad set (ABO) whose own 3-day ROAS is under 1.5.
      Limits: once every 3 days, never below the ad set minimum spends, never below $20/day.
@@ -31,9 +33,7 @@ from email.mime.text import MIMEText
 SP = Path(__file__).resolve().parent
 sys.path.insert(0, r"C:/Users/conta/OneDrive/Documents/Claude Code")
 
-RULES = {"r1_spend7": 150.0, "r1_cpp": 45.0, "r1_roas": 1.5,
-         "r2_spend3": 100.0, "r2_roas": 1.0,
-         "max_pauses_per_day": 3,
+RULES = {"max_pauses_per_day": 5,     # class thresholds live in _buyer_tab.DEFAULTS
          "mer_ideal": 15.55, "cut_pct": 10, "cut_roas3": 1.5, "cut_every_days": 3, "min_budget": 20.0}
 ACCT = "act_2157906551266386"
 GRAPH = "https://graph.facebook.com/v25.0"
@@ -56,26 +56,21 @@ def log(m):
 
 # ───────────────────────── decisions (pure functions, no network) ─────────────────────────
 def ad_decisions(ads, pauses_left):
-    """Rules 1 + 2. Returns (to_pause, skipped) lists of dicts."""
+    """Pause every Villain and Supervillain (classes from _buyer_tab.classify, Quan 15/11/2026:
+    "as soon as it goes to villain status we should be killing it"). Supervillains go first.
+    Returns (to_pause, skipped) lists of dicts."""
+    import _buyer_tab
     live = {}
     for a in ads:
         live[(a["campaign"], a["adset"])] = live.get((a["campaign"], a["adset"]), 0) + 1
     cand = []
     for a in ads:
-        d7, d3 = a.get("d7"), a.get("d3")
-        why = ""
-        if d7 and d7["sp"] >= RULES["r1_spend7"]:
-            cpp = (d7["sp"] / d7["pc"]) if d7["pc"] else None
-            roas = d7["rev"] / d7["sp"]
-            if (cpp is None or cpp > RULES["r1_cpp"]) and roas < RULES["r1_roas"]:
-                why = (f"Rule 1: ${d7['sp']:,.0f} spent in 7 days, "
-                       f"{'no sale' if cpp is None else f'CPP ${cpp:,.2f}'}, ROAS {roas:.2f}")
-        if not why and d3 and d3["sp"] >= RULES["r2_spend3"] and d3["rev"] / d3["sp"] < RULES["r2_roas"]:
-            why = f"Rule 2: ${d3['sp']:,.0f} spent in 3 days, ROAS {d3['rev'] / d3['sp']:.2f}"
-        if why:
+        k, why = _buyer_tab.classify(a)
+        if k in ("villain", "supervillain"):
             cand.append({"id": a["id"], "name": a["name"], "campaign": a["campaign"], "adset": a["adset"],
-                         "why": why, "spend": (d7 or d3)["sp"]})
-    cand.sort(key=lambda x: -x["spend"])
+                         "cls": k, "why": f"{_buyer_tab.CLASS_LABEL[k]}: {why}",
+                         "spend": ((a.get("d7") or a.get("d3")) or {}).get("sp", 0)})
+    cand.sort(key=lambda x: (x["cls"] != "supervillain", -x["spend"]))
     to_pause, skipped = [], []
     for c in cand:
         key = (c["campaign"], c["adset"])

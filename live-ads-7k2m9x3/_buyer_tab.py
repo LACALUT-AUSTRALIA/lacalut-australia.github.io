@@ -17,8 +17,35 @@ import json, os
 # Defaults = Quan's EE Setup panel on 15/11/2026. MARGIN is back-calculated so that
 # margin - profit - FCR = ideal MER (49.05 - 21 - 12.5 = 15.55).
 DEFAULTS = {"mer": 15.55, "mer3": 44.0, "mer30": 44.66, "aov": 54.15, "profit": 21.0, "fcr": 12.5,
-            "margin": 49.05, "b1": 2.0, "b2": 3.0, "minspend": 150.0, "pausecpp": 45.0, "roasbe": 1.5}
+            "margin": 49.05, "b1": 2.0, "b2": 3.0, "minspend": 150.0, "superspend": 300.0, "superroas": 2.5,
+            "roasbe": 1.5, "villroas": 1.0, "fastspend": 100.0}
 ADS_ACT = "2157906551266386"
+
+CLASS_LABEL = {"supervillain": "Supervillain", "villain": "Villain", "sidekick": "Sidekick",
+               "civilian": "Civilian", "hero": "Hero", "superhero": "Superhero"}
+
+
+def classify(a, D=None):
+    """Our own classes (Quan 15/11/2026), judged on spend and ROAS. Returns (key, reason).
+    The same logic is written in JavaScript inside HTML below: change both together."""
+    D = D or DEFAULTS
+    d, d3 = a.get("d7"), a.get("d3")
+    sp = d["sp"] if d else 0.0
+    r7 = (d["rev"] / d["sp"]) if d and d["sp"] else None
+    fast = bool(d3 and d3["sp"] >= D["fastspend"] and d3["rev"] / d3["sp"] < D["villroas"])
+    if sp >= D["superspend"] and r7 < D["villroas"]:
+        return "supervillain", f"${sp:,.0f} spent in 7 days, ROAS {r7:.2f}"
+    if sp >= D["minspend"] and r7 < D["villroas"]:
+        return "villain", f"${sp:,.0f} spent in 7 days, ROAS {r7:.2f}"
+    if fast:
+        return "villain", f"${d3['sp']:,.0f} spent in 3 days, ROAS {d3['rev'] / d3['sp']:.2f}"
+    if sp < D["minspend"]:
+        return "civilian", f"under ${D['minspend']:.0f} spent in 7 days"
+    if sp >= D["superspend"] and r7 >= D["superroas"] and d["pc"] >= 5:
+        return "superhero", f"${sp:,.0f} spent in 7 days, ROAS {r7:.2f}, {d['pc']} sales"
+    if r7 >= D["roasbe"]:
+        return "hero", f"${sp:,.0f} spent in 7 days, ROAS {r7:.2f}"
+    return "sidekick", f"${sp:,.0f} spent in 7 days, ROAS {r7:.2f}"
 
 CSS = """
 .mb-setup{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:14px;background:var(--card);margin:10px 0 14px}
@@ -53,8 +80,9 @@ CSS = """
 .mbf[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:#fff}
 .mbf .tcount{background:var(--thbg);color:var(--thtext);border-radius:999px;font-size:11px;padding:1px 7px}
 .mbv{display:inline-block;padding:4px 11px;border-radius:20px;font-size:12.5px;font-weight:800;white-space:nowrap;cursor:help}
-.mbv-pause{background:var(--badbg);color:var(--bad)}.mbv-watch{background:var(--midbg);color:var(--mid)}
-.mbv-keep{background:var(--goodbg);color:var(--good)}.mbv-early{background:var(--line);color:var(--sub)}
+.mbv-supervillain{background:var(--bad);color:#fff}.mbv-villain{background:var(--badbg);color:var(--bad)}
+.mbv-sidekick{background:var(--midbg);color:var(--mid)}.mbv-civilian{background:var(--line);color:var(--sub)}
+.mbv-hero{background:var(--goodbg);color:var(--good)}.mbv-superhero{background:var(--good);color:#fff}
 .mb-up{color:var(--good);font-size:10px}.mb-dn{color:var(--bad);font-size:10px}
 .mb-vid{font-size:10px;font-weight:800;background:var(--line);color:var(--sub);padding:1px 6px;border-radius:5px;margin-left:4px}
 .mb-lp{text-decoration:none}
@@ -77,10 +105,13 @@ HTML = """<section class="sec" id="mb">
 <div class="mb-shead">Frequency boundaries (which funnel stage an ad set is acting like)</div>
 <div class="mb-f"><label>TOF / TOM boundary</label><input id="mb-b1" type="number" step="0.1"><small>Frequency below this = TOF</small></div>
 <div class="mb-f"><label>TOM / MOF boundary</label><input id="mb-b2" type="number" step="0.1"><small>Frequency above this = MOF</small></div>
-<div class="mb-shead">Our pause rule (Verdict column)</div>
-<div class="mb-f"><label>Minimum spend $ (7 days)</label><input id="mb-minspend" type="number" step="10"><small>Under this = Too early</small></div>
-<div class="mb-f"><label>Pause when CPP is over $</label><input id="mb-pausecpp" type="number" step="1"><small>Or when there is no sale</small></div>
-<div class="mb-f"><label>Break-even ROAS</label><input id="mb-roasbe" type="number" step="0.05"><small>At or above this = Keep</small></div>
+<div class="mb-shead">Our classes (Class column): Superhero, Hero, Sidekick, Civilian, Villain, Supervillain</div>
+<div class="mb-f"><label>Proven spend $ (7 days)</label><input id="mb-minspend" type="number" step="10"><small>Under this = Civilian (too early)</small></div>
+<div class="mb-f"><label>Break-even ROAS</label><input id="mb-roasbe" type="number" step="0.05"><small>At or above = Hero. Below, down to the Villain line = Sidekick</small></div>
+<div class="mb-f"><label>Villain ROAS</label><input id="mb-villroas" type="number" step="0.05"><small>Proven spend and ROAS under this = Villain: pause</small></div>
+<div class="mb-f"><label>Fast loser spend $ (3 days)</label><input id="mb-fastspend" type="number" step="10"><small>This much in 3 days with ROAS under the Villain line = Villain</small></div>
+<div class="mb-f"><label>Super spend $ (7 days)</label><input id="mb-superspend" type="number" step="10"><small>Villain at this spend = Supervillain</small></div>
+<div class="mb-f"><label>Superhero ROAS</label><input id="mb-superroas" type="number" step="0.1"><small>Super spend, this ROAS and 5+ sales = Superhero</small></div>
 </div>
 <div class="mb-thr" id="mb-thr"></div>
 <button class="mb-reset" id="mb-reset">Reset Setup to the saved defaults</button>
@@ -90,7 +121,7 @@ HTML = """<section class="sec" id="mb">
 <div class="kpis mb-kpis" id="mb-kpis"></div>
 <div class="mb-chips" id="mb-chips"></div>
 <div class="tablewrap mb-wrap"><table class="mb-table">
-<thead><tr><th>Ad</th><th title="Our rule from Setup. It is NOT the EE Hero / Sidekick / Villain / Civilian label: check EE before pausing, and never pause a Hero or Sidekick.">Verdict</th>
+<thead><tr><th>Ad</th><th title="Our own classes, set in Setup. Villain and Supervillain = pause. Hero and Superhero are never paused. These are not the EE labels.">Class</th>
 <th title="Last 7 days">Spend 7d</th><th title="Purchases, last 7 days">Purch.</th>
 <th title="Cost per purchase, last 7 days. Colour = CPP thresholds for the funnel stage this ad set is acting like">CPP 7d</th>
 <th title="Cost per purchase, last 3 days. Arrow shows better or worse than 7 days">CPP 3d</th>
@@ -107,8 +138,8 @@ HTML = """<section class="sec" id="mb">
 <style>__CSS__</style>
 <script>
 (function(){
-var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACT="__ACT__",KEY='lacalut_mb_setup_v1',NC=17;
-var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','pausecpp','roasbe'];
+var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=17;
+var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
 var S={},filt='';
 function load(){var o={};try{o=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
   IDS.forEach(function(k){var v=parseFloat(o[k]);S[k]=isFinite(v)?v:DEF[k]});
@@ -129,11 +160,15 @@ function cppCell(d,st,base){var c=cpp(d);if(c===null)return '<td class="num">'+Z
 function roasCell(d){if(!d||!d.sp)return '<td class="num">'+Z+'</td>';var r=d.rev/d.sp;
   return '<td class="num"><span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span></td>'}
 function pct(n,d){return d?(100*n/d).toFixed(1)+'%':Z}
-function verdict(d){if(!d||d.sp<S.minspend)return['early','Too early','Under $'+S.minspend+' spent in 7 days: not proven yet'];
-  var c=cpp(d);if(c!==Infinity&&c>S.pausecpp&&d.rev/d.sp>=S.roasbe)return['watch','Watch','CPP over $'+S.pausecpp+' but ROAS is at or above '+S.roasbe+'x, so it stays on. Recheck tomorrow'];
-  if(c===Infinity||c>S.pausecpp)return['pause','Pause?','$'+S.minspend+'+ spent and CPP over $'+S.pausecpp+' (or no sale). Check the EE class first: never pause a Hero or Sidekick'];
-  if(d.rev/d.sp>=S.roasbe)return['keep','Keep','ROAS at or above '+S.roasbe+'x'];
-  return['watch','Watch','CPP under $'+S.pausecpp+' but ROAS below '+S.roasbe+'x']}
+function cls(a){var d=a.d7,d3=a.d3,sp=d?d.sp:0,r7=d&&d.sp?d.rev/d.sp:null;
+  var fast=d3&&d3.sp>=S.fastspend&&d3.rev/d3.sp<S.villroas;
+  if(sp>=S.superspend&&r7<S.villroas)return['supervillain','&#128128; Supervillain','$'+Math.round(sp)+' spent in 7 days at ROAS '+r7.toFixed(2)+'. Pause now. An ad should never get this far'];
+  if(sp>=S.minspend&&r7<S.villroas)return['villain','&#129465; Villain','$'+Math.round(sp)+' spent in 7 days at ROAS '+r7.toFixed(2)+'. Pause'];
+  if(fast)return['villain','&#129465; Villain','Fast loser: $'+Math.round(d3.sp)+' spent in 3 days at ROAS '+(d3.rev/d3.sp).toFixed(2)+'. Pause'];
+  if(sp<S.minspend)return['civilian','&#128118; Civilian','Under $'+S.minspend+' spent in 7 days: too early to judge'];
+  if(sp>=S.superspend&&r7>=S.superroas&&d.pc>=5)return['superhero','&#129464; Superhero','$'+Math.round(sp)+' spent, ROAS '+r7.toFixed(2)+', '+d.pc+' sales. Never paused. First in line for more budget'];
+  if(r7>=S.roasbe)return['hero','&#11088; Hero','ROAS '+r7.toFixed(2)+' is at or above break-even '+S.roasbe+'. Never paused'];
+  return['sidekick','&#129309; Sidekick','ROAS '+r7.toFixed(2)+' is between '+S.villroas+' and '+S.roasbe+'. Stays on and is watched']}
 function landing(l,k){if(k&&(k.st===0||k.st>=400))return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="The page did not open (status '+k.st+')">&#9888; Broken link</a>';
   if(k&&k.soldout===true)return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="Shopify says this product is sold out">&#9888; Sold out</a>';
   if(!l)return '<span class="mut" title="Link not readable from Meta">?</span>';var p='/';try{p=new URL(l).pathname||'/'}catch(e){}
@@ -155,7 +190,7 @@ function render(){
   else if(!a3&&!a30){bn.className='mb-banner up';bn.innerHTML='MER is at or below ideal: there is room to raise spend<small>'+sub+'. Spend increases still need Quan\\'s yes.</small>'}
   else{bn.className='mb-banner hold';bn.innerHTML='Hold total spend<small>3-day and 30-day MER disagree. '+sub+'</small>'}
   var camps={},order=[];DATA.ads.forEach(function(a){if(!camps[a.campaign]){camps[a.campaign]={};order.push(a.campaign)}(camps[a.campaign][a.adset]=camps[a.campaign][a.adset]||[]).push(a)});
-  order.sort();var body='',cards='',cnt={pause:0,watch:0,keep:0,early:0},now=Date.now();
+  order.sort();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now();
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct=agg(all),cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val '+(cr>=S.roasbe?'good':'bad')+'">'+cr.toFixed(2)+'x</div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
@@ -163,7 +198,7 @@ function render(){
     Object.keys(sets).sort(function(x,y){return agg(sets[y]).sp-agg(sets[x]).sp}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),st=agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
       body+='<tr class="mb-set"><td colspan="'+NC+'">'+esc(sn)+' <span class="mut">&middot; '+rows.length+' ads &middot; '+money(st.sp)+' &middot; '+st.pc+' sales &middot; CPP '+(st.pc?money(st.sp/st.pc):'&mdash;')+' &middot; ROAS '+(st.sp?(st.rev/st.sp).toFixed(2)+'x':'&mdash;')+' &middot; ad set frequency '+sf.toFixed(2)+'</span><span class="mb-stage" title="From the ad set frequency and the Setup boundaries">Acting like: '+stg+'</span></td></tr>';
-      rows.forEach(function(a){var d=a.d7,v=verdict(d);cnt[v[0]]++;
+      rows.forEach(function(a){var d=a.d7,v=cls(a);cnt[v[0]]++;
         var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
         var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null,base=cpp(d);
         body+='<tr data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'"'+(filt&&filt!==v[0]?' style="display:none"':'')+'>'
@@ -176,7 +211,7 @@ function render(){
         +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk)+'</td>'
         +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'})})});
   document.getElementById('mb-body').innerHTML=body;document.getElementById('mb-kpis').innerHTML=cards;
-  var ch='';[['','All live ads',DATA.ads.length],['pause','Pause?',cnt.pause],['watch','Watch',cnt.watch],['keep','Keep',cnt.keep],['early','Too early',cnt.early]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+c[1]+'<span class="tcount">'+c[2]+'</span></button>'});
+  var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+c[1]+'<span class="tcount">'+c[2]+'</span></button>'});
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
   [].forEach.call(box.querySelectorAll('.mbf'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
 }
