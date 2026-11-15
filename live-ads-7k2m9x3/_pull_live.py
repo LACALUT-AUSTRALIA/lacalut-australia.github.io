@@ -8,7 +8,7 @@ Run before _build_monitor.py to refresh the page from live data:
 Token is read from the Facy pipeline .env (META_ACCESS_TOKEN), same account the
 build engine uses (act_2157906551266386).
 """
-import json, os, urllib.request, urllib.parse, time
+import json, os, urllib.request, urllib.parse, urllib.error, time
 
 ACCT = "act_2157906551266386"
 SP = os.path.dirname(os.path.abspath(__file__))
@@ -190,6 +190,85 @@ def pull_texts():
     json.dump(out, open(os.path.join(SP, "ad_texts.json"), "w", encoding="utf-8"), ensure_ascii=False)
     print(f"  wrote ad_texts.json: {len(out)} ads with copy")
 
+def _open(url, tries=3):
+    hdr = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) LACALUT-link-check"}
+    for i in range(tries):
+        try:
+            return urllib.request.urlopen(urllib.request.Request(url, headers=hdr), timeout=30)
+        except urllib.error.HTTPError as e:
+            if e.code == 429 and i < tries - 1:      # Shopify is rate limiting us: wait and try again
+                time.sleep(8 * (i + 1)); continue
+            raise
+
+def check_link(link):
+    """{'st': http status, 0 = no answer, -1 = could not check (rate limited); 'redir': final path if it
+    redirected; 'soldout': True / False / None (unknown or not a product)}"""
+    out = {"st": 0, "redir": "", "soldout": None}
+    try:
+        with _open(link) as r:
+            out["st"] = r.status
+            fin = urllib.parse.urlparse(r.geturl())
+        if fin.path.rstrip("/") != urllib.parse.urlparse(link).path.rstrip("/"):
+            out["redir"] = fin.path
+    except urllib.error.HTTPError as e:
+        out["st"] = -1 if e.code == 429 else e.code
+    except Exception:
+        out["st"] = 0
+    return out
+
+def link_health(links, max_age=3 * 3600):
+    """Check each landing page at most once every 3 hours (cache: linkhealth.json)."""
+    path = os.path.join(SP, "linkhealth.json")
+    try:
+        cache = json.load(open(path, encoding="utf-8"))
+    except Exception:
+        cache = {}
+    now = time.time()
+    for link in links:
+        old = cache.get(link)
+        if old and now - old.get("t", 0) < max_age and old["r"]["st"] > 0 and not (
+                old["r"]["soldout"] is None and "/products/" in link):
+            continue
+        res = check_link(link)
+        if res["st"] == -1 and old:                   # rate limited: keep the last real answer
+            continue
+        cache[link] = {"t": now, "r": res}
+        time.sleep(2)
+    json.dump({k: v for k, v in cache.items() if k in links}, open(path, "w", encoding="utf-8"))
+    out = {k: dict(cache[k]["r"]) for k in links if k in cache}
+    # stock: asked from the Shopify Admin API by product handle (the storefront rate limits page loads)
+    for link in links:
+        r = out.setdefault(link, {"st": -1, "redir": "", "soldout": None})
+        path = r.get("redir") or urllib.parse.urlparse(link).path
+        if path.startswith("/products/"):
+            r["soldout"] = shopify_soldout(urllib.parse.unquote(path.rstrip("/").split("/")[-1]))
+    return out
+
+_SHOP = {}
+def shopify_soldout(handle):
+    """True = every variant is out of stock and cannot be bought; None = could not tell."""
+    try:
+        if not _SHOP:
+            for line in open(r"C:/Users/conta/OneDrive/Documents/Claude Code/.env", encoding="utf-8"):
+                for k in ("SHOPIFY_ADMIN_API_TOKEN", "SHOPIFY_STORE_DOMAIN"):
+                    if line.startswith(k + "="):
+                        _SHOP[k] = line.strip().split("=", 1)[1].strip().strip('"')
+        u = (f"https://{_SHOP['SHOPIFY_STORE_DOMAIN']}/admin/api/2024-01/products.json"
+             f"?handle={urllib.parse.quote(handle)}&fields=handle,status,variants")
+        req = urllib.request.Request(u, headers={"X-Shopify-Access-Token": _SHOP["SHOPIFY_ADMIN_API_TOKEN"]})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            ps = json.load(r).get("products") or []
+        if not ps:
+            return None
+        if ps[0].get("status") != "active":
+            return True
+        for v in ps[0].get("variants") or []:
+            if v.get("inventory_management") is None or v.get("inventory_policy") == "continue" or (v.get("inventory_quantity") or 0) > 0:
+                return False
+        return True
+    except Exception:
+        return None
+
 def pull_buyer():
     # Media Buyer tab (Quan 15/11/2026): every ACTIVE ad with 7d / 3d / yesterday numbers,
     # funnel steps, hook rate, landing page and the ad set's frequency. Writes buyer.json.
@@ -257,6 +336,10 @@ def pull_buyer():
                      "adset": st.get("name", ""), "sfreq": sfreq.get(st.get("id"), 0),
                      "video": bool(cr.get("video_id") or vd), "link": link,
                      "d7": w7.get(a["id"]), "d3": w3.get(a["id"]), "d1": w1.get(a["id"])})
+    # link health (15/11/2026): every unique landing page is opened once; Shopify products also get a stock check
+    health = link_health(sorted({r["link"] for r in rows if r["link"]}))
+    for r in rows:
+        r["lk"] = health.get(r["link"])
     json.dump({"pulled": time.strftime("%Y-%m-%dT%H:%M:%S"), "ads": rows},
               open(os.path.join(SP, "buyer.json"), "w", encoding="utf-8"))
     print(f"  wrote buyer.json: {len(rows)} active ads")

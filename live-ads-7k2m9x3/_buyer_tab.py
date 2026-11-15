@@ -130,15 +130,19 @@ function roasCell(d){if(!d||!d.sp)return '<td class="num">'+Z+'</td>';var r=d.re
   return '<td class="num"><span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span></td>'}
 function pct(n,d){return d?(100*n/d).toFixed(1)+'%':Z}
 function verdict(d){if(!d||d.sp<S.minspend)return['early','Too early','Under $'+S.minspend+' spent in 7 days: not proven yet'];
-  var c=cpp(d);if(c===Infinity||c>S.pausecpp)return['pause','Pause?','$'+S.minspend+'+ spent and CPP over $'+S.pausecpp+' (or no sale). Check the EE class first: never pause a Hero or Sidekick'];
+  var c=cpp(d);if(c!==Infinity&&c>S.pausecpp&&d.rev/d.sp>=S.roasbe)return['watch','Watch','CPP over $'+S.pausecpp+' but ROAS is at or above '+S.roasbe+'x, so it stays on. Recheck tomorrow'];
+  if(c===Infinity||c>S.pausecpp)return['pause','Pause?','$'+S.minspend+'+ spent and CPP over $'+S.pausecpp+' (or no sale). Check the EE class first: never pause a Hero or Sidekick'];
   if(d.rev/d.sp>=S.roasbe)return['keep','Keep','ROAS at or above '+S.roasbe+'x'];
   return['watch','Watch','CPP under $'+S.pausecpp+' but ROAS below '+S.roasbe+'x']}
-function landing(l){if(!l)return '<span class="mut" title="Link not readable from Meta">?</span>';var p='/';try{p=new URL(l).pathname||'/'}catch(e){}
+function landing(l,k){if(k&&(k.st===0||k.st>=400))return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="The page did not open (status '+k.st+')">&#9888; Broken link</a>';
+  if(k&&k.soldout===true)return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="Shopify says this product is sold out">&#9888; Sold out</a>';
+  if(!l)return '<span class="mut" title="Link not readable from Meta">?</span>';var p='/';try{p=new URL(l).pathname||'/'}catch(e){}
   var lab,cls;if(/%C2%AE|\\u00ae/i.test(l)){lab='&#9888; &reg; link';cls='pill-bad'}
   else if(p.replace(/\\//g,'')===''){lab='Home page';cls='pill-none'}
   else if(p.indexOf('/products/')===0&&p.indexOf('system')>-1){lab='Kit PDP';cls='pill-good'}
   else if(p.indexOf('/products/')===0){lab='Single product';cls='pill-mid'}
   else if(p.indexOf('/pages/')===0){lab='Article';cls='pill-mid'}else{lab='Other';cls='pill-none'}
+  if(k&&k.redir){lab+=' &#8618;';p+=' redirects to '+k.redir}
   return '<a class="pill '+cls+' mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="'+esc(p)+'">'+lab+'</a>'}
 function agg(rows){var t={sp:0,rev:0,pc:0};rows.forEach(function(a){if(a.d7){t.sp+=a.d7.sp;t.rev+=a.d7.rev;t.pc+=a.d7.pc}});return t}
 function sp7(a){return a.d7?a.d7.sp:0}
@@ -169,7 +173,7 @@ function render(){
         +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
         +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
         +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
-        +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link)+'</td>'
+        +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk)+'</td>'
         +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'})})});
   document.getElementById('mb-body').innerHTML=body;document.getElementById('mb-kpis').innerHTML=cards;
   var ch='';[['','All live ads',DATA.ads.length],['pause','Pause?',cnt.pause],['watch','Watch',cnt.watch],['keep','Keep',cnt.keep],['early','Too early',cnt.early]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+c[1]+'<span class="tcount">'+c[2]+'</span></button>'});
