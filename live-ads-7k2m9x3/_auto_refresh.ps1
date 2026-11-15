@@ -31,7 +31,11 @@ try {
     git -c core.hooksPath=/dev/null commit -q -m "live-ads: auto refresh
 
 Co-Authored-By: Claude <noreply@anthropic.com>" | Out-Null
-    git pull --rebase --autostash -q origin main 2>$null
+    # 15/11/2026: merge, never rebase. pull --rebase (with or without autostash) kept leaving a stale
+    # .git/rebase-merge folder that blocked every later push. Local data is newer, so local wins a conflict.
+    git fetch -q origin main 2>$null
+    git merge -q --no-edit -X ours origin/main 2>$null
+    if ($LASTEXITCODE -ne 0) { git merge --abort 2>$null; Log "merge with origin FAILED" }
     git push -q origin main
     if ($LASTEXITCODE -eq 0) { Log "pushed OK" } else { Log "push FAILED" }
 }
