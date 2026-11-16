@@ -65,19 +65,32 @@ CSS = """
 .mb-banner.down{border-left-color:var(--bad);background:var(--badbg)}.mb-banner.up{border-left-color:var(--good);background:var(--goodbg)}.mb-banner.hold{border-left-color:var(--warn);background:var(--midbg)}
 .mb-days{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;font-size:13px;margin:-4px 0 14px}.mb-day{white-space:nowrap;cursor:help}
 .mb-f input:disabled{opacity:.75}
-.mb-wrap{overflow-x:auto}
-.mb-table{min-width:1560px}
-.mb-table thead th{position:static;white-space:nowrap;cursor:help}
-.mb-table thead tr.colfilters th{position:static}
-.mb-table .adtd{min-width:330px;max-width:420px}
+.mb-wrap{overflow:auto;max-height:calc(100vh - 370px);min-height:420px}
+.mb-table{width:100%}
+.wrap:has(.tabpane[data-pane="buyer"]:not([hidden])){max-width:1780px}
+.mb-table tbody td,.mb-table thead th{padding-left:9px;padding-right:9px}
+.mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help}
+.mb-table thead tr.colfilters th{position:sticky;top:40px;z-index:7}
+.mb-table thead th+th,.mb-ad td+td{border-left:1px solid var(--line)}
+.mb-table .adtd{min-width:300px;max-width:420px}
 .mb-th{width:84px;height:84px;min-width:84px;cursor:zoom-in}
 .mb-camp td{background:var(--brand)!important;color:#fff;font-weight:800;font-size:14.5px;padding:10px 14px}
 .mb-camp td .mut{color:rgba(255,255,255,.82);font-weight:600}
-.mb-set td{background:var(--thbg)!important;color:var(--thtext);font-weight:800;font-size:14px;padding:11px 14px;border:2px solid #1c7ed6;border-bottom:1px solid var(--line);border-radius:0}
-.mb-ad td:first-child{border-left:2px solid #1c7ed6}
-.mb-ad td:last-child{border-right:2px solid #1c7ed6}
-.mb-ad.mb-last td{border-bottom:2px solid #1c7ed6}
-.mb-gap td{height:16px;padding:0;background:var(--bg)!important;border:none!important}
+.mb-table{border-collapse:separate;border-spacing:0}
+.mb-wrap{background:var(--bg);border:none;border-radius:16px}
+.mb-table thead tr:first-child th:first-child{border-top-left-radius:14px}
+.mb-table thead tr:first-child th:last-child{border-top-right-radius:14px}
+.mb-table thead tr.colfilters th:first-child{border-bottom-left-radius:14px}
+.mb-table thead tr.colfilters th:last-child{border-bottom-right-radius:14px}
+.mb-camp td{border-radius:14px}
+.mb-set td{background:var(--thbg)!important;color:var(--thtext);font-weight:800;font-size:14px;padding:12px 16px;border:1.5px solid #a9c9ec;border-bottom:1px solid var(--line);border-radius:16px 16px 0 0}
+.mb-ad td{background:var(--card)}
+.mb-ad td:first-child{border-left:1.5px solid #a9c9ec}
+.mb-ad td:last-child{border-right:1.5px solid #a9c9ec}
+.mb-ad.mb-last td{border-bottom:1.5px solid #a9c9ec}
+.mb-ad.mb-last td:first-child{border-bottom-left-radius:16px}
+.mb-ad.mb-last td:last-child{border-bottom-right-radius:16px}
+.mb-gap td{height:18px;padding:0;background:var(--bg)!important;border:none!important}
 .mb-gap-big td{height:30px}
 .mb-stage{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:11.5px}
 .mb-kpis{margin:0 0 14px}.mb-sub{font-size:12px;color:var(--sub);margin-top:6px}
