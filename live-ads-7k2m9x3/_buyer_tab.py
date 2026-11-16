@@ -83,9 +83,29 @@ CSS = """
 .mb-table thead tr.colfilters th:first-child{border-bottom-left-radius:14px}
 .mb-table thead tr.colfilters th:last-child{border-bottom-right-radius:14px}
 .mb-camp td{border-radius:14px}
-.mb-set td{background:var(--thbg)!important;color:var(--thtext);font-weight:800;font-size:14px;padding:12px 16px;border:1.5px solid #a9c9ec;border-bottom:1px solid var(--line);border-radius:16px 16px 0 0}
+.mb-set td{background:var(--thbg)!important;color:var(--thtext);padding:12px 16px;border:1.5px solid #a9c9ec;border-left:6px solid var(--sc,#a9c9ec);border-bottom:1px solid var(--line);border-radius:16px 16px 0 0}
+.mb-sname{font-size:15px;font-weight:800;margin-bottom:9px}
+.mb-stats{display:flex;flex-wrap:wrap;gap:8px}
+.mb-st{display:inline-flex;flex-direction:column;gap:1px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:5px 12px;min-width:72px}
+.mb-st small{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);white-space:nowrap}
+.mb-st b{font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap}
+.mb-st.mb-big{border-color:#1c7ed6;background:#e7f1fd}
+.mb-more td{background:var(--card);border:1.5px solid #a9c9ec;border-top:none;border-left:6px solid var(--sc,#a9c9ec);border-radius:0 0 16px 16px;padding:9px 14px}
+.mb-morebtn{font:inherit;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 15px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--thtext)}
+.mb-morebtn:hover{background:var(--thbg)}
+.mb-table:not(.mb-searching) tr.mb-hid{display:none}
+.mb-near{display:block;width:fit-content;margin-top:5px;font-size:11.5px;font-weight:700;color:#b54708;background:#fff1dc;border-radius:999px;padding:2px 10px}
+.mb-table.mb-less tr>*:nth-child(11),.mb-table.mb-less tr>*:nth-child(12),.mb-table.mb-less tr>*:nth-child(14),.mb-table.mb-less tr>*:nth-child(15){display:none}
+.mb-colbtn{margin-left:auto}
+.mb-today{border:1px solid var(--line);border-left:6px solid var(--brand);border-radius:16px;background:var(--card);padding:14px 18px;margin:10px 0 14px}
+.mb-today h3{margin:0 0 10px;font-size:16px}
+.mb-trow{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:flex-start}
+.mb-trow>b{flex:0 0 250px;font-size:13.5px}
+.mb-trow>div{flex:1;font-size:13px;display:flex;flex-wrap:wrap;gap:6px}
+.mb-ti{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px 10px}
+.mb-ti.bad{background:#ffe3e3;border-color:#ffc9c9}.mb-ti.warn{background:#fff1dc;border-color:#ffd8a8}.mb-ti.good{background:#d3f9d8;border-color:#b2f2bb}
 .mb-ad td{background:var(--card)}
-.mb-ad td:first-child{border-left:1.5px solid #a9c9ec}
+.mb-ad td:first-child{border-left:6px solid var(--sc,#a9c9ec)}
 .mb-ad td:last-child{border-right:1.5px solid #a9c9ec}
 .mb-ad.mb-last td{border-bottom:1.5px solid #a9c9ec}
 .mb-ad.mb-last td:first-child{border-bottom-left-radius:16px}
@@ -110,7 +130,8 @@ CSS = """
 HTML = """<section class="sec" id="mb">
 <h2>&#127919; Media Buyer &mdash; every live ad <span class="count">__N__</span></h2>
 <p class="note">Meta data pulled __PULLED__ (this PC's time). Numbers are the last 7 days unless the column name says otherwise. View only: nothing on this page changes an ad. Hover a column name to see what it means.</p>
-<details class="mb-setup" open>
+<div class="mb-today" id="mb-today"></div>
+<details class="mb-setup">
 <summary>&#9881;&#65039; Setup</summary>
 <div class="mb-sgrid">
 <div class="mb-f"><label>Ideal MER %</label><input id="mb-mer" type="number" step="0.01"><small>Ad spend &divide; revenue we aim for</small></div>
@@ -157,7 +178,8 @@ HTML = """<section class="sec" id="mb">
 <style>__CSS__</style>
 <script>
 (function(){
-var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=17;
+var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=17;
+var openSets={},less=true;try{less=localStorage.getItem('lacalut_mb_less')!=='0'}catch(e){}
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
 var S={},filt='';
 function load(){var o={};try{o=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
@@ -200,6 +222,16 @@ function landing(l,k){if(k&&(k.st===0||k.st>=400))return '<a class="pill pill-ba
   return '<a class="pill '+cls+' mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="'+esc(p)+'">'+lab+'</a>'}
 function agg(rows){var t={sp:0,rev:0,pc:0};rows.forEach(function(a){if(a.d7){t.sp+=a.d7.sp;t.rev+=a.d7.rev;t.pc+=a.d7.pc}});return t}
 function sp7(a){return a.d7?a.d7.sp:0}
+function aggk(rows,k){var t={sp:0,rev:0,pc:0};rows.forEach(function(a){var d=a[k];if(d){t.sp+=d.sp;t.rev+=d.rev;t.pc+=d.pc}});return t}
+function lossOf(rows){var t=agg(rows);return t.sp-t.rev}
+function rp(r){return '<span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span>'}
+function stat(l,v,t,big){return '<span class="mb-st'+(big?' mb-big':'')+'"'+(t?' title="'+esc(t)+'"':'')+'><small>'+l+'</small><b>'+v+'</b></span>'}
+function near(a,v){var d=a.d7,d3=a.d3;if(!d||!d.sp)return '';
+  if(v==='sidekick'){var r=d.rev/d.sp;return r<S.villroas+0.15?'Close to Villain: ROAS '+r.toFixed(2)+', Villain is under '+S.villroas.toFixed(2):''}
+  if(v!=='civilian')return '';var g=[];if(d.rev/d.sp<S.villroas)g.push(S.minspend-d.sp);
+  if(d3&&d3.sp&&d3.rev/d3.sp<S.villroas)g.push(S.fastspend-d3.sp);if(!g.length)return '';
+  var m=Math.max(0,Math.min.apply(null,g));return m<=60?'$'+Math.round(m)+' more spend at this ROAS = Villain':''}
+function shortn(n){return esc(n.replace(/^B[0-9]+_[A-Z]+_(NOV_)?(BAU_|100YRS_)?/,'').replace(/_/g,' ').slice(0,58))}
 function render(){
   var T=thr(),h='';
   ['TOF','TOM','MOF'].forEach(function(k){h+='<span><b>'+k+'</b><span class="mb-g">&lt; '+money(T[k][0])+'</span> | <span class="mb-a">'+money(T[k][0])+' &ndash; '+money(T[k][1])+'</span> | <span class="mb-r">&gt; '+money(T[k][1])+'</span></span>'});
@@ -209,32 +241,59 @@ function render(){
   else if(!a3&&!a30){bn.className='mb-banner up';bn.innerHTML='MER is at or below ideal: there is room to raise spend<small>'+sub+'. Spend increases still need Quan\\'s yes.</small>'}
   else{bn.className='mb-banner hold';bn.innerHTML='Hold total spend<small>3-day and 30-day MER disagree. '+sub+'</small>'}
   var camps={},order=[];DATA.ads.forEach(function(a){if(!camps[a.campaign]){camps[a.campaign]={};order.push(a.campaign)}(camps[a.campaign][a.adset]=camps[a.campaign][a.adset]||[]).push(a)});
-  order.sort();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now();
+  NC=less?13:17;document.querySelector('.mb-table').classList.toggle('mb-less',less);
+  order.sort();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now(),nearL=[],heroL=[],villL=[];
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct=agg(all),cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val '+(cr>=S.roasbe?'good':'bad')+'">'+cr.toFixed(2)+'x</div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
     body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+esc(cn)+' <span class="mut">&middot; '+all.length+' live ads &middot; '+money(ct.sp)+' &middot; '+ct.pc+' sales &middot; ROAS '+cr.toFixed(2)+'x</span></td></tr>';
-    Object.keys(sets).sort(function(x,y){return agg(sets[y]).sp-agg(sets[x]).sp}).forEach(function(sn){
+    Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),st=agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
-      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set"><td colspan="'+NC+'">'+esc(sn)+' <span class="mut">&middot; '+rows.length+' ads &middot; '+money(st.sp)+' &middot; '+st.pc+' sales &middot; CPP '+(st.pc?money(st.sp/st.pc):'&mdash;')+' &middot; ROAS '+(st.sp?(st.rev/st.sp).toFixed(2)+'x':'&mdash;')+' &middot; ad set frequency '+sf.toFixed(2)+'</span><span class="mb-stage" title="From the ad set frequency and the Setup boundaries">Acting like: '+stg+'</span></td></tr>';
-      rows.forEach(function(a,ri){var d=a.d7,v=cls(a);cnt[v[0]]++;
+      var s3=aggk(rows,'d3'),s1=aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
+      var sc=st.sp<50?'#adb5bd':(r7s>=S.roasbe?'#2f9e44':(r7s>=1?'#f08c00':'#e03131'));
+      var bud=sb.bud?stat('Daily budget',money(sb.bud)+' / day','The most this ad set can spend each day',1):(sb.cbud?stat('Daily budget','shares '+money(sb.cbud)+' / day','Campaign budget: Meta splits it across the ad sets in this campaign',1)+(sb.min?stat('Minimum spend',money(sb.min)+' / day','Meta must spend at least this much on this ad set each day'):''):'');
+      var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
+        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('Spent 7 days',money(st.sp))+stat('Sales 7 days',st.pc)+stat('CPP 7 days',st.pc?money(st.sp/st.pc):'no sale','Cost per purchase')
+        +stat('ROAS 7 days',r7s===null?Z:rp(r7s))+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)+stat('Frequency',sf.toFixed(2),'Average times each person saw ads from this ad set in 7 days')
+        +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
+      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></td></tr>';
+      var key=cn+'|'+sn,cl=rows.map(function(a){return cls(a)}),nrs=rows.map(function(a,i){return near(a,cl[i][0])}),hid=0;
+      rows.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
+      rows.forEach(function(a,ri){var d=a.d7,v=cl[ri],nr=nrs[ri];cnt[v[0]]++;
+        var hide=fold&&!openSets[key]&&ri>=2&&v[0]==='civilian'&&!nr,r7a=d&&d.sp?d.rev/d.sp:0;
+        if(nr)nearL.push('<span class="mb-ti warn" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+esc(nr)+'</span>');
+        if(v[0]==='hero'||v[0]==='superhero')heroL.push('<span class="mb-ti good" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+money(d.sp)+' &middot; ROAS '+r7a.toFixed(2)+'</span>');
+        if(v[0]==='villain'||v[0]==='supervillain')villL.push('<span class="mb-ti bad" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+money(d.sp)+' &middot; ROAS '+r7a.toFixed(2)+'</span>');
         var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
         var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null,base=cpp(d);
-        body+='<tr class="mb-ad'+(ri===rows.length-1?' mb-last':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'"'+(filt&&filt!==v[0]?' style="display:none"':'')+'>'
-        +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+'</span></div></td>'
+        body+='<tr class="mb-ad'+(hide?' mb-hid':'')+(!fold&&ri===rows.length-1?' mb-last':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
+        +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
         +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'">'+v[1]+'</span></td>'
         +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
         +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
         +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
         +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
         +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk)+'</td>'
-        +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'})})});
+        +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'});
+      if(fold)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button></td></tr>'})});
+  var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti'+(x.indexOf('Paused')>-1?' bad':'')+'">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
+  document.getElementById('mb-today').innerHTML='<h3>&#128203; Today</h3>'
+    +'<div class="mb-trow"><b>&#129302; Changes in the last 24 hours</b><div>'+acts+'</div></div>'
+    +(villL.length?'<div class="mb-trow"><b>&#129465; Villains still live ('+villL.length+'): pause</b><div>'+villL.join('')+'</div></div>':'')
+    +'<div class="mb-trow"><b>&#9888;&#65039; Close to Villain ('+nearL.length+')</b><div>'+(nearL.join('')||none)+'</div></div>'
+    +'<div class="mb-trow"><b>&#11088; Heroes and Superheroes ('+heroL.length+')</b><div>'+(heroL.join('')||none)+'</div></div>';
   document.getElementById('mb-body').innerHTML=body;document.getElementById('mb-kpis').innerHTML=cards;
   var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+c[1]+'<span class="tcount">'+c[2]+'</span></button>'});
+  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Hook, Checkout and Days live">'+(less?'&#10133; Show all columns':'&#10134; Show fewer columns')+'</button>';
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
-  [].forEach.call(box.querySelectorAll('.mbf'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
+  [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
+  document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less',less?'1':'0')}catch(e){}render()});
 }
 load();fill();render();
+document.getElementById('mb-body').addEventListener('click',function(e){var b=e.target.closest?e.target.closest('.mb-morebtn'):null;if(!b)return;var k=b.getAttribute('data-k');openSets[k]=!openSets[k];render()});
+document.addEventListener('input',function(){var on=false,q=document.getElementById('fq');if(q&&q.value)on=true;
+  [].forEach.call(document.querySelectorAll('#mb input[type=search]'),function(i){if(i.value)on=true});
+  document.querySelector('.mb-table').classList.toggle('mb-searching',on)});
 if(AUTO){var dm=function(x){return x.slice(8,10)+'/'+x.slice(5,7)};
   ['mer3','mer30'].forEach(function(k){document.getElementById('mb-'+k).disabled=true});
   [].forEach.call(document.querySelectorAll('.mb-auto'),function(e){e.textContent='Automatic: Meta spend ÷ Shopify retail sales incl. GST, full days to '+dm(AUTO.as_of)});
@@ -249,6 +308,34 @@ IDS.forEach(function(k){document.getElementById('mb-'+k).addEventListener('chang
 document.getElementById('mb-reset').addEventListener('click',function(){try{localStorage.removeItem(KEY)}catch(e){}load();fill();render()});
 })();
 </script>"""
+
+
+def recent_actions(SP, hours=24):
+    """Pauses, switch-ons and budget cuts from _auto_buyer.log in the last `hours`, newest first, plain English."""
+    import re
+    from datetime import datetime, timedelta
+    out = []
+    try:
+        lines = open(os.path.join(SP, "_auto_buyer.log"), encoding="utf-8").read().splitlines()
+    except Exception:
+        return out
+    since = datetime.now() - timedelta(hours=hours)
+    for l in lines:
+        m = re.match(r"([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}):[0-9]{2} +(.*)", l)
+        if not m:
+            continue
+        t, txt = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M"), m.group(2)
+        if t < since or "FAILED" in txt:
+            continue
+        who = "Facy" if txt.startswith("MANUAL") else "Automatic"
+        txt = re.sub(r"^MANUAL [(][^)]*[)] *", "", txt)
+        m2 = re.match(r"(PAUSED|ACTIVE|CUT) +(.*)", txt)
+        if not m2:
+            continue
+        verb = {"PAUSED": "Paused", "ACTIVE": "Switched back on", "CUT": "Budget cut"}[m2.group(1)]
+        rest = re.sub(r"[0-9]{12,} *", "", m2.group(2)).replace("ok=True", "").replace("_", " ").strip(" |")
+        out.append(f"{t:%d/%m %I:%M %p} · {who} · {verb}: {rest[:150]}")
+    return out[::-1][:12]
 
 
 def build(SP):
@@ -274,8 +361,9 @@ def build(SP):
             auto = json.load(open(mp, encoding="utf-8"))
         except Exception:
             auto = None
+    acts = recent_actions(SP)
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     out = (HTML.replace("__CSS__", CSS).replace("__N__", str(len(data.get("ads", []))))
            .replace("__PULLED__", pulled).replace("__DEF__", json.dumps(DEFAULTS))
-           .replace("__AUTO__", json.dumps(auto)).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
+           .replace("__AUTO__", json.dumps(auto)).replace("__ACTS__", json.dumps(acts).replace("</", "<\\/")).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
     return len(data.get("ads", [])), out

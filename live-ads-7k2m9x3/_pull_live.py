@@ -299,7 +299,8 @@ def pull_buyer():
     url = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset=last_7d&limit=400"
            f"&fields=adset_id,frequency,reach&access_token={urllib.parse.quote(TOK)}")
     sfreq = {r.get("adset_id"): float(r.get("frequency") or 0) for r in get_all(url)}
-    fields = ("id,name,created_time,campaign{name},adset{id,name},"
+    fields = ("id,name,created_time,campaign{name,daily_budget},"
+              "adset{id,name,daily_budget,daily_min_spend_target,bid_strategy,bid_constraints,learning_stage_info},"
               "creative{object_type,video_id,effective_object_story_id,"
               "object_story_spec{link_data{link,child_attachments{link}},"
               "video_data{call_to_action{value{link}}}},asset_feed_spec{link_urls{website_url}}}")
@@ -334,6 +335,12 @@ def pull_buyer():
         rows.append({"id": a["id"], "name": a.get("name", ""), "created_time": a.get("created_time", ""),
                      "campaign": (a.get("campaign") or {}).get("name", ""),
                      "adset": st.get("name", ""), "sfreq": sfreq.get(st.get("id"), 0),
+                     # ad set card heading (Quan 16/11/2026): budget, floor, learning. Dollars, not cents.
+                     "sb": {"bud": int(st.get("daily_budget") or 0) / 100,
+                            "cbud": int((a.get("campaign") or {}).get("daily_budget") or 0) / 100,
+                            "min": int(st.get("daily_min_spend_target") or 0) / 100,
+                            "floor": ((st.get("bid_constraints") or {}).get("roas_average_floor") or 0) / 10000,
+                            "learn": ((st.get("learning_stage_info") or {}).get("status") or "")},
                      "video": bool(cr.get("video_id") or vd), "link": link,
                      "d7": w7.get(a["id"]), "d3": w3.get(a["id"]), "d1": w1.get(a["id"])})
     # link health (15/11/2026): every unique landing page is opened once; Shopify products also get a stock check
