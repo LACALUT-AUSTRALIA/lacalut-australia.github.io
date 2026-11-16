@@ -48,91 +48,144 @@ def classify(a, D=None):
     return "sidekick", f"${sp:,.0f} spent in 7 days, ROAS {r7:.2f}"
 
 CSS = """
-.mb-setup{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:14px;background:var(--card);margin:10px 0 14px}
-.mb-setup summary{cursor:pointer;font-weight:800;font-size:15px;padding:12px 16px;list-style:none}
-.mb-setup summary::-webkit-details-marker{display:none}
-.mb-setup summary:after{content:'  \\25BE';color:var(--sub)}
-.mb-sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px 16px;padding:4px 16px 14px}
-.mb-f label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);margin-bottom:4px}
-.mb-f input{width:100%;font:inherit;font-size:15px;font-weight:700;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font-variant-numeric:tabular-nums}
-.mb-f small{display:block;font-size:11.5px;color:var(--sub);margin-top:3px}
-.mb-shead{grid-column:1/-1;font-size:12px;font-weight:800;color:var(--brand);border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
-.mb-thr{padding:0 16px 12px;font-size:13.5px;font-variant-numeric:tabular-nums;display:flex;gap:6px 22px;flex-wrap:wrap}
-.mb-thr b{margin-right:6px}.mb-g{color:var(--good);font-weight:700}.mb-a{color:var(--mid);font-weight:700}.mb-r{color:var(--bad);font-weight:700}
-.mb-reset{font:inherit;font-size:12.5px;font-weight:700;margin:0 16px 14px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--sub);cursor:pointer}
-.mb-banner{border-radius:12px;padding:12px 16px;margin:0 0 14px;font-weight:800;font-size:15px;border:1px solid var(--line);border-left-width:4px}
-.mb-banner small{display:block;font-weight:600;font-size:12.5px;color:var(--sub);margin-top:3px}
-.mb-banner.down{border-left-color:var(--bad);background:var(--badbg)}.mb-banner.up{border-left-color:var(--good);background:var(--goodbg)}.mb-banner.hold{border-left-color:var(--warn);background:var(--midbg)}
-.mb-days{display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;font-size:13px;margin:-4px 0 14px}.mb-day{white-space:nowrap;cursor:help}
-.mb-f input:disabled{opacity:.75}
-.mb-wrap{overflow:auto;max-height:calc(100vh - 370px);min-height:420px}
-.mb-table{width:100%}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+#mb{--s0:var(--bg);--s1:#fff;--s2:#f3f4f7;--bd:#e6e8ee;--bd2:#d6dae2;--tx:#0f172a;--tx2:#586174;--tx3:#8a93a3;--ac:#4f46e5;--g:#0e9f6e;--gbg:#e7f7f0;--gtx:#046c4e;--w:#e08a00;--wbg:#fff5e0;--wtx:#8a4b00;--b:#e02424;--bbg:#fdeaea;--btx:#9b1c1c;--n:#a6aebb;--on:#fff;--sh:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.05);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--tx);font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #mb{--s1:#151922;--s2:#1d222d;--bd:#272d39;--bd2:#343c4a;--tx:#e8eaf0;--tx2:#a3acba;--tx3:#737d8c;--ac:#8b93ff;--g:#34d399;--gbg:rgba(52,211,153,.14);--gtx:#6ee7b7;--w:#fbbf24;--wbg:rgba(251,191,36,.14);--wtx:#fcd34d;--b:#f87171;--bbg:rgba(248,113,113,.15);--btx:#fca5a5;--n:#5d6675;--on:#10131a;--sh:none}}
+:root[data-theme=dark] #mb{--s1:#151922;--s2:#1d222d;--bd:#272d39;--bd2:#343c4a;--tx:#e8eaf0;--tx2:#a3acba;--tx3:#737d8c;--ac:#8b93ff;--g:#34d399;--gbg:rgba(52,211,153,.14);--gtx:#6ee7b7;--w:#fbbf24;--wbg:rgba(251,191,36,.14);--wtx:#fcd34d;--b:#f87171;--bbg:rgba(248,113,113,.15);--btx:#fca5a5;--n:#5d6675;--on:#10131a;--sh:none}
 .wrap:has(.tabpane[data-pane="buyer"]:not([hidden])){max-width:1780px}
-.mb-table tbody td,.mb-table thead th{padding-left:9px;padding-right:9px}
-.mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help}
-.mb-table thead tr.colfilters th{position:sticky;top:40px;z-index:7}
-.mb-table thead th+th,.mb-ad td+td{border-left:1px solid var(--line)}
-.mb-table .adtd{min-width:300px;max-width:420px}
-.mb-th{width:84px;height:84px;min-width:84px;cursor:zoom-in}
-.mb-camp td{background:var(--brand)!important;color:#fff;font-weight:800;font-size:14.5px;padding:10px 14px}
-.mb-camp td .mut{color:rgba(255,255,255,.82);font-weight:600}
-.mb-table{border-collapse:separate;border-spacing:0}
-.mb-wrap{background:var(--bg);border:none;border-radius:16px}
-.mb-table thead tr:first-child th:first-child{border-top-left-radius:14px}
-.mb-table thead tr:first-child th:last-child{border-top-right-radius:14px}
-.mb-table thead tr.colfilters th:first-child{border-bottom-left-radius:14px}
-.mb-table thead tr.colfilters th:last-child{border-bottom-right-radius:14px}
-.mb-camp td{border-radius:14px}
-.mb-set td{background:var(--thbg)!important;color:var(--thtext);padding:12px 16px;border:1.5px solid #a9c9ec;border-left:6px solid var(--sc,#a9c9ec);border-bottom:1px solid var(--line);border-radius:16px 16px 0 0}
-.mb-sname{font-size:15px;font-weight:800;margin-bottom:9px}
-.mb-stats{display:flex;flex-wrap:wrap;gap:8px}
-.mb-st{display:inline-flex;flex-direction:column;gap:1px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:5px 12px;min-width:72px}
-.mb-st small{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--sub);white-space:nowrap}
-.mb-st b{font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap}
-.mb-st.mb-big{border-color:#1c7ed6;background:#e7f1fd}
-.mb-more td{background:var(--card);border:1.5px solid #a9c9ec;border-top:none;border-left:6px solid var(--sc,#a9c9ec);border-radius:0 0 16px 16px;padding:9px 14px}
-.mb-morebtn{font:inherit;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 15px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--thtext)}
-.mb-morebtn:hover{background:var(--thbg)}
-.mb-table:not(.mb-searching) tr.mb-hid{display:none}
-.mb-near{display:block;width:fit-content;margin-top:5px;font-size:11.5px;font-weight:700;color:#b54708;background:#fff1dc;border-radius:999px;padding:2px 10px}
-.mb-table.mb-less tr>*:nth-child(11),.mb-table.mb-less tr>*:nth-child(12),.mb-table.mb-less tr>*:nth-child(14),.mb-table.mb-less tr>*:nth-child(15){display:none}
+#mb h2{font-weight:700;letter-spacing:-.02em}
+#mb .note{color:var(--tx3);font-size:12.5px}
+#mb .mut{color:var(--tx3)}
+#mb .pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;border:none}
+#mb .pill-good{background:var(--gbg);color:var(--gtx)}#mb .pill-mid{background:var(--wbg);color:var(--wtx)}#mb .pill-bad{background:var(--bbg);color:var(--btx)}#mb .pill-none{background:var(--s2);color:var(--tx2)}
+.mb-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--s2);color:var(--tx2);letter-spacing:0}
+.mb-chip i,.mbv i{width:6px;height:6px;border-radius:50%;background:currentColor;flex:none}
+.mb-chip.good{background:var(--gbg);color:var(--gtx)}.mb-chip.warn{background:var(--wbg);color:var(--wtx)}.mb-chip.bad{background:var(--bbg);color:var(--btx)}
+.mb-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0 12px}
+.mb-h{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.mb-h small{font-size:12.5px;font-weight:500;color:var(--tx2)}
+.mb-h b{font-size:28px;font-weight:600;letter-spacing:-.03em;line-height:1.1}
+.mb-h em{font-style:normal;font-size:12px;color:var(--tx3);line-height:1.4}
+.mb-merrow{display:grid;grid-template-columns:minmax(300px,1fr) 2fr;gap:12px;margin:0 0 12px}
+@media (max-width:900px){.mb-merrow{grid-template-columns:1fr}}
+.mb-banner{position:relative;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px 18px 16px 46px;box-shadow:var(--sh);font-size:16px;font-weight:600;letter-spacing:-.01em;margin:0}
+.mb-banner:before{content:'';position:absolute;left:19px;top:22px;width:10px;height:10px;border-radius:50%;background:var(--n);box-shadow:0 0 0 4px var(--s2)}
+.mb-banner.down:before{background:var(--b);box-shadow:0 0 0 4px var(--bbg)}.mb-banner.up:before{background:var(--g);box-shadow:0 0 0 4px var(--gbg)}.mb-banner.hold:before{background:var(--w);box-shadow:0 0 0 4px var(--wbg)}
+.mb-banner small{display:block;font-weight:400;font-size:12.5px;color:var(--tx2);margin-top:7px;line-height:1.55;letter-spacing:0}
+.mb-days{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:14px 18px 12px;box-shadow:var(--sh);overflow-x:auto}
+.mb-days:empty{display:none}
+.mb-dh{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px}
+.mb-dh b{font-size:13px;font-weight:600}.mb-dh span{font-size:12px;color:var(--tx3)}
+.mb-dbars{display:flex;align-items:flex-end;gap:6px;min-height:86px}
+.mb-dcol{flex:1;min-width:34px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:help}
+.mb-dcol span{font-size:11px;font-weight:600;color:var(--tx2)}
+.mb-dcol i{display:block;width:100%;max-width:40px;border-radius:4px 4px 0 0;background:var(--n)}
+.mb-dcol i.good{background:var(--g)}.mb-dcol i.warn{background:var(--w)}.mb-dcol i.bad{background:var(--b)}
+.mb-dcol em{font-style:normal;font-size:10.5px;color:var(--tx3);white-space:nowrap}
+.mb-today{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:0 0 12px}
+.mb-tp{background:var(--s1);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column}
+.mb-tph{display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--bd)}
+.mb-tph i{width:8px;height:8px;border-radius:50%;background:var(--ac);flex:none}
+.mb-tp.bad .mb-tph i{background:var(--b)}.mb-tp.warn .mb-tph i{background:var(--w)}.mb-tp.good .mb-tph i{background:var(--g)}
+.mb-tph b{font-size:13px;font-weight:600;flex:1}
+.mb-tph span{font-size:12px;font-weight:600;background:var(--s2);border-radius:999px;padding:1px 9px;color:var(--tx2)}
+.mb-tpb{padding:6px 8px;max-height:178px;overflow:auto;display:flex;flex-direction:column}
+.mb-ti{font-size:12.5px;padding:6px 8px;border-radius:8px;line-height:1.4}
+.mb-ti:hover{background:var(--s2)}
+.mb-tpb .mut{padding:6px 8px;font-size:12.5px}
+.mb-setup{background:var(--s1);border:1px solid var(--bd);border-radius:14px;margin:0 0 22px;box-shadow:var(--sh)}
+.mb-setup summary{cursor:pointer;font-weight:600;font-size:13.5px;padding:13px 18px;list-style:none;display:flex;align-items:center;gap:12px;color:var(--tx2)}
+.mb-setup summary::-webkit-details-marker{display:none}
+.mb-setup summary:before{content:'';width:6px;height:6px;border-right:2px solid var(--tx3);border-bottom:2px solid var(--tx3);transform:rotate(-45deg);transition:transform .15s}
+.mb-setup[open] summary:before{transform:rotate(45deg)}
+.mb-sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px 16px;padding:6px 18px 16px}
+.mb-f label{display:block;font-size:12px;font-weight:500;color:var(--tx2);margin-bottom:5px}
+.mb-f input{width:100%;box-sizing:border-box;font:inherit;font-size:14.5px;font-weight:600;padding:8px 10px;border:1px solid var(--bd2);border-radius:9px;background:var(--s1);color:var(--tx)}
+.mb-f input:focus{outline:2px solid var(--ac);outline-offset:-1px}
+.mb-f input:disabled{background:var(--s2);opacity:.8}
+.mb-f small{display:block;font-size:11.5px;color:var(--tx3);margin-top:4px;line-height:1.4}
+.mb-shead{grid-column:1/-1;font-size:12px;font-weight:600;color:var(--tx);border-top:1px solid var(--bd);padding-top:14px;margin-top:2px}
+.mb-thr{padding:0 18px 14px;font-size:13px;display:flex;gap:6px 22px;flex-wrap:wrap;color:var(--tx2)}
+.mb-thr b{margin-right:6px;color:var(--tx);font-weight:600}.mb-g{color:var(--gtx);font-weight:600}.mb-a{color:var(--wtx);font-weight:600}.mb-r{color:var(--btx);font-weight:600}
+.mb-reset{font:inherit;font-size:12.5px;font-weight:500;margin:0 18px 16px;padding:7px 12px;border-radius:9px;border:1px solid var(--bd2);background:var(--s1);color:var(--tx2);cursor:pointer}
+.mb-reset:hover{background:var(--s2);color:var(--tx)}
+.mb-lab{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--tx);margin:0 0 10px}
+.mb-kpis{margin:0 0 6px}
+#mb .kpi{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;box-shadow:var(--sh)}
+#mb .kpi .lbl{font-size:12.5px;font-weight:500;color:var(--tx2);text-transform:none;letter-spacing:0}
+#mb .kpi .val{font-size:26px;font-weight:600;letter-spacing:-.03em;color:var(--tx);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.mb-sub{font-size:12px;color:var(--tx3);margin-top:8px}
+.mb-chips{display:flex;gap:6px;flex-wrap:wrap;margin:20px 0 12px;align-items:center}
+.mbf{font:inherit;font-size:13px;font-weight:500;cursor:pointer;padding:6px 12px;border-radius:9px;border:1px solid var(--bd);background:var(--s1);color:var(--tx2);display:inline-flex;gap:8px;align-items:center;box-shadow:0 1px 1px rgba(16,24,40,.04)}
+.mbf:hover{border-color:var(--bd2);color:var(--tx)}
+.mbf[aria-pressed=true]{background:var(--tx);border-color:var(--tx);color:var(--s1)}
+.mbf .tcount{background:var(--s2);color:var(--tx2);border-radius:6px;font-size:11.5px;font-weight:600;padding:0 6px}
+.mbf[aria-pressed=true] .tcount{background:rgba(128,128,128,.35);color:inherit}
+.mbd{width:8px;height:8px;border-radius:50%;background:var(--n);flex:none}
+.mbd-villain{background:var(--b)}.mbd-supervillain{background:#7f1d1d}.mbd-sidekick{background:var(--w)}.mbd-hero{background:var(--g)}.mbd-superhero{background:#046c4e}
 .mb-colbtn{margin-left:auto}
-.mb-today{border:1px solid var(--line);border-left:6px solid var(--brand);border-radius:16px;background:var(--card);padding:14px 18px;margin:10px 0 14px}
-.mb-today h3{margin:0 0 10px;font-size:16px}
-.mb-trow{display:flex;gap:12px;padding:8px 0;border-top:1px solid var(--line);align-items:flex-start}
-.mb-trow>b{flex:0 0 250px;font-size:13.5px}
-.mb-trow>div{flex:1;font-size:13px;display:flex;flex-wrap:wrap;gap:6px}
-.mb-ti{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px 10px}
-.mb-ti.bad{background:#ffe3e3;border-color:#ffc9c9}.mb-ti.warn{background:#fff1dc;border-color:#ffd8a8}.mb-ti.good{background:#d3f9d8;border-color:#b2f2bb}
-.mb-ad td{background:var(--card)}
-.mb-ad td:first-child{border-left:6px solid var(--sc,#a9c9ec)}
-.mb-ad td:last-child{border-right:1.5px solid #a9c9ec}
-.mb-ad.mb-last td{border-bottom:1.5px solid #a9c9ec}
-.mb-ad.mb-last td:first-child{border-bottom-left-radius:16px}
-.mb-ad.mb-last td:last-child{border-bottom-right-radius:16px}
-.mb-gap td{height:18px;padding:0;background:var(--bg)!important;border:none!important}
+.mb-wrap{overflow:auto;max-height:calc(100vh - 370px);min-height:420px;background:var(--s0);border:none;border-radius:14px}
+.mb-table{width:100%;border-collapse:separate;border-spacing:0}
+#mb .mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help;background:var(--s2);color:var(--tx2);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:0 10px;height:40px;box-sizing:border-box;border-bottom:1px solid var(--bd);box-shadow:none}
+#mb .mb-table thead tr.colfilters th{top:40px;height:auto;padding:5px 6px 8px;cursor:default}
+#mb tr.colfilters input{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:4px 7px;font-size:11.5px;color:var(--tx)}
+#mb tr.colfilters input:focus{border-color:var(--ac)}
+.mb-table thead th+th{border-left:1px solid var(--bd)}
+.mb-table thead tr:first-child th:first-child{border-top-left-radius:12px}
+.mb-table thead tr:first-child th:last-child{border-top-right-radius:12px}
+.mb-table thead tr.colfilters th:first-child{border-bottom-left-radius:12px}
+.mb-table thead tr.colfilters th:last-child{border-bottom-right-radius:12px}
+#mb .mb-table tbody td{padding:10px;border-bottom:1px solid var(--bd);font-size:13.5px}
+.mb-gap td{height:14px;padding:0!important;background:var(--s0)!important;border:none!important}
 .mb-gap-big td{height:30px}
-.mb-stage{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:11.5px}
-.mb-kpis{margin:0 0 14px}.mb-sub{font-size:12px;color:var(--sub);margin-top:6px}
-.mb-chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}
-.mbf{font:inherit;font-size:13px;font-weight:700;cursor:pointer;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--sub);display:inline-flex;gap:7px;align-items:center}
-.mbf[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:#fff}
-.mbf .tcount{background:var(--thbg);color:var(--thtext);border-radius:999px;font-size:11px;padding:1px 7px}
-.mbv{display:inline-block;padding:4px 11px;border-radius:20px;font-size:12.5px;font-weight:800;white-space:nowrap;cursor:help}
-.mbv-supervillain{background:var(--bad);color:#fff}.mbv-villain{background:var(--badbg);color:var(--bad)}
-.mbv-sidekick{background:var(--midbg);color:var(--mid)}.mbv-civilian{background:var(--line);color:var(--sub)}
-.mbv-hero{background:var(--goodbg);color:var(--good)}.mbv-superhero{background:var(--good);color:#fff}
-.mb-up{color:var(--good);font-size:10px}.mb-dn{color:var(--bad);font-size:10px}
-.mb-vid{font-size:10px;font-weight:800;background:var(--line);color:var(--sub);padding:1px 6px;border-radius:5px;margin-left:4px}
+#mb .mb-camp td{background:var(--s0)!important;color:var(--tx);padding:4px 4px 0;border:none}
+.mb-crow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.mb-cn{font-size:17px;font-weight:600;letter-spacing:-.02em}
+.mb-cm{font-size:13px;color:var(--tx2);display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+#mb .mb-set td{background:var(--s1)!important;color:var(--tx);padding:16px 18px 15px;border:1px solid var(--bd2);border-left:4px solid var(--sc,var(--bd2));border-bottom:1px solid var(--bd);border-radius:14px 14px 0 0}
+.mb-sname{font-size:14.5px;font-weight:600;letter-spacing:-.01em;margin-bottom:13px}
+.mb-stats{display:flex;flex-wrap:wrap;gap:12px 0}
+.mb-st{display:inline-flex;flex-direction:column;gap:4px;padding:0 20px;border-left:1px solid var(--bd)}
+.mb-st:first-child{padding-left:0;border-left:none}
+.mb-st small{font-size:11.5px;font-weight:500;color:var(--tx3);white-space:nowrap}
+.mb-st b{font-size:14.5px;font-weight:600;color:var(--tx);white-space:nowrap}
+.mb-st.mb-big b{color:var(--ac)}
+#mb .mb-ad td{background:var(--s1)}
+#mb .mb-ad:hover td{background:var(--s2)}
+.mb-ad td+td{border-left:1px solid var(--bd)}
+#mb .mb-ad td:first-child{border-left:4px solid var(--sc,var(--bd2))}
+#mb .mb-ad td:last-child{border-right:1px solid var(--bd2)}
+#mb .mb-ad.mb-last td{border-bottom:1px solid var(--bd2)}
+.mb-ad.mb-last td:first-child{border-bottom-left-radius:14px}
+.mb-ad.mb-last td:last-child{border-bottom-right-radius:14px}
+#mb .mb-more td{background:var(--s1);border:1px solid var(--bd2);border-top:none;border-left:4px solid var(--sc,var(--bd2));border-radius:0 0 14px 14px;padding:10px 14px}
+.mb-morebtn{font:inherit;border:1px solid var(--bd);background:var(--s1);border-radius:8px;padding:6px 12px;font-weight:500;font-size:12.5px;cursor:pointer;color:var(--tx2)}
+.mb-morebtn:hover{background:var(--s2);color:var(--tx)}
+.mb-table:not(.mb-searching) tr.mb-hid{display:none}
+.mb-table.mb-less tr>*:nth-child(11),.mb-table.mb-less tr>*:nth-child(12),.mb-table.mb-less tr>*:nth-child(14),.mb-table.mb-less tr>*:nth-child(15){display:none}
+.mb-table .adtd{min-width:300px;max-width:420px}
+#mb .mb-th{width:64px;height:64px;min-width:64px;border-radius:10px;border:1px solid var(--bd);cursor:zoom-in}
+#mb .adname{font-weight:500;font-size:13px;line-height:1.4;color:var(--tx)}
+.mb-near{display:block;width:fit-content;margin-top:6px;font-size:11.5px;font-weight:600;color:var(--wtx);background:var(--wbg);border-radius:6px;padding:2px 8px}
+.mbv{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:help}
+.mbv-supervillain{background:var(--b);color:var(--on)}.mbv-villain{background:var(--bbg);color:var(--btx)}
+.mbv-sidekick{background:var(--wbg);color:var(--wtx)}.mbv-civilian{background:var(--s2);color:var(--tx2)}
+.mbv-hero{background:var(--gbg);color:var(--gtx)}.mbv-superhero{background:var(--g);color:var(--on)}
+.mb-up{color:var(--g);font-size:9px}.mb-dn{color:var(--b);font-size:9px}
+.mb-vid{font-size:10px;font-weight:600;letter-spacing:.04em;background:var(--s2);color:var(--tx2);padding:1px 6px;border-radius:5px;margin-left:4px}
 .mb-lp{text-decoration:none}
+#mb .wlink{font-size:12.5px;font-weight:500;color:var(--ac);text-decoration:none;white-space:nowrap}
+#mb .wlink:hover{text-decoration:underline}
 """
 
 HTML = """<section class="sec" id="mb">
 <h2>&#127919; Media Buyer &mdash; every live ad <span class="count">__N__</span></h2>
 <p class="note">Meta data pulled __PULLED__ (this PC's time). Numbers are the last 7 days unless the column name says otherwise. View only: nothing on this page changes an ad. Hover a column name to see what it means.</p>
+<div class="mb-hero" id="mb-hero"></div>
+<div class="mb-merrow"><div class="mb-banner" id="mb-banner"></div><div class="mb-days" id="mb-days"></div></div>
 <div class="mb-today" id="mb-today"></div>
 <details class="mb-setup">
-<summary>&#9881;&#65039; Setup</summary>
+<summary>Setup: targets and class rules</summary>
 <div class="mb-sgrid">
 <div class="mb-f"><label>Ideal MER %</label><input id="mb-mer" type="number" step="0.01"><small>Ad spend &divide; revenue we aim for</small></div>
 <div class="mb-f"><label>MER 3-day rolling %</label><input id="mb-mer3" type="number" step="0.01"><small class="mb-auto">Typed in by hand</small></div>
@@ -156,10 +209,10 @@ HTML = """<section class="sec" id="mb">
 <div class="mb-thr" id="mb-thr"></div>
 <button class="mb-reset" id="mb-reset">Reset Setup to the saved defaults</button>
 </details>
-<div class="mb-banner" id="mb-banner"></div>
-<div class="mb-days" id="mb-days"></div>
+<div class="mb-lab">Campaigns, last 7 days</div>
 <div class="kpis mb-kpis" id="mb-kpis"></div>
-<div class="mb-chips" id="mb-chips"></div>
+<div class="mb-lab" style="margin-top:22px">Every live ad, by ad set</div>
+<div class="mb-chips" id="mb-chips" style="margin-top:0"></div>
 <div class="tablewrap mb-wrap"><table class="mb-table">
 <thead><tr><th>Ad</th><th title="Our own classes, set in Setup. Villain and Supervillain = pause. Hero and Superhero are never paused. These are not the EE labels.">Class</th>
 <th title="Last 7 days">Spend 7d</th><th title="Purchases, last 7 days">Purch.</th>
@@ -245,8 +298,8 @@ function render(){
   order.sort();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now(),nearL=[],heroL=[],villL=[];
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct=agg(all),cr=ct.sp?ct.rev/ct.sp:0;
-    cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val '+(cr>=S.roasbe?'good':'bad')+'">'+cr.toFixed(2)+'x</div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
-    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+esc(cn)+' <span class="mut">&middot; '+all.length+' live ads &middot; '+money(ct.sp)+' &middot; '+ct.pc+' sales &middot; ROAS '+cr.toFixed(2)+'x</span></td></tr>';
+    cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
+    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-cm">'+all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),st=agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
       var s3=aggk(rows,'d3'),s1=aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
@@ -268,7 +321,7 @@ function render(){
         var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null,base=cpp(d);
         body+='<tr class="mb-ad'+(hide?' mb-hid':'')+(!fold&&ri===rows.length-1?' mb-last':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
         +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
-        +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'">'+v[1]+'</span></td>'
+        +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span></td>'
         +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
         +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
         +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
@@ -276,15 +329,21 @@ function render(){
         +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk)+'</td>'
         +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'});
       if(fold)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button></td></tr>'})});
-  var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti'+(x.indexOf('Paused')>-1?' bad':'')+'">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
-  document.getElementById('mb-today').innerHTML='<h3>&#128203; Today</h3>'
-    +'<div class="mb-trow"><b>&#129302; Changes in the last 24 hours</b><div>'+acts+'</div></div>'
-    +(villL.length?'<div class="mb-trow"><b>&#129465; Villains still live ('+villL.length+'): pause</b><div>'+villL.join('')+'</div></div>':'')
-    +'<div class="mb-trow"><b>&#9888;&#65039; Close to Villain ('+nearL.length+')</b><div>'+(nearL.join('')||none)+'</div></div>'
-    +'<div class="mb-trow"><b>&#11088; Heroes and Superheroes ('+heroL.length+')</b><div>'+(heroL.join('')||none)+'</div></div>';
+  var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
+  var tp=function(c,t,n,b){return '<div class="mb-tp '+c+'"><div class="mb-tph"><i></i><b>'+t+'</b><span>'+n+'</span></div><div class="mb-tpb">'+b+'</div></div>'};
+  document.getElementById('mb-today').innerHTML=tp('info','Changes in the last 24 hours',ACTS.length,acts)+tp('bad','Villains still live: pause',villL.length,villL.join('')||none)+tp('warn','Close to Villain',nearL.length,nearL.join('')||none)+tp('good','Heroes and Superheroes',heroL.length,heroL.join('')||none);
+  var tot=agg(DATA.ads),trs=tot.sp?tot.rev/tot.sp:0;
+  var mchip=function(v){return v<=S.mer?'<span class="mb-chip good"><i></i>At or under ideal</span>':'<span class="mb-chip '+(v<=2*S.mer?'warn':'bad')+'"><i></i>'+(v/S.mer).toFixed(1)+'x the ideal</span>'};
+  var ht=function(l,v,x,sx){return '<div class="mb-h"><small>'+l+'</small><b>'+v+'</b>'+(x||'')+'<em>'+sx+'</em></div>'};
+  document.getElementById('mb-hero').innerHTML=ht('MER, last 3 days',S.mer3.toFixed(1)+'%',mchip(S.mer3),'Ad spend as a share of sales. Ideal is '+S.mer.toFixed(1)+'%')
+    +ht('MER, last 30 days',S.mer30.toFixed(1)+'%',mchip(S.mer30),'Ideal is '+S.mer.toFixed(1)+'%')
+    +ht('Spend, last 7 days',money(tot.sp),'','Live ads only')
+    +ht('Sales value, last 7 days',money(tot.rev),'',tot.pc+' sales, as counted by Meta')
+    +ht('ROAS, last 7 days',trs.toFixed(2)+'x','<span class="mb-chip '+(trs>=S.roasbe?'good':(trs>=1?'warn':'bad'))+'"><i></i>'+(trs>=S.roasbe?'At or above break-even':'Under break-even')+'</span>','Break-even is '+S.roasbe.toFixed(2))
+    +ht('Live ads',DATA.ads.length,'',(cnt.villain+cnt.supervillain)+' Villains &middot; '+(cnt.hero+cnt.superhero)+' Heroes &middot; '+nearL.length+' close to Villain');
   document.getElementById('mb-body').innerHTML=body;document.getElementById('mb-kpis').innerHTML=cards;
-  var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+c[1]+'<span class="tcount">'+c[2]+'</span></button>'});
-  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Hook, Checkout and Days live">'+(less?'&#10133; Show all columns':'&#10134; Show fewer columns')+'</button>';
+  var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+(c[0]?'<i class="mbd mbd-'+c[0]+'"></i>':'')+c[1].replace(/^&#[0-9]+; /,'')+'<span class="tcount">'+c[2]+'</span></button>'});
+  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Hook, Checkout and Days live">'+(less?'Show all columns':'Show fewer columns')+'</button>';
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
   [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
   document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less',less?'1':'0')}catch(e){}render()});
@@ -298,9 +357,11 @@ if(AUTO){var dm=function(x){return x.slice(8,10)+'/'+x.slice(5,7)};
   ['mer3','mer30'].forEach(function(k){document.getElementById('mb-'+k).disabled=true});
   [].forEach.call(document.querySelectorAll('.mb-auto'),function(e){e.textContent='Automatic: Meta spend ÷ Shopify retail sales incl. GST, full days to '+dm(AUTO.as_of)});
   if(AUTO.aov)document.getElementById('mb-aovnote').textContent='Shopify last 30 days: $'+AUTO.aov.toFixed(2)+' (type to override)';
-  var h='<b>MER by day</b>';AUTO.days.forEach(function(x,i){var c=x.mer===null?'pill-none':(x.mer<=S.mer?'pill-good':(x.mer<=2*S.mer?'pill-mid':'pill-bad'));
-    h+='<span class="mb-day" title="$'+x.spend.toLocaleString()+' Meta spend ÷ $'+x.sales.toLocaleString()+' sales">'+dm(x.d)+(i===0?' (today so far)':'')+' <span class="pill '+c+'">'+(x.mer===null?'—':x.mer.toFixed(0)+'%')+'</span></span>'});
-  document.getElementById('mb-days').innerHTML=h+'<span class="mut">Sales pulled '+AUTO.pulled+'</span>'}
+  var mx=1;AUTO.days.forEach(function(x){if(x.mer!==null&&x.mer>mx)mx=x.mer});
+  var h='<div class="mb-dh"><b>MER by day</b><span>Ideal '+S.mer.toFixed(1)+'% &middot; sales pulled '+AUTO.pulled+'</span></div><div class="mb-dbars">';
+  AUTO.days.slice().reverse().forEach(function(x,i,arr){var c=x.mer===null?'none':(x.mer<=S.mer?'good':(x.mer<=2*S.mer?'warn':'bad'));
+    h+='<div class="mb-dcol" title="$'+x.spend.toLocaleString()+' Meta spend, $'+x.sales.toLocaleString()+' sales"><span>'+(x.mer===null?'-':x.mer.toFixed(0)+'%')+'</span><i class="'+c+'" style="height:'+(x.mer===null?3:Math.max(3,Math.round(46*x.mer/mx)))+'px"></i><em>'+(i===arr.length-1?'Today':dm(x.d))+'</em></div>'});
+  document.getElementById('mb-days').innerHTML=h+'</div>'}
 IDS.forEach(function(k){document.getElementById('mb-'+k).addEventListener('change',function(e){var v=parseFloat(e.target.value);if(!isFinite(v))return;S[k]=v;
   if(k==='profit'||k==='fcr'||k==='margin'){S.mer=Math.max(0,S.margin-S.profit-S.fcr);document.getElementById('mb-mer').value=+S.mer.toFixed(2)}
   if(k==='mer'){S.margin=S.mer+S.profit+S.fcr;document.getElementById('mb-margin').value=+S.margin.toFixed(2)}
