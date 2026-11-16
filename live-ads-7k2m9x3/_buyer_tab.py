@@ -71,9 +71,14 @@ CSS = """
 .mb-table thead tr.colfilters th{position:static}
 .mb-table .adtd{min-width:330px;max-width:420px}
 .mb-th{width:84px;height:84px;min-width:84px;cursor:zoom-in}
-.mb-camp td{background:var(--brand);color:#fff;font-weight:800;font-size:14.5px;padding:10px 14px}
+.mb-camp td{background:var(--brand)!important;color:#fff;font-weight:800;font-size:14.5px;padding:10px 14px}
 .mb-camp td .mut{color:rgba(255,255,255,.82);font-weight:600}
-.mb-set td{background:var(--thbg);color:var(--thtext);font-weight:700;font-size:13px;padding:8px 14px}
+.mb-set td{background:var(--thbg)!important;color:var(--thtext);font-weight:800;font-size:14px;padding:11px 14px;border:2px solid #1c7ed6;border-bottom:1px solid var(--line);border-radius:0}
+.mb-ad td:first-child{border-left:2px solid #1c7ed6}
+.mb-ad td:last-child{border-right:2px solid #1c7ed6}
+.mb-ad.mb-last td{border-bottom:2px solid #1c7ed6}
+.mb-gap td{height:16px;padding:0;background:var(--bg)!important;border:none!important}
+.mb-gap-big td{height:30px}
 .mb-stage{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:11.5px}
 .mb-kpis{margin:0 0 14px}.mb-sub{font-size:12px;color:var(--sub);margin-top:6px}
 .mb-chips{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}
@@ -195,14 +200,14 @@ function render(){
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct=agg(all),cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val '+(cr>=S.roasbe?'good':'bad')+'">'+cr.toFixed(2)+'x</div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
-    body+='<tr class="mb-camp"><td colspan="'+NC+'">'+esc(cn)+' <span class="mut">&middot; '+all.length+' live ads &middot; '+money(ct.sp)+' &middot; '+ct.pc+' sales &middot; ROAS '+cr.toFixed(2)+'x</span></td></tr>';
+    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+esc(cn)+' <span class="mut">&middot; '+all.length+' live ads &middot; '+money(ct.sp)+' &middot; '+ct.pc+' sales &middot; ROAS '+cr.toFixed(2)+'x</span></td></tr>';
     Object.keys(sets).sort(function(x,y){return agg(sets[y]).sp-agg(sets[x]).sp}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),st=agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
-      body+='<tr class="mb-set"><td colspan="'+NC+'">'+esc(sn)+' <span class="mut">&middot; '+rows.length+' ads &middot; '+money(st.sp)+' &middot; '+st.pc+' sales &middot; CPP '+(st.pc?money(st.sp/st.pc):'&mdash;')+' &middot; ROAS '+(st.sp?(st.rev/st.sp).toFixed(2)+'x':'&mdash;')+' &middot; ad set frequency '+sf.toFixed(2)+'</span><span class="mb-stage" title="From the ad set frequency and the Setup boundaries">Acting like: '+stg+'</span></td></tr>';
-      rows.forEach(function(a){var d=a.d7,v=cls(a);cnt[v[0]]++;
+      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set"><td colspan="'+NC+'">'+esc(sn)+' <span class="mut">&middot; '+rows.length+' ads &middot; '+money(st.sp)+' &middot; '+st.pc+' sales &middot; CPP '+(st.pc?money(st.sp/st.pc):'&mdash;')+' &middot; ROAS '+(st.sp?(st.rev/st.sp).toFixed(2)+'x':'&mdash;')+' &middot; ad set frequency '+sf.toFixed(2)+'</span><span class="mb-stage" title="From the ad set frequency and the Setup boundaries">Acting like: '+stg+'</span></td></tr>';
+      rows.forEach(function(a,ri){var d=a.d7,v=cls(a);cnt[v[0]]++;
         var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
         var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null,base=cpp(d);
-        body+='<tr data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'"'+(filt&&filt!==v[0]?' style="display:none"':'')+'>'
+        body+='<tr class="mb-ad'+(ri===rows.length-1?' mb-last':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'"'+(filt&&filt!==v[0]?' style="display:none"':'')+'>'
         +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+'</span></div></td>'
         +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'">'+v[1]+'</span></td>'
         +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
