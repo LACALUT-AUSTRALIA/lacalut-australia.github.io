@@ -68,6 +68,7 @@ CSS = """
 .mb-wrap{overflow-x:auto}
 .mb-table{min-width:1560px}
 .mb-table thead th{position:static;white-space:nowrap;cursor:help}
+.mb-table thead tr.colfilters th{position:static}
 .mb-table .adtd{min-width:330px;max-width:420px}
 .mb-th{width:84px;height:84px;min-width:84px;cursor:zoom-in}
 .mb-camp td{background:var(--brand);color:#fff;font-weight:800;font-size:14.5px;padding:10px 14px}

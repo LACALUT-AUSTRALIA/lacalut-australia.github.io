@@ -14,6 +14,10 @@ RULES
   3. MER brake: when 3-day MER AND 30-day MER are both above ideal, cut 10% from the budget of
      every campaign (CBO) or ad set (ABO) whose own 3-day ROAS is under 1.5.
      Limits: once every 3 days, never below the ad set minimum spends, never below $20/day.
+  2b. AD SET TRIGGER, ADS PAUSED (Quan 16/11/2026): NEVER pause an ad set (resets learning and kills
+     the good ads in it). When a live ad set's live ads spend >= $150 in 3 days at ROAS < 1.0, pause
+     the ADS in it that are eating the money: 3-day spend >= $50 and ROAS < 1.0, biggest first, so
+     Meta moves the budget to the other ads in the ad set. Never the last live ad in an ad set.
   4. It NEVER raises a budget and NEVER switches anything on.
   5. It emails Quan every action. Kill switch: create _auto_buyer_STOP.txt next to this file.
 
@@ -33,7 +37,7 @@ from email.mime.text import MIMEText
 SP = Path(__file__).resolve().parent
 sys.path.insert(0, r"C:/Users/conta/OneDrive/Documents/Claude Code")
 
-RULES = {"max_pauses_per_day": 5,     # class thresholds live in _buyer_tab.DEFAULTS
+RULES = {"max_pauses_per_day": 5, "set_spend3": 150.0, "set_roas3": 1.0, "max_set_pauses_per_day": 6, "set_ad_spend3": 50.0,     # class thresholds live in _buyer_tab.DEFAULTS
          "mer_ideal": 15.55, "cut_pct": 10, "cut_roas3": 1.5, "cut_every_days": 3, "min_budget": 20.0}
 ACCT = "act_2157906551266386"
 GRAPH = "https://graph.facebook.com/v25.0"
@@ -84,6 +88,34 @@ def ad_decisions(ads, pauses_left):
             live[key] -= 1
             to_pause.append(c)
     return to_pause, skipped
+
+
+def adset_decisions(ads, pauses_left, already=()):
+    """Rule 2b. Returns (to_pause, skipped) AD dicts. Never returns an ad set."""
+    groups = {}
+    for x in ads:
+        groups.setdefault((x["campaign"], x["adset"]), []).append(x)
+    out, skipped = [], []
+    for (camp, aset), rows in groups.items():
+        d = lambda x: x.get("d3") or {}
+        sp = sum(d(x).get("sp") or 0 for x in rows)
+        rv = sum(d(x).get("rev") or 0 for x in rows)
+        if sp < RULES["set_spend3"] or rv / sp >= RULES["set_roas3"]:
+            continue
+        live = len(rows)
+        for x in sorted(rows, key=lambda x: -(d(x).get("sp") or 0)):
+            xs, xr = d(x).get("sp") or 0, d(x).get("rev") or 0
+            if x["id"] in already or xs < RULES["set_ad_spend3"] or xr / xs >= RULES["set_roas3"]:
+                continue
+            c = {"id": x["id"], "name": x["name"], "campaign": camp, "adset": aset, "spend": xs,
+                 "why": f"Losing ad set (3-day ${sp:,.0f}, ROAS {rv / sp:.2f}): this ad took ${xs:,.0f} at ROAS {xr / xs:.2f}"}
+            if live <= 1:
+                c["skip"] = "it is the last live ad in its ad set"; skipped.append(c)
+            elif len(out) >= pauses_left:
+                c["skip"] = f"daily limit of {RULES['max_set_pauses_per_day']} reached"; skipped.append(c)
+            else:
+                live -= 1; out.append(c)
+    return out, skipped
 
 
 def brake_on(mer, last_cut, today):
@@ -207,6 +239,9 @@ def render(live, pauses, skipped, cuts, mer, done_note):
         for c in skipped:
             h.append(f'<tr><td {td}>{e(c["name"])}</td><td {td}>{e(c["why"])}</td><td {td}>{e(c["skip"])}</td></tr>')
         h.append('</table>')
+    if any(c["why"].startswith("Losing ad set") and not c.get("result") for c in pauses):
+        h.append('<p><b>New ads needed</b><br>Losing ads were paused inside a losing ad set, so that ad set has fewer ads left. '
+                 'Facy will brief new ads for that formula into the next batch.</p>')
     h.append(f'<p><b>Next step</b><br>{done_note}<br>Media Buyer tab:<br>{PAGE}</p></div>')
     return "".join(h)
 
@@ -234,6 +269,14 @@ def selftest():
     ok3 = (brake_on({"mer3": 58, "mer30": 43}, None, dt.date(2026, 11, 16)) and
            not brake_on({"mer3": 58, "mer30": 43}, "2026-11-15", dt.date(2026, 11, 16)) and
            not brake_on({"mer3": 14, "mer30": 43}, None, dt.date(2026, 11, 16)))
+    g = lambda i, st, s3, r3: {"id": i, "name": i, "campaign": "c1", "adset": st, "d3": {"sp": s3, "rev": r3, "pc": 0}}
+    ss = [g("k1", "AK", 170, 209), g("k2", "AK", 26, 0), g("k3", "AK", 11, 0),        # AKTIV: one good spender
+          g("m1", "MU", 94, 0), g("m2", "MU", 74, 0), g("m3", "MU", 3, 0),            # MULTI: two losers
+          g("z1", "ON", 200, 0)]                                                     # only ad in its ad set
+    sp_, sk_ = adset_decisions(ss, 6)
+    ok4 = [x["id"] for x in sp_] == ["m1", "m2"] and [x["id"] for x in sk_] == ["z1"]
+    ok = ok and ok4
+    print("adset pause", [x["id"] for x in sp_], "skipped", [x["id"] for x in sk_])
     print("pause", [x["id"] for x in p], "skipped", [(x["id"], x["skip"]) for x in s])
     print("cuts", got)
     print("SELFTEST", "PASS" if ok and ok2 and ok3 else "FAIL")
@@ -267,6 +310,11 @@ def main():
     import meta_auth
     meta_auth.install()
     tok = meta_auth.system_token()
+    sets_done = state.get("set_paused", {}).get(today.isoformat(), [])
+    set_pauses, set_skipped = adset_decisions(data["ads"], RULES["max_set_pauses_per_day"] - len(sets_done),
+                                              {c["id"] for c in pauses})
+    pauses = set_pauses + pauses
+    skipped = set_skipped + skipped
     if brake_on(mer, state.get("last_cut"), today):
         cuts = budget_decisions(*meta_budget_view(tok))
     log(f"{'LIVE' if live else 'PRACTICE'}: {len(pauses)} pause, {len(skipped)} left on, {len(cuts)} budget cut(s)"
@@ -297,8 +345,9 @@ def main():
         c["result"] = "" if ok else " (PAUSE FAILED: do it by hand)"
         if ok:
             acted = True
-            state.setdefault("paused", {}).setdefault(today.isoformat(), []).append(c["id"])
-            log(f"PAUSED ad {c['id']} {c['name']} | {c['why']}")
+            kind = "set-rule ad" if c["why"].startswith("Losing ad set") else "ad"
+            state.setdefault("set_paused" if kind == "set-rule ad" else "paused", {}).setdefault(today.isoformat(), []).append(c["id"])
+            log(f"PAUSED {kind} {c['id']} {c['name']} | {c['why']}")
     for c in cuts:
         try:
             ok = meta_post(c["id"], {"daily_budget": int(round(c["new"] * 100))}, tok)
@@ -310,7 +359,8 @@ def main():
             acted = True
             state["last_cut"] = today.isoformat()
             log(f"CUT {c['kind']} {c['id']} {c['name']} ${c['old']:.0f} -> ${c['new']:.0f} | {c['why']}")
-    state["paused"] = {k: v for k, v in state.get("paused", {}).items() if k >= (today - dt.timedelta(days=14)).isoformat()}
+    for key in ("paused", "set_paused"):
+        state[key] = {k: v for k, v in state.get(key, {}).items() if k >= (today - dt.timedelta(days=14)).isoformat()}
     STATE.write_text(json.dumps(state, indent=1), encoding="utf-8")
     if pauses or cuts:
         body = render(True, pauses, skipped, cuts, mer,
