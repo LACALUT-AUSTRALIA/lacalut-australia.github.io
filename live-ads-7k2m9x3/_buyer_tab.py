@@ -291,14 +291,14 @@ function cls(a){var d=a.d7,d3=a.d3,sp=d?d.sp:0,r7=d&&d.sp?d.rev/d.sp:null;
   if(sp>=S.superspend&&r7>=S.superroas&&d.pc>=5)return['superhero','&#129464; Superhero','$'+Math.round(sp)+' spent, ROAS '+r7.toFixed(2)+', '+d.pc+' sales. Never paused. First in line for more budget'];
   if(r7>=S.roasbe)return['hero','&#11088; Hero','ROAS '+r7.toFixed(2)+' is at or above break-even '+S.roasbe+'. Never paused'];
   return['sidekick','&#129309; Sidekick','ROAS '+r7.toFixed(2)+' is between '+S.villroas+' and '+S.roasbe+'. Stays on and is watched']}
-function landing(l,k){if(k&&(k.st===0||k.st>=400))return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="The page did not open (status '+k.st+')">&#9888; Broken link</a>';
+function landing(l,k,nm){if(k&&(k.st===0||k.st>=400))return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="The page did not open (status '+k.st+')">&#9888; Broken link</a>';
   if(k&&k.soldout===true)return '<a class="pill pill-bad mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="Shopify says this product is sold out">&#9888; Sold out</a>';
   if(!l)return '<span class="mut" title="Link not readable from Meta">?</span>';var p='/';try{p=new URL(l).pathname||'/'}catch(e){}
   var lab,cls;if(/%C2%AE|\\u00ae/i.test(l)){lab='&#9888; &reg; link';cls='pill-bad'}
   else if(p.replace(/\\//g,'')===''){lab='Home page';cls='pill-none'}
   else if(p.indexOf('/products/')===0&&p.indexOf('system')>-1){lab='Kit PDP';cls='pill-good'}
   else if(p.indexOf('/products/')===0){lab='Single product';cls='pill-mid'}
-  else if(p.indexOf('/pages/')===0){lab='Article';cls='pill-mid'}else{lab='Other';cls='pill-none'}
+  else if(p.indexOf('/pages/')===0){if(nm&&!/editorial/i.test(nm)){lab='&#9888; Wrong page: article';cls='pill-bad';p+=' | Only editorial ads go to article pages (Quan 12/11). Pause and rebuild to the product page.'}else{lab='Article';cls='pill-mid'}}else{lab='Other';cls='pill-none'}
   if(k&&k.redir){lab+=' &#8618;';p+=' redirects to '+k.redir}
   return '<a class="pill '+cls+' mb-lp" href="'+esc(l)+'" target="_blank" rel="noopener" title="'+esc(p)+'">'+lab+'</a>'}
 function agg(rows){var t={sp:0,rev:0,pc:0};rows.forEach(function(a){if(a.d7){t.sp+=a.d7.sp;t.rev+=a.d7.rev;t.pc+=a.d7.pc}});return t}
@@ -355,7 +355,7 @@ function render(){
         +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
         +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
         +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
-        +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk)+'</td>'
+        +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk,a.name)+'</td>'
         +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'});
       if(fold)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button></div></td></tr>';else body+='<tr class="mb-more mb-foot" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"></div></td></tr>'});body+='<tr class="mb-cend"><td colspan="'+NC+'"></td></tr>';body=body.slice(0,b0)+body.slice(b0).replace(/<tr class="/g,'<tr class="fn-'+fn+' ')});
   var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
