@@ -110,7 +110,8 @@ CSS = """
 .mb-reset{font:inherit;font-size:12.5px;font-weight:500;margin:0 18px 16px;padding:7px 12px;border-radius:9px;border:1px solid var(--bd2);background:var(--s1);color:var(--tx2);cursor:pointer}
 .mb-reset:hover{background:var(--s2);color:var(--tx)}
 .mb-lab{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--tx);margin:0 0 10px}
-.mb-kpis{margin:0 0 6px}
+#mb .mb-kpis{margin:0 0 6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+#mb .mb-kpis .kpi{margin:0;min-width:0}
 #mb .kpi{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:16px 18px;box-shadow:var(--sh)}
 #mb .kpi .lbl{font-size:12.5px;font-weight:500;color:var(--tx2);text-transform:none;letter-spacing:0}
 #mb .kpi .val{font-size:26px;font-weight:600;letter-spacing:-.03em;color:var(--tx);display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
@@ -161,6 +162,13 @@ CSS = """
 .mb-morebtn{font:inherit;border:1px solid var(--bd);background:var(--s1);border-radius:8px;padding:6px 12px;font-weight:500;font-size:12.5px;cursor:pointer;color:var(--tx2)}
 .mb-morebtn:hover{background:var(--s2);color:var(--tx)}
 .mb-table:not(.mb-searching) tr.mb-hid{display:none}
+.mb-foots{display:flex;gap:8px;flex-wrap:wrap}
+#mb .mb-table tr.mb-paused td:not(.mb-acts){opacity:.58}
+#mb .mb-table tr.mb-ishid td:not(.mb-acts){opacity:.38}
+.mbv-paused{background:transparent;color:var(--tx2);border:1px dashed var(--bd)}
+#mb .mb-acts{white-space:nowrap}
+#mb .mb-hide{font:inherit;font-size:12px;font-weight:500;margin-left:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:6px;background:transparent;color:var(--tx2);cursor:pointer}
+#mb .mb-hide:hover{background:var(--s2);color:var(--tx)}
 .mb-table.mb-less tr>*:nth-child(11),.mb-table.mb-less tr>*:nth-child(12),.mb-table.mb-less tr>*:nth-child(14),.mb-table.mb-less tr>*:nth-child(15){display:none}
 .mb-table .adtd{min-width:300px;max-width:420px}
 #mb .mb-th{width:64px;height:64px;min-width:64px;border-radius:10px;border:1px solid var(--bd);cursor:zoom-in}
@@ -261,6 +269,7 @@ HTML = """<section class="sec" id="mb">
 (function(){
 var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=17;
 var openSets={},less=true;try{less=localStorage.getItem('lacalut_mb_less')!=='0'}catch(e){}
+var HID={},showHid=false,HKEY='lacalut_mb_hidden';try{HID=JSON.parse(localStorage.getItem(HKEY)||'{}')||{}}catch(e){}
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
 var S={},filt='';
 function load(){var o={};try{o=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
@@ -323,41 +332,51 @@ function render(){
   else{bn.className='mb-banner hold';bn.innerHTML='Hold total spend<small>3-day and 30-day MER disagree. '+sub+'</small>'}
   var camps={},order=[];DATA.ads.forEach(function(a){if(!camps[a.campaign]){camps[a.campaign]={};order.push(a.campaign)}(camps[a.campaign][a.adset]=camps[a.campaign][a.adset]||[]).push(a)});
   NC=less?13:17;document.querySelector('.mb-table').classList.toggle('mb-less',less);
+  var PS={},SETS=DATA.sets||{};(DATA.paused||[]).forEach(function(a){(PS[a.sid]=PS[a.sid]||[]).push(a)});
+  function rowHtml(a,v,nr,stg,sc,hide){var d=a.d7,base=cpp(d),isH=!!HID[a.id];
+    var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
+    var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null;
+    return '<tr class="mb-ad'+(hide?' mb-hid':'')+(a.paused?' mb-paused':'')+(isH?' mb-ishid':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
+    +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
+    +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span></td>'
+    +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
+    +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
+    +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
+    +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
+    +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk,a.name)+'</td>'
+    +'<td class="c mb-acts"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a>'
+    +'<button class="mb-hide" data-id="'+a.id+'" title="'+(isH?'Show this ad on this page again':'Remove this ad from this page only. Nothing changes in Meta')+'">'+(isH?'Unhide':'Hide')+'</button></td></tr>'}
   order.sort();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now(),nearL=[],heroL=[],villL=[];
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
-    var ct=agg(all),cr=ct.sp?ct.rev/ct.sp:0;
+    var ct={sp:0,rev:0,pc:0};Object.keys(sets).forEach(function(k){var t=(SETS[sets[k][0].sid]||{}).d7||agg(sets[k]);ct.sp+=t.sp;ct.rev+=t.rev;ct.pc+=t.pc});var cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
     var b0=body.length,fn=(/_(TOF|TOM|MOF)_/.exec(cn)||['','x'])[1].toLowerCase();
     body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-cm">'+all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
-      var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),st=agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
-      var s3=aggk(rows,'d3'),s1=aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
+      var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),TS=SETS[rows[0].sid]||{},st=TS.d7||agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
+      var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
       var sc=st.sp<50?'#adb5bd':(r7s>=S.roasbe?'#2f9e44':(r7s>=1?'#f08c00':'#e03131'));
       var bud=sb.bud?stat('Daily budget',money(sb.bud)+' / day','The most this ad set can spend each day',1):(sb.cbud?stat('Daily budget','shares '+money(sb.cbud)+' / day','Campaign budget: Meta splits it across the ad sets in this campaign',1)+(sb.min?stat('Minimum spend',money(sb.min)+' / day','Meta must spend at least this much on this ad set each day'):''):'');
       var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
-        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
+        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0','Whole ad set, straight from Meta. Includes ads that are paused now')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
       body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
-      body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
-      var key=cn+'|'+sn,cl=rows.map(function(a){return cls(a)}),nrs=rows.map(function(a,i){return near(a,cl[i][0])}),hid=0;
-      rows.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
-      rows.forEach(function(a,ri){var d=a.d7,v=cl[ri],nr=nrs[ri];cnt[v[0]]++;
-        var hide=fold&&!openSets[key]&&ri>=2&&v[0]==='civilian'&&!nr,r7a=d&&d.sp?d.rev/d.sp:0;
+      body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days (includes paused ads)</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+      var key=cn+'|'+sn,pk=key+'|P';
+      rows.forEach(function(a){var v=cls(a),nr=near(a,v[0]),d=a.d7,r7a=d&&d.sp?d.rev/d.sp:0;cnt[v[0]]++;
         if(nr)nearL.push('<span class="mb-ti warn" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+esc(nr)+'</span>');
         if(v[0]==='hero'||v[0]==='superhero')heroL.push('<span class="mb-ti good" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+money(d.sp)+' &middot; ROAS '+r7a.toFixed(2)+'</span>');
-        if(v[0]==='villain'||v[0]==='supervillain')villL.push('<span class="mb-ti bad" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+money(d.sp)+' &middot; ROAS '+r7a.toFixed(2)+'</span>');
-        var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
-        var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null,base=cpp(d);
-        body+='<tr class="mb-ad'+(hide?' mb-hid':'')+''+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
-        +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
-        +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span></td>'
-        +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
-        +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
-        +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
-        +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
-        +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk,a.name)+'</td>'
-        +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'});
-      if(fold)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button></div></td></tr>';else body+='<tr class="mb-more mb-foot" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"></div></td></tr>'});body+='<tr class="mb-cend"><td colspan="'+NC+'"></td></tr>';body=body.slice(0,b0)+body.slice(b0).replace(/<tr class="/g,'<tr class="fn-'+fn+' ')});
+        if(v[0]==='villain'||v[0]==='supervillain')villL.push('<span class="mb-ti bad" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+money(d.sp)+' &middot; ROAS '+r7a.toFixed(2)+'</span>')});
+      var vis=rows.filter(function(a){return showHid||!HID[a.id]}),cl=vis.map(function(a){return cls(a)}),nrs=vis.map(function(a,i){return near(a,cl[i][0])}),hid=0;
+      vis.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
+      vis.forEach(function(a,ri){var v=cl[ri],nr=nrs[ri];body+=rowHtml(a,v,nr,stg,sc,fold&&!openSets[key]&&ri>=2&&v[0]==='civilian'&&!nr)});
+      var ps=filt?[]:(PS[rows[0].sid]||[]).filter(function(a){return showHid||!HID[a.id]}).sort(function(x,y){return sp7(y)-sp7(x)});
+      if(openSets[pk])ps.forEach(function(a){body+=rowHtml(a,['paused','Paused','This ad is paused in Meta. It is listed because it spent money in the last 7 days'],'',stg,sc,false)});
+      var foot='';
+      if(fold)foot+='<button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button>';
+      if(ps.length)foot+='<button class="mb-morebtn" data-k="'+esc(pk)+'">'+(openSets[pk]?'&#9652; Hide '+ps.length+' paused ad'+(ps.length>1?'s':''):'&#9662; Show '+ps.length+' paused ad'+(ps.length>1?'s':'')+' (spent money in the last 7 days)')+'</button>';
+      if(foot)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in mb-foots">'+foot+'</div></td></tr>';
+      else body+='<tr class="mb-more mb-foot" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"></div></td></tr>'});body+='<tr class="mb-cend"><td colspan="'+NC+'"></td></tr>';body=body.slice(0,b0)+body.slice(b0).replace(/<tr class="/g,'<tr class="fn-'+fn+' ')});
   var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
   var tp=function(c,t,n,b){return '<div class="mb-tp '+c+'"><div class="mb-tph"><i></i><b>'+t+'</b><span>'+n+'</span></div><div class="mb-tpb">'+b+'</div></div>'};
   document.getElementById('mb-today').innerHTML=tp('info','Changes in the last 24 hours',ACTS.length,acts)+tp('bad','Villains still live: pause',villL.length,villL.join('')||none)+tp('warn','Close to Villain',nearL.length,nearL.join('')||none)+tp('good','Heroes and Superheroes',heroL.length,heroL.join('')||none);
@@ -373,13 +392,18 @@ function render(){
   document.getElementById('mb-body').innerHTML=body;document.getElementById('mb-kpis').innerHTML=cards;
   var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+(c[0]?'<i class="mbd mbd-'+c[0]+'"></i>':'')+c[1].replace(/^&#[0-9]+; /,'')+'<span class="tcount">'+c[2]+'</span></button>'});
   ch+='<span class="mb-legend"><span><i style="background:#d6246e"></i>TOF campaign (cold)</span><span><i style="background:#b45309"></i>TOM campaign (warmer)</span><span><i style="background:#15803d"></i>MOF campaign (warmest)</span></span>';
+  var nH=0;DATA.ads.concat(DATA.paused||[]).forEach(function(a){if(HID[a.id])nH++});
+  if(nH)ch+='<button class="mbf" id="mb-hidbtn" title="Ads you removed from this page with the Hide button">'+(showHid?'Stop showing hidden ads':'Show hidden ads')+'<span class="tcount">'+nH+'</span></button>';
   ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Hook, Checkout and Days live">'+(less?'Show all columns':'Show fewer columns')+'</button>';
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
   [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
+  var hb=document.getElementById('mb-hidbtn');if(hb)hb.addEventListener('click',function(){showHid=!showHid;render()});
   document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less',less?'1':'0')}catch(e){}render()});
 }
 load();fill();render();
-document.getElementById('mb-body').addEventListener('click',function(e){var b=e.target.closest?e.target.closest('.mb-morebtn'):null;if(!b)return;var k=b.getAttribute('data-k');openSets[k]=!openSets[k];render()});
+document.getElementById('mb-body').addEventListener('click',function(e){var hb=e.target.closest?e.target.closest('.mb-hide'):null;
+  if(hb){var id=hb.getAttribute('data-id');if(HID[id])delete HID[id];else HID[id]=1;try{localStorage.setItem(HKEY,JSON.stringify(HID))}catch(x){}render();return}
+  var b=e.target.closest?e.target.closest('.mb-morebtn'):null;if(!b)return;var k=b.getAttribute('data-k');openSets[k]=!openSets[k];render()});
 document.addEventListener('input',function(){var on=false,q=document.getElementById('fq');if(q&&q.value)on=true;
   [].forEach.call(document.querySelectorAll('#mb input[type=search]'),function(i){if(i.value)on=true});
   document.querySelector('.mb-table').classList.toggle('mb-searching',on)});

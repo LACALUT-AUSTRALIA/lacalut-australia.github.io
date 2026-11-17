@@ -299,6 +299,25 @@ def pull_buyer():
     url = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset=last_7d&limit=400"
            f"&fields=adset_id,frequency,reach&access_token={urllib.parse.quote(TOK)}")
     sfreq = {r.get("adset_id"): float(r.get("frequency") or 0) for r in get_all(url)}
+    # TRUE ad set totals straight from Meta (Quan 17/11/2026): the page used to add up live ads only,
+    # so spend from ads paused since then went missing. Never blocks the pull.
+    sets = {}
+    try:
+        for key, preset in (("d7", "last_7d"), ("d3", "last_3d"), ("d1", "yesterday")):
+            u = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset={preset}&limit=400"
+                 f"&fields=adset_id,spend,actions,action_values&access_token={urllib.parse.quote(TOK)}")
+            for r in get_all(u):
+                d = {"sp": float(r.get("spend") or 0), "rev": 0.0, "pc": 0}
+                for x in (r.get("actions") or []):
+                    if x.get("action_type") == "omni_purchase":
+                        d["pc"] = int(float(x.get("value") or 0))
+                for x in (r.get("action_values") or []):
+                    if x.get("action_type") == "omni_purchase":
+                        d["rev"] = float(x.get("value") or 0)
+                sets.setdefault(r.get("adset_id"), {})[key] = d
+    except Exception as e:
+        print("  ad set totals skipped:", e)
+        sets = {}
     fields = ("id,name,created_time,campaign{name,daily_budget},"
               "adset{id,name,daily_budget,daily_min_spend_target,bid_strategy,bid_constraints,learning_stage_info},"
               "creative{object_type,video_id,effective_object_story_id,"
@@ -308,7 +327,23 @@ def pull_buyer():
     url = (f"{GRAPH}/{ACCT}/ads?fields={urllib.parse.quote(fields)}&filtering={filt}"
            f"&limit=200&access_token={urllib.parse.quote(TOK)}")
     rows = []
-    for a in get_all(url):
+    active = get_all(url)
+    # paused ads that spent money in the last 7 days (Quan 17/11/2026): shown in a fold under their ad set
+    paused_raw = []
+    live_ids = {a["id"] for a in active}
+    pids = [i for i, d in w7.items() if d["sp"] > 0 and i not in live_ids]
+    for n in range(0, len(pids), 25):
+        try:
+            u = (f"{GRAPH}/?ids={','.join(pids[n:n + 25])}&fields={urllib.parse.quote(fields + ',effective_status')}"
+                 f"&access_token={urllib.parse.quote(TOK)}")
+            with urllib.request.urlopen(u, timeout=90) as r:
+                paused_raw += [v for v in json.load(r).values() if isinstance(v, dict) and v.get("id")]
+        except Exception as e:
+            print("  some paused ads skipped:", e)
+    for a in paused_raw:
+        a["_paused"] = True
+    paused = []
+    for a in active + paused_raw:
         cr = a.get("creative") or {}
         oss = cr.get("object_story_spec") or {}
         ld = oss.get("link_data") or {}
@@ -332,8 +367,9 @@ def pull_buyer():
             except Exception:
                 link = ""
         st = a.get("adset") or {}
-        rows.append({"id": a["id"], "name": a.get("name", ""), "created_time": a.get("created_time", ""),
-                     "campaign": (a.get("campaign") or {}).get("name", ""),
+        (paused if a.get("_paused") else rows).append({"id": a["id"], "name": a.get("name", ""), "created_time": a.get("created_time", ""),
+                     "campaign": (a.get("campaign") or {}).get("name", ""), "sid": st.get("id", ""),
+                     "paused": bool(a.get("_paused")),
                      "adset": st.get("name", ""), "sfreq": sfreq.get(st.get("id"), 0),
                      # ad set card heading (Quan 16/11/2026): budget, floor, learning. Dollars, not cents.
                      "sb": {"bud": int(st.get("daily_budget") or 0) / 100,
@@ -347,9 +383,12 @@ def pull_buyer():
     health = link_health(sorted({r["link"] for r in rows if r["link"]}))
     for r in rows:
         r["lk"] = health.get(r["link"])
-    json.dump({"pulled": time.strftime("%Y-%m-%dT%H:%M:%S"), "ads": rows},
+    live_sets = {r["sid"] for r in rows}
+    paused = [p for p in paused if p["sid"] in live_sets]
+    json.dump({"pulled": time.strftime("%Y-%m-%dT%H:%M:%S"), "ads": rows, "paused": paused,
+               "sets": {k: v for k, v in sets.items() if k in live_sets}},
               open(os.path.join(SP, "buyer.json"), "w", encoding="utf-8"))
-    print(f"  wrote buyer.json: {len(rows)} active ads")
+    print(f"  wrote buyer.json: {len(rows)} active ads, {len(paused)} paused ads with 7-day spend")
 
 def write(name, data):
     p = os.path.join(SP, name)
