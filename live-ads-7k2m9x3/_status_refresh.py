@@ -14,17 +14,17 @@ ids = [r["id"] for r in rows]
 st = {}
 for i in range(0, len(ids), 50):
     chunk = ids[i:i + 50]
-    url = f"{P.GRAPH}/?ids={','.join(chunk)}&fields=effective_status&access_token={urllib.parse.quote(P.TOK)}"
+    url = f"{P.GRAPH}/?ids={','.join(chunk)}&fields=status,effective_status&access_token={urllib.parse.quote(P.TOK)}"
     with urllib.request.urlopen(url, timeout=60) as r:
         for k, v in json.load(r).items():
-            st[k] = v.get("effective_status", "")
+            st[k] = (v.get("status", ""), v.get("effective_status", ""))
 ads, paused, moved = [], [], []
 for r in rows:
     s = st.get(r["id"])
     if s is None:                       # could not read: leave the row where it was
         (paused if r.get("paused") else ads).append(r)
         continue
-    live = s in ("ACTIVE", "IN_PROCESS", "PENDING_REVIEW", "WITH_ISSUES")
+    live = s[0] == "ACTIVE" and s[1] not in ("PAUSED", "ADSET_PAUSED", "CAMPAIGN_PAUSED", "ARCHIVED", "DELETED", "DISAPPROVED")
     if live == bool(r.get("paused")):
         moved.append((r["name"], "LIVE" if live else "PAUSED"))
     r["paused"] = not live
