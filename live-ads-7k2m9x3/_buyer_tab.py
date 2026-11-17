@@ -18,7 +18,7 @@ import json, os
 # margin - profit - FCR = ideal MER (49.05 - 21 - 12.5 = 15.55).
 DEFAULTS = {"mer": 15.55, "mer3": 44.0, "mer30": 44.66, "aov": 54.15, "profit": 21.0, "fcr": 12.5,
             "margin": 49.05, "b1": 2.0, "b2": 3.0, "minspend": 150.0, "superspend": 300.0, "superroas": 2.5,
-            "roasbe": 1.5, "villroas": 1.0, "fastspend": 100.0}
+            "roasbe": 2.04, "villroas": 1.0, "fastspend": 100.0}
 ADS_ACT = "2157906551266386"
 
 CLASS_LABEL = {"supervillain": "Supervillain", "villain": "Villain", "sidekick": "Sidekick",
@@ -262,7 +262,7 @@ var openSets={},less=true;try{less=localStorage.getItem('lacalut_mb_less')!=='0'
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
 var S={},filt='';
 function load(){var o={};try{o=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){}
-  IDS.forEach(function(k){var v=parseFloat(o[k]);S[k]=isFinite(v)?v:DEF[k]});
+  if(parseFloat(o.roasbe)===1.5)delete o.roasbe;IDS.forEach(function(k){var v=parseFloat(o[k]);S[k]=isFinite(v)?v:DEF[k]});
   if(AUTO){S.mer3=AUTO.mer3;S.mer30=AUTO.mer30;if(!isFinite(parseFloat(o.aov))&&AUTO.aov)S.aov=AUTO.aov}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 function fill(){IDS.forEach(function(k){document.getElementById('mb-'+k).value=+S[k].toFixed(2)})}
