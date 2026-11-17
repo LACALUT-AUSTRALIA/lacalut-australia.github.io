@@ -458,7 +458,7 @@ def build(SP):
     if not os.path.exists(p):
         return 0, ""
     data = json.load(open(p, encoding="utf-8"))
-    for a in data.get("ads", []):
+    for a in data.get("ads", []) + data.get("paused", []):
         a["src"] = ""
         for folder in ("thumbs", "big"):
             if os.path.exists(os.path.join(SP, folder, a["id"] + ".jpg")):
