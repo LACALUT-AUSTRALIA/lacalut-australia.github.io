@@ -126,7 +126,7 @@ CSS = """
 .mb-colbtn{margin-left:auto}
 .mb-wrap{overflow:auto;max-height:calc(100vh - 370px);min-height:420px;background:var(--s0);border:none;border-radius:14px}
 .mb-table{width:100%;border-collapse:separate;border-spacing:0}
-#mb .mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help;background:var(--s2);color:var(--tx2);font-size:12px;font-weight:600;letter-spacing:0;text-transform:none;padding:0 10px;height:40px;box-sizing:border-box;border-bottom:1px solid var(--bd);box-shadow:none}
+#mb .mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help;background:var(--s2);color:var(--th);font-size:12.5px;font-weight:700;letter-spacing:0;text-transform:none;padding:0 10px;height:40px;box-sizing:border-box;border-bottom:1px solid var(--bd);box-shadow:none}
 #mb .mb-table thead tr.colfilters th{top:40px;height:auto;padding:5px 6px 8px;cursor:default}
 #mb tr.colfilters input{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:4px 7px;font-size:11.5px;color:var(--tx)}
 #mb tr.colfilters input:focus{border-color:var(--ac)}
@@ -178,9 +178,11 @@ CSS = """
 #mb .mb-ad td.c{text-align:left}
 #mb .mb-tot td,#mb .mb-tot:hover td{background:var(--s2);font-weight:600}
 #mb .mb-tot td.adtd{font-size:12.5px;font-weight:500;color:var(--tx2)}
-#mb{--cb:#e6e9fa}
+#mb{--cb:#e6e9fa;--th:#1d4ed8}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) #mb{--cb:#1b1f33}}
 :root[data-theme=dark] #mb{--cb:#1b1f33}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #mb{--th:#93b4ff}}
+:root[data-theme=dark] #mb{--th:#93b4ff}
 #mb tr.mb-set,#mb tr.mb-ad,#mb tr.mb-more{background:var(--cb)!important}
 #mb .mb-camp td{background:var(--cb)!important;padding:16px 16px 4px;border-radius:20px 20px 0 0}
 #mb .mb-gap:not(.mb-gap-big) td{background:var(--cb)!important}
