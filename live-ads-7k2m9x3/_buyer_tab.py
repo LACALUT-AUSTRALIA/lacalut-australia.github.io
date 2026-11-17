@@ -338,7 +338,7 @@ function render(){
     var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null;
     return '<tr class="mb-ad'+(hide?' mb-hid':'')+(a.paused?' mb-paused':'')+(isH?' mb-ishid':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
     +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
-    +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span></td>'
+    +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span>'+(a.paused?' <span class="mbv mbv-paused" title="This ad is paused in Meta. It is listed because it spent money in the last 7 days"><i></i>Paused</span>':'')+'</td>'
     +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
     +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
     +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
@@ -371,7 +371,7 @@ function render(){
       vis.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
       vis.forEach(function(a,ri){var v=cl[ri],nr=nrs[ri];body+=rowHtml(a,v,nr,stg,sc,fold&&!openSets[key]&&ri>=2&&v[0]==='civilian'&&!nr)});
       var ps=filt?[]:(PS[rows[0].sid]||[]).filter(function(a){return showHid||!HID[a.id]}).sort(function(x,y){return sp7(y)-sp7(x)});
-      if(openSets[pk])ps.forEach(function(a){body+=rowHtml(a,['paused','Paused','This ad is paused in Meta. It is listed because it spent money in the last 7 days'],'',stg,sc,false)});
+      if(openSets[pk])ps.forEach(function(a){body+=rowHtml(a,cls(a),'',stg,sc,false)});
       var foot='';
       if(fold)foot+='<button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button>';
       if(ps.length)foot+='<button class="mb-morebtn" data-k="'+esc(pk)+'">'+(openSets[pk]?'&#9652; Hide '+ps.length+' paused ad'+(ps.length>1?'s':''):'&#9662; Show '+ps.length+' paused ad'+(ps.length>1?'s':'')+' (spent money in the last 7 days)')+'</button>';
