@@ -38,8 +38,19 @@ SP = Path(__file__).resolve().parent
 sys.path.insert(0, r"C:/Users/conta/OneDrive/Documents/Claude Code")
 
 RULES = {"max_pauses_per_day": 5, "set_spend3": 150.0, "set_roas3": 1.0, "max_set_pauses_per_day": 6, "set_ad_spend3": 50.0,     # class thresholds live in _buyer_tab.DEFAULTS
-         "mer_ideal": 15.55, "cut_pct": 10, "cut_roas3": 1.5, "cut_every_days": 3, "min_budget": 20.0}
+         "mer_ideal": 15.55, "cut_pct": 10, "cut_roas3": 1.5, "cut_every_days": 3, "min_budget": 20.0,
+         "brake_enabled": False}  # Quan 17/11: NEVER cut whole budgets; only pause losing ads
 ACCT = "act_2157906551266386"
+# Quan 17/11/2026: ads the automatic buyer must NOT pause before the given date (YYYY-MM-DD).
+# Smokers4xGums: ROAS 0.99 but 7 sales at $41 and a 37.6% add to cart rate; loss is after the cart.
+PROTECT = {"120253166827260229": "2026-11-24"}
+
+
+def protected(ad_id):
+    import datetime
+    until = PROTECT.get(str(ad_id))
+    return bool(until) and datetime.date.today().isoformat() < until
+
 GRAPH = "https://graph.facebook.com/v25.0"
 STATE = SP / "_auto_buyer_state.json"
 LOG = SP / "_auto_buyer.log"
@@ -78,7 +89,10 @@ def ad_decisions(ads, pauses_left):
     to_pause, skipped = [], []
     for c in cand:
         key = (c["campaign"], c["adset"])
-        if live[key] <= 1:
+        if protected(c["id"]):
+            c["skip"] = f"protected by Quan until {PROTECT[c['id']]}"
+            skipped.append(c)
+        elif live[key] <= 1:
             c["skip"] = "it is the last live ad in its ad set"
             skipped.append(c)
         elif len(to_pause) >= pauses_left:
@@ -109,7 +123,9 @@ def adset_decisions(ads, pauses_left, already=()):
                 continue
             c = {"id": x["id"], "name": x["name"], "campaign": camp, "adset": aset, "spend": xs,
                  "why": f"Losing ad set (3-day ${sp:,.0f}, ROAS {rv / sp:.2f}): this ad took ${xs:,.0f} at ROAS {xr / xs:.2f}"}
-            if live <= 1:
+            if protected(x["id"]):
+                c["skip"] = f"protected by Quan until {PROTECT[x['id']]}"; skipped.append(c)
+            elif live <= 1:
                 c["skip"] = "it is the last live ad in its ad set"; skipped.append(c)
             elif len(out) >= pauses_left:
                 c["skip"] = f"daily limit of {RULES['max_set_pauses_per_day']} reached"; skipped.append(c)
@@ -119,6 +135,8 @@ def adset_decisions(ads, pauses_left, already=()):
 
 
 def brake_on(mer, last_cut, today):
+    if not RULES.get("brake_enabled"):
+        return False
     if not mer or mer.get("mer3") is None or mer.get("mer30") is None:
         return False
     if not (mer["mer3"] > RULES["mer_ideal"] and mer["mer30"] > RULES["mer_ideal"]):
@@ -266,6 +284,8 @@ def selftest():
     cuts = budget_decisions(camps, sets, {"c2": 0.9}, {"s3": 0.5, "s4": 2.0, "s5": 0.2})
     got = {c["id"]: c["new"] for c in cuts}
     ok2 = got == {"s3": 76.0, "s5": 20.0}          # #2 is already at its $350 floor, #7 untouched, tiny floors at $20
+    off = not brake_on({"mer3": 58, "mer30": 43}, None, dt.date(2026, 11, 16))   # brake switched off 17/11
+    RULES["brake_enabled"] = True
     ok3 = (brake_on({"mer3": 58, "mer30": 43}, None, dt.date(2026, 11, 16)) and
            not brake_on({"mer3": 58, "mer30": 43}, "2026-11-15", dt.date(2026, 11, 16)) and
            not brake_on({"mer3": 14, "mer30": 43}, None, dt.date(2026, 11, 16)))
@@ -279,8 +299,10 @@ def selftest():
     print("adset pause", [x["id"] for x in sp_], "skipped", [x["id"] for x in sk_])
     print("pause", [x["id"] for x in p], "skipped", [(x["id"], x["skip"]) for x in s])
     print("cuts", got)
-    print("SELFTEST", "PASS" if ok and ok2 and ok3 else "FAIL")
-    return ok and ok2 and ok3
+    RULES["brake_enabled"] = False
+    print("brake off", off)
+    print("SELFTEST", "PASS" if ok and ok2 and ok3 and off else "FAIL")
+    return ok and ok2 and ok3 and off
 
 
 def main():
