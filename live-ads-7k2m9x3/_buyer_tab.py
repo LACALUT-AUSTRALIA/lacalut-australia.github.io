@@ -140,7 +140,7 @@ CSS = """
 .mb-gap td{height:14px;padding:0!important;background:var(--s0)!important;border:none!important}
 .mb-gap-big td{height:38px}
 #mb .mb-camp td{background:var(--s0)!important;color:var(--tx);padding:4px 4px 0;border:none}
-.mb-crow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.mb-crow{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:wrap}
 .mb-cn{display:inline-block;background:var(--ac);color:var(--on);font-size:16.5px;font-weight:700;letter-spacing:-.01em;padding:9px 20px;border-radius:999px;box-shadow:0 2px 6px rgba(79,70,229,.28)}
 .mb-cm{font-size:13px;color:var(--tx2);display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 #mb .mb-set td{background:var(--s1)!important;color:var(--tx);padding:16px 18px 15px;border:1px solid var(--bd2);border-left:4px solid var(--sc,var(--bd2));border-bottom:1px solid var(--bd);border-radius:14px 14px 0 0}
