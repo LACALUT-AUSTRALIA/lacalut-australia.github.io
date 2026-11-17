@@ -155,7 +155,6 @@ CSS = """
 .mb-ad td+td{border-left:1px solid var(--bd)}
 #mb .mb-ad td:first-child{border-left:4px solid var(--sc,var(--bd2))}
 #mb .mb-ad td:last-child{border-right:1px solid var(--bd2)}
-#mb .mb-ad.mb-last td{border-bottom:1px solid var(--bd2)}
 .mb-ad.mb-last td:first-child{border-bottom-left-radius:14px}
 .mb-ad.mb-last td:last-child{border-bottom-right-radius:14px}
 #mb .mb-more td{background:var(--s1);border:1px solid var(--bd2);border-top:none;border-left:4px solid var(--sc,var(--bd2));border-radius:0 0 14px 14px;padding:10px 14px}
@@ -179,6 +178,28 @@ CSS = """
 #mb .mb-ad td.c{text-align:left}
 #mb .mb-tot td,#mb .mb-tot:hover td{background:var(--s2);font-weight:600}
 #mb .mb-tot td.adtd{font-size:12.5px;font-weight:500;color:var(--tx2)}
+#mb{--cb:#e6e9fa}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #mb{--cb:#1b1f33}}
+:root[data-theme=dark] #mb{--cb:#1b1f33}
+#mb tr.mb-set,#mb tr.mb-ad,#mb tr.mb-more{background:var(--cb)!important}
+#mb .mb-camp td{background:var(--cb)!important;padding:16px 16px 4px;border-radius:20px 20px 0 0}
+#mb .mb-gap:not(.mb-gap-big) td{background:var(--cb)!important}
+#mb .mb-cend td{height:14px;padding:0;border:none;background:var(--cb)!important;border-radius:0 0 20px 20px}
+#mb .mb-gap-big td{height:26px}
+#mb{--cc:var(--ac)}
+#mb .fn-tof{--cb:#fcdcea;--cc:#d6246e}#mb .fn-tom{--cb:#fcedc0;--cc:#b45309}#mb .fn-mof{--cb:#d5f2dc;--cc:#15803d}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) #mb .fn-tof{--cb:#3a1629;--cc:#f472b6}:root:not([data-theme=light]) #mb .fn-tom{--cb:#33270e;--cc:#fbbf24}:root:not([data-theme=light]) #mb .fn-mof{--cb:#13301d;--cc:#4ade80}}
+:root[data-theme=dark] #mb .fn-tof{--cb:#3a1629;--cc:#f472b6}:root[data-theme=dark] #mb .fn-tom{--cb:#33270e;--cc:#fbbf24}:root[data-theme=dark] #mb .fn-mof{--cb:#13301d;--cc:#4ade80}
+#mb .mb-cn{background:var(--cc);box-shadow:0 2px 6px rgba(16,24,40,.18)}
+#mb .mb-cm{color:var(--tx);font-weight:500}
+.mb-legend{display:inline-flex;gap:14px;align-items:center;font-size:12.5px;color:var(--tx2);margin-left:10px}
+.mb-legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+#mb .mb-table tbody tr.mb-set td,#mb .mb-table tbody tr.mb-more td{padding:0 12px;border:none;border-radius:0;box-shadow:none;background:var(--cb)!important}
+#mb .mb-set .mb-in{background:var(--s1);border:1px solid var(--bd2);border-left:4px solid var(--sc,var(--bd2));border-bottom-color:var(--bd);border-radius:14px 14px 0 0;padding:16px 18px 15px}
+#mb .mb-more .mb-in{background:var(--s1);border:1px solid var(--bd2);border-top:none;border-left:4px solid var(--sc,var(--bd2));border-radius:0 0 14px 14px;padding:10px 14px}
+#mb .mb-foot .mb-in{padding:0;height:10px}
+#mb .mb-ad td:first-child{border-left:12px solid transparent;background-clip:padding-box!important;box-shadow:inset 4px 0 0 var(--sc,var(--bd2))}
+#mb .mb-ad td:last-child{border-right:12px solid transparent;background-clip:padding-box!important;box-shadow:inset -1px 0 0 var(--bd2)}
 #mb .wlink{font-size:12.5px;font-weight:500;color:var(--ac);text-decoration:none;white-space:nowrap}
 #mb .wlink:hover{text-decoration:underline}
 """
@@ -304,6 +325,7 @@ function render(){
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct=agg(all),cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
+    var b0=body.length,fn=(/_(TOF|TOM|MOF)_/.exec(cn)||['','x'])[1].toLowerCase();
     body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-cm">'+all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),st=agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
@@ -313,7 +335,7 @@ function render(){
       var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
         +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
-      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></td></tr>';
+      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
       body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,cl=rows.map(function(a){return cls(a)}),nrs=rows.map(function(a,i){return near(a,cl[i][0])}),hid=0;
       rows.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
@@ -324,7 +346,7 @@ function render(){
         if(v[0]==='villain'||v[0]==='supervillain')villL.push('<span class="mb-ti bad" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+money(d.sp)+' &middot; ROAS '+r7a.toFixed(2)+'</span>');
         var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
         var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null,base=cpp(d);
-        body+='<tr class="mb-ad'+(hide?' mb-hid':'')+(!fold&&ri===rows.length-1?' mb-last':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
+        body+='<tr class="mb-ad'+(hide?' mb-hid':'')+''+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
         +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
         +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span></td>'
         +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
@@ -333,7 +355,7 @@ function render(){
         +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
         +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk)+'</td>'
         +'<td class="c"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a></td></tr>'});
-      if(fold)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button></td></tr>'})});
+      if(fold)body+='<tr class="mb-more mb-last" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><button class="mb-morebtn" data-k="'+esc(key)+'">'+(openSets[key]?'&#9652; Hide '+hid+' Civilian ad'+(hid>1?'s':''):'&#9662; Show '+hid+' more Civilian ad'+(hid>1?'s':'')+' (each under $'+S.minspend+' spend in 7 days: too early to judge)')+'</button></div></td></tr>';else body+='<tr class="mb-more mb-foot" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"></div></td></tr>'});body+='<tr class="mb-cend"><td colspan="'+NC+'"></td></tr>';body=body.slice(0,b0)+body.slice(b0).replace(/<tr class="/g,'<tr class="fn-'+fn+' ')});
   var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
   var tp=function(c,t,n,b){return '<div class="mb-tp '+c+'"><div class="mb-tph"><i></i><b>'+t+'</b><span>'+n+'</span></div><div class="mb-tpb">'+b+'</div></div>'};
   document.getElementById('mb-today').innerHTML=tp('info','Changes in the last 24 hours',ACTS.length,acts)+tp('bad','Villains still live: pause',villL.length,villL.join('')||none)+tp('warn','Close to Villain',nearL.length,nearL.join('')||none)+tp('good','Heroes and Superheroes',heroL.length,heroL.join('')||none);
@@ -348,6 +370,7 @@ function render(){
     +ht('Live ads',DATA.ads.length,'',(cnt.villain+cnt.supervillain)+' Villains &middot; '+(cnt.hero+cnt.superhero)+' Heroes &middot; '+nearL.length+' close to Villain');
   document.getElementById('mb-body').innerHTML=body;document.getElementById('mb-kpis').innerHTML=cards;
   var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+(c[0]?'<i class="mbd mbd-'+c[0]+'"></i>':'')+c[1].replace(/^&#[0-9]+; /,'')+'<span class="tcount">'+c[2]+'</span></button>'});
+  ch+='<span class="mb-legend"><span><i style="background:#d6246e"></i>TOF campaign (cold)</span><span><i style="background:#b45309"></i>TOM campaign (warmer)</span><span><i style="background:#15803d"></i>MOF campaign (warmest)</span></span>';
   ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Hook, Checkout and Days live">'+(less?'Show all columns':'Show fewer columns')+'</button>';
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
   [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
