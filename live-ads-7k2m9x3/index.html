@@ -1,4 +1,4 @@
-<meta charset="utf-8"><meta name="build-id" content="1794873787"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"><style>
+<meta charset="utf-8"><meta name="build-id" content="1794874658"><title>LACALUT Live Ads Monitor</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='8' y1='20' x2='56' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0' stop-color='%230064E0'/%3E%3Cstop offset='1' stop-color='%2300B2FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 33 C25 21 15 22 13 32 C15 42 25 43 32 31 C39 19 49 22 51 32 C49 42 39 43 32 31 Z' fill='none' stroke='url(%23m)' stroke-width='9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"><style>
 :root{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--brand:#0B5394;--accent:#1c7ed6;--good:#1a7f45;--goodbg:#e7f6ec;--mid:#8a6d00;--midbg:#fbf3d6;--bad:#a4122b;--badbg:#fbe4e8;--live:#1a7f45;--warn:#b8860b;--stuck:#a4122b;--thbg:#e3edf8;--thtext:#0B5394;}
 @media (prefers-color-scheme:dark){:root{--bg:#0e1116;--card:#171b22;--ink:#e8eaed;--sub:#9aa3af;--line:#262c36;--brand:#6fb3ff;--accent:#4da3ff;--goodbg:#10301d;--midbg:#332b0c;--badbg:#36121b;--thbg:#15233a;--thtext:#8fc1ff;}}
 :root[data-theme=light]{--bg:#f6f7f9;--card:#fff;--ink:#14181f;--sub:#6b7280;--line:#e6e8ec;--goodbg:#e7f6ec;--midbg:#fbf3d6;--badbg:#fbe4e8;--thbg:#e3edf8;--thtext:#0B5394;}
@@ -143,7 +143,7 @@ table.rollup{min-width:720px}
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
-<div class="stamp"><b>Updated 17/11/2026 10:03 AM Brisbane</b> &middot; auto-refreshes every 30 min (not live) &middot; Running tab: ROAS 7d = current</div>
+<div class="stamp"><b>Updated 17/11/2026 10:17 AM Brisbane</b> &middot; auto-refreshes every 30 min (not live) &middot; Running tab: ROAS 7d = current</div>
 </header>
 
 <nav class="tabs"><button class="tabbtn" data-tab="buyer" aria-pressed="true">&#127919; Media Buyer<span class="tcount">75</span></button><button class="tabbtn" data-tab="winners" aria-pressed="false">&#11088; Winners<span class="tcount">8</span></button><button class="tabbtn tb-bad" data-tab="compliance" aria-pressed="false">&#9878;&#65039; Compliance<span class="tcount">161</span></button><button class="tabbtn" data-tab="overview" aria-pressed="false">&#128202; Overview</button><button class="tabbtn" data-tab="notrunning" aria-pressed="false">&#128452;&#65039; Not running<span class="tcount">573</span></button></nav>
@@ -434,6 +434,11 @@ document.addEventListener('paste',function(e){var it=[].slice.call((e.clipboardD
 .mb-up{color:var(--g);font-size:9px}.mb-dn{color:var(--b);font-size:9px}
 .mb-vid{font-size:10px;font-weight:600;letter-spacing:.04em;background:var(--s2);color:var(--tx2);padding:1px 6px;border-radius:5px;margin-left:4px}
 .mb-lp{text-decoration:none}
+#mb .mb-table thead tr:first-child th:nth-child(n+3):nth-child(-n+15){text-align:right}
+#mb .mb-table thead tr.colfilters th:nth-child(n+3):nth-child(-n+15) input{text-align:right}
+#mb .mb-ad td.c{text-align:left}
+#mb .mb-tot td,#mb .mb-tot:hover td{background:var(--s2);font-weight:600}
+#mb .mb-tot td.adtd{font-size:12.5px;font-weight:500;color:var(--tx2)}
 #mb .wlink{font-size:12.5px;font-weight:500;color:var(--ac);text-decoration:none;white-space:nowrap}
 #mb .wlink:hover{text-decoration:underline}
 </style>
@@ -514,10 +519,10 @@ function render(){
       var sc=st.sp<50?'#adb5bd':(r7s>=S.roasbe?'#2f9e44':(r7s>=1?'#f08c00':'#e03131'));
       var bud=sb.bud?stat('Daily budget',money(sb.bud)+' / day','The most this ad set can spend each day',1):(sb.cbud?stat('Daily budget','shares '+money(sb.cbud)+' / day','Campaign budget: Meta splits it across the ad sets in this campaign',1)+(sb.min?stat('Minimum spend',money(sb.min)+' / day','Meta must spend at least this much on this ad set each day'):''):'');
       var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
-        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('Spent 7 days',money(st.sp))+stat('Sales 7 days',st.pc)+stat('CPP 7 days',st.pc?money(st.sp/st.pc):'no sale','Cost per purchase')
-        +stat('ROAS 7 days',r7s===null?Z:rp(r7s))+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)+stat('Frequency',sf.toFixed(2),'Average times each person saw ads from this ad set in 7 days')
+        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
       body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></td></tr>';
+      body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,cl=rows.map(function(a){return cls(a)}),nrs=rows.map(function(a,i){return near(a,cl[i][0])}),hid=0;
       rows.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
       rows.forEach(function(a,ri){var d=a.d7,v=cl[ri],nr=nrs[ri];cnt[v[0]]++;
@@ -5109,7 +5114,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#0 - Creative Library</div></td>
 <td class="c camp"><div>B03 · 08 Nov 26 · TOF</div></td>
 <td class="c sub">PAUSED</td>
-<td class="c sub">built 5d ago</td>
+<td class="c sub">built 6d ago</td>
 </tr><tr data-s="b03_tof_nov_bau_aktiv_smokers4xgums_static_comic v1 #0 - creative library b03 · 08 nov 26 · tof" data-t="image" data-stage="cold" data-aid="120253138330660229">
 <td class="adtd"><div class="adc"><img class="th" src="thumbs/120253138330660229.jpg" loading="lazy" alt=""><span class="adname">B03_TOF_NOV_BAU_AKTIV_Smokers4xGums_Static_Comic V1</span></div></td>
 <td class="c camp"><div>#0 - Creative Library</div></td>
@@ -5206,12 +5211,6 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>B03 · 08 Nov 26 · TOM</div></td>
 <td class="c sub">PAUSED</td>
 <td class="c sub">built 7d ago</td>
-</tr><tr data-s="b03_mof_nov_bau_sensitive_mythbust_noicethanks_pain_static_ai_text v1 #0 - creative library b03 · 08 nov 26 · mof" data-t="image" data-stage="mof" data-aid="120253100851460229">
-<td class="adtd"><div class="adc"><img class="th" src="thumbs/120253100851460229.jpg" loading="lazy" alt=""><span class="adname">B03_MOF_NOV_BAU_SENSITIVE_MythBust_NoIceThanks_Pain_Static_AI_Text V1</span></div></td>
-<td class="c camp"><div>#0 - Creative Library</div></td>
-<td class="c camp"><div>B03 · 08 Nov 26 · MOF</div></td>
-<td class="c sub">PAUSED</td>
-<td class="c sub">built 7d ago</td>
 </tr><tr data-s="b03_tof_nov_bau_aktiv_beforeafter_monalisaclosedsmile_pain_static_ai_text v1 #0 - creative library b03 · 08 nov 26 · tof" data-t="image" data-stage="cold" data-aid="120253101066100229">
 <td class="adtd"><div class="adc"><img class="th" src="thumbs/120253101066100229.jpg" loading="lazy" alt=""><span class="adname">B03_TOF_NOV_BAU_AKTIV_BeforeAfter_MonaLisaClosedSmile_Pain_Static_AI_Text V1</span></div></td>
 <td class="c camp"><div>#0 - Creative Library</div></td>
@@ -5234,6 +5233,12 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="adtd"><div class="adc"><img class="th" src="thumbs/120253088954970229.jpg" loading="lazy" alt=""><span class="adname">B03_TOF_NOV_BAU_W&amp;R_Interview_FAQ1DoesWhiteningWork_Education_Static_Founder_Text V1</span></div></td>
 <td class="c camp"><div>#0 - Creative Library</div></td>
 <td class="c camp"><div>B03 · 08 Nov 26 · TOF</div></td>
+<td class="c sub">PAUSED</td>
+<td class="c sub">built 8d ago</td>
+</tr><tr data-s="b03_mof_nov_bau_sensitive_mythbust_noicethanks_pain_static_ai_text v1 #0 - creative library b03 · 08 nov 26 · mof" data-t="image" data-stage="mof" data-aid="120253100851460229">
+<td class="adtd"><div class="adc"><img class="th" src="thumbs/120253100851460229.jpg" loading="lazy" alt=""><span class="adname">B03_MOF_NOV_BAU_SENSITIVE_MythBust_NoIceThanks_Pain_Static_AI_Text V1</span></div></td>
+<td class="c camp"><div>#0 - Creative Library</div></td>
+<td class="c camp"><div>B03 · 08 Nov 26 · MOF</div></td>
 <td class="c sub">PAUSED</td>
 <td class="c sub">built 8d ago</td>
 </tr><tr data-s="b03_mof_nov_bau_aktiv_demo_puffyredtopinkballoons_education_static_ai_text v1 #0 - creative library b03 · 08 nov 26 · mof" data-t="image" data-stage="mof" data-aid="120253094333400229">
@@ -9344,7 +9349,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#8 MULTI_ASC_TOM_Broad_No Excl (TOF | Testing)</div><div class="mut">Video | Testing | Broad AU | $15/day</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>campaign paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">24/08<span class="mut"> · 84d</span></td>
+<td class="c sub">24/08<span class="mut"> · 85d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num d-sp">$0.34</td>
 <td class="num d-rev"><span class="mut">—</span></td>
@@ -9389,7 +9394,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#8 MULTI_ASC_TOM_Broad_No Excl (TOF | Testing)</div><div class="mut">Video | Testing | Broad AU | $15/day</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>campaign paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">24/08<span class="mut"> · 84d</span></td>
+<td class="c sub">24/08<span class="mut"> · 85d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num d-sp">$0.22</td>
 <td class="num d-rev"><span class="mut">—</span></td>
@@ -9419,7 +9424,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#8 MULTI_ASC_TOM_Broad_No Excl (TOF | Testing)</div><div class="mut">Video | Testing | Broad AU | $15/day</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>campaign paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">24/08<span class="mut"> · 84d</span></td>
+<td class="c sub">24/08<span class="mut"> · 85d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num d-sp">$0.18</td>
 <td class="num d-rev"><span class="mut">—</span></td>
@@ -9449,7 +9454,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#8 MULTI_ASC_TOM_Broad_No Excl (TOF | Testing)</div><div class="mut">Video | Testing | Broad AU | $15/day</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>campaign paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">24/08<span class="mut"> · 84d</span></td>
+<td class="c sub">24/08<span class="mut"> · 85d</span></td>
 <td class="c"><span class="pill pill-good" title="No breach found in ad name or copy (automated scan)">&#9989; Pass</span></td>
 <td class="num d-sp">$0.13</td>
 <td class="num d-rev"><span class="mut">—</span></td>
@@ -10724,7 +10729,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#8 MULTI_ASC_TOM_Broad_No Excl (TOF | Testing)</div><div class="mut">Video | Testing | Broad AU | $15/day</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">24/08<span class="mut"> · 84d</span></td>
+<td class="c sub">24/08<span class="mut"> · 85d</span></td>
 <td class="c"><span class="pill pill-bad" title="Copy breach: bleeding gums = therapeutic">&#9888; Breach</span></td>
 <td class="num d-sp">$0.16</td>
 <td class="num d-rev"><span class="mut">—</span></td>
@@ -10814,7 +10819,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#8 MULTI_ASC_TOM_Broad_No Excl (TOF | Testing)</div><div class="mut">Video | Testing | Broad AU | $15/day</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">24/08<span class="mut"> · 84d</span></td>
+<td class="c sub">24/08<span class="mut"> · 85d</span></td>
 <td class="c"><span class="pill pill-bad" title="Copy breach: bleeding gums = therapeutic; therapeutic">&#9888; Breach</span></td>
 <td class="num d-sp">$0.04</td>
 <td class="num d-rev"><span class="mut">—</span></td>
@@ -10859,7 +10864,7 @@ document.getElementById('mb-reset').addEventListener('click',function(){try{loca
 <td class="c camp"><div>#6 MULTI_ASC_TOM_Broad_No Excl (MAIN | TOF)</div><div class="mut">Aktiv - Original</div></td>
 <td class="c sub"><span class="dot dot-warn"></span>paused</td>
 <td class="c"><span class="mut">&mdash;</span></td>
-<td class="c sub">12/05<span class="mut"> · 188d</span></td>
+<td class="c sub">12/05<span class="mut"> · 189d</span></td>
 <td class="c"><span class="pill pill-bad" title="Copy breach: disease claim; bleeding gums = therapeutic; treat/heal/cure; clinical/authority claim; therapeutic efficacy">&#9888; Breach</span></td>
 <td class="num d-sp"><span class="mut">—</span></td>
 <td class="num d-rev"><span class="mut">—</span></td>

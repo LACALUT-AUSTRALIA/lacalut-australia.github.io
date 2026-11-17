@@ -174,6 +174,11 @@ CSS = """
 .mb-up{color:var(--g);font-size:9px}.mb-dn{color:var(--b);font-size:9px}
 .mb-vid{font-size:10px;font-weight:600;letter-spacing:.04em;background:var(--s2);color:var(--tx2);padding:1px 6px;border-radius:5px;margin-left:4px}
 .mb-lp{text-decoration:none}
+#mb .mb-table thead tr:first-child th:nth-child(n+3):nth-child(-n+15){text-align:right}
+#mb .mb-table thead tr.colfilters th:nth-child(n+3):nth-child(-n+15) input{text-align:right}
+#mb .mb-ad td.c{text-align:left}
+#mb .mb-tot td,#mb .mb-tot:hover td{background:var(--s2);font-weight:600}
+#mb .mb-tot td.adtd{font-size:12.5px;font-weight:500;color:var(--tx2)}
 #mb .wlink{font-size:12.5px;font-weight:500;color:var(--ac);text-decoration:none;white-space:nowrap}
 #mb .wlink:hover{text-decoration:underline}
 """
@@ -306,10 +311,10 @@ function render(){
       var sc=st.sp<50?'#adb5bd':(r7s>=S.roasbe?'#2f9e44':(r7s>=1?'#f08c00':'#e03131'));
       var bud=sb.bud?stat('Daily budget',money(sb.bud)+' / day','The most this ad set can spend each day',1):(sb.cbud?stat('Daily budget','shares '+money(sb.cbud)+' / day','Campaign budget: Meta splits it across the ad sets in this campaign',1)+(sb.min?stat('Minimum spend',money(sb.min)+' / day','Meta must spend at least this much on this ad set each day'):''):'');
       var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
-        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('Spent 7 days',money(st.sp))+stat('Sales 7 days',st.pc)+stat('CPP 7 days',st.pc?money(st.sp/st.pc):'no sale','Cost per purchase')
-        +stat('ROAS 7 days',r7s===null?Z:rp(r7s))+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)+stat('Frequency',sf.toFixed(2),'Average times each person saw ads from this ad set in 7 days')
+        +stat('Spent yesterday',s1.sp?money(s1.sp):'$0')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
       body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></td></tr>';
+      body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,cl=rows.map(function(a){return cls(a)}),nrs=rows.map(function(a,i){return near(a,cl[i][0])}),hid=0;
       rows.forEach(function(a,i){if(i>=2&&cl[i][0]==='civilian'&&!nrs[i])hid++});var fold=hid>0&&!filt;
       rows.forEach(function(a,ri){var d=a.d7,v=cl[ri],nr=nrs[ri];cnt[v[0]]++;
