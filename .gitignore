@@ -9,3 +9,4 @@ design-engine/_copyad_work/
 live-ads-7k2m9x3/_auto_buyer_state.json
 live-ads-7k2m9x3/_pause_alert_state.json
 live-ads-7k2m9x3/*.log
+live-ads-7k2m9x3/_auto_refresh.lock
