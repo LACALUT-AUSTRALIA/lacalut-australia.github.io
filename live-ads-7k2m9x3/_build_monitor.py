@@ -625,6 +625,8 @@ with open(os.path.join(SP, "spend_compliance.csv"), "w", newline="", encoding="u
         _w.writerow([a["name"], a["id"], a.get("effective_status", ""), a["campaign"], a["adset"],
                      round(a["_s90"], 2), round(a["_roas"] or 0, 2), vd, why])
 
+import _refresh_bar
+_rf_bar, _rf_js = _refresh_bar.html(SP)
 gen = now.astimezone(timezone(timedelta(hours=10))).strftime("%d/%m/%Y %I:%M %p Brisbane").replace(" 0", " ", 1)
 
 campaigns = sorted({a["campaign"] for a in ads if a.get("campaign")})
@@ -1249,10 +1251,11 @@ html_body = f"""<meta charset="utf-8"><meta name="build-id" content="{build_id}"
 <div class="wrap">
 <header>
 <h1>LACALUT <span class="sw">Live Ads Monitor</span></h1>
-<div class="stamp"><b>Updated {gen}</b> &middot; auto-refreshes every 30 min (not live) &middot; Running tab: ROAS 7d = current</div>
+<div class="stamp">Refreshes by itself every 30 minutes &middot; press <b>Refresh now</b> for live numbers &middot; Running tab: ROAS 7d = current</div>
 </header>
 
-<nav class="tabs">{tab_btns}</nav>
+<nav class="tabs">{_rf_bar}{tab_btns}</nav>
+{_rf_js}
 
 <div class="fbar">
 <button id="isbtn" type="button" title="Find an ad by pasting a screenshot">&#128269; Find by image</button>
