@@ -44,8 +44,9 @@ class H(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "X-Refresh-Token")
         self.send_header("Access-Control-Allow-Private-Network", "true")
         self.send_header("Cache-Control", "no-store")
-        data = json.dumps(body or {}).encode()
-        self.send_header("Content-Type", "application/json")
+        data = b"" if code == 204 else json.dumps(body or {}).encode()
+        if data:
+            self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))
         self.end_headers()
         self.wfile.write(data)
