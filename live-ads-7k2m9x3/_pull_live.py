@@ -169,9 +169,14 @@ def pull_texts():
     fields = ("id,creative{body,title,asset_feed_spec{bodies,titles,descriptions},"
               "object_story_spec{link_data{message,name,description,caption},"
               "video_data{message,title,link_description}}}")
-    url = f"{GRAPH}/{ACCT}/ads?fields={fields}&limit=300&access_token={urllib.parse.quote(TOK)}"
+    url = f"{GRAPH}/{ACCT}/ads?fields={fields}&limit=50&access_token={urllib.parse.quote(TOK)}"
     out = {}
-    for a in get_all(url):
+    try:
+        ads = list(get_all(url))
+    except Exception as e:  # 23/11: Meta 500s on this call; keep the last ad_texts.json, never kill the refresh
+        print(f"  ad texts pull failed ({e}); keeping last ad_texts.json")
+        return
+    for a in ads:
         cr = a.get("creative") or {}
         parts = [cr.get("body", ""), cr.get("title", "")]
         afs = cr.get("asset_feed_spec") or {}
