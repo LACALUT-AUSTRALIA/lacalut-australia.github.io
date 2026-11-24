@@ -169,5 +169,119 @@
    "copyMode": true,
    "cli": true
   }
+ },
+ {
+  "id": "g1795483191681_0",
+  "filename": "FLORA_img6_better_PIL.png",
+  "sku": "flora",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · FLORA toothbrush #6 Better Together (PIL)",
+  "ts": 1795483191681,
+  "brief": "PDP toothbrush image #6",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795483191817_0",
+  "filename": "FLORA_img5_conf_PIL.png",
+  "sku": "flora",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · FLORA toothbrush #5 Daily Confidence (PIL)",
+  "ts": 1795483191817,
+  "brief": "PDP toothbrush image #5",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795483192010_0",
+  "filename": "SENSITIVE_img6_better_PIL.png",
+  "sku": "sensitive",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · SENSITIVE toothbrush #6 Better Together (PIL)",
+  "ts": 1795483192010,
+  "brief": "PDP toothbrush image #6",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795483192165_0",
+  "filename": "SENSITIVE_img5_conf_PIL.png",
+  "sku": "sensitive",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · SENSITIVE toothbrush #5 Daily Confidence (PIL)",
+  "ts": 1795483192165,
+  "brief": "PDP toothbrush image #5",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795483192319_0",
+  "filename": "WHITE_REPAIR_img6_better_PIL.png",
+  "sku": "white-repair",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · WHITE_REPAIR toothbrush #6 Better Together (PIL)",
+  "ts": 1795483192319,
+  "brief": "PDP toothbrush image #6",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795483192463_0",
+  "filename": "WHITE_REPAIR_img5_conf_PIL.png",
+  "sku": "white-repair",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · WHITE_REPAIR toothbrush #5 Daily Confidence (PIL)",
+  "ts": 1795483192463,
+  "brief": "PDP toothbrush image #5",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
  }
 ]
