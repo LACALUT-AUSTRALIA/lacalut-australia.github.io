@@ -112,5 +112,62 @@
    "copyMode": true,
    "cli": true
   }
+ },
+ {
+  "id": "g1795480694768_0",
+  "filename": "FLORA_img4_quality_PIL.png",
+  "sku": "flora",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · FLORA toothbrush #4 Quality (PIL)",
+  "ts": 1795480694768,
+  "brief": "PDP toothbrush image #4",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795480694940_0",
+  "filename": "SENSITIVE_img4_quality_PIL.png",
+  "sku": "sensitive",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · SENSITIVE toothbrush #4 Quality (PIL)",
+  "ts": 1795480694940,
+  "brief": "PDP toothbrush image #4",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
+ },
+ {
+  "id": "g1795480695117_0",
+  "filename": "WHITE_REPAIR_img4_quality_PIL.png",
+  "sku": "white-repair",
+  "mode": "social",
+  "ptype": "toothpaste",
+  "label": "PDP · WHITE_REPAIR toothbrush #4 Quality (PIL)",
+  "ts": 1795480695117,
+  "brief": "PDP toothbrush image #4",
+  "angle": "",
+  "brain": null,
+  "genPrompt": "",
+  "genSettings": {
+   "render": "copy",
+   "ar": "1:1",
+   "copyMode": true,
+   "cli": true
+  }
  }
 ]
