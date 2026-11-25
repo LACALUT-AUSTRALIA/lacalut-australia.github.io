@@ -395,6 +395,34 @@ def pull_buyer():
               open(os.path.join(SP, "buyer.json"), "w", encoding="utf-8"))
     print(f"  wrote buyer.json: {len(rows)} active ads, {len(paused)} paused ads with 7-day spend")
 
+def pull_bf():
+    # 25/11/2026 (Quan): every Black Friday 2026 campaign (name has BF26) shown on the Media Buyer tab,
+    # live or paused, with today / yesterday / last 7 days numbers. Reach campaigns are judged on reach, not ROAS.
+    camps = get_all(f"{GRAPH}/{ACCT}/campaigns?fields=id,name,objective,effective_status,daily_budget,stop_time&limit=200"
+                    f"&filtering={urllib.parse.quote(json.dumps([{'field':'name','operator':'CONTAIN','value':'BF26'}]))}"
+                    f"&access_token={urllib.parse.quote(TOK)}")
+    def ins(preset):
+        u = (f"{GRAPH}/{ACCT}/insights?level=campaign&date_preset={preset}&limit=200"
+             f"&fields=campaign_id,spend,impressions,reach,frequency,cpm,actions,action_values&access_token={urllib.parse.quote(TOK)}")
+        out = {}
+        for r in get_all(u):
+            pc = sum(float(a["value"]) for a in r.get("actions", []) if a["action_type"] == "purchase")
+            rev = sum(float(a["value"]) for a in r.get("action_values", []) if a["action_type"] == "purchase")
+            out[r["campaign_id"]] = {"sp": float(r.get("spend", 0)), "imp": int(r.get("impressions", 0)), "reach": int(r.get("reach", 0)),
+                                     "freq": float(r.get("frequency", 0) or 0), "cpm": float(r.get("cpm", 0) or 0), "pc": pc, "rev": rev}
+        return out
+    t, y, w = ins("today"), ins("yesterday"), ins("last_7d")
+    rows = []
+    for c in camps:
+        ads = get_all(f"{GRAPH}/{c['id']}/ads?fields=effective_status&limit=200&access_token={urllib.parse.quote(TOK)}")
+        live = sum(1 for a in ads if a.get("effective_status") == "ACTIVE")
+        rows.append({"id": c["id"], "name": c["name"], "obj": c.get("objective"), "st": c.get("effective_status"),
+                     "budget": int(c.get("daily_budget") or 0) / 100, "stop": c.get("stop_time"), "ads": len(ads), "live": live,
+                     "today": t.get(c["id"]), "yday": y.get(c["id"]), "d7": w.get(c["id"])})
+    rows.sort(key=lambda r: (r["live"] == 0, r["name"]))
+    json.dump({"pulled": time.strftime("%Y-%m-%dT%H:%M:%S"), "camps": rows}, open(os.path.join(SP, "bf.json"), "w", encoding="utf-8"))
+    print(f"  wrote bf.json: {len(rows)} Black Friday campaigns")
+
 def write(name, data):
     p = os.path.join(SP, name)
     json.dump(data, open(p, "w", encoding="utf-8"))
@@ -410,6 +438,10 @@ if __name__ == "__main__":
     pull_big()
     pull_texts()
     pull_buyer()
+    try:
+        pull_bf()
+    except Exception as e:
+        print('  bf pull failed (non-fatal):', e)
     import _pull_meta_monthly
     _pull_meta_monthly.main()
     import _pull_lifetime

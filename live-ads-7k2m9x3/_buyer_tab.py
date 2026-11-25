@@ -29,6 +29,8 @@ def classify(a, D=None):
     """Our own classes (Quan 15/11/2026), judged on spend and ROAS. Returns (key, reason).
     The same logic is written in JavaScript inside HTML below: change both together."""
     D = D or DEFAULTS
+    if str(a.get("campaign", "")).startswith("#HYPE"):   # Quan 25/11/2026: Reach campaigns are judged on reach, never on sales; never auto-paused
+        return "civilian", "Reach campaign: judged on reach and frequency, not sales. Never auto-paused"
     d, d3 = a.get("d7"), a.get("d3")
     sp = d["sp"] if d else 0.0
     r7 = (d["rev"] / d["sp"]) if d and d["sp"] else None
@@ -291,7 +293,7 @@ function cppCell(d,st,base){var c=cpp(d);if(c===null)return '<td class="num">'+Z
 function roasCell(d){if(!d||!d.sp)return '<td class="num">'+Z+'</td>';var r=d.rev/d.sp;
   return '<td class="num"><span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span></td>'}
 function pct(n,d){return d?(100*n/d).toFixed(1)+'%':Z}
-function cls(a){var d=a.d7,d3=a.d3,sp=d?d.sp:0,r7=d&&d.sp?d.rev/d.sp:null;
+function cls(a){if(/^#HYPE/.test(a.campaign||''))return['civilian','&#128227; Reach','Reach campaign: judged on reach and frequency, not sales. Never auto-paused'];var d=a.d7,d3=a.d3,sp=d?d.sp:0,r7=d&&d.sp?d.rev/d.sp:null;
   var fast=d3&&d3.sp>=S.fastspend&&d3.rev/d3.sp<S.villroas;
   if(sp>=S.superspend&&r7<S.villroas)return['supervillain','&#128128; Supervillain','$'+Math.round(sp)+' spent in 7 days at ROAS '+r7.toFixed(2)+'. Pause now. An ad should never get this far'];
   if(sp>=S.minspend&&r7<S.villroas)return['villain','&#129465; Villain','$'+Math.round(sp)+' spent in 7 days at ROAS '+r7.toFixed(2)+'. Pause'];
@@ -334,7 +336,7 @@ function render(){
   NC=less?13:17;document.querySelector('.mb-table').classList.toggle('mb-less',less);
   var PS={},SETS=DATA.sets||{};(DATA.paused||[]).forEach(function(a){(PS[a.sid]=PS[a.sid]||[]).push(a)});
   function rowHtml(a,v,nr,stg,sc,hide){var d=a.d7,base=cpp(d),isH=!!HID[a.id];
-    var img=a.src?'<img class="th mb-th" src="'+a.src+'" loading="lazy" alt="">':'<span class="th mb-th th-empty"></span>';
+    var img=a.src?'<img class="th mb-th" src="'+a.src+'" decoding="async" alt="">':'<span class="th mb-th th-empty"></span>';
     var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null;
     return '<tr class="mb-ad'+(hide?' mb-hid':'')+(a.paused?' mb-paused':'')+(isH?' mb-ishid':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
     +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
@@ -453,6 +455,41 @@ def recent_actions(SP, hours=24):
     return out[::-1][:12]
 
 
+def bf_html(SP):
+    # 25/11/2026 (Quan): Black Friday 2026 campaigns block, live or paused. Reach = reach/CPM; Sales = ROAS/sales.
+    p = os.path.join(SP, "bf.json")
+    if not os.path.exists(p):
+        return ""
+    import html as _h
+    d = json.load(open(p, encoding="utf-8"))
+    m = lambda v: "${:,.0f}".format(v) if v >= 100 else "${:,.2f}".format(v)
+    cards = ""
+    for c in d.get("camps", []):
+        reach = c.get("obj") == "OUTCOME_AWARENESS"
+        on = c["live"] > 0 and c["st"] == "ACTIVE"
+        chip = ('<span class="mb-chip good"><i></i>LIVE &middot; ' + str(c["live"]) + ' ads on</span>') if on else                ('<span class="mb-chip warn"><i></i>OFF &middot; ' + str(c["ads"]) + ' ads ready</span>' if c["ads"] else '<span class="mb-chip bad"><i></i>OFF &middot; no ads</span>')
+        def line(lbl, x):
+            if not x or not x.get("sp"):
+                return '<div class="mb-sub">' + lbl + ': $0 spend</div>'
+            if reach:
+                return ('<div class="mb-sub">' + lbl + ': ' + m(x["sp"]) + ' &middot; ' + "{:,}".format(x["reach"]) + ' people reached &middot; CPM '
+                        + m(x["cpm"]) + ' &middot; freq ' + "{:.2f}".format(x["freq"]) + '</div>')
+            r = x["rev"] / x["sp"] if x["sp"] else 0
+            return ('<div class="mb-sub">' + lbl + ': ' + m(x["sp"]) + ' &middot; ' + str(int(x["pc"])) + ' sales &middot; ROAS '
+                    + "{:.2f}x".format(r) + ' &middot; CPM ' + m(x["cpm"]) + '</div>')
+        kind = "REACH (hype)" if reach else "SALES"
+        bud = (m(c["budget"]) + "/day") if c["budget"] else "ad set budgets"
+        stop = (" &middot; ends " + c["stop"][8:10] + "/" + c["stop"][5:7] + " " + c["stop"][11:16]) if c.get("stop") else ""
+        cards += ('<div class="kpi"><div class="lbl">' + _h.escape(c["name"]) + '</div><div class="val" style="font-size:15px">' + kind + ' ' + chip
+                  + '</div><div class="mb-sub"><b>Budget ' + bud + '</b>' + stop + '</div>' + line("Today", c.get("today"))
+                  + line("Yesterday", c.get("yday")) + line("Last 7 days", c.get("d7"))
+                  + '<div class="mb-sub"><a class="wlink" target="_blank" rel="noopener" href="https://adsmanager.facebook.com/adsmanager/manage/adsets?act='
+                  + ADS_ACT + '&selected_campaign_ids=' + c["id"] + '">Open &#8599;</a></div></div>')
+    if not cards:
+        return ""
+    return ('<div class="mb-lab">&#127873; Black Friday 2026 campaigns (live and paused, pulled ' + d["pulled"][11:16] + ')</div>'
+            '<div class="kpis mb-kpis">' + cards + '</div>')
+
 def build(SP):
     p = os.path.join(SP, "buyer.json")
     if not os.path.exists(p):
@@ -481,4 +518,5 @@ def build(SP):
     out = (HTML.replace("__CSS__", CSS).replace("__N__", str(len(data.get("ads", []))))
            .replace("__PULLED__", pulled).replace("__DEF__", json.dumps(DEFAULTS))
            .replace("__AUTO__", json.dumps(auto)).replace("__ACTS__", json.dumps(acts).replace("</", "<\\/")).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
+    out = out.replace('<div class="mb-lab">Campaigns, last 7 days</div>', bf_html(SP) + '<div class="mb-lab">Campaigns, last 7 days</div>', 1)
     return len(data.get("ads", [])), out
