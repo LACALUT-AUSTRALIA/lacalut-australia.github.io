@@ -287,7 +287,8 @@ def pull_buyer():
         for r in get_all(url):
             d = {"sp": float(r.get("spend") or 0), "imp": int(r.get("impressions") or 0),
                  "freq": float(r.get("frequency") or 0), "cpm": float(r.get("cpm") or 0),
-                 "ctr": float(r.get("inline_link_click_ctr") or 0), "rev": 0.0}
+                 "ctr": float(r.get("inline_link_click_ctr") or 0), "rev": 0.0,
+                 "reach": int(r.get("reach") or 0)}   # 26/11/2026 Quan: Hype Reach campaign is judged on people reached
             for k in WANT.values():
                 d[k] = 0
             for x in (r.get("actions") or []):
@@ -299,7 +300,7 @@ def pull_buyer():
                     d["rev"] = float(x.get("value") or 0)
             out[r.get("ad_id")] = d
         return out
-    w7, w3, w1 = window("last_7d"), window("last_3d"), window("yesterday")
+    w7, w3, w1, w0 = window("last_7d"), window("last_3d"), window("yesterday"), window("today")
     # ad set frequency (7 days) decides which funnel stage the ad set is "acting like"
     url = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset=last_7d&limit=400"
            f"&fields=adset_id,frequency,reach&access_token={urllib.parse.quote(TOK)}")
@@ -308,11 +309,13 @@ def pull_buyer():
     # so spend from ads paused since then went missing. Never blocks the pull.
     sets = {}
     try:
-        for key, preset in (("d7", "last_7d"), ("d3", "last_3d"), ("d1", "yesterday")):
+        for key, preset in (("d7", "last_7d"), ("d3", "last_3d"), ("d1", "yesterday"), ("d0", "today"), ("dm", "this_month")):
             u = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset={preset}&limit=400"
-                 f"&fields=adset_id,spend,actions,action_values&access_token={urllib.parse.quote(TOK)}")
+                 f"&fields=adset_id,spend,actions,action_values,reach,impressions,frequency&access_token={urllib.parse.quote(TOK)}")
             for r in get_all(u):
-                d = {"sp": float(r.get("spend") or 0), "rev": 0.0, "pc": 0}
+                d = {"sp": float(r.get("spend") or 0), "rev": 0.0, "pc": 0, "reach": int(r.get("reach") or 0),
+                     "imp": int(r.get("impressions") or 0), "freq": float(r.get("frequency") or 0),
+                     "lpv": sum(int(float(x.get("value") or 0)) for x in (r.get("actions") or []) if x.get("action_type") == "landing_page_view")}
                 for x in (r.get("actions") or []):
                     if x.get("action_type") == "omni_purchase":
                         d["pc"] = int(float(x.get("value") or 0))
@@ -383,7 +386,7 @@ def pull_buyer():
                             "floor": ((st.get("bid_constraints") or {}).get("roas_average_floor") or 0) / 10000,
                             "learn": ((st.get("learning_stage_info") or {}).get("status") or "")},
                      "video": bool(cr.get("video_id") or vd), "link": link,
-                     "d7": w7.get(a["id"]), "d3": w3.get(a["id"]), "d1": w1.get(a["id"])})
+                     "d7": w7.get(a["id"]), "d3": w3.get(a["id"]), "d1": w1.get(a["id"]), "d0": w0.get(a["id"])})
     # link health (15/11/2026): every unique landing page is opened once; Shopify products also get a stock check
     health = link_health(sorted({r["link"] for r in rows if r["link"]}))
     for r in rows:

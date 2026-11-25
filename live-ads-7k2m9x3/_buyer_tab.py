@@ -175,6 +175,7 @@ CSS = """
 .mb-table .adtd{min-width:300px;max-width:420px}
 #mb .mb-th{width:64px;height:64px;min-width:64px;border-radius:10px;border:1px solid var(--bd);cursor:zoom-in}
 #mb .adname{font-weight:500;font-size:13px;line-height:1.4;color:var(--tx)}
+.mb-reach{display:block;margin-top:6px;font-size:12px;font-weight:600;color:#364fc7;background:#edf2ff;border-radius:6px;padding:4px 8px;line-height:1.5}
 .mb-near{display:block;width:fit-content;margin-top:6px;font-size:11.5px;font-weight:600;color:var(--wtx);background:var(--wbg);border-radius:6px;padding:2px 8px}
 .mbv{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap;cursor:help}
 .mbv-supervillain{background:var(--b);color:var(--on)}.mbv-villain{background:var(--bbg);color:var(--btx)}
@@ -318,7 +319,12 @@ function aggk(rows,k){var t={sp:0,rev:0,pc:0};rows.forEach(function(a){var d=a[k
 function lossOf(rows){var t=agg(rows);return t.sp-t.rev}
 function rp(r){return '<span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span>'}
 function stat(l,v,t,big){return '<span class="mb-st'+(big?' mb-big':'')+'"'+(t?' title="'+esc(t)+'"':'')+'><small>'+l+'</small><b>'+v+'</b></span>'}
-function near(a,v){var d=a.d7,d3=a.d3;if(!d||!d.sp)return '';
+function isR(a){return /^#HYPE/.test((a&&a.campaign)||'')}
+function nf(n){return (n||0).toLocaleString()}
+function per1k(x){return x&&x.reach?money(x.sp/x.reach*1000):'&mdash;'}
+function rline(l,x){if(!x||!x.sp)return '<b>'+l+':</b> $0';return '<b>'+l+':</b> '+nf(x.reach)+' people &middot; '+money(x.sp)+' &middot; '+per1k(x)+' per 1,000 people'}
+function rstrip(a){return '<span class="mb-reach">&#128101; '+rline('Today',a.d0)+'<br>&#128101; '+rline('Last 7 days',a.d7)+(a.d7&&a.d7.lpv?' &middot; '+a.d7.lpv+' website visits ('+money(a.d7.sp/a.d7.lpv)+' each)':'')+'</span>'}
+function near(a,v){var d=a.d7,d3=a.d3;if(isR(a))return '';if(!d||!d.sp)return '';
   if(v==='sidekick'){var r=d.rev/d.sp;return r<S.villroas+0.15?'Close to Villain: ROAS '+r.toFixed(2)+', Villain is under '+S.villroas.toFixed(2):''}
   if(v!=='civilian')return '';var g=[];if(d.rev/d.sp<S.villroas)g.push(S.minspend-d.sp);
   if(d3&&d3.sp&&d3.rev/d3.sp<S.villroas)g.push(S.fastspend-d3.sp);if(!g.length)return '';
@@ -339,7 +345,7 @@ function render(){
     var img=a.src?'<img class="th mb-th" src="'+a.src+'" decoding="async" alt="">':'<span class="th mb-th th-empty"></span>';
     var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null;
     return '<tr class="mb-ad'+(hide?' mb-hid':'')+(a.paused?' mb-paused':'')+(isH?' mb-ishid':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
-    +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+'</span></div></td>'
+    +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+(isR(a)?rstrip(a):'')+'</span></div></td>'
     +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span>'+(a.paused?' <span class="mbv mbv-paused" title="This ad is paused in Meta. It is listed because it spent money in the last 7 days"><i></i>Paused</span>':'')+'</td>'
     +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
     +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
@@ -353,7 +359,7 @@ function render(){
     var ct={sp:0,rev:0,pc:0};Object.keys(sets).forEach(function(k){var t=(SETS[sets[k][0].sid]||{}).d7||agg(sets[k]);ct.sp+=t.sp;ct.rev+=t.rev;ct.pc+=t.pc});var cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
     var b0=body.length,fn=(/_(TOF|TOM|MOF)_/.exec(cn)||['','x'])[1].toLowerCase();
-    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-cm">'+all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+'</span></div></td></tr>';
+    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr))+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),TS=SETS[rows[0].sid]||{},st=TS.d7||agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
       var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
@@ -362,6 +368,7 @@ function render(){
       var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
         +stat('Spent yesterday',s1.sp?money(s1.sp):'$0','Whole ad set, straight from Meta. Includes ads that are paused now')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
+      if(isR(rows[0])){var dm=TS.dm||{},d0=TS.d0||{};sc='#5c7cfa';info=bud+stat('People reached since launch',nf(dm.reach),'Unique people who saw an ad in this ad set this month (Hype started 25/11)',1)+stat('Reached today',nf(d0.reach)+' &middot; '+money(d0.sp||0),'Unique people reached today, and spend today')+stat('Reached yesterday',nf(s1.reach)+' &middot; '+money(s1.sp||0))+stat('Cost per 1,000 people',per1k(dm))+stat('Views per person',(dm.freq||0).toFixed(2),'Cap is 2 views per 7 days')+stat('Website visits',nf(dm.lpv)+(dm.lpv?' &middot; '+money(dm.sp/dm.lpv)+' each':''))+stat('Live ads',rows.length)}
       body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
       body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days (includes paused ads)</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,pk=key+'|P';
