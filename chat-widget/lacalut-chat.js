@@ -323,8 +323,22 @@
       ] },
   ];
 
+  // SHO 26/11/2026 BLACK FRIDAY (Quan): 6am Fri 27/11 to 11:59pm Mon 30/11 Brisbane (same window as the theme,
+  // or html.lac-bf-on on a preview theme) the teaser shows ONE Black Friday message: no quizzes, no fun facts, no 10% code.
+  function bfOn() {
+    var n = Date.now() / 1000;
+    try { if (document.documentElement.classList.contains('lac-bf-on')) return true; } catch (e) {}
+    return n >= 1795723200 && n <= 1796047199;
+  }
+  var BF_OPENER = { id: 'bf2026', q: "🖤 Black Friday is our biggest sale of the year, and this year we're giving away more than 10,000 free tubes 🎁 But hurry, only while stocks last!",
+    buttons: [
+      { label: 'How does it work?', bf: true, reply: "Easy 🎁\n\n**Spend $50** = 1 free gift (worth up to $14)\n**Spend $100** = 3 free gifts + free shipping\n**Spend $150** = 6 free gifts + free shipping\n**Spend $200** = 10 free gifts + free shipping (worth up to $140)\n\nNo code needed. You choose your gifts. Ends Monday 30 Nov.", link: { label: 'Shop The Sale ›', url: '/collections/all' } },
+      { label: 'Shop The Sale', go: '/collections/all' },
+    ] };
+
   // Resolve the live opener list from config, falling back to the defaults.
   function getOpeners() {
+    if (bfOn()) return [BF_OPENER];
     var list = null;
     try { list = JSON.parse(config.teaser_openers); } catch (e) { list = null; }
     if (!Array.isArray(list) || !list.length) return OPENERS.slice();
@@ -864,6 +878,7 @@
     if (!isOpen) toggle();
     enterChatMode();
 
+    if (btn.go) { window.location.href = btn.go; return; }
     if (btn.action === 'discount') { startDiscountFlow(); return; }
     playOpenerReply(opener, btn);
   }
@@ -1063,6 +1078,7 @@
     var chat = document.getElementById('lc-chat');
     var wrap = document.createElement('div');
     wrap.className = 'lc-suggestions';
+    if (bfOn()) items = items.filter(function (it) { return !/quiz|10% off/i.test(it.label || ''); });
     items.forEach(function (it) {
       var c = document.createElement('button');
       c.className = 'lc-chip';
