@@ -111,6 +111,7 @@ CSS = """
 .mb-thr b{margin-right:6px;color:var(--tx);font-weight:600}.mb-g{color:var(--gtx);font-weight:600}.mb-a{color:var(--wtx);font-weight:600}.mb-r{color:var(--btx);font-weight:600}
 .mb-reset{font:inherit;font-size:12.5px;font-weight:500;margin:0 18px 16px;padding:7px 12px;border-radius:9px;border:1px solid var(--bd2);background:var(--s1);color:var(--tx2);cursor:pointer}
 .mb-reset:hover{background:var(--s2);color:var(--tx)}
+.mb-ord{display:inline-flex;gap:4px;margin:0 10px;vertical-align:middle}.mb-ob{font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:3px 9px;border-radius:8px;border:1px solid var(--bd);background:var(--s1);color:var(--tx2)}.mb-ob:hover{color:var(--tx);border-color:var(--tx2)}
 .mb-lab{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--tx);margin:0 0 10px}
 #mb .mb-kpis{margin:0 0 6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
 #mb .mb-kpis .kpi{margin:0;min-width:0}
@@ -271,6 +272,8 @@ HTML = """<section class="sec" id="mb">
 <script>
 (function(){
 var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=17;
+var CORD=[],LASTORD=[],CKEY='lacalut_mb_camp_order';try{CORD=JSON.parse(localStorage.getItem(CKEY)||'[]')||[]}catch(e){}
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.mb-ob');if(!b)return;var o=LASTORD.slice(),c=b.getAttribute('data-c'),i=o.indexOf(c);if(i<0)return;o.splice(i,1);var k=b.getAttribute('data-o');o.splice(k==='top'?0:k==='up'?Math.max(0,i-1):Math.min(o.length,i+1),0,c);CORD=o;try{localStorage.setItem(CKEY,JSON.stringify(o))}catch(e){}render();var r=[].filter.call(document.querySelectorAll('.mb-ob[data-o=top]'),function(x){return x.getAttribute('data-c')===c})[0];if(r)r.scrollIntoView({block:'center'})});
 var openSets={},less=true;try{less=localStorage.getItem('lacalut_mb_less')!=='0'}catch(e){}
 var HID={},showHid=false,HKEY='lacalut_mb_hidden';try{HID=JSON.parse(localStorage.getItem(HKEY)||'{}')||{}}catch(e){}
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
@@ -354,12 +357,12 @@ function render(){
     +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk,a.name)+'</td>'
     +'<td class="c mb-acts"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a>'
     +'<button class="mb-hide" data-id="'+a.id+'" title="'+(isH?'Show this ad on this page again':'Remove this ad from this page only. Nothing changes in Meta')+'">'+(isH?'Unhide':'Hide')+'</button></td></tr>'}
-  order.sort();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now(),nearL=[],heroL=[],villL=[];
+  order.sort(function(x,y){var i=CORD.indexOf(x),j=CORD.indexOf(y);if(i<0)i=1e3+(/^BF #/.test(x)?0:1);if(j<0)j=1e3+(/^BF #/.test(y)?0:1);return i-j||(x<y?-1:x>y?1:0)});LASTORD=order.slice();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now(),nearL=[],heroL=[],villL=[];
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct={sp:0,rev:0,pc:0};Object.keys(sets).forEach(function(k){var t=(SETS[sets[k][0].sid]||{}).d7||agg(sets[k]);ct.sp+=t.sp;ct.rev+=t.rev;ct.pc+=t.pc});var cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
     var b0=body.length,fn=(/_(TOF|TOM|MOF)_/.exec(cn)||['','x'])[1].toLowerCase();
-    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr))+'</span></div></td></tr>';
+    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-ord"><button class="mb-ob" data-o="top" data-c="'+esc(cn)+'" title="Move this campaign to the top of the page">&#9195; Top</button><button class="mb-ob" data-o="up" data-c="'+esc(cn)+'" title="Move this campaign up one place">&#9650;</button><button class="mb-ob" data-o="down" data-c="'+esc(cn)+'" title="Move this campaign down one place">&#9660;</button></span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr))+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),TS=SETS[rows[0].sid]||{},st=TS.d7||agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
       var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
@@ -497,6 +500,72 @@ def bf_html(SP):
     return ('<div class="mb-lab">&#127873; Black Friday 2026 campaigns (live and paused, pulled ' + d["pulled"][11:16] + ')</div>'
             '<div class="kpis mb-kpis">' + cards + '</div>')
 
+def bf_ads_html(SP, data):
+    # 27/11/2026 (Quan: "I need visuals"): every ad that spent money TODAY as a picture card, grouped by campaign,
+    # biggest spender first. Black Friday campaigns first, then the everyday campaigns that are still on.
+    import html as _h, re as _re
+    BE = 2.04  # break-even ROAS
+    m = lambda v: "${:,.0f}".format(v) if v >= 100 else "${:,.2f}".format(v)
+    groups = {}
+    for a in data.get("ads", []) + data.get("paused", []):
+        x = a.get("d0") or {}
+        if not x.get("sp"):
+            continue
+        groups.setdefault(a.get("campaign", "?"), []).append(a)
+    if not groups:
+        return ""
+    def short(n):
+        n = _re.sub(r"^BF26_[A-Z]+_NOV_BFCM_", "", n)
+        n = _re.sub(r"^B\d+_[A-Z]+_[A-Z]+_BAU_", "", n)
+        n = _re.sub(r"_(Video|Motion|Static).*$", "", n)
+        n = _re.sub(r"_(Offer|Winner|Scarcity)_", " · ", n)
+        return _re.sub(r"(?<=[a-z0-9])(?=[A-Z])", " ", n.replace("_", " "))
+    order = sorted(groups, key=lambda k: (not k.startswith("BF #"), k))
+    out = ""
+    for k in order:
+        ads = sorted(groups[k], key=lambda a: -a["d0"]["sp"])
+        sp = sum(a["d0"]["sp"] for a in ads); pc = sum(a["d0"].get("pc", 0) for a in ads); rev = sum(a["d0"].get("rev", 0) for a in ads)
+        r = rev / sp if sp else 0
+        cls = "good" if r >= BE else ("bad" if sp >= 150 else "warn")
+        cards = ""
+        for a in ads:
+            x = a["d0"]; s_ = x["sp"]; ro = x.get("rev", 0) / s_ if s_ else 0
+            if a.get("paused"):
+                v, vt = "off", "PAUSED"
+            elif ro >= BE:
+                v, vt = "good", "Making money"
+            elif s_ >= 150:
+                v, vt = "bad", "Losing money"
+            elif s_ >= 20:
+                v, vt = "warn", "Still testing"
+            else:
+                v, vt = "off", "Barely spent"
+            big = "big/" + a["id"] + ".jpg"
+            src = (big + "?v=2611") if os.path.exists(os.path.join(SP, "big", a["id"] + ".jpg")) else a.get("src", "")
+            img = ('<a href="' + src + '" target="_blank" rel="noopener"><img class="bfa-img" loading="lazy" src="' + src + '" alt=""></a>') if src else '<div class="bfa-img"></div>'
+            w = max(3, round(100 * s_ / ads[0]["d0"]["sp"]))
+            cards += ('<div class="bfa-card bfa-' + v + '">' + img + '<div class="bfa-b"><span class="mb-chip ' + ("" if v == "off" else v) + '"><i></i>' + vt + '</span>'
+                      '<div class="bfa-n">' + ("&#127916; " if a.get("video") else "&#128444;&#65039; ") + _h.escape(short(a["name"])) + '</div>'
+                      '<div class="bfa-s">' + _h.escape(a.get("adset", "")) + '</div>'
+                      '<div class="bfa-bar"><i style="width:' + str(w) + '%"></i></div>'
+                      '<div class="bfa-k"><div><b>' + m(s_) + '</b><span>spent</span></div><div><b>' + str(int(x.get("pc", 0))) + '</b><span>sales</span></div>'
+                      '<div><b>' + m(x.get("rev", 0)) + '</b><span>revenue</span></div><div><b class="bfa-r">' + "{:.2f}x".format(ro) + '</b><span>ROAS</span></div></div></div></div>')
+        out += ('<div class="bfa-h"><b>' + _h.escape(k) + '</b><span class="mb-chip ' + cls + '"><i></i>Today: ' + m(sp) + ' spent &middot; ' + str(int(pc))
+                + ' sales &middot; ' + m(rev) + ' &middot; ROAS ' + "{:.2f}x".format(r) + '</span></div><div class="bfa-grid">' + cards + '</div>')
+    css = ('<style>.bfa-h{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 8px;font-size:14px}'
+           '.bfa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:6px}'
+           '.bfa-card{border:1px solid var(--bd);border-top:4px solid var(--bd);border-radius:12px;background:var(--s1);overflow:hidden;display:flex;flex-direction:column}'
+           '.bfa-good{border-top-color:#16a34a}.bfa-bad{border-top-color:#dc2626}.bfa-warn{border-top-color:#d97706}.bfa-off{opacity:.72}'
+           '.bfa-img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--s2)}'
+           '.bfa-b{padding:9px 10px 10px;display:flex;flex-direction:column;gap:5px}'
+           '.bfa-n{font-size:13px;font-weight:600;line-height:1.25;color:var(--tx)}.bfa-s{font-size:11.5px;color:var(--tx2)}'
+           '.bfa-bar{height:5px;border-radius:3px;background:var(--s2)}.bfa-bar i{display:block;height:5px;border-radius:3px;background:var(--tx2)}'
+           '.bfa-k{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px}.bfa-k b{display:block;font-size:14px}.bfa-k span{font-size:11px;color:var(--tx2)}'
+           '.bfa-good .bfa-r{color:#16a34a}.bfa-bad .bfa-r{color:#dc2626}'
+           '@media (max-width:600px){.bfa-grid{grid-template-columns:1fr 1fr;gap:8px}}</style>')
+    return (css + '<div class="mb-lab" style="margin-top:22px">&#128444;&#65039; Every ad that spent money today (biggest spender first, break-even ROAS '
+            + "{:.2f}".format(BE) + 'x, pulled ' + data["pulled"][11:16] + ')</div>' + out)
+
 def build(SP):
     p = os.path.join(SP, "buyer.json")
     if not os.path.exists(p):
@@ -525,5 +594,5 @@ def build(SP):
     out = (HTML.replace("__CSS__", CSS).replace("__N__", str(len(data.get("ads", []))))
            .replace("__PULLED__", pulled).replace("__DEF__", json.dumps(DEFAULTS))
            .replace("__AUTO__", json.dumps(auto)).replace("__ACTS__", json.dumps(acts).replace("</", "<\\/")).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
-    out = out.replace('<div class="mb-lab">Campaigns, last 7 days</div>', bf_html(SP) + '<div class="mb-lab">Campaigns, last 7 days</div>', 1)
+    out = out.replace('<div class="mb-lab">Campaigns, last 7 days</div>', bf_html(SP) + bf_ads_html(SP, data) + '<div class="mb-lab">Campaigns, last 7 days</div>', 1)
     return len(data.get("ads", [])), out

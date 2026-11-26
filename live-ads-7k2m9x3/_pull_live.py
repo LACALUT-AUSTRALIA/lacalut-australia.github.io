@@ -369,6 +369,20 @@ def shopify_soldout(handle):
     except Exception:
         return None
 
+def _dp(preset):
+    # 27/11/2026 (Quan: Black Friday ads showed $0 on launch day): Meta's last_7d / last_3d presets LEAVE OUT today,
+    # so an ad that started today had no numbers. 7-day and 3-day windows now END today (ad account time = Melbourne).
+    n = {"last_7d": 7, "last_3d": 3}.get(preset)
+    if not n:
+        return "date_preset=" + preset
+    import datetime
+    try:
+        from zoneinfo import ZoneInfo
+        t = datetime.datetime.now(ZoneInfo("Australia/Melbourne")).date()
+    except Exception:
+        t = (datetime.datetime.utcnow() + datetime.timedelta(hours=11)).date()
+    return "time_range=" + urllib.parse.quote(json.dumps({"since": str(t - datetime.timedelta(days=n - 1)), "until": str(t)}))
+
 def pull_buyer():
     # Media Buyer tab (Quan 15/11/2026): every ACTIVE ad with 7d / 3d / yesterday numbers,
     # funnel steps, hook rate, landing page and the ad set's frequency. Writes buyer.json.
@@ -376,7 +390,7 @@ def pull_buyer():
             "landing_page_view": "lpv", "video_view": "v3", "link_click": "lc"}
     def window(preset):
         fields = "ad_id,spend,impressions,reach,frequency,cpm,inline_link_click_ctr,actions,action_values"
-        url = (f"{GRAPH}/{ACCT}/insights?level=ad&date_preset={preset}&limit=400"
+        url = (f"{GRAPH}/{ACCT}/insights?level=ad&{_dp(preset)}&limit=400"
                f"&fields={fields}&access_token={urllib.parse.quote(TOK)}")
         out = {}
         for r in get_all(url):
@@ -397,7 +411,7 @@ def pull_buyer():
         return out
     w7, w3, w1, w0 = window("last_7d"), window("last_3d"), window("yesterday"), window("today")
     # ad set frequency (7 days) decides which funnel stage the ad set is "acting like"
-    url = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset=last_7d&limit=400"
+    url = (f"{GRAPH}/{ACCT}/insights?level=adset&{_dp('last_7d')}&limit=400"
            f"&fields=adset_id,frequency,reach&access_token={urllib.parse.quote(TOK)}")
     sfreq = {r.get("adset_id"): float(r.get("frequency") or 0) for r in get_all(url)}
     # TRUE ad set totals straight from Meta (Quan 17/11/2026): the page used to add up live ads only,
@@ -405,7 +419,7 @@ def pull_buyer():
     sets = {}
     try:
         for key, preset in (("d7", "last_7d"), ("d3", "last_3d"), ("d1", "yesterday"), ("d0", "today"), ("dm", "this_month")):
-            u = (f"{GRAPH}/{ACCT}/insights?level=adset&date_preset={preset}&limit=400"
+            u = (f"{GRAPH}/{ACCT}/insights?level=adset&{_dp(preset)}&limit=400"
                  f"&fields=adset_id,spend,actions,action_values,reach,impressions,frequency&access_token={urllib.parse.quote(TOK)}")
             for r in get_all(u):
                 d = {"sp": float(r.get("spend") or 0), "rev": 0.0, "pc": 0, "reach": int(r.get("reach") or 0),
