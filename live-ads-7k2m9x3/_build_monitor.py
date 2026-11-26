@@ -1196,7 +1196,7 @@ function run(blob){
       var a=g.ads.slice().sort(function(x,y){return y[5]-x[5]}),r=a[0],sp=0,rv=0,pc=0,anyLive=false;
       a.forEach(function(x){sp+=x[5];rv+=x[6];pc+=x[7];if(x[2]==='ACTIVE')anyLive=true});
       var st=anyLive?'<span class="st st-live">LIVE</span>':(/DELETED|ARCHIVED/.test(r[2])?'<span class="st st-off">'+esc(r[2])+'</span>':'<span class="st st-paused">PAUSED</span>');
-      return '<div class="isc"><img class="th" src="thumbs/'+r[0]+'.jpg" data-full="'+(r[9]?'big/':'thumbs/')+r[0]+'.jpg" alt=""><div class="b"><span class="m">'+Math.max(0,Math.round(g.s*100))+'% match</span>'+st+
+      return '<div class="isc"><img class="th" src="thumbs/'+r[0]+'.jpg" data-full="'+(r[9]?'big/':'thumbs/')+r[0]+'.jpg?v=2611" alt=""><div class="b"><span class="m">'+Math.max(0,Math.round(g.s*100))+'% match</span>'+st+
         '<span class="n">'+esc(r[1])+'</span><span class="mut">'+esc(r[4])+'</span><span class="mut">Built '+r[3].split('-').reverse().join('/')+(a.length>1?' · '+a.length+' ads use this image':'')+'</span>'+
         '<span>Lifetime: '+money(sp)+' spend · '+(sp?(rv/sp).toFixed(2)+'x':'—')+' ROAS · '+pc+' purch.</span></div></div>'}).join('');
     [].forEach.call(res.querySelectorAll('img[data-full]'),function(im){var f=im.getAttribute('data-full'),t=new Image();t.onload=function(){im.src=f};t.src=f});
@@ -1232,7 +1232,7 @@ img.th{cursor:zoom-in}
 var pop=document.getElementById('zpop'),pimg=pop.querySelector('img');
 var box=document.getElementById('zbox'),bimg=box.querySelector('img'),cap=box.querySelector('.zcap');
 var hoverOK=window.matchMedia&&matchMedia('(hover:hover) and (pointer:fine)').matches;
-function big(img){var s=img.getAttribute('src')||'';var m=s.match(/thumbs\/(\d+)\.jpg/);return m?'big/'+m[1]+'.jpg':s}
+function big(img){var s=img.getAttribute('src')||'';var m=s.match(/thumbs\/(\d+)\.jpg/);return m?'big/'+m[1]+'.jpg?v=2611':s}
 function load(el,img){el.onerror=function(){el.onerror=null;el.src=img.getAttribute('src')};el.src=big(img)}
 function place(e){var w=pop.offsetWidth,h=pop.offsetHeight,x=e.clientX+18,y=e.clientY-h/2;
   if(x+w>innerWidth-8)x=e.clientX-w-18;if(x<8)x=8;
