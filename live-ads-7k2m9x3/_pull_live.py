@@ -458,7 +458,9 @@ def pull_buyer():
         except Exception as e:
             print("  some paused ads skipped:", e)
     for a in paused_raw:
-        a["_paused"] = True
+        # 27/11/2026: Meta's account-wide "ACTIVE" list leaves out some live ads (13 Black Friday ads on launch day),
+        # so they came through here and were shown as paused. Trust each ad's own status instead.
+        a["_paused"] = a.get("effective_status") != "ACTIVE"
     paused = []
     for a in active + paused_raw:
         cr = a.get("creative") or {}

@@ -597,5 +597,5 @@ def build(SP):
     out = (HTML.replace("__CSS__", CSS).replace("__N__", str(len(data.get("ads", []))))
            .replace("__PULLED__", pulled).replace("__DEF__", json.dumps(DEFAULTS))
            .replace("__AUTO__", json.dumps(auto)).replace("__ACTS__", json.dumps(acts).replace("</", "<\\/")).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
-    out = out.replace('<div class="mb-lab">Campaigns, last 7 days</div>', bf_html(SP) + bf_ads_html(SP, data) + '<div class="mb-lab">Campaigns, last 7 days</div>', 1)
+    out = out.replace('<div class="mb-lab">Campaigns, last 7 days</div>', bf_html(SP) + '<div class="mb-lab">Campaigns, last 7 days</div>', 1)
     return len(data.get("ads", [])), out
