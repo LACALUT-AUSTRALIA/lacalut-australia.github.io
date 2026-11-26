@@ -531,7 +531,7 @@ def bf_ads_html(SP, data):
         for a in ads:
             x = a["d0"]; s_ = x["sp"]; ro = x.get("rev", 0) / s_ if s_ else 0
             if a.get("paused"):
-                v, vt = "off", "PAUSED"
+                v, vt = "paused", "PAUSED (switched off)"
             elif ro >= BE:
                 v, vt = "good", "Making money"
             elif s_ >= 150:
@@ -544,7 +544,7 @@ def bf_ads_html(SP, data):
             src = (big + "?v=2611") if os.path.exists(os.path.join(SP, "big", a["id"] + ".jpg")) else a.get("src", "")
             img = ('<a href="' + src + '" target="_blank" rel="noopener"><img class="bfa-img" loading="lazy" src="' + src + '" alt=""></a>') if src else '<div class="bfa-img"></div>'
             w = max(3, round(100 * s_ / ads[0]["d0"]["sp"]))
-            cards += ('<div class="bfa-card bfa-' + v + '">' + img + '<div class="bfa-b"><span class="mb-chip ' + ("" if v == "off" else v) + '"><i></i>' + vt + '</span>'
+            cards += ('<div class="bfa-card bfa-' + v + '">' + img + '<div class="bfa-b"><span class="mb-chip ' + ("" if v in ("off", "paused") else v) + '"><i></i>' + vt + '</span>'
                       '<div class="bfa-n">' + ("&#127916; " if a.get("video") else "&#128444;&#65039; ") + _h.escape(short(a["name"])) + '</div>'
                       '<div class="bfa-s">' + _h.escape(a.get("adset", "")) + '</div>'
                       '<div class="bfa-bar"><i style="width:' + str(w) + '%"></i></div>'
@@ -555,7 +555,7 @@ def bf_ads_html(SP, data):
     css = ('<style>.bfa-h{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 8px;font-size:14px}'
            '.bfa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:6px}'
            '.bfa-card{border:1px solid var(--bd);border-top:4px solid var(--bd);border-radius:12px;background:var(--s1);overflow:hidden;display:flex;flex-direction:column}'
-           '.bfa-good{border-top-color:#16a34a}.bfa-bad{border-top-color:#dc2626}.bfa-warn{border-top-color:#d97706}.bfa-off{opacity:.72}'
+           '.bfa-good{border-top-color:#16a34a}.bfa-bad{border-top-color:#dc2626}.bfa-warn{border-top-color:#d97706}.bfa-paused{background:#3f3f46;border-color:#27272a;border-top-color:#18181b}.bfa-paused .bfa-img{filter:grayscale(1) brightness(.45)}.bfa-paused .bfa-n,.bfa-paused .bfa-k b{color:#a1a1aa}.bfa-paused .bfa-s,.bfa-paused .bfa-k span{color:#71717a}.bfa-paused .mb-chip{background:#18181b;color:#e4e4e7}.bfa-paused .bfa-bar{background:#52525b}.bfa-paused .bfa-bar i{background:#71717a}'
            '.bfa-img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--s2)}'
            '.bfa-b{padding:9px 10px 10px;display:flex;flex-direction:column;gap:5px}'
            '.bfa-n{font-size:13px;font-weight:600;line-height:1.25;color:var(--tx)}.bfa-s{font-size:11.5px;color:var(--tx2)}'
