@@ -261,12 +261,6 @@
         { label: 'Red', reply: "A person of taste 😄🔴 Sadly the world disagrees — blue is the most popular toothbrush colour on earth. Their loss." },
         { label: 'White', reply: "Sensible guess — but it's blue! Apparently blue 'feels cleaner' to most people. We remain loyal to red 😄🔴" },
       ] },
-    { id: 'quizoldest', q: '🧐 Pop quiz: who sold the first commercial toothpaste?',
-      buttons: [
-        { label: 'Colgate', reply: "Correct — Colgate sold aromatic toothpaste in jars from 1873 🏺 We arrived in 1925 with German precision… and we'd argue we aged rather well 😄🇩🇪" },
-        { label: 'LACALUT', reply: "Flattering! 😄 It was actually Colgate, in jars, from 1873. LACALUT joined in 1925 — fashionably late, impeccably German 🇩🇪" },
-        { label: 'Some pharmacist?', reply: "Honestly, half of dental history IS 'some pharmacist' 😄 Officially it was Colgate in 1873 — jars, not tubes. LACALUT arrived in 1925 with German precision 🇩🇪" },
-      ] },
     { id: 'quizsaliva', q: '🤤 How much saliva will you make in a lifetime?',
       buttons: [
         { label: 'A bathtub', reply: "Think bigger 😄 Around 25,000 LITRES — enough to fill two swimming pools 🏊 And it's your mouth's built-in rinse cycle, working around the clock." },
