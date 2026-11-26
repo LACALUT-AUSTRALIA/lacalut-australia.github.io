@@ -727,6 +727,16 @@
     document.documentElement.style.setProperty('--lc', config.brand_colour || BRAND);
     var greetingEl = document.getElementById('lc-greeting-text');
     if (greetingEl) greetingEl.textContent = config.greeting;
+    if (bfOn()) {
+      if (greetingEl) greetingEl.textContent = "Hi! 🖤 Our Massive Black Friday Giveaway is on: free gifts from $50, up to 10 free gifts worth $140. Ask me anything about the sale, our products or shipping.";
+      var bfBtn = document.getElementById('lc-discount-btn');
+      if (bfBtn) {
+        var bfTxt = bfBtn.querySelector('.lc-discount-text');
+        if (bfTxt) bfTxt.textContent = 'Shop The Black Friday Sale';
+        bfBtn.style.background = '#111';
+        bfBtn.onclick = function () { window.location.href = '/collections/all'; };
+      }
+    }
 
     var headName = document.getElementById('lc-head-name');
     if (headName) headName.textContent = agentName() + ' · LACALUT';
