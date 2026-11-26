@@ -325,6 +325,7 @@
 
   // SHO 26/11/2026 BLACK FRIDAY (Quan): midnight Fri 27/11 Melbourne to 11:59pm Mon 30/11 Brisbane (same window as the theme,
   // or html.lac-bf-on on a preview theme) the teaser shows ONE Black Friday message: no quizzes, no fun facts, no 10% code.
+  var BF_QUESTIONS = ['How does the sale work?', 'Which free gifts can I choose?', "What's the best deal?", 'When does it end?'];
   function bfOn() {
     var n = Date.now() / 1000;
     try { if (document.documentElement.classList.contains('lac-bf-on')) return true; } catch (e) {}
@@ -748,7 +749,7 @@
     if (!list) return;
     list.innerHTML = '';
     try {
-      JSON.parse(config.suggested_questions).slice(0, 6).forEach(function (q) {
+      (bfOn() ? BF_QUESTIONS : JSON.parse(config.suggested_questions)).slice(0, 6).forEach(function (q) {
         var btn = document.createElement('button');
         btn.className = 'lc-qa-btn';
         btn.textContent = q;
@@ -1144,7 +1145,7 @@
 
   function showFaqChips() {
     var qs = [];
-    try { qs = JSON.parse(config.suggested_questions).slice(0, 5); } catch (e) {}
+    try { qs = (bfOn() ? BF_QUESTIONS : JSON.parse(config.suggested_questions)).slice(0, 5); } catch (e) {}
     botSay('These are the ones I get asked most — tap any, or type your own 👇', function () { showSuggestions(qs); });
   }
 
