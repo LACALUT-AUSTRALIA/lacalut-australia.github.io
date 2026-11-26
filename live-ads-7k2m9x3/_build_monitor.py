@@ -1218,8 +1218,8 @@ document.addEventListener('paste',function(e){var it=[].slice.call((e.clipboardD
 
 ZOOM_HTML = r"""<style>
 img.th{cursor:zoom-in}
-#zpop{position:fixed;z-index:200;pointer-events:none;display:none;width:min(440px,60vw);background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.28);padding:6px}
-#zpop img{display:block;width:100%;height:auto;border-radius:8px}
+#zpop{position:fixed;z-index:200;pointer-events:none;display:none;width:fit-content;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,.28);padding:6px}
+#zpop img{display:block;width:auto;height:auto;max-width:min(440px,60vw);max-height:calc(100vh - 30px);border-radius:8px}
 #zbox{position:fixed;inset:0;z-index:300;display:none;background:rgba(10,12,16,.88);align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:16px;cursor:zoom-out}
 #zbox img{max-width:min(94vw,1000px);max-height:84vh;width:auto;height:auto;border-radius:10px;background:#fff;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 #zbox .zcap{color:#fff;font-size:13px;max-width:94vw;text-align:center;word-break:break-word}
@@ -1238,7 +1238,8 @@ function place(e){var w=pop.offsetWidth,h=pop.offsetHeight,x=e.clientX+18,y=e.cl
   if(x+w>innerWidth-8)x=e.clientX-w-18;if(x<8)x=8;
   if(y+h>innerHeight-8)y=innerHeight-h-8;if(y<8)y=8;pop.style.left=x+'px';pop.style.top=y+'px'}
 document.addEventListener('mouseover',function(e){var t=e.target;if(!hoverOK||!t.matches||!t.matches('img.th'))return;load(pimg,t);pop.style.display='block';place(e)});
-document.addEventListener('mousemove',function(e){if(pop.style.display==='block')place(e)});
+var lastE=null;pimg.addEventListener('load',function(){if(lastE&&pop.style.display==='block')place(lastE)});
+document.addEventListener('mousemove',function(e){lastE=e;if(pop.style.display==='block')place(e)});
 document.addEventListener('mouseout',function(e){if(e.target.matches&&e.target.matches('img.th'))pop.style.display='none'});
 document.addEventListener('click',function(e){var t=e.target;if(!t.matches||!t.matches('img.th'))return;
   e.preventDefault();e.stopPropagation();pop.style.display='none';load(bimg,t);

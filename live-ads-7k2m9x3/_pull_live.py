@@ -131,37 +131,132 @@ def pull_thumbs():
 
 def pull_big():
     # Readable-size creative images for the hover/click zoom: big/{ad_id}.jpg (max 900px).
-    # Only missing files are downloaded; Meta CDN URLs expire, local copies don't.
+    # 26/11: keep the ad's REAL shape (4:5 stays 4:5). Meta's thumbnail_url is cropped to the
+    # requested box (1080x1080 = square), so it is the LAST resort. Order: image_url, image hash
+    # (original file via /adimages), video still, asset-feed image/video, then the square thumb.
+    # Square files fetched before 26/11 are re-checked once (big/_shape_checked.json).
     import concurrent.futures, io
     from PIL import Image
     bigdir = os.path.join(SP, "big")
     os.makedirs(bigdir, exist_ok=True)
     have = {f[:-4] for f in os.listdir(bigdir) if f.endswith(".jpg")}
-    fields = "id,creative.thumbnail_width(1080).thumbnail_height(1080){thumbnail_url,image_url}"
-    url = f"{GRAPH}/{ACCT}/ads?fields={urllib.parse.quote(fields)}&limit=400&access_token={urllib.parse.quote(TOK)}"
-    todo = []
-    for a in get_all(url):
-        if a["id"] in have:
+    ckp = os.path.join(bigdir, "_shape_checked.json")
+    checked = set(json.load(open(ckp))) if os.path.exists(ckp) else set()
+    def size_of(aid):
+        try:
+            return Image.open(os.path.join(bigdir, aid + ".jpg")).size
+        except Exception:
+            return (0, 0)
+    # re-check once: square files (may be a cropped 4:5) and tiny files (blurry video stills, under 400px)
+    sizes = {a: size_of(a) for a in have if a not in checked}
+    redo = {a for a, (w, h) in sizes.items() if w == h or max(w, h) < 400}
+    fields = ("id,creative.thumbnail_width(1080).thumbnail_height(1080){thumbnail_url,image_url,image_hash,"
+              "video_id,asset_feed_spec{images,videos},object_story_spec{link_data{image_hash,picture,"
+              "child_attachments{image_hash,picture}},video_data{video_id,image_url,image_hash}}}")
+    url = f"{GRAPH}/{ACCT}/ads?fields={urllib.parse.quote(fields)}&limit=100&access_token={urllib.parse.quote(TOK)}"
+    vids = {}
+    jobs = {}  # aid -> list of candidates: ("url", u) or ("hash", h)
+    try:
+        ads = get_all(url)
+    except Exception as e:  # Meta rate limit (code 80004) must never kill the refresh
+        print(f"  big images skipped this run ({e})")
+        return
+    for a in ads:
+        aid = a["id"]
+        if aid in have and aid not in redo:
             continue
         cr = a.get("creative") or {}
-        src = cr.get("image_url") or cr.get("thumbnail_url")
-        if src:
-            todo.append((a["id"], src))
+        oss = cr.get("object_story_spec") or {}
+        ld = oss.get("link_data") or {}
+        vd = oss.get("video_data") or {}
+        afs = cr.get("asset_feed_spec") or {}
+        c = []
+        if cr.get("image_url"): c.append(("url", cr["image_url"]))
+        for h in (cr.get("image_hash"), ld.get("image_hash"), vd.get("image_hash")):
+            if h: c.append(("hash", h))
+        if vd.get("image_url"): c.append(("url", vd["image_url"]))
+        for v in afs.get("videos") or []:
+            if v.get("thumbnail_url"): c.append(("url", v["thumbnail_url"]))
+            if v.get("thumbnail_hash"): c.append(("hash", v["thumbnail_hash"]))
+        for im in afs.get("images") or []:
+            if im.get("hash"): c.append(("hash", im["hash"]))
+        for ch in ld.get("child_attachments") or []:
+            if ch.get("image_hash"): c.append(("hash", ch["image_hash"]))
+        if cr.get("thumbnail_url"): c.append(("url", cr["thumbnail_url"]))  # square crop, last resort
+        vid = cr.get("video_id") or vd.get("video_id") or next((v.get("video_id") for v in afs.get("videos") or [] if v.get("video_id")), None)
+        if vid:
+            vids[aid] = vid
+        if c:
+            jobs[aid] = c
+    # video ads: ask Meta for the biggest still of each video (50 videos per call), tried first
+    # only for ads being fetched now, so a normal run makes 0-2 extra calls
+    vl = sorted({v for a_, v in vids.items() if a_ in jobs}); vbest = {}
+    def stills(ids):
+        u = f"{GRAPH}/?ids={','.join(ids)}&fields={urllib.parse.quote('thumbnails{uri,width,height}')}&access_token={urllib.parse.quote(TOK)}"
+        with urllib.request.urlopen(u, timeout=90) as r:
+            for k, v in json.load(r).items():
+                t = ((v.get("thumbnails") or {}).get("data")) or []
+                if t:
+                    vbest[k] = max(t, key=lambda x: (x.get("width") or 0) * (x.get("height") or 0))["uri"]
+    for i in range(0, len(vl), 20):
+        try:
+            stills(vl[i:i+20])
+        except Exception:
+            for one in vl[i:i+20][:20]:  # one bad video id fails a whole batch: try each on its own
+                try:
+                    stills([one])
+                except Exception:
+                    pass
+    for aid, vid in vids.items():
+        if vid in vbest and aid in jobs:
+            jobs[aid].insert(0, ("url", vbest[vid]))
+    hashes = sorted({v for c in jobs.values() for k, v in c if k == "hash"})
+    hurl = {}
+    for i in range(0, len(hashes), 50):
+        q = urllib.parse.quote(json.dumps(hashes[i:i+50]))
+        try:
+            for r in get_all(f"{GRAPH}/{ACCT}/adimages?hashes={q}&fields=hash,url&access_token={urllib.parse.quote(TOK)}"):
+                if r.get("url"): hurl[r["hash"]] = r["url"]
+        except Exception as e:
+            print(f"  adimages lookup failed ({e})")
+
+    def fetch(u):
+        req = urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"})
+        return Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=30).read())).convert("RGB")
 
     def grab(item):
-        aid, src = item
-        try:
-            req = urllib.request.Request(src, headers={"User-Agent": "Mozilla/5.0"})
-            im = Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=30).read())).convert("RGB")
-            im.thumbnail((900, 900))
-            im.save(os.path.join(bigdir, aid + ".jpg"), "JPEG", quality=80, optimize=True)
-            return "ok"
-        except Exception as e:
-            return f"err:{type(e).__name__}"
+        aid, cands = item
+        best = None
+        for k, v in cands:
+            u = hurl.get(v) if k == "hash" else v
+            if not u:
+                continue
+            try:
+                im = fetch(u)
+            except Exception:
+                continue
+            if best is None: best = im
+            if im.size[0] != im.size[1] and max(im.size) >= 400:
+                best = im
+                break
+            if max(im.size) > max(best.size) or (best.size[0] == best.size[1] and im.size[0] != im.size[1] and max(im.size) >= max(best.size)):
+                best = im
+        if best is None:
+            return "err"
+        if aid in redo:
+            ow, oh = sizes.get(aid, (0, 0))
+            if (best.size[0] == best.size[1] or ow != oh) and max(best.size) <= max(ow, oh):
+                return "same"  # nothing better than the file we have
+        best.thumbnail((900, 900))
+        best.save(os.path.join(bigdir, aid + ".jpg"), "JPEG", quality=80, optimize=True)
+        return "ok"
 
     with concurrent.futures.ThreadPoolExecutor(12) as ex:
-        res = list(ex.map(grab, todo))
-    print(f"  big images: {res.count('ok')} new, {len(res) - res.count('ok')} failed, {len(have)} cached")
+        res = list(ex.map(grab, jobs.items()))
+    checked |= redo
+    json.dump(sorted(checked), open(ckp, "w"))
+    print(f"  big images: {res.count('ok')} new/fixed, {res.count('same')} really square, "
+          f"{res.count('err')} failed, {len(have)} cached")
 
 def pull_texts():
     # Pull every ad's actual COPY (headline + body + link text) so the compliance

@@ -15,8 +15,8 @@ if (Test-Path $lock) {
 New-Item -Path $lock -ItemType File -Force | Out-Null
 try {
     Set-Location $dir
-    python -X utf8 _pull_live.py *> $null
-    if ($LASTEXITCODE -ne 0) { Log "pull FAILED ($LASTEXITCODE)"; exit 1 }
+    python -X utf8 _pull_live.py *> (Join-Path $dir "_pull_last.log")
+    if ($LASTEXITCODE -ne 0) { $why = (Get-Content (Join-Path $dir "_pull_last.log") -Tail 1 -ErrorAction SilentlyContinue); Log "pull FAILED ($LASTEXITCODE) $why"; exit 1 }
     python -X utf8 _pull_mer.py *> $null
     if ($LASTEXITCODE -ne 0) { Log "MER pull failed (page keeps the last MER values)" }
     # automatic media buyer (practice mode unless _auto_buyer_LIVE_ON.txt exists); never blocks the refresh
@@ -28,7 +28,7 @@ try {
     if ($LASTEXITCODE -ne 0) { Log "build FAILED ($LASTEXITCODE)"; exit 1 }
 
     Set-Location $repo
-    git add live-ads-7k2m9x3/*.json live-ads-7k2m9x3/index.html live-ads-7k2m9x3/monitor.html live-ads-7k2m9x3/thumbs live-ads-7k2m9x3/big 2>$null
+    git add live-ads-7k2m9x3/*.json live-ads-7k2m9x3/*.csv live-ads-7k2m9x3/index.html live-ads-7k2m9x3/monitor.html live-ads-7k2m9x3/thumbs live-ads-7k2m9x3/big 2>$null
     git diff --cached --quiet
     if ($LASTEXITCODE -eq 0) { Log "no changes"; exit 0 }
     git -c core.hooksPath=/dev/null commit -q -m "live-ads: auto refresh
