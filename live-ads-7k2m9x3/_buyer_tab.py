@@ -527,11 +527,11 @@ def bf_ads_html(SP, data):
         sp = sum(a["d0"]["sp"] for a in ads); pc = sum(a["d0"].get("pc", 0) for a in ads); rev = sum(a["d0"].get("rev", 0) for a in ads)
         r = rev / sp if sp else 0
         cls = "good" if r >= BE else ("bad" if sp >= 150 else "warn")
-        cards = ""
+        rows = ""
         for a in ads:
             x = a["d0"]; s_ = x["sp"]; ro = x.get("rev", 0) / s_ if s_ else 0
             if a.get("paused"):
-                v, vt = "paused", "PAUSED (switched off)"
+                v, vt = "paused", "SWITCHED OFF"
             elif ro >= BE:
                 v, vt = "good", "Making money"
             elif s_ >= 150:
@@ -540,31 +540,34 @@ def bf_ads_html(SP, data):
                 v, vt = "warn", "Still testing"
             else:
                 v, vt = "off", "Barely spent"
-            big = "big/" + a["id"] + ".jpg"
-            src = (big + "?v=2611") if os.path.exists(os.path.join(SP, "big", a["id"] + ".jpg")) else a.get("src", "")
-            img = ('<a href="' + src + '" target="_blank" rel="noopener"><img class="bfa-img" loading="lazy" src="' + src + '" alt=""></a>') if src else '<div class="bfa-img"></div>'
-            w = max(3, round(100 * s_ / ads[0]["d0"]["sp"]))
-            cards += ('<div class="bfa-card bfa-' + v + '">' + img + '<div class="bfa-b"><span class="mb-chip ' + ("" if v in ("off", "paused") else v) + '"><i></i>' + vt + '</span>'
-                      '<div class="bfa-n">' + ("&#127916; " if a.get("video") else "&#128444;&#65039; ") + _h.escape(short(a["name"])) + '</div>'
-                      '<div class="bfa-s">' + _h.escape(a.get("adset", "")) + '</div>'
-                      '<div class="bfa-bar"><i style="width:' + str(w) + '%"></i></div>'
-                      '<div class="bfa-k"><div><b>' + m(s_) + '</b><span>spent</span></div><div><b>' + str(int(x.get("pc", 0))) + '</b><span>sales</span></div>'
-                      '<div><b>' + m(x.get("rev", 0)) + '</b><span>revenue</span></div><div><b class="bfa-r">' + "{:.2f}x".format(ro) + '</b><span>ROAS</span></div></div></div></div>')
+            src = a.get("src", "")
+            img = ('<img class="th" loading="lazy" src="' + src + '" alt="">') if src else '<span class="th th-empty"></span>'
+            rc = "good" if ro >= BE else ("bad" if s_ >= 150 else ("warn" if x.get("pc") else ""))
+            cpp = m(s_ / x["pc"]) if x.get("pc") else "no sale"
+            rows += ('<tr class="bft-' + v + '"><td><div class="bft-ad">' + img + '<div><div class="bft-n">' + _h.escape(a["name"]) + '</div>'
+                     '<div class="bft-s">' + _h.escape(a.get("adset", "")) + '</div></div></div></td>'
+                     '<td><span class="mb-chip ' + ("" if v in ("off", "paused") else v) + '"><i></i>' + vt + '</span></td>'
+                     '<td class="num"><b>' + m(s_) + '</b></td><td class="num">' + str(int(x.get("pc", 0))) + '</td>'
+                     '<td class="num">' + m(x.get("rev", 0)) + '</td><td class="num">' + cpp + '</td>'
+                     '<td class="num"><span class="mb-chip ' + rc + '">' + "{:.2f}x".format(ro) + '</span></td>'
+                     '<td class="num">' + "{:.2f}".format(x.get("freq", 0)) + '</td><td class="num">' + "{:.2f}%".format(x.get("ctr", 0)) + '</td></tr>')
         out += ('<div class="bfa-h"><b>' + _h.escape(k) + '</b><span class="mb-chip ' + cls + '"><i></i>Today: ' + m(sp) + ' spent &middot; ' + str(int(pc))
-                + ' sales &middot; ' + m(rev) + ' &middot; ROAS ' + "{:.2f}x".format(r) + '</span></div><div class="bfa-grid">' + cards + '</div>')
+                + ' sales &middot; ' + m(rev) + ' &middot; ROAS ' + "{:.2f}x".format(r) + '</span></div>'
+                '<div class="bft-wrap"><table class="bft"><thead><tr><th>Ad</th><th>Status</th><th class="num">Spent today</th><th class="num">Sales</th>'
+                '<th class="num">Revenue</th><th class="num">Cost per sale</th><th class="num">ROAS today</th><th class="num">Freq</th><th class="num">CTR link</th></tr></thead><tbody>'
+                + rows + '</tbody></table></div>')
     css = ('<style>.bfa-h{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 8px;font-size:14px}'
-           '.bfa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;margin-bottom:6px}'
-           '.bfa-card{border:1px solid var(--bd);border-top:4px solid var(--bd);border-radius:12px;background:var(--s1);overflow:hidden;display:flex;flex-direction:column}'
-           '.bfa-good{border-top-color:#16a34a}.bfa-bad{border-top-color:#dc2626}.bfa-warn{border-top-color:#d97706}.bfa-paused{background:#3f3f46;border-color:#27272a;border-top-color:#18181b}.bfa-paused .bfa-img{filter:grayscale(1) brightness(.45)}.bfa-paused .bfa-n,.bfa-paused .bfa-k b{color:#a1a1aa}.bfa-paused .bfa-s,.bfa-paused .bfa-k span{color:#71717a}.bfa-paused .mb-chip{background:#18181b;color:#e4e4e7}.bfa-paused .bfa-bar{background:#52525b}.bfa-paused .bfa-bar i{background:#71717a}'
-           '.bfa-img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:var(--s2)}'
-           '.bfa-b{padding:9px 10px 10px;display:flex;flex-direction:column;gap:5px}'
-           '.bfa-n{font-size:13px;font-weight:600;line-height:1.25;color:var(--tx)}.bfa-s{font-size:11.5px;color:var(--tx2)}'
-           '.bfa-bar{height:5px;border-radius:3px;background:var(--s2)}.bfa-bar i{display:block;height:5px;border-radius:3px;background:var(--tx2)}'
-           '.bfa-k{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px}.bfa-k b{display:block;font-size:14px}.bfa-k span{font-size:11px;color:var(--tx2)}'
-           '.bfa-good .bfa-r{color:#16a34a}.bfa-bad .bfa-r{color:#dc2626}'
-           '@media (max-width:600px){.bfa-grid{grid-template-columns:1fr 1fr;gap:8px}}</style>')
-    return (css + '<div class="mb-lab" style="margin-top:22px">&#128444;&#65039; Every ad that spent money today (biggest spender first, break-even ROAS '
-            + "{:.2f}".format(BE) + 'x, pulled ' + data["pulled"][11:16] + ')</div>' + out)
+           '.bft-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:12px;background:var(--s1);margin-bottom:6px}'
+           '.bft{width:100%;border-collapse:collapse;font-size:13px}.bft th{text-align:left;font-size:12px;font-weight:600;color:var(--tx2);padding:8px 10px;border-bottom:1px solid var(--bd);white-space:nowrap}'
+           '.bft td{padding:7px 10px;border-bottom:1px solid var(--bd);vertical-align:middle}.bft tr:last-child td{border-bottom:none}'
+           '.bft .num{text-align:right;white-space:nowrap}.bft-ad{display:flex;gap:10px;align-items:center;min-width:260px}'
+           '.bft-ad .th{display:block!important;width:56px;height:56px;min-width:56px;border-radius:8px;object-fit:cover}'
+           '.bft-n{font-weight:600;color:var(--tx);line-height:1.25;word-break:break-word}.bft-s{font-size:11.5px;color:var(--tx2)}'
+           '.bft tr.bft-paused td{background:#3f3f46;color:#a1a1aa;border-bottom-color:#27272a}.bft tr.bft-paused .bft-n{color:#d4d4d8}'
+           '.bft tr.bft-paused .bft-s{color:#8e8e98}.bft tr.bft-paused .th{filter:grayscale(1) brightness(.5)}'
+           '.bft tr.bft-paused .mb-chip{background:#18181b;color:#e4e4e7}</style>')
+    return (css + '<div class="mb-lab" style="margin-top:22px">&#128202; Every ad that spent money today (biggest spender first, break-even ROAS '
+            + "{:.2f}".format(BE) + 'x, pulled ' + data["pulled"][11:16] + '). Dark grey rows = ads that are switched off now.</div>' + out)
 
 def build(SP):
     p = os.path.join(SP, "buyer.json")
