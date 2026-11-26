@@ -5,7 +5,7 @@
   'use strict';
 
   var WORKER_URL = 'https://lacalut-chat.lacalut.workers.dev';
-  var BRAND = '#cf102d';
+  var BRAND = '#111111';
   var STORE = 'https://lacalut.com.au';
 
   // ── Symptom intake chips ─────────────────────────────────────────────────────
@@ -365,7 +365,7 @@
     #lc-btn {
       position: fixed; bottom: 24px; right: 24px; z-index: 99999;
       width: 60px; height: 60px; border-radius: 50%;
-      background: var(--lc, #cf102d); border: none; cursor: pointer;
+      background: var(--lc, #111111); border: none; cursor: pointer;
       box-shadow: 0 4px 20px rgba(0,0,0,0.28);
       display: flex; align-items: center; justify-content: center;
       transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
@@ -387,10 +387,10 @@
     }
     #lc-btn.lc-has-unread #lc-unread { display: flex; }
     @keyframes lc-ring {
-      0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(207,16,45,0.5); }
-      35%  { transform: scale(1.1); box-shadow: 0 0 0 14px rgba(207,16,45,0); }
+      0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(17,17,17,0.5); }
+      35%  { transform: scale(1.1); box-shadow: 0 0 0 14px rgba(17,17,17,0); }
       70%  { transform: scale(1); }
-      100% { box-shadow: 0 0 0 0 rgba(207,16,45,0); }
+      100% { box-shadow: 0 0 0 0 rgba(17,17,17,0); }
     }
 
     /* Proactive teaser — minimal live-chat card: avatar + message + "Lucy · now" */
@@ -431,12 +431,12 @@
     .lc-teaser-x:hover { color: #374151; }
     .lc-teaser-btns { display: flex; gap: 7px; margin-top: 9px; justify-content: flex-end; flex-wrap: wrap; }
     .lc-teaser-btn {
-      background: var(--lc, #cf102d); color: #fff; border: none; border-radius: 16px;
+      background: var(--lc, #111111); color: #fff; border: none; border-radius: 16px;
       padding: 8px 15px; font-size: 13.5px; font-weight: 700; cursor: pointer;
       font-family: inherit; transition: transform 0.12s, box-shadow 0.15s;
-      box-shadow: 0 2px 8px rgba(207,16,45,0.28); animation: lc-fadein 0.3s ease both;
+      box-shadow: 0 2px 8px rgba(17,17,17,0.28); animation: lc-fadein 0.3s ease both;
     }
-    .lc-teaser-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(207,16,45,0.38); }
+    .lc-teaser-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(17,17,17,0.38); }
     .lc-teaser-btn.lc-sec {
       background: #fff; color: #374151; border: 1.5px solid #e5e7eb; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
@@ -461,7 +461,7 @@
 
     /* Header */
     #lc-head {
-      background: var(--lc, #cf102d); color: #fff;
+      background: var(--lc, #111111); color: #fff;
       padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
     }
     .lc-back-btn {
@@ -498,9 +498,9 @@
       font-size: 14px; color: #111; cursor: pointer; line-height: 1.4;
       transition: border-color 0.15s, background 0.15s, color 0.15s; font-family: inherit;
     }
-    .lc-qa-btn:hover { border-color: var(--lc, #cf102d); background: #fff5f5; color: var(--lc, #cf102d); }
+    .lc-qa-btn:hover { border-color: var(--lc, #111111); background: #f4f4f4; color: var(--lc, #111111); }
     .lc-leave-details { margin-top: 16px; text-align: center; font-size: 13px; color: #9ca3af; }
-    .lc-leave-details a { color: var(--lc, #cf102d); text-decoration: none; cursor: pointer; }
+    .lc-leave-details a { color: var(--lc, #111111); text-decoration: none; cursor: pointer; }
     .lc-leave-details a:hover { text-decoration: underline; }
 
     /* Symptom intake chips */
@@ -513,7 +513,7 @@
       transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
       display: flex; flex-direction: row; align-items: center; gap: 8px;
     }
-    .lc-symptom-btn:hover { border-color: var(--lc, #cf102d); background: #fff5f5; box-shadow: 0 2px 8px rgba(207,16,45,0.08); }
+    .lc-symptom-btn:hover { border-color: var(--lc, #111111); background: #f4f4f4; box-shadow: 0 2px 8px rgba(17,17,17,0.08); }
     .lc-symptom-icon { font-size: 20px; flex-shrink: 0; }
     .lc-symptom-text { font-weight: 600; color: #111; font-size: 13px; }
 
@@ -521,7 +521,7 @@
     #lc-chat { flex: 1; overflow-y: auto; padding: 14px 14px 8px; display: flex; flex-direction: column; gap: 10px; }
     .lc-msg { max-width: 84%; padding: 11px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word; }
     .lc-msg-bot { background: #f3f4f6; color: #111; border-bottom-left-radius: 4px; align-self: flex-start; }
-    .lc-msg-user { background: var(--lc, #cf102d); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
+    .lc-msg-user { background: var(--lc, #111111); color: #fff; border-bottom-right-radius: 4px; align-self: flex-end; }
     /* Bot rows carry the agent's photo beside every bubble — real live-chat feel */
     .lc-bot-row { display: flex; gap: 7px; align-items: flex-end; align-self: flex-start; max-width: 92%; }
     .lc-bot-avatar {
@@ -544,7 +544,7 @@
       font-family: inherit; transition: border-color 0.15s, background 0.15s, color 0.15s;
       white-space: nowrap; max-width: 220px; overflow: hidden; text-overflow: ellipsis;
     }
-    .lc-chip:hover { border-color: var(--lc, #cf102d); background: #fff5f5; color: var(--lc, #cf102d); }
+    .lc-chip:hover { border-color: var(--lc, #111111); background: #f4f4f4; color: var(--lc, #111111); }
 
     /* Product cards */
     .lc-product-cards { display: flex; flex-direction: column; gap: 8px; align-self: stretch; animation: lc-fadein 0.2s ease; }
@@ -554,11 +554,11 @@
       padding: 10px 12px; text-decoration: none;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
-    .lc-product-card:hover { border-color: var(--lc, #cf102d); box-shadow: 0 2px 12px rgba(207,16,45,0.1); }
+    .lc-product-card:hover { border-color: var(--lc, #111111); box-shadow: 0 2px 12px rgba(17,17,17,0.1); }
     .lc-product-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #f9fafb; }
     .lc-product-info { flex: 1; min-width: 0; }
     .lc-product-name { font-size: 13px; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lc-product-cta { font-size: 12px; color: var(--lc, #cf102d); margin-top: 2px; font-weight: 600; }
+    .lc-product-cta { font-size: 12px; color: var(--lc, #111111); margin-top: 2px; font-weight: 600; }
 
     @keyframes lc-fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
@@ -573,13 +573,13 @@
       padding: 9px 12px; font-size: 13px; margin-bottom: 8px;
       box-sizing: border-box; font-family: inherit; outline: none; transition: border-color 0.15s;
     }
-    .lc-capture-input:focus { border-color: var(--lc, #cf102d); }
+    .lc-capture-input:focus { border-color: var(--lc, #111111); }
     .lc-capture-btn {
-      width: 100%; background: var(--lc, #cf102d); color: #fff;
+      width: 100%; background: var(--lc, #111111); color: #fff;
       border: none; border-radius: 8px; padding: 10px;
       font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s;
     }
-    .lc-capture-btn:hover { background: #a80d24; }
+    .lc-capture-btn:hover { background: #000000; }
     .lc-capture-thanks { font-size: 13px; color: #16a34a; font-weight: 600; text-align: center; padding: 4px 0; }
     .lc-capture-microcopy { font-size: 11px; color: #9ca3af; font-style: italic; text-align: center; margin-top: 7px; }
     .lc-capture-dismiss { text-align: right; margin-bottom: 6px; }
@@ -623,7 +623,7 @@
     .lc-code-copy:hover { background: #003a6d; }
     .lc-code-shop {
       display: inline-block; margin-top: 10px; font-size: 13px; font-weight: 700;
-      color: var(--lc, #cf102d); text-decoration: none;
+      color: var(--lc, #111111); text-decoration: none;
     }
     .lc-code-shop:hover { text-decoration: underline; }
 
@@ -637,11 +637,11 @@
     #lc-input:focus { border-color: #004a88; }
     #lc-input::placeholder { color: #6b8bad; }
     #lc-send {
-      width: 40px; height: 40px; border-radius: 50%; background: var(--lc, #cf102d);
+      width: 40px; height: 40px; border-radius: 50%; background: var(--lc, #111111);
       border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; transition: background 0.15s, transform 0.15s;
     }
-    #lc-send:hover { background: #a80d24; transform: scale(1.05); }
+    #lc-send:hover { background: #000000; transform: scale(1.05); }
     #lc-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
     #lc-send svg { width: 17px; height: 17px; fill: #fff; }
     #lc-powered { text-align: center; font-size: 11px; color: #d1d5db; padding: 0 0 6px; flex-shrink: 0; }
