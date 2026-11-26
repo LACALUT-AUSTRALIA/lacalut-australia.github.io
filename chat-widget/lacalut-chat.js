@@ -323,12 +323,12 @@
       ] },
   ];
 
-  // SHO 26/11/2026 BLACK FRIDAY (Quan): 6am Fri 27/11 to 11:59pm Mon 30/11 Brisbane (same window as the theme,
+  // SHO 26/11/2026 BLACK FRIDAY (Quan): midnight Fri 27/11 Melbourne to 11:59pm Mon 30/11 Brisbane (same window as the theme,
   // or html.lac-bf-on on a preview theme) the teaser shows ONE Black Friday message: no quizzes, no fun facts, no 10% code.
   function bfOn() {
     var n = Date.now() / 1000;
     try { if (document.documentElement.classList.contains('lac-bf-on')) return true; } catch (e) {}
-    return n >= 1795723200 && n <= 1796047199;
+    return n >= 1795698000 && n <= 1796047199;
   }
   var BF_OPENER = { id: 'bf2026', q: "🖤 Black Friday is our biggest sale of the year, and this year we're giving away more than 10,000 free tubes 🎁 But hurry, only while stocks last!",
     buttons: [
@@ -336,9 +336,22 @@
       { label: 'Shop The Sale', go: '/collections/all' },
     ] };
 
+  // SHO 26/11/2026 REAL scarcity (Quan): window.__lacBf = {claimed, cap, h1} comes from the theme, which reads the
+  // real Shopify count (updated every 15 min). Lucy only says "an hour ago" when the real number dropped by 10+ in the last hour.
+  function bfOpener() {
+    var o = { id: BF_OPENER.id, q: BF_OPENER.q, buttons: BF_OPENER.buttons };
+    try {
+      var b = window.__lacBf, f = function (x) { return Number(x).toLocaleString('en-AU'); };
+      if (b && b.cap > 0 && b.h1 !== null && b.h1 !== undefined && b.claimed - b.h1 >= 10 && b.cap - b.claimed > 0) {
+        o.q = "🔥 An hour ago there were " + f(b.cap - b.h1) + " of today's free tubes left. Now there are only " + f(b.cap - b.claimed) + ". Want to grab yours before they're gone?";
+      }
+    } catch (e) {}
+    return o;
+  }
+
   // Resolve the live opener list from config, falling back to the defaults.
   function getOpeners() {
-    if (bfOn()) return [BF_OPENER];
+    if (bfOn()) return [bfOpener()];
     var list = null;
     try { list = JSON.parse(config.teaser_openers); } catch (e) { list = null; }
     if (!Array.isArray(list) || !list.length) return OPENERS.slice();
