@@ -130,7 +130,7 @@ CSS = """
 .mb-colbtn{margin-left:auto}
 .mb-wrap{overflow:auto;max-height:calc(100vh - 370px);min-height:420px;background:var(--s0);border:none;border-radius:14px}
 .mb-table{width:100%;border-collapse:separate;border-spacing:0}
-#mb .mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help;background:var(--s2);color:var(--th);font-size:12.5px;font-weight:700;letter-spacing:0;text-transform:none;padding:0 10px;height:40px;box-sizing:border-box;border-bottom:1px solid var(--bd);box-shadow:none}
+#mb .mb-table thead th{position:sticky;top:0;z-index:7;white-space:nowrap;cursor:help;background:var(--s2);color:var(--th);font-size:12px;font-weight:700;letter-spacing:0;text-transform:none;padding:0 6px;height:40px;box-sizing:border-box;border-bottom:1px solid var(--bd);box-shadow:none}
 #mb .mb-table thead tr.colfilters th{top:40px;height:auto;padding:5px 6px 8px;cursor:default}
 #mb tr.colfilters input{background:var(--s1);border:1px solid var(--bd);border-radius:7px;padding:4px 7px;font-size:11.5px;color:var(--tx)}
 #mb tr.colfilters input:focus{border-color:var(--ac)}
@@ -139,7 +139,7 @@ CSS = """
 .mb-table thead tr:first-child th:last-child{border-top-right-radius:12px}
 .mb-table thead tr.colfilters th:first-child{border-bottom-left-radius:12px}
 .mb-table thead tr.colfilters th:last-child{border-bottom-right-radius:12px}
-#mb .mb-table tbody td{padding:10px;border-bottom:1px solid var(--bd);font-size:13.5px}
+#mb .mb-table tbody td{padding:10px 6px;border-bottom:1px solid var(--bd);font-size:13px}
 .mb-gap td{height:14px;padding:0!important;background:var(--s0)!important;border:none!important}
 .mb-gap-big td{height:38px}
 #mb .mb-camp td{background:var(--s0)!important;color:var(--tx);padding:4px 4px 0;border:none}
@@ -173,7 +173,7 @@ CSS = """
 #mb .mb-hide{font:inherit;font-size:12px;font-weight:500;margin-left:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:6px;background:transparent;color:var(--tx2);cursor:pointer}
 #mb .mb-hide:hover{background:var(--s2);color:var(--tx)}
 .mb-table.mb-less tr>*:nth-child(13),.mb-table.mb-less tr>*:nth-child(18),.mb-table.mb-less tr>*:nth-child(19){display:none}.mb-cppw{font:inherit;font-size:11px;padding:1px 2px;border:1px solid var(--bd);border-radius:6px;background:var(--s1);color:inherit}
-.mb-table .adtd{min-width:300px;max-width:420px}
+.mb-table .adtd{min-width:230px;max-width:300px}
 #mb .mb-th{width:64px;height:64px;min-width:64px;border-radius:10px;border:1px solid var(--bd);cursor:zoom-in}
 #mb .adname{font-weight:500;font-size:13px;line-height:1.4;color:var(--tx)}
 .mb-reach{display:block;margin-top:6px;font-size:12px;font-weight:600;color:#364fc7;background:#edf2ff;border-radius:6px;padding:4px 8px;line-height:1.5}
@@ -185,8 +185,8 @@ CSS = """
 .mb-up{color:var(--g);font-size:9px}.mb-dn{color:var(--b);font-size:9px}
 .mb-vid{font-size:10px;font-weight:600;letter-spacing:.04em;background:var(--s2);color:var(--tx2);padding:1px 6px;border-radius:5px;margin-left:4px}
 .mb-lp{text-decoration:none}
-#mb .mb-table thead tr:first-child th:nth-child(n+3):nth-child(-n+15){text-align:right}
-#mb .mb-table thead tr.colfilters th:nth-child(n+3):nth-child(-n+15) input{text-align:right}
+#mb .mb-table thead tr:first-child th:nth-child(n+3):nth-child(-n+19){text-align:right}
+#mb .mb-table thead tr.colfilters th:nth-child(n+3):nth-child(-n+19) input{text-align:right}
 #mb .mb-ad td.c{text-align:left}
 #mb .mb-tot td,#mb .mb-tot:hover td{background:var(--s2);font-weight:600}
 #mb .mb-tot td.adtd{font-size:12.5px;font-weight:500;color:var(--tx2)}
@@ -273,7 +273,7 @@ var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lac
 var CORD=[],LASTORD=[],CKEY='lacalut_mb_camp_order';try{CORD=JSON.parse(localStorage.getItem(CKEY)||'[]')||[]}catch(e){}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.mb-ob');if(!b)return;var o=LASTORD.slice(),c=b.getAttribute('data-c'),i=o.indexOf(c);if(i<0)return;o.splice(i,1);var k=b.getAttribute('data-o');o.splice(k==='top'?0:k==='up'?Math.max(0,i-1):Math.min(o.length,i+1),0,c);CORD=o;try{localStorage.setItem(CKEY,JSON.stringify(o))}catch(e){}render();var r=[].filter.call(document.querySelectorAll('.mb-ob[data-o=top]'),function(x){return x.getAttribute('data-c')===c})[0];if(r)r.scrollIntoView({block:'center'})});
 var CPPW='d7';try{CPPW=localStorage.getItem('lacalut_mb_cppw')||'d7'}catch(e){}
-var openSets={},less=false;try{less=localStorage.getItem('lacalut_mb_less2')==='1'}catch(e){}
+var openSets={},less=true;try{less=localStorage.getItem('lacalut_mb_less3')!=='0'}catch(e){}
 var HID={},showHid=false,HKEY='lacalut_mb_hidden';try{HID=JSON.parse(localStorage.getItem(HKEY)||'{}')||{}}catch(e){}
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
 var S={},filt='';
@@ -410,7 +410,7 @@ function render(){
   [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
   var hb=document.getElementById('mb-hidbtn');if(hb)hb.addEventListener('click',function(){showHid=!showHid;render()});
   var cw=document.getElementById('mb-cppw');if(cw&&!cw._b){cw._b=1;cw.value=CPPW;cw.addEventListener('change',function(){CPPW=cw.value;try{localStorage.setItem('lacalut_mb_cppw',CPPW)}catch(e){}render()})}
-  document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less2',less?'1':'0')}catch(e){}render()});
+  document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less3',less?'1':'0')}catch(e){}render()});
 }
 load();fill();render();
 document.getElementById('mb-body').addEventListener('click',function(e){var hb=e.target.closest?e.target.closest('.mb-hide'):null;
