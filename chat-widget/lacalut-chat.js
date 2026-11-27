@@ -338,7 +338,7 @@
     try {
       var b = window.__lacBf, f = function (x) { return Number(x).toLocaleString('en-AU'); };
       if (b && b.cap > 0 && b.h1 !== null && b.h1 !== undefined && b.claimed - b.h1 >= 10 && b.cap - b.claimed > 0) {
-        o.q = "🔥 An hour ago there were " + f(b.cap - b.h1) + " of today's free tubes left. Now there are only " + f(b.cap - b.claimed) + ". Want to grab yours before they're gone?";
+        o.q = "🔥 An hour ago there were " + f(b.cap - b.h1) + " of our free tubes & brushes left. Now there are only " + f(b.cap - b.claimed) + ". Want to grab yours before they're gone?";
       }
     } catch (e) {}
     return o;
