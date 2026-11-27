@@ -269,7 +269,7 @@ HTML = """<section class="sec" id="mb">
 <style>__CSS__</style>
 <script>
 (function(){
-var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=21;
+var NEWC=__NEWC__,DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=21;
 var CORD=[],LASTORD=[],CKEY='lacalut_mb_camp_order';try{CORD=JSON.parse(localStorage.getItem(CKEY)||'[]')||[]}catch(e){}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.mb-ob');if(!b)return;var o=LASTORD.slice(),c=b.getAttribute('data-c'),i=o.indexOf(c);if(i<0)return;o.splice(i,1);var k=b.getAttribute('data-o');o.splice(k==='top'?0:k==='up'?Math.max(0,i-1):Math.min(o.length,i+1),0,c);CORD=o;try{localStorage.setItem(CKEY,JSON.stringify(o))}catch(e){}render();var r=[].filter.call(document.querySelectorAll('.mb-ob[data-o=top]'),function(x){return x.getAttribute('data-c')===c})[0];if(r)r.scrollIntoView({block:'center'})});
 var CPPW='d7';try{CPPW=localStorage.getItem('lacalut_mb_cppw')||'d7'}catch(e){}
@@ -322,6 +322,7 @@ function lossOf(rows){var t=agg(rows);return t.sp-t.rev}
 function rp(r){return '<span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span>'}
 function stat(l,v,t,big){return '<span class="mb-st'+(big?' mb-big':'')+'"'+(t?' title="'+esc(t)+'"':'')+'><small>'+l+'</small><b>'+v+'</b></span>'}
 function isR(a){return /^#HYPE/.test((a&&a.campaign)||'')}
+function ncOf(name,cid){if(!NEWC||!NEWC.camps)return null;var t=0;Object.keys(NEWC.camps).forEach(function(k){if(k===name||(cid&&k===cid))t+=NEWC.camps[k].new});return t}
 function nf(n){return (n||0).toLocaleString()}
 function per1k(x){return x&&x.reach?money(x.sp/x.reach*1000):'&mdash;'}
 function rline(l,x){if(!x||!x.sp)return '<b>'+l+':</b> $0';return '<b>'+l+':</b> '+nf(x.reach)+' people &middot; '+money(x.sp)+' &middot; '+per1k(x)+' per 1,000 people'}
@@ -361,7 +362,7 @@ function render(){
     var ct={sp:0,rev:0,pc:0};Object.keys(sets).forEach(function(k){var t=(SETS[sets[k][0].sid]||{}).d7||agg(sets[k]);ct.sp+=t.sp;ct.rev+=t.rev;ct.pc+=t.pc});var cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
     var b0=body.length,fn=(/_(TOF|TOM|MOF)_/.exec(cn)||['','x'])[1].toLowerCase();
-    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-ord"><button class="mb-ob" data-o="top" data-c="'+esc(cn)+'" title="Move this campaign to the top of the page">&#9195; Top</button><button class="mb-ob" data-o="up" data-c="'+esc(cn)+'" title="Move this campaign up one place">&#9650;</button><button class="mb-ob" data-o="down" data-c="'+esc(cn)+'" title="Move this campaign down one place">&#9660;</button></span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr))+'</span></div></td></tr>';
+    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-ord"><button class="mb-ob" data-o="top" data-c="'+esc(cn)+'" title="Move this campaign to the top of the page">&#9195; Top</button><button class="mb-ob" data-o="up" data-c="'+esc(cn)+'" title="Move this campaign up one place">&#9650;</button><button class="mb-ob" data-o="down" data-c="'+esc(cn)+'" title="Move this campaign down one place">&#9660;</button></span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+(function(){var n=ncOf(cn,all[0].cid),t0=0;Object.keys(sets).forEach(function(k){var Q=(SETS[sets[k][0].sid]||{}).d0||aggk(sets[k],'d0');t0+=Q.sp||0});if(n===null)return '';return ' &middot; <b title="Shopify orders today from first-time customers whose last click was this campaign. Last click only, so the real number is higher">today: '+n+' new customer'+(n===1?'':'s')+(n?' at '+money(t0/n)+' each':' for '+money(t0))+'</b>'})())+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),TS=SETS[rows[0].sid]||{},st=TS.d7||agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
       var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),s0=TS.d0||aggk(rows,'d0'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
@@ -394,7 +395,8 @@ function render(){
   var tot=agg(DATA.ads),trs=tot.sp?tot.rev/tot.sp:0;
   var mchip=function(v){return v<=S.mer?'<span class="mb-chip good"><i></i>At or under ideal</span>':'<span class="mb-chip '+(v<=2*S.mer?'warn':'bad')+'"><i></i>'+(v/S.mer).toFixed(1)+'x the ideal</span>'};
   var ht=function(l,v,x,sx){return '<div class="mb-h"><small>'+l+'</small><b>'+v+'</b>'+(x||'')+'<em>'+sx+'</em></div>'};
-  document.getElementById('mb-hero').innerHTML=ht('MER, last 3 days',S.mer3.toFixed(1)+'%',mchip(S.mer3),'Ad spend as a share of sales. Ideal is '+S.mer.toFixed(1)+'%')
+  var nch='';if(NEWC&&NEWC.new){var nn=NEWC.new.orders,nr=NEWC.ret.orders,day=(AUTO&&AUTO.days||[]).filter(function(x){return x.d===NEWC.d})[0],msp=day?day.spend:0;nch=ht('New customers today',nn+' <small style="font-size:13px">of '+(nn+nr)+' orders ('+(nn+nr?Math.round(100*nn/(nn+nr)):0)+'%)</small>',msp&&nn?'<span class="mb-chip '+(msp/nn<=S.aov*0.5?'good':(msp/nn<=S.aov?'warn':'bad'))+'"><i></i>'+money(msp/nn)+' Meta spend per new customer</span>':'','Shopify, first-time buyers, pulled '+NEWC.pulled+'. Meta spend today / new customers (Google not included)')}
+  document.getElementById('mb-hero').innerHTML=nch+ht('MER, last 3 days',S.mer3.toFixed(1)+'%',mchip(S.mer3),'Ad spend as a share of sales. Ideal is '+S.mer.toFixed(1)+'%')
     +ht('MER, last 30 days',S.mer30.toFixed(1)+'%',mchip(S.mer30),'Ideal is '+S.mer.toFixed(1)+'%')
     +ht('Spend, last 7 days',money(tot.sp),'','Live ads only')
     +ht('Sales value, last 7 days',money(tot.rev),'',tot.pc+' sales, as counted by Meta')
@@ -592,10 +594,15 @@ def build(SP):
             auto = json.load(open(mp, encoding="utf-8"))
         except Exception:
             auto = None
+    newc = None
+    try:
+        newc = json.load(open(os.path.join(SP, "newcust.json"), encoding="utf-8"))
+    except Exception:
+        newc = None
     acts = recent_actions(SP)
     blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     out = (HTML.replace("__CSS__", CSS).replace("__N__", str(len(data.get("ads", []))))
            .replace("__PULLED__", pulled).replace("__DEF__", json.dumps(DEFAULTS))
-           .replace("__AUTO__", json.dumps(auto)).replace("__ACTS__", json.dumps(acts).replace("</", "<\\/")).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
+           .replace("__AUTO__", json.dumps(auto)).replace("__NEWC__", json.dumps(newc, ensure_ascii=False)).replace("__ACTS__", json.dumps(acts).replace("</", "<\\/")).replace("__ACT__", ADS_ACT).replace("__DATA__", blob))
     out = out.replace('<div class="mb-lab">Campaigns, last 7 days</div>', bf_html(SP) + '<div class="mb-lab">Campaigns, last 7 days</div>', 1)
     return len(data.get("ads", [])), out

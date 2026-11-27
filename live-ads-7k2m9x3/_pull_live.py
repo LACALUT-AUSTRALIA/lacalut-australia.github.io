@@ -435,7 +435,7 @@ def pull_buyer():
     except Exception as e:
         print("  ad set totals skipped:", e)
         sets = {}
-    fields = ("id,name,created_time,campaign{name,daily_budget},"
+    fields = ("id,name,created_time,campaign{id,name,daily_budget},"
               "adset{id,name,daily_budget,daily_min_spend_target,bid_strategy,bid_constraints,learning_stage_info},"
               "creative{object_type,video_id,effective_object_story_id,"
               "object_story_spec{link_data{link,child_attachments{link}},"
@@ -487,7 +487,7 @@ def pull_buyer():
                 link = ""
         st = a.get("adset") or {}
         (paused if a.get("_paused") else rows).append({"id": a["id"], "name": a.get("name", ""), "created_time": a.get("created_time", ""),
-                     "campaign": (a.get("campaign") or {}).get("name", ""), "sid": st.get("id", ""),
+                     "campaign": (a.get("campaign") or {}).get("name", ""), "cid": (a.get("campaign") or {}).get("id", ""), "sid": st.get("id", ""),
                      "paused": bool(a.get("_paused")),
                      "adset": st.get("name", ""), "sfreq": sfreq.get(st.get("id"), 0),
                      # ad set card heading (Quan 16/11/2026): budget, floor, learning. Dollars, not cents.
@@ -548,9 +548,11 @@ if __name__ == "__main__":
     write("insights90.json", pull_insights("last_90d"))
     write("insights7.json", pull_insights("last_7d"))
     pull_daily()
-    pull_thumbs()
-    pull_big()
-    pull_texts()
+    for _f in (pull_thumbs, pull_big, pull_texts):   # 27/11: a Meta 400 on thumbnails stopped the whole refresh; these are non-fatal now
+        try:
+            _f()
+        except Exception as e:
+            print(f'  {_f.__name__} failed (non-fatal, page keeps the old files):', e)
     pull_buyer()
     try:
         pull_bf()

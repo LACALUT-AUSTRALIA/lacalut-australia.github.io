@@ -18,6 +18,8 @@ try {
     python -X utf8 _pull_live.py *> (Join-Path $dir "_pull_last.log")
     if ($LASTEXITCODE -ne 0) { $why = (Get-Content (Join-Path $dir "_pull_last.log") -Tail 1 -ErrorAction SilentlyContinue); Log "pull FAILED ($LASTEXITCODE) $why"; exit 1 }
     python -X utf8 _pull_mer.py *> $null
+    python -X utf8 _pull_newcust.py *> $null
+    if ($LASTEXITCODE -ne 0) { Log "new-customer pull failed (page keeps the last values)" }
     if ($LASTEXITCODE -ne 0) { Log "MER pull failed (page keeps the last MER values)" }
     # automatic media buyer (practice mode unless _auto_buyer_LIVE_ON.txt exists); never blocks the refresh
     python -X utf8 _auto_buyer.py *> $null
