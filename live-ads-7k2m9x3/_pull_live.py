@@ -20,10 +20,21 @@ TOK = meta_auth.system_token()
 GRAPH = "https://graph.facebook.com/v21.0"
 
 def get_all(url):
+    # 27/11/2026: Meta rate limit (code 80004 "too many calls to this ad-account") made half the BF-day refreshes fail.
+    # Wait and retry up to 3 times on that error only.
     out = []
     while url:
-        with urllib.request.urlopen(url, timeout=90) as r:
-            d = json.load(r)
+        for attempt in range(4):
+            try:
+                with urllib.request.urlopen(url, timeout=90) as r:
+                    d = json.load(r)
+                break
+            except urllib.error.HTTPError as e:
+                body = e.read().decode("utf-8", "ignore")
+                if e.code == 400 and "80004" in body and attempt < 3:
+                    print(f"  Meta rate limit, waiting {60 * (attempt + 1)}s then retrying")
+                    time.sleep(60 * (attempt + 1)); continue
+                raise
         out += d.get("data", [])
         url = d.get("paging", {}).get("next")
     return out
