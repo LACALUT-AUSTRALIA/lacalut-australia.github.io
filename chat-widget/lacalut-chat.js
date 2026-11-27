@@ -325,7 +325,7 @@
     try { if (document.documentElement.classList.contains('lac-bf-on')) return true; } catch (e) {}
     return n >= 1795698000 && n <= 1796047199;
   }
-  var BF_OPENER = { id: 'bf2026', q: "🖤 Black Friday is our biggest sale of the year, and this year we're giving away more than 10,000 free tubes 🎁 But hurry, only while stocks last!",
+  var BF_OPENER = { id: 'bf2026', q: Date.now() >= 1795957200000 ? "🖤 Cyber Monday: 1,000 more free tubes & brushes 🎁 Hurry, ends midnight tonight!" : "🖤 Black Friday is our biggest sale of the year: 2,000 free tubes & brushes this weekend 🎁 But hurry, only while they last!",
     buttons: [
       { label: 'How does it work?', bf: true, reply: "Easy 🎁\n\n**Spend $50** = 1 free gift (worth up to $14)\n**Spend $100** = 3 free gifts + free shipping\n**Spend $150** = 6 free gifts + free shipping\n**Spend $200** = 10 free gifts + free shipping (worth up to $140)\n\nNo code needed. You choose your gifts. Ends Monday 30 Nov.", link: { label: 'Shop The Sale ›', url: '/collections/all' } },
       { label: 'Shop The Sale', go: '/collections/all' },
