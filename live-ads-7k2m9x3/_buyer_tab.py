@@ -172,7 +172,7 @@ CSS = """
 #mb .mb-acts{white-space:nowrap}
 #mb .mb-hide{font:inherit;font-size:12px;font-weight:500;margin-left:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:6px;background:transparent;color:var(--tx2);cursor:pointer}
 #mb .mb-hide:hover{background:var(--s2);color:var(--tx)}
-.mb-table.mb-less tr>*:nth-child(11),.mb-table.mb-less tr>*:nth-child(12),.mb-table.mb-less tr>*:nth-child(14),.mb-table.mb-less tr>*:nth-child(15){display:none}
+.mb-table.mb-less tr>*:nth-child(13),.mb-table.mb-less tr>*:nth-child(18),.mb-table.mb-less tr>*:nth-child(19){display:none}.mb-cppw{font:inherit;font-size:11px;padding:1px 2px;border:1px solid var(--bd);border-radius:6px;background:var(--s1);color:inherit}
 .mb-table .adtd{min-width:300px;max-width:420px}
 #mb .mb-th{width:64px;height:64px;min-width:64px;border-radius:10px;border:1px solid var(--bd);cursor:zoom-in}
 #mb .adname{font-weight:500;font-size:13px;line-height:1.4;color:var(--tx)}
@@ -255,15 +255,13 @@ HTML = """<section class="sec" id="mb">
 <div class="mb-chips" id="mb-chips" style="margin-top:0"></div>
 <div class="tablewrap mb-wrap"><table class="mb-table">
 <thead><tr><th>Ad</th><th title="Our own classes, set in Setup. Villain and Supervillain = pause. Hero and Superhero are never paused. These are not the EE labels.">Class</th>
-<th title="Last 7 days">Spend 7d</th><th title="Purchases, last 7 days">Purch.</th>
-<th title="Cost per purchase, last 7 days. Colour = CPP thresholds for the funnel stage this ad set is acting like">CPP 7d</th>
-<th title="Cost per purchase, last 3 days. Arrow shows better or worse than 7 days">CPP 3d</th>
-<th title="Cost per purchase, yesterday">CPP yest.</th>
-<th title="Meta purchase value / spend, last 7 days">ROAS 7d</th>
-<th title="Average times each person saw this ad, last 7 days">Freq</th>
-<th title="Link clicks / impressions">CTR link</th><th title="Cost per 1,000 impressions">CPM</th>
+<th title="Last 7 days">Spend 7d</th><th title="Spend today (Queensland day so far)">Spend today</th><th title="Purchases, last 7 days">Purch.</th>
+<th title="Cost per purchase for the period you pick. Colour = CPP thresholds for the funnel stage this ad set is acting like">CPP <select id="mb-cppw" class="mb-cppw" onclick="event.stopPropagation()"><option value="d0">today</option><option value="d1">yesterday</option><option value="d3">3 days</option><option value="d7">7 days</option></select></th>
+<th title="Meta purchase value / spend, last 7 days">ROAS 7d</th><th title="Meta purchase value / spend, today">ROAS today</th>
+<th title="Average times each person saw this ad, last 7 days">Freq</th><th title="Unique people who saw this ad, last 7 days">Reach</th>
+<th title="Link clicks / impressions">CTR link</th><th title="Cost per link click (spend / link clicks), last 7 days">CPC link</th><th title="Cost per 1,000 impressions">CPM</th>
 <th title="Videos only: 3-second views / impressions">Hook</th>
-<th title="Add to carts / landing page views">Add to cart</th>
+<th title="Cost per add to cart (spend / adds to cart), last 7 days">$ / cart</th><th title="Add to carts / landing page views">Add to cart</th><th title="Purchases / adds to cart: how many carts turn into a sale">Cart &rarr; buy</th>
 <th title="Checkouts started / landing page views">Checkout</th>
 <th>Days live</th><th>Landing page</th><th></th></tr></thead>
 <tbody id="mb-body"></tbody></table></div>
@@ -271,10 +269,11 @@ HTML = """<section class="sec" id="mb">
 <style>__CSS__</style>
 <script>
 (function(){
-var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=17;
+var DATA=__DATA__,DEF=__DEF__,AUTO=__AUTO__,ACTS=__ACTS__,ACT="__ACT__",KEY='lacalut_mb_setup_v2',NC=21;
 var CORD=[],LASTORD=[],CKEY='lacalut_mb_camp_order';try{CORD=JSON.parse(localStorage.getItem(CKEY)||'[]')||[]}catch(e){}
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.mb-ob');if(!b)return;var o=LASTORD.slice(),c=b.getAttribute('data-c'),i=o.indexOf(c);if(i<0)return;o.splice(i,1);var k=b.getAttribute('data-o');o.splice(k==='top'?0:k==='up'?Math.max(0,i-1):Math.min(o.length,i+1),0,c);CORD=o;try{localStorage.setItem(CKEY,JSON.stringify(o))}catch(e){}render();var r=[].filter.call(document.querySelectorAll('.mb-ob[data-o=top]'),function(x){return x.getAttribute('data-c')===c})[0];if(r)r.scrollIntoView({block:'center'})});
-var openSets={},less=true;try{less=localStorage.getItem('lacalut_mb_less')!=='0'}catch(e){}
+var CPPW='d7';try{CPPW=localStorage.getItem('lacalut_mb_cppw')||'d7'}catch(e){}
+var openSets={},less=false;try{less=localStorage.getItem('lacalut_mb_less2')==='1'}catch(e){}
 var HID={},showHid=false,HKEY='lacalut_mb_hidden';try{HID=JSON.parse(localStorage.getItem(HKEY)||'{}')||{}}catch(e){}
 var IDS=['mer','mer3','mer30','aov','profit','fcr','margin','b1','b2','minspend','roasbe','villroas','fastspend','superspend','superroas'];
 var S={},filt='';
@@ -342,7 +341,7 @@ function render(){
   else if(!a3&&!a30){bn.className='mb-banner up';bn.innerHTML='MER is at or below ideal: there is room to raise spend<small>'+sub+'. Spend increases still need Quan\\'s yes.</small>'}
   else{bn.className='mb-banner hold';bn.innerHTML='Hold total spend<small>3-day and 30-day MER disagree. '+sub+'</small>'}
   var camps={},order=[];DATA.ads.forEach(function(a){if(!camps[a.campaign]){camps[a.campaign]={};order.push(a.campaign)}(camps[a.campaign][a.adset]=camps[a.campaign][a.adset]||[]).push(a)});
-  NC=less?13:17;document.querySelector('.mb-table').classList.toggle('mb-less',less);
+  NC=less?18:21;document.querySelector('.mb-table').classList.toggle('mb-less',less);
   var PS={},SETS=DATA.sets||{};(DATA.paused||[]).forEach(function(a){(PS[a.sid]=PS[a.sid]||[]).push(a)});
   function rowHtml(a,v,nr,stg,sc,hide){var d=a.d7,base=cpp(d),isH=!!HID[a.id];
     var img=a.src?'<img class="th mb-th" src="'+a.src+'" decoding="async" alt="">':'<span class="th mb-th th-empty"></span>';
@@ -350,10 +349,10 @@ function render(){
     return '<tr class="mb-ad'+(hide?' mb-hid':'')+(a.paused?' mb-paused':'')+(isH?' mb-ishid':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
     +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+(isR(a)?rstrip(a):'')+'</span></div></td>'
     +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span>'+(a.paused?' <span class="mbv mbv-paused" title="This ad is paused in Meta. It is listed because it spent money in the last 7 days"><i></i>Paused</span>':'')+'</td>'
-    +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
-    +cppCell(d,stg)+cppCell(a.d3,stg,base)+cppCell(a.d1,stg,base)+roasCell(d)
-    +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
-    +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
+    +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(a.d0&&a.d0.sp?money(a.d0.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
+    +cppCell(a[CPPW],stg,CPPW==='d7'?undefined:base)+roasCell(d)+(a.d0&&a.d0.sp?roasCell(a.d0):'<td class="num">'+Z+'</td>')
+    +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.reach?nf(d.reach):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.lc?money(d.sp/d.lc):Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
+    +'<td class="num">'+(d&&a.video&&d.v3?pct(d.v3,d.imp):Z)+'</td><td class="num">'+(d&&d.atc?money(d.sp/d.atc):Z)+'</td><td class="num">'+(d?pct(d.atc,d.lpv):Z)+'</td><td class="num">'+(d&&d.atc?pct(d.pc,d.atc):Z)+'</td><td class="num">'+(d?pct(d.ic,d.lpv):Z)+'</td>'
     +'<td class="num">'+(days===null||isNaN(days)?Z:days)+'</td><td class="c">'+landing(a.link,a.lk,a.name)+'</td>'
     +'<td class="c mb-acts"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a>'
     +'<button class="mb-hide" data-id="'+a.id+'" title="'+(isH?'Show this ad on this page again':'Remove this ad from this page only. Nothing changes in Meta')+'">'+(isH?'Unhide':'Hide')+'</button></td></tr>'}
@@ -365,7 +364,7 @@ function render(){
     body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-ord"><button class="mb-ob" data-o="top" data-c="'+esc(cn)+'" title="Move this campaign to the top of the page">&#9195; Top</button><button class="mb-ob" data-o="up" data-c="'+esc(cn)+'" title="Move this campaign up one place">&#9650;</button><button class="mb-ob" data-o="down" data-c="'+esc(cn)+'" title="Move this campaign down one place">&#9660;</button></span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr))+'</span></div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),TS=SETS[rows[0].sid]||{},st=TS.d7||agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
-      var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
+      var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),s0=TS.d0||aggk(rows,'d0'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
       var sc=st.sp<50?'#adb5bd':(r7s>=S.roasbe?'#2f9e44':(r7s>=1?'#f08c00':'#e03131'));
       var bud=sb.bud?stat('Daily budget',money(sb.bud)+' / day','The most this ad set can spend each day',1):(sb.cbud?stat('Daily budget','shares '+money(sb.cbud)+' / day','Campaign budget: Meta splits it across the ad sets in this campaign',1)+(sb.min?stat('Minimum spend',money(sb.min)+' / day','Meta must spend at least this much on this ad set each day'):''):'');
       var info=bud+(sb.floor?stat('Min ROAS floor',sb.floor.toFixed(2),'Meta only spends when it expects at least this ROAS'):'')
@@ -373,7 +372,7 @@ function render(){
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
       if(isR(rows[0])){var dm=TS.dm||{},d0=TS.d0||{};sc='#5c7cfa';info=bud+stat('People reached since launch',nf(dm.reach),'Unique people who saw an ad in this ad set this month (Hype started 25/11)',1)+stat('Reached today',nf(d0.reach)+' &middot; '+money(d0.sp||0),'Unique people reached today, and spend today')+stat('Reached yesterday',nf(s1.reach)+' &middot; '+money(s1.sp||0))+stat('Cost per 1,000 people',per1k(dm))+stat('Views per person',(dm.freq||0).toFixed(2),'Cap is 2 views per 7 days')+stat('Website visits',nf(dm.lpv)+(dm.lpv?' &middot; '+money(dm.sp/dm.lpv)+' each':''))+stat('Live ads',rows.length)}
       body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
-      body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days (includes paused ads)</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+st.pc+'</td>'+cppCell(st,stg)+cppCell(s3,stg,cpp(st))+cppCell(s1,stg,cpp(st))+roasCell(st)+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+      body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days (includes paused ads)</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+(s0.sp?money(s0.sp):'$0')+'</td><td class="num">'+st.pc+'</td>'+cppCell(({d7:st,d3:s3,d1:s1,d0:s0})[CPPW],stg,CPPW==='d7'?undefined:cpp(st))+roasCell(st)+(s0.sp?roasCell(s0):'<td></td>')+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,pk=key+'|P';
       rows.forEach(function(a){var v=cls(a),nr=near(a,v[0]),d=a.d7,r7a=d&&d.sp?d.rev/d.sp:0;cnt[v[0]]++;
         if(nr)nearL.push('<span class="mb-ti warn" title="'+esc(a.adset)+'">'+shortn(a.name)+' &middot; '+esc(nr)+'</span>');
@@ -406,11 +405,12 @@ function render(){
   ch+='<span class="mb-legend"><span><i style="background:#d6246e"></i>TOF campaign (cold)</span><span><i style="background:#b45309"></i>TOM campaign (warmer)</span><span><i style="background:#15803d"></i>MOF campaign (warmest)</span></span>';
   var nH=0;DATA.ads.concat(DATA.paused||[]).forEach(function(a){if(HID[a.id])nH++});
   if(nH)ch+='<button class="mbf" id="mb-hidbtn" title="Ads you removed from this page with the Hide button">'+(showHid?'Stop showing hidden ads':'Show hidden ads')+'<span class="tcount">'+nH+'</span></button>';
-  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Hook, Checkout and Days live">'+(less?'Show all columns':'Show fewer columns')+'</button>';
+  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Checkout and Days live">'+(less?'Show all columns':'Show fewer columns')+'</button>';
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
   [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
   var hb=document.getElementById('mb-hidbtn');if(hb)hb.addEventListener('click',function(){showHid=!showHid;render()});
-  document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less',less?'1':'0')}catch(e){}render()});
+  var cw=document.getElementById('mb-cppw');if(cw&&!cw._b){cw._b=1;cw.value=CPPW;cw.addEventListener('change',function(){CPPW=cw.value;try{localStorage.setItem('lacalut_mb_cppw',CPPW)}catch(e){}render()})}
+  document.getElementById('mb-cols').addEventListener('click',function(){less=!less;try{localStorage.setItem('lacalut_mb_less2',less?'1':'0')}catch(e){}render()});
 }
 load();fill();render();
 document.getElementById('mb-body').addEventListener('click',function(e){var hb=e.target.closest?e.target.closest('.mb-hide'):null;
