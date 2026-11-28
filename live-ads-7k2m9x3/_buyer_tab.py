@@ -172,7 +172,7 @@ CSS = """
 #mb .mb-acts{white-space:nowrap}
 #mb .mb-hide{font:inherit;font-size:12px;font-weight:500;margin-left:10px;padding:2px 8px;border:1px solid var(--bd);border-radius:6px;background:transparent;color:var(--tx2);cursor:pointer}
 #mb .mb-hide:hover{background:var(--s2);color:var(--tx)}
-.mb-table.mb-less tr>*:nth-child(13),.mb-table.mb-less tr>*:nth-child(18),.mb-table.mb-less tr>*:nth-child(19){display:none}.mb-cppw{font:inherit;font-size:11px;padding:1px 2px;border:1px solid var(--bd);border-radius:6px;background:var(--s1);color:inherit}
+.mb-table.mb-less tr>*:nth-child(10),.mb-table.mb-less tr>*:nth-child(14),.mb-table.mb-less tr>*:nth-child(13),.mb-table.mb-less tr>*:nth-child(18),.mb-table.mb-less tr>*:nth-child(19){display:none}.mb-cppw{font:inherit;font-size:11px;padding:1px 2px;border:1px solid var(--bd);border-radius:6px;background:var(--s1);color:inherit}
 .mb-table .adtd{min-width:230px;max-width:300px}
 #mb .mb-th{width:64px;height:64px;min-width:64px;border-radius:10px;border:1px solid var(--bd);cursor:zoom-in}
 #mb .adname{font-weight:500;font-size:13px;line-height:1.4;color:var(--tx)}
@@ -207,7 +207,16 @@ CSS = """
 #mb .mb-cn{background:var(--cc);box-shadow:0 2px 6px rgba(16,24,40,.18)}
 #mb .mb-cm{color:var(--tx);font-weight:500}
 #mb .mb-camp td{position:sticky;top:var(--hh,80px);z-index:6;box-shadow:0 6px 10px -8px rgba(16,24,40,.35)}
-#mb .mb-setupw{margin:8px 2px 2px}#mb .mb-setup{display:inline-block;font-size:12.5px;font-weight:500;color:var(--tx)}
+#mb .mb-setupw{margin:8px 2px 2px}
+#mb .mb-do{display:block;margin-top:5px;font-size:11.5px;font-weight:700;white-space:nowrap}#mb .mb-do-bad{color:#c92a2a}#mb .mb-do-warn{color:#b35c00}#mb .mb-do-good{color:#2b8a3e}#mb .mb-do-civ{color:var(--tx2)}
+#mb .mb-pf{display:block;font-size:11px;font-weight:600;white-space:nowrap}#mb .mb-pf.good{color:#2b8a3e}#mb .mb-pf.bad{color:#c92a2a}
+#mb .mb-tg{display:block;font-size:10px;font-weight:500;color:var(--tx2);white-space:nowrap}
+#mb td.mb-g{color:#2b8a3e;font-weight:700}#mb td.mb-b{color:#c92a2a;font-weight:700}#mb td.mb-w{color:#b35c00}
+#mb .mb-lrn{display:inline-block;margin-left:8px;font-size:11.5px;font-weight:600;background:#e7f5ff;color:#1864ab;padding:2px 9px;border-radius:999px;vertical-align:middle}#mb .mb-lrn.lim{background:#fff3bf;color:#a15c00}
+#mb .mb-oldb{background:#ffe3e3;color:#c92a2a;border:2px solid #fa5252;border-radius:14px;padding:14px 18px;font-size:16px;font-weight:700;margin:10px 0}
+#mb .mb-donow{background:var(--s1);border:2px solid var(--ac);border-radius:16px;padding:16px 20px;margin:12px 0;box-shadow:var(--sh)}
+#mb .mb-dh2{font-size:18px;font-weight:800;margin-bottom:8px}#mb .mb-dol{margin:0;padding-left:22px;font-size:14px;line-height:1.55}#mb .mb-dol>li{margin:6px 0}#mb .mb-dol>li.bad>b{color:#c92a2a}#mb .mb-dol>li.good>b{color:#2b8a3e}#mb .mb-dol ul{margin:4px 0 2px;padding-left:18px;font-size:12.5px}
+#mb .mb-gloss{margin:0 0 12px;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:10px 16px}#mb .mb-gloss summary{cursor:pointer;font-weight:700;font-size:14px}#mb .mb-glist{columns:2 380px;font-size:13px;line-height:1.5;margin-top:8px}#mb .mb-glist p{margin:0 0 7px;break-inside:avoid}#mb .mb-setl{display:inline-block;font-size:12.5px;font-weight:500;color:var(--tx)}#mb .mb-who{font-size:12.5px;color:var(--tx);margin:0 2px 4px;font-weight:600}
 #mb .mb-flag{display:inline-block;padding:2px 9px;border-radius:999px;font-weight:700;font-size:12px}
 #mb .mb-flag.bad{background:#ffe3e3;color:#c92a2a}#mb .mb-flag.good{background:#d3f9d8;color:#2b8a3e}#mb .mb-flag.warn{background:#fff3bf;color:#a15c00}
 #mb .mb-table tbody tr.mb-sh td{padding:7px 6px 5px;font-size:11.5px;font-weight:700;color:var(--th);background:var(--s2)!important;border-bottom:1px solid var(--bd);white-space:nowrap}
@@ -226,6 +235,25 @@ CSS = """
 HTML = """<section class="sec" id="mb">
 <h2>&#127919; Media Buyer &mdash; every live ad <span class="count">__N__</span></h2>
 <p class="note">Meta data pulled __PULLED__ (this PC's time). Numbers are the last 7 days unless the column name says otherwise. View only: nothing on this page changes an ad. Hover a column name to see what it means.</p>
+<div id="mb-old"></div>
+<div class="mb-donow" id="mb-donow"></div>
+<details class="mb-gloss"><summary>&#128214; What do these words mean?</summary><div class="mb-glist">
+<p><b>ROAS</b> = sales value / ad spend. 2.0 = $2 of sales for every $1 spent. Break-even is 2.04.</p>
+<p><b>MER</b> = all ad spend as a share of all Shopify sales. Lower is better. Ideal is about 15.6%.</p>
+<p><b>CPP</b> = cost per purchase: ad spend / sales.</p>
+<p><b>CPC link</b> = the cost of one click to the website.</p>
+<p><b>CTR link</b> = out of 100 people who see the ad, how many click.</p>
+<p><b>$ / cart</b> = ad spend for each add to cart.</p>
+<p><b>Cart &rarr; buy</b> = out of 100 carts, how many turn into a sale. Low = a website or price problem, not the ad.</p>
+<p><b>Freq</b> = how many times the same person saw the ad. Over 2.5 = people are getting tired of it.</p>
+<p><b>Hook</b> (videos) = out of 100 people, how many watched 3 seconds.</p>
+<p><b>Campaign &rarr; ad set &rarr; ad</b> = the folder, the group inside it, and the actual ad people see.</p>
+<p><b>Campaign budget</b> = one daily amount Meta shares across the ad sets. <b>Minimum spend</b> forces Meta to give one ad set at least that much, even when it is losing. We never use it.</p>
+<p><b>Learning</b> = Meta is still working out who buys. Adding or editing ads, or a big budget change, restarts it.</p>
+<p><b>TOF / TOM / MOF / BOF</b> = cold new people / everyone except buyers / warm visitors / past buyers.</p>
+<p><b>Profit (7d)</b> = sales value x 49% gross margin, minus ad spend. A rough guide.</p>
+<p><b>Villain</b> pause &middot; <b>Supervillain</b> pause now &middot; <b>Sidekick</b> keep and watch &middot; <b>Hero</b> keep &middot; <b>Superhero</b> keep and give more budget &middot; <b>Civilian</b> too early to tell (under $150 spent).</p>
+</div></details>
 <div class="mb-hero" id="mb-hero"></div>
 <div class="mb-merrow"><div class="mb-banner" id="mb-banner"></div><div class="mb-days" id="mb-days"></div></div>
 <div class="mb-today" id="mb-today"></div>
@@ -301,6 +329,24 @@ function cppCell(d,st,base){var c=cpp(d);if(c===null)return '<td class="num">'+Z
 function roasCell(d){if(!d||!d.sp)return '<td class="num">'+Z+'</td>';var r=d.rev/d.sp;
   return '<td class="num"><span class="pill '+(r>=S.roasbe?'pill-good':(r>=1?'pill-mid':'pill-bad'))+'">'+r.toFixed(2)+'x</span></td>'}
 function pct(n,d){return d?(100*n/d).toFixed(1)+'%':Z}
+// 28/11/2026 (Quan): Do this now box + old-numbers banner
+function doNow(){var P=[],H=[],N=0,lost=0;(DATA.ads||[]).forEach(function(a){if(isR(a))return;var v=cls(a)[0],d=a.d7;if(v==='villain'||v==='supervillain'){P.push(a);lost+=Math.max(0,-pf(d))}else if(v==='superhero'||v==='hero')H.push(a);else if(v==='civilian')N++});
+  P.sort(function(x,y){return pf(x.d7)-pf(y.d7)});H.sort(function(x,y){return pf(y.d7)-pf(x.d7)});
+  var mins=[];(DATA.ads||[]).forEach(function(a){var b=a.sb||{};if(b.min&&mins.indexOf(a.campaign)<0)mins.push(a.campaign)});
+  var li=function(a){var d=a.d7||{};return '<li><b>'+esc(shortnTxt(a.name))+'</b> <span class="mut">'+esc(a.adset)+'</span> &middot; '+money(d.sp||0)+' spent &middot; ROAS '+(d.sp?(d.rev/d.sp).toFixed(2):'0')+' &middot; '+(pf(d)>=0?'+'+money(pf(d))+' profit':'&minus;'+money(-pf(d))+' lost')+'</li>'};
+  var h='<div class="mb-dh2">&#9989; Do this now</div><ol class="mb-dol">';
+  h+=P.length?'<li class="bad"><b>Pause '+P.length+' losing ad'+(P.length>1?'s':'')+'</b> (about '+money(lost)+' lost in 7 days). Open each one with its Open &#8599; button and switch it off, or ask Claude. Pause the AD only, never the ad set or campaign.<ul>'+P.slice(0,8).map(li).join('')+'</ul></li>':'<li class="good"><b>Nothing to pause.</b> No live ad is losing enough money.</li>';
+  if(mins.length)h+='<li class="bad"><b>Minimum spend is set in: '+mins.map(esc).join(', ')+'.</b> It forces Meta to spend on an ad set even when it is losing. Ask Claude to remove it.</li>';
+  h+=H.length?'<li class="good"><b>'+H.length+' ad'+(H.length>1?'s are':' is')+' making money: leave '+(H.length>1?'them':'it')+' on.</b> To give winners more budget, raise it by 20% at most, once a day. Ask Claude first.<ul>'+H.slice(0,5).map(li).join('')+'</ul></li>':'';
+  h+='<li><b>Leave the other '+N+' ads alone.</b> Each has spent under $'+S.minspend+', which is too early to tell.</li></ol>';
+  document.getElementById('mb-donow').innerHTML=h;
+  var pu=DATA.pulled?new Date(DATA.pulled):null,m=pu?Math.round((Date.now()-pu.getTime())/6e4):0;
+  document.getElementById('mb-old').innerHTML=m>60?'<div class="mb-oldb">&#128308; These numbers are '+(m>=120?Math.floor(m/60)+' hours':m+' minutes')+' old (pulled '+esc(DATA.pulled.replace('T',' ').slice(0,16))+'). The automatic update failed. Press Refresh now at the top before you decide anything.</div>':''}
+function shortnTxt(n){return String(n||'').replace(/^BF26_(LIVE|LAST|HYPE|ALL)_NOV_BFCM_/,'').replace(/_/g,' ')}
+// 28/11/2026 (Quan): keep the EE names, add what to do in plain words + money made or lost underneath
+function pf(d){return d&&d.sp?d.rev*S.margin/100-d.sp:0}
+function pfTxt(d){var p=pf(d);if(!d||!d.sp)return '';return '<small class="mb-pf '+(p>=0?'good':'bad')+'" title="Sales value x '+S.margin+'% gross margin, minus ad spend. Last 7 days. Rough guide only">'+(p>=0?'+'+money(p)+' profit':'&minus;'+money(-p)+' lost')+' (7d)</small>'}
+function actOf(v,a){if(isR(a))return '<small class="mb-do mb-do-civ">Reach ad: judged on reach</small>';var M={supervillain:['bad','&#128308; Pause now'],villain:['bad','&#128308; Pause'],sidekick:['warn','&#128993; Keep, watch'],hero:['good','&#128994; Keep'],superhero:['good','&#128994; Keep, give more budget'],civilian:['civ','&#9898; Too early to tell']},m=M[v[0]]||['civ',''];return '<small class="mb-do mb-do-'+m[0]+'">'+m[1]+'</small>'+(a.paused?'':pfTxt(a.d7))}
 function cls(a){if(/^#HYPE/.test(a.campaign||''))return['civilian','&#128227; Reach','Reach campaign: judged on reach and frequency, not sales. Never auto-paused'];var d=a.d7,d3=a.d3,sp=d?d.sp:0,r7=d&&d.sp?d.rev/d.sp:null;
   var fast=d3&&d3.sp>=S.fastspend&&d3.rev/d3.sp<S.villroas;
   if(sp>=S.superspend&&r7<S.villroas)return['supervillain','&#128128; Supervillain','$'+Math.round(sp)+' spent in 7 days at ROAS '+r7.toFixed(2)+'. Pause now. An ad should never get this far'];
@@ -354,7 +400,7 @@ function render(){
     var days=a.created_time?Math.floor((now-new Date(a.created_time).getTime())/864e5):null;
     return '<tr class="mb-ad'+(hide?' mb-hid':'')+(a.paused?' mb-paused':'')+(isH?' mb-ishid':'')+'" data-s="'+esc((a.name+' '+a.campaign+' '+a.adset).toLowerCase())+'" data-v="'+v[0]+'" style="--sc:'+sc+(filt&&filt!==v[0]?';display:none':'')+'">'
     +'<td class="adtd"><div class="adc">'+img+'<span class="adname">'+esc(a.name)+(a.video?' <span class="mb-vid">VIDEO</span>':'')+(nr?'<span class="mb-near">&#9888; '+esc(nr)+'</span>':'')+(isR(a)?rstrip(a):'')+'</span></div></td>'
-    +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span>'+(a.paused?' <span class="mbv mbv-paused" title="This ad is paused in Meta. It is listed because it spent money in the last 7 days"><i></i>Paused</span>':'')+'</td>'
+    +'<td class="c"><span class="mbv mbv-'+v[0]+'" title="'+esc(v[2])+'"><i></i>'+v[1].replace(/^&#[0-9]+; /,'')+'</span>'+actOf(v,a)+(a.paused?' <span class="mbv mbv-paused" title="This ad is paused in Meta. It is listed because it spent money in the last 7 days"><i></i>Paused</span>':'')+'</td>'
     +'<td class="num">'+(d?money(d.sp):Z)+'</td><td class="num">'+(a.d0&&a.d0.sp?money(a.d0.sp):Z)+'</td><td class="num">'+(d?(d.pc||'<span class="mut">0</span>'):Z)+'</td>'
     +cppCell(a[CPPW],stg,CPPW==='d7'?undefined:base)+roasCell(d)+(a.d0&&a.d0.sp?roasCell(a.d0):'<td class="num">'+Z+'</td>')
     +'<td class="num">'+(d&&d.freq?d.freq.toFixed(2):Z)+'</td><td class="num">'+(d&&d.reach?nf(d.reach):Z)+'</td><td class="num">'+(d&&d.imp?d.ctr.toFixed(2)+'%':Z)+'</td><td class="num">'+(d&&d.lc?money(d.sp/d.lc):Z)+'</td><td class="num">'+(d&&d.imp?money(d.cpm):Z)+'</td>'
@@ -363,6 +409,12 @@ function render(){
     +'<td class="c mb-acts"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a>'
     +'<button class="mb-hide" data-id="'+a.id+'" title="'+(isH?'Show this ad on this page again':'Remove this ad from this page only. Nothing changes in Meta')+'">'+(isH?'Unhide':'Hide')+'</button></td></tr>'}
   // 28/11/2026 (Quan): campaign bar says how the campaign is set up: budget type, bid, minimum spends, caps
+  function whoOf(cn){var t;if(/^#HYPE/.test(cn))t='Reach ads: show the sale to as many people as possible. Judged on people reached, not sales';
+    else if(/BOF|Past buyers/i.test(cn))t='Past buyers: people who already bought from LACALUT before';
+    else if(/MOF|Warm/i.test(cn))t='Warm: people who visited the website or engaged with our ads, but never bought';
+    else if(/TOM/i.test(cn))t='Everyone except past buyers: new people plus people who have seen us before';
+    else if(/TOF|New people|Broad/i.test(cn))t='Cold: new people who have probably never heard of LACALUT';
+    return t?'<div class="mb-who">&#128101; Who sees these ads: '+t+'</div>':''}
   function setupOf(sets){var ks=Object.keys(sets),f=sets[ks[0]][0].sb||{},mins=[],caps=[],abo=0,parts=[];
     ks.forEach(function(k){var b=sets[k][0].sb||{};if(b.min)mins.push(b.min);if(b.cap)caps.push(b.cap);abo+=b.bud||0});
     var BS={LOWEST_COST_WITHOUT_CAP:'Highest volume (no cap)',COST_CAP:'Cost cap',LOWEST_COST_WITH_BID_CAP:'Bid cap',LOWEST_COST_WITH_MIN_ROAS:'Min ROAS'};
@@ -373,16 +425,19 @@ function render(){
     var sum=function(x){return x.reduce(function(p,q){return p+q},0)};
     parts.push(mins.length?'<span class="mb-flag bad">&#9888; Minimum spend on '+mins.length+' ad set'+(mins.length>1?'s':'')+': '+money(sum(mins))+'/day forced</span>':(f.cbud?'<span class="mb-flag good">&#10003; No minimum spends</span>':''));
     if(caps.length)parts.push('<span class="mb-flag warn">Spend cap on '+caps.length+' ad set'+(caps.length>1?'s':'')+'</span>');
-    return '<span class="mb-setup">&#9881;&#65039; How it is set up: '+parts.filter(Boolean).join(' &middot; ')+'</span>'}
+    return '<span class="mb-setl">&#9881;&#65039; How it is set up: '+parts.filter(Boolean).join(' &middot; ')+'</span>'}
   // 28/11/2026 (Quan): every ad set gets its own column-name row above its numbers
   var HL=[].map.call(document.querySelectorAll('.mb-table thead tr:first-child th'),function(th){var c=th.cloneNode(true);[].forEach.call(c.querySelectorAll('select'),function(x){x.remove()});var t=c.textContent.trim();return t==='CPP'?'CPP '+({d0:'today',d1:'yest.',d3:'3 days',d7:'7 days'})[CPPW]:t});
-  function shRow(sc){return '<tr class="mb-ad mb-sh" style="--sc:'+sc+'">'+HL.map(function(t,i){return '<td class="'+(i<2?'':'num')+'">'+esc(t)+'</td>'}).join('')+'</tr>'}
+  var TG={'CTR link':['up',1.2,0.8,'good: 1.2% or more'],'CPC link':['down',4.5,6,'good: $4.50 or less'],'$ / cart':['down',5,10,'good: $5 or less'],'Cart → buy':['up',10,5,'good: 10% or more'],'Freq':['down',2.5,3.5,'good: under 2.5'],'Hook':['up',25,15,'good: 25% or more']};
+  function shRow(sc){return '<tr class="mb-ad mb-sh" style="--sc:'+sc+'">'+HL.map(function(t,i){var g=TG[t];return '<td class="'+(i<2?'':'num')+'">'+esc(t)+(g?'<small class="mb-tg">'+g[3]+'</small>':'')+'</td>'}).join('')+'</tr>'}
+  function paint(){[].forEach.call(document.querySelectorAll('#mb-body tr.mb-ad:not(.mb-sh):not(.mb-tot)'),function(tr){[].forEach.call(tr.children,function(td,i){var g=TG[HL[i]];if(!g)return;var v=parseFloat((td.textContent||'').replace(/[$,%]/g,''));if(isNaN(v))return;
+    var good=g[0]==='up'?v>=g[1]:v<=g[1],bad=g[0]==='up'?v<g[2]:v>g[2];td.classList.add(good?'mb-g':(bad?'mb-b':'mb-w'));td.title=HL[i]+': '+g[3]})})}
   order.sort(function(x,y){var i=CORD.indexOf(x),j=CORD.indexOf(y);if(i<0)i=1e3+(/^BF #/.test(x)?0:1);if(j<0)j=1e3+(/^BF #/.test(y)?0:1);return i-j||(x<y?-1:x>y?1:0)});LASTORD=order.slice();var body='',cards='',cnt={supervillain:0,villain:0,sidekick:0,civilian:0,hero:0,superhero:0},now=Date.now(),nearL=[],heroL=[],villL=[];
   order.forEach(function(cn){var sets=camps[cn],all=[];Object.keys(sets).forEach(function(k){all=all.concat(sets[k])});
     var ct={sp:0,rev:0,pc:0};Object.keys(sets).forEach(function(k){var t=(SETS[sets[k][0].sid]||{}).d7||agg(sets[k]);ct.sp+=t.sp;ct.rev+=t.rev;ct.pc+=t.pc});var cr=ct.sp?ct.rev/ct.sp:0;
     cards+='<div class="kpi"><div class="lbl">'+esc(cn.split(' (')[0])+'</div><div class="val">'+cr.toFixed(2)+'x <span class="mb-chip '+(cr>=S.roasbe?'good':(cr>=1?'warn':'bad'))+'"><i></i>'+(cr>=S.roasbe?'At or above break-even':(cr>=1?'Under break-even '+S.roasbe.toFixed(2):'ROAS under 1.0'))+'</span></div><div class="mb-sub">'+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; CPP '+(ct.pc?money(ct.sp/ct.pc):'&mdash;')+' &middot; 7 days</div></div>';
     var b0=body.length,fn=(/_(TOF|TOM|MOF)_/.exec(cn)||['','x'])[1].toLowerCase();
-    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-ord"><button class="mb-ob" data-o="top" data-c="'+esc(cn)+'" title="Move this campaign to the top of the page">&#9195; Top</button><button class="mb-ob" data-o="up" data-c="'+esc(cn)+'" title="Move this campaign up one place">&#9650;</button><button class="mb-ob" data-o="down" data-c="'+esc(cn)+'" title="Move this campaign down one place">&#9660;</button></span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+(function(){var n=ncOf(cn,all[0].cid),t0=0;Object.keys(sets).forEach(function(k){var Q=(SETS[sets[k][0].sid]||{}).d0||aggk(sets[k],'d0');t0+=Q.sp||0});if(n===null)return '';return ' &middot; <b title="Shopify orders today from first-time customers whose last click was this campaign. Last click only, so the real number is higher">today: '+n+' new customer'+(n===1?'':'s')+(n?' at '+money(t0/n)+' each':' for '+money(t0))+'</b>'})())+'</span></div><div class="mb-setupw">'+setupOf(sets)+'</div></td></tr>';
+    body+='<tr class="mb-gap mb-gap-big"><td colspan="'+NC+'"></td></tr><tr class="mb-camp"><td colspan="'+NC+'">'+'<div class="mb-crow"><span class="mb-cn">'+esc(cn)+'</span><span class="mb-ord"><button class="mb-ob" data-o="top" data-c="'+esc(cn)+'" title="Move this campaign to the top of the page">&#9195; Top</button><button class="mb-ob" data-o="up" data-c="'+esc(cn)+'" title="Move this campaign up one place">&#9650;</button><button class="mb-ob" data-o="down" data-c="'+esc(cn)+'" title="Move this campaign down one place">&#9660;</button></span><span class="mb-cm">'+(isR(all[0])?(function(){var m={sp:0,reach:0},t={sp:0,reach:0};Object.keys(sets).forEach(function(k){var Q=SETS[sets[k][0].sid]||{};if(Q.dm){m.sp+=Q.dm.sp;m.reach+=Q.dm.reach}if(Q.d0){t.sp+=Q.d0.sp;t.reach+=Q.d0.reach}});return all.length+' live ads &middot; <b>'+nf(m.reach)+' people reached since launch</b> for '+money(m.sp)+' ('+per1k(m)+' per 1,000) &middot; today: '+nf(t.reach)+' people for '+money(t.sp)})():all.length+' live ads &middot; '+money(ct.sp)+' spend &middot; '+ct.pc+' sales &middot; ROAS '+rp(cr)+(function(){var n=ncOf(cn,all[0].cid),t0=0;Object.keys(sets).forEach(function(k){var Q=(SETS[sets[k][0].sid]||{}).d0||aggk(sets[k],'d0');t0+=Q.sp||0});if(n===null)return '';return ' &middot; <b title="Shopify orders today from first-time customers whose last click was this campaign. Last click only, so the real number is higher">today: '+n+' new customer'+(n===1?'':'s')+(n?' at '+money(t0/n)+' each':' for '+money(t0))+'</b>'})())+'</span></div><div class="mb-setupw">'+whoOf(cn)+setupOf(sets)+'</div></td></tr>';
     Object.keys(sets).sort(function(x,y){return lossOf(sets[y])-lossOf(sets[x])}).forEach(function(sn){
       var rows=sets[sn].slice().sort(function(x,y){return sp7(y)-sp7(x)}),TS=SETS[rows[0].sid]||{},st=TS.d7||agg(rows),sf=rows[0].sfreq||0,stg=stage(sf);
       var s3=TS.d3||aggk(rows,'d3'),s1=TS.d1||aggk(rows,'d1'),s0=TS.d0||aggk(rows,'d0'),sb=rows[0].sb||{},r7s=st.sp?st.rev/st.sp:null;
@@ -392,7 +447,7 @@ function render(){
         +stat('Spent yesterday',s1.sp?money(s1.sp):'$0','Whole ad set, straight from Meta. Includes ads that are paused now')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
       if(isR(rows[0])){var dm=TS.dm||{},d0=TS.d0||{};sc='#5c7cfa';info=bud+stat('People reached since launch',nf(dm.reach),'Unique people who saw an ad in this ad set this month (Hype started 25/11)',1)+stat('Reached today',nf(d0.reach)+' &middot; '+money(d0.sp||0),'Unique people reached today, and spend today')+stat('Reached yesterday',nf(s1.reach)+' &middot; '+money(s1.sp||0))+stat('Cost per 1,000 people',per1k(dm))+stat('Views per person',(dm.freq||0).toFixed(2),'Cap is 2 views per 7 days')+stat('Website visits',nf(dm.lpv)+(dm.lpv?' &middot; '+money(dm.sp/dm.lpv)+' each':''))+stat('Live ads',rows.length)}
-      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
+      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+(sb.learn==='LEARNING'?' <span class="mb-lrn" title="Meta is still learning who buys. Adding an ad, editing an ad or a big budget change starts the learning again">&#127891; Learning: do not add or edit ads here</span>':(sb.learn==='FAIL'?' <span class="mb-lrn lim" title="Not enough sales for Meta to finish learning">Learning limited</span>':''))+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
       body+=shRow(sc);
       body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days (includes paused ads)</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+(s0.sp?money(s0.sp):'$0')+'</td><td class="num">'+st.pc+'</td>'+cppCell(({d7:st,d3:s3,d1:s1,d0:s0})[CPPW],stg,CPPW==='d7'?undefined:cpp(st))+roasCell(st)+(s0.sp?roasCell(s0):'<td></td>')+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,pk=key+'|P';
@@ -423,12 +478,12 @@ function render(){
     +ht('Sales value, last 7 days',money(tot.rev),'',tot.pc+' sales, as counted by Meta')
     +ht('ROAS, last 7 days',trs.toFixed(2)+'x','<span class="mb-chip '+(trs>=S.roasbe?'good':(trs>=1?'warn':'bad'))+'"><i></i>'+(trs>=S.roasbe?'At or above break-even':'Under break-even')+'</span>','Break-even is '+S.roasbe.toFixed(2))
     +ht('Live ads',DATA.ads.length,'',(cnt.villain+cnt.supervillain)+' Villains &middot; '+(cnt.hero+cnt.superhero)+' Heroes &middot; '+nearL.length+' close to Villain');
-  document.getElementById('mb-body').innerHTML=body;(function(){function f(){var th=document.querySelector('.mb-table thead');if(!th)return;var h=0;[].forEach.call(th.rows,function(r){h+=r.offsetHeight});if(h)document.getElementById('mb').style.setProperty('--hh',h+'px')}f();setTimeout(f,300);setTimeout(f,1500);window.addEventListener('resize',f)})();document.getElementById('mb-kpis').innerHTML=cards;
+  document.getElementById('mb-body').innerHTML=body;paint();doNow();(function(){function f(){var th=document.querySelector('.mb-table thead');if(!th)return;var h=0;[].forEach.call(th.rows,function(r){h+=r.offsetHeight});if(h)document.getElementById('mb').style.setProperty('--hh',h+'px')}f();setTimeout(f,300);setTimeout(f,1500);window.addEventListener('resize',f)})();document.getElementById('mb-kpis').innerHTML=cards;
   var ch='';[['','All live ads',DATA.ads.length],['supervillain','&#128128; Supervillain',cnt.supervillain],['villain','&#129465; Villain',cnt.villain],['sidekick','&#129309; Sidekick',cnt.sidekick],['hero','&#11088; Hero',cnt.hero],['superhero','&#129464; Superhero',cnt.superhero],['civilian','&#128118; Civilian',cnt.civilian]].forEach(function(c){ch+='<button class="mbf" data-f="'+c[0]+'" aria-pressed="'+(filt===c[0])+'">'+(c[0]?'<i class="mbd mbd-'+c[0]+'"></i>':'')+c[1].replace(/^&#[0-9]+; /,'')+'<span class="tcount">'+c[2]+'</span></button>'});
   ch+='<span class="mb-legend"><span><i style="background:#d6246e"></i>TOF campaign (cold)</span><span><i style="background:#b45309"></i>TOM campaign (warmer)</span><span><i style="background:#15803d"></i>MOF campaign (warmest)</span></span>';
   var nH=0;DATA.ads.concat(DATA.paused||[]).forEach(function(a){if(HID[a.id])nH++});
   if(nH)ch+='<button class="mbf" id="mb-hidbtn" title="Ads you removed from this page with the Hide button">'+(showHid?'Stop showing hidden ads':'Show hidden ads')+'<span class="tcount">'+nH+'</span></button>';
-  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="CPM, Checkout and Days live">'+(less?'Show all columns':'Show fewer columns')+'</button>';
+  ch+='<button class="mbf mb-colbtn" id="mb-cols" title="Beginner view hides Reach, CPM, Hook, Checkout and Days live">'+(less?'&#128083; Expert view (all columns)':'&#128118; Beginner view (fewer columns)')+'</button>';
   var box=document.getElementById('mb-chips');box.innerHTML=ch;
   [].forEach.call(box.querySelectorAll('.mbf[data-f]'),function(b){b.addEventListener('click',function(){filt=b.getAttribute('data-f');render()})});
   var hb=document.getElementById('mb-hidbtn');if(hb)hb.addEventListener('click',function(){showHid=!showHid;render()});
