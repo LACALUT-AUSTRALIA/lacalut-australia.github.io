@@ -207,7 +207,7 @@ CSS = """
 #mb .mb-cn{background:var(--cc);box-shadow:0 2px 6px rgba(16,24,40,.18)}
 #mb .mb-cm{color:var(--tx);font-weight:500}
 #mb .mb-camp td{position:sticky;top:var(--hh,80px);z-index:6;box-shadow:0 6px 10px -8px rgba(16,24,40,.35)}
-#mb .mb-setupw{margin:8px 2px 2px}#mb .mb-sdo{margin-top:10px;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5}#mb .mb-sdo.bad{background:#fff0f0;color:#7d1d1d;border:1px solid #ffc9c9}#mb .mb-sdo.bad>b{color:#c92a2a}#mb .mb-sdo.good{background:#ebfbee;color:#1e5128;border:1px solid #b2f2bb}#mb .mb-sdo.good>b{color:#2b8a3e}#mb .mb-sdo.civ{background:var(--s2);color:var(--tx2)}
+#mb .mb-setupw{margin:8px 2px 2px}#mb .mb-chg{grid-column:1/-1;background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:10px 16px}#mb .mb-chg summary{cursor:pointer;font-weight:700;font-size:14px}#mb .mb-chg[open] summary{margin-bottom:10px}#mb .mb-sdo{margin-top:10px;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5}#mb .mb-sdo.bad{background:#fff0f0;color:#7d1d1d;border:1px solid #ffc9c9}#mb .mb-sdo.bad>b{color:#c92a2a}#mb .mb-sdo.good{background:#ebfbee;color:#1e5128;border:1px solid #b2f2bb}#mb .mb-sdo.good>b{color:#2b8a3e}#mb .mb-sdo.civ{background:var(--s2);color:var(--tx2)}
 #mb .mb-do{display:block;margin-top:5px;font-size:11.5px;font-weight:700;white-space:nowrap}#mb .mb-do-bad{color:#c92a2a}#mb .mb-do-warn{color:#b35c00}#mb .mb-do-good{color:#2b8a3e}#mb .mb-do-civ{color:var(--tx2)}
 #mb .mb-pf{display:block;font-size:11px;font-weight:600;white-space:nowrap}#mb .mb-pf.good{color:#2b8a3e}#mb .mb-pf.bad{color:#c92a2a}
 #mb .mb-tg{display:block;font-size:10px;font-weight:500;color:var(--tx2);white-space:nowrap}
@@ -473,7 +473,7 @@ function render(){
       else body+='<tr class="mb-more mb-foot" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"></div></td></tr>'});body+='<tr class="mb-cend"><td colspan="'+NC+'"></td></tr>';body=body.slice(0,b0)+body.slice(b0).replace(/<tr class="/g,'<tr class="fn-'+fn+' ')});
   var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
   var tp=function(c,t,n,b){return '<div class="mb-tp '+c+'"><div class="mb-tph"><i></i><b>'+t+'</b><span>'+n+'</span></div><div class="mb-tpb">'+b+'</div></div>'};
-  document.getElementById('mb-today').innerHTML=tp('info','Changes in the last 24 hours',ACTS.length,acts);/* 28/11 Quan: pause/keep lists now live on each ad set card */
+  document.getElementById('mb-today').innerHTML='<details class="mb-chg"><summary>&#128221; Changes in the last 24 hours ('+ACTS.length+') &middot; click to open</summary>'+tp('info','Changes in the last 24 hours',ACTS.length,acts)+'</details>';/* 28/11 Quan: pause/keep lists now live on each ad set card */
   var tot=agg(DATA.ads),trs=tot.sp?tot.rev/tot.sp:0;
   var mchip=function(v){return v<=S.mer?'<span class="mb-chip good"><i></i>At or under ideal</span>':'<span class="mb-chip '+(v<=2*S.mer?'warn':'bad')+'"><i></i>'+(v/S.mer).toFixed(1)+'x the ideal</span>'};
   var ht=function(l,v,x,sx){return '<div class="mb-h"><small>'+l+'</small><b>'+v+'</b>'+(x||'')+'<em>'+sx+'</em></div>'};
