@@ -1,0 +1,1 @@
+{"version":"0.0.1","configurations":[{"name":"media-buyer-preview","runtimeExecutable":"python","runtimeArgs":["-m","http.server","8765","--directory","C:/Users/conta/lacalut-pages/live-ads-7k2m9x3"],"port":8765}]}
