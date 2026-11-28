@@ -207,7 +207,7 @@ CSS = """
 #mb .mb-cn{background:var(--cc);box-shadow:0 2px 6px rgba(16,24,40,.18)}
 #mb .mb-cm{color:var(--tx);font-weight:500}
 #mb .mb-camp td{position:sticky;top:var(--hh,80px);z-index:6;box-shadow:0 6px 10px -8px rgba(16,24,40,.35)}
-#mb .mb-setupw{margin:8px 2px 2px}
+#mb .mb-setupw{margin:8px 2px 2px}#mb .mb-sdo{margin-top:10px;padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5}#mb .mb-sdo.bad{background:#fff0f0;color:#7d1d1d;border:1px solid #ffc9c9}#mb .mb-sdo.bad>b{color:#c92a2a}#mb .mb-sdo.good{background:#ebfbee;color:#1e5128;border:1px solid #b2f2bb}#mb .mb-sdo.good>b{color:#2b8a3e}#mb .mb-sdo.civ{background:var(--s2);color:var(--tx2)}
 #mb .mb-do{display:block;margin-top:5px;font-size:11.5px;font-weight:700;white-space:nowrap}#mb .mb-do-bad{color:#c92a2a}#mb .mb-do-warn{color:#b35c00}#mb .mb-do-good{color:#2b8a3e}#mb .mb-do-civ{color:var(--tx2)}
 #mb .mb-pf{display:block;font-size:11px;font-weight:600;white-space:nowrap}#mb .mb-pf.good{color:#2b8a3e}#mb .mb-pf.bad{color:#c92a2a}
 #mb .mb-tg{display:block;font-size:10px;font-weight:500;color:var(--tx2);white-space:nowrap}
@@ -236,7 +236,6 @@ HTML = """<section class="sec" id="mb">
 <h2>&#127919; Media Buyer &mdash; every live ad <span class="count">__N__</span></h2>
 <p class="note">Meta data pulled __PULLED__ (this PC's time). Numbers are the last 7 days unless the column name says otherwise. View only: nothing on this page changes an ad. Hover a column name to see what it means.</p>
 <div id="mb-old"></div>
-<div class="mb-donow" id="mb-donow"></div>
 <details class="mb-gloss"><summary>&#128214; What do these words mean?</summary><div class="mb-glist">
 <p><b>ROAS</b> = sales value / ad spend. 2.0 = $2 of sales for every $1 spent. Break-even is 2.04.</p>
 <p><b>MER</b> = all ad spend as a share of all Shopify sales. Lower is better. Ideal is about 15.6%.</p>
@@ -339,7 +338,7 @@ function doNow(){var P=[],H=[],N=0,lost=0;(DATA.ads||[]).forEach(function(a){if(
   if(mins.length)h+='<li class="bad"><b>Minimum spend is set in: '+mins.map(esc).join(', ')+'.</b> It forces Meta to spend on an ad set even when it is losing. Ask Claude to remove it.</li>';
   h+=H.length?'<li class="good"><b>'+H.length+' ad'+(H.length>1?'s are':' is')+' making money: leave '+(H.length>1?'them':'it')+' on.</b> To give winners more budget, raise it by 20% at most, once a day. Ask Claude first.<ul>'+H.slice(0,5).map(li).join('')+'</ul></li>':'';
   h+='<li><b>Leave the other '+N+' ads alone.</b> Each has spent under $'+S.minspend+', which is too early to tell.</li></ol>';
-  document.getElementById('mb-donow').innerHTML=h;
+  var dn=document.getElementById('mb-donow');if(dn)dn.innerHTML=h;
   var pu=DATA.pulled?new Date(DATA.pulled):null,m=pu?Math.round((Date.now()-pu.getTime())/6e4):0;
   document.getElementById('mb-old').innerHTML=m>60?'<div class="mb-oldb">&#128308; These numbers are '+(m>=120?Math.floor(m/60)+' hours':m+' minutes')+' old (pulled '+esc(DATA.pulled.replace('T',' ').slice(0,16))+'). The automatic update failed. Press Refresh now at the top before you decide anything.</div>':''}
 function shortnTxt(n){return String(n||'').replace(/^BF26_(LIVE|LAST|HYPE|ALL)_NOV_BFCM_/,'').replace(/_/g,' ')}
@@ -409,6 +408,13 @@ function render(){
     +'<td class="c mb-acts"><a class="wlink" href="https://adsmanager.facebook.com/adsmanager/manage/ads?act='+ACT+'&selected_ad_ids='+a.id+'" target="_blank" rel="noopener">Open &#8599;</a>'
     +'<button class="mb-hide" data-id="'+a.id+'" title="'+(isH?'Show this ad on this page again':'Remove this ad from this page only. Nothing changes in Meta')+'">'+(isH?'Unhide':'Hide')+'</button></td></tr>'}
   // 28/11/2026 (Quan): campaign bar says how the campaign is set up: budget type, bid, minimum spends, caps
+  // 28/11/2026 (Quan): what to do in THIS ad set, right on the ad set card
+  function setDo(rows){if(isR(rows[0]))return '';var P=[],H=[],N=0;rows.forEach(function(a){var v=cls(a)[0];if(v==='villain'||v==='supervillain')P.push(a);else if(v==='hero'||v==='superhero')H.push(a);else if(v==='civilian')N++});
+    var nm=function(a){var p=pf(a.d7);return '<b>'+esc(shortnTxt(a.name))+'</b> ('+(p>=0?'+'+money(p)+' profit':'&minus;'+money(-p)+' lost')+')'},h='';
+    if(P.length)h+='<div class="mb-sdo bad">&#128308; <b>Do this now: pause '+P.length+' ad'+(P.length>1?'s':'')+'</b>: '+P.map(nm).join(', ')+'. Use its Open &#8599; button, or ask Claude. Pause the ad only, never this ad set.</div>';
+    if(H.length)h+='<div class="mb-sdo good">&#128994; <b>Making money, leave on</b>: '+H.map(nm).join(', ')+'. More budget? Ask Claude (20% at most, once a day).</div>';
+    if(!P.length&&!H.length)h+='<div class="mb-sdo civ">&#9898; <b>Nothing to do here.</b> '+(N?N+' ad'+(N>1?'s are':' is')+' under $'+S.minspend+' spent: too early to tell.':'Leave it alone.')+'</div>';
+    return h}
   function whoOf(cn){var t;if(/^#HYPE/.test(cn))t='Reach ads: show the sale to as many people as possible. Judged on people reached, not sales';
     else if(/BOF|Past buyers/i.test(cn))t='Past buyers: people who already bought from LACALUT before';
     else if(/MOF|Warm/i.test(cn))t='Warm: people who visited the website or engaged with our ads, but never bought';
@@ -423,7 +429,7 @@ function render(){
     if(f.obj)parts.push('Goal: '+(OB[f.obj]||esc(f.obj)));
     if(f.bs)parts.push('Bid: '+(BS[f.bs]||esc(f.bs))+(f.bamt?' '+money(f.bamt):''));
     var sum=function(x){return x.reduce(function(p,q){return p+q},0)};
-    parts.push(mins.length?'<span class="mb-flag bad">&#9888; Minimum spend on '+mins.length+' ad set'+(mins.length>1?'s':'')+': '+money(sum(mins))+'/day forced</span>':(f.cbud?'<span class="mb-flag good">&#10003; No minimum spends</span>':''));
+    parts.push(mins.length?'<span class="mb-flag bad">&#9888; Minimum spend on '+mins.length+' ad set'+(mins.length>1?'s':'')+': '+money(sum(mins))+'/day forced. Do this now: ask Claude to remove it</span>':(f.cbud?'<span class="mb-flag good">&#10003; No minimum spends</span>':''));
     if(caps.length)parts.push('<span class="mb-flag warn">Spend cap on '+caps.length+' ad set'+(caps.length>1?'s':'')+'</span>');
     return '<span class="mb-setl">&#9881;&#65039; How it is set up: '+parts.filter(Boolean).join(' &middot; ')+'</span>'}
   // 28/11/2026 (Quan): every ad set gets its own column-name row above its numbers
@@ -447,7 +453,7 @@ function render(){
         +stat('Spent yesterday',s1.sp?money(s1.sp):'$0','Whole ad set, straight from Meta. Includes ads that are paused now')+stat('ROAS 3 days',s3.sp?rp(s3.rev/s3.sp):Z)
         +stat('Acting like',stg,'From the ad set frequency and the Setup boundaries')+(sb.learn?stat('Learning',({LEARNING:'Still learning',SUCCESS:'Finished',FAIL:'Learning limited'})[sb.learn]||esc(sb.learn)):'')+stat('Live ads',rows.length);
       if(isR(rows[0])){var dm=TS.dm||{},d0=TS.d0||{};sc='#5c7cfa';info=bud+stat('People reached since launch',nf(dm.reach),'Unique people who saw an ad in this ad set this month (Hype started 25/11)',1)+stat('Reached today',nf(d0.reach)+' &middot; '+money(d0.sp||0),'Unique people reached today, and spend today')+stat('Reached yesterday',nf(s1.reach)+' &middot; '+money(s1.sp||0))+stat('Cost per 1,000 people',per1k(dm))+stat('Views per person',(dm.freq||0).toFixed(2),'Cap is 2 views per 7 days')+stat('Website visits',nf(dm.lpv)+(dm.lpv?' &middot; '+money(dm.sp/dm.lpv)+' each':''))+stat('Live ads',rows.length)}
-      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+(sb.learn==='LEARNING'?' <span class="mb-lrn" title="Meta is still learning who buys. Adding an ad, editing an ad or a big budget change starts the learning again">&#127891; Learning: do not add or edit ads here</span>':(sb.learn==='FAIL'?' <span class="mb-lrn lim" title="Not enough sales for Meta to finish learning">Learning limited</span>':''))+'</div><div class="mb-stats">'+info+'</div></div></td></tr>';
+      body+='<tr class="mb-gap"><td colspan="'+NC+'"></td></tr><tr class="mb-set" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"><div class="mb-sname">'+esc(sn)+(sb.learn==='LEARNING'?' <span class="mb-lrn" title="Meta is still learning who buys. Adding an ad, editing an ad or a big budget change starts the learning again">&#127891; Learning: do not add or edit ads here</span>':(sb.learn==='FAIL'?' <span class="mb-lrn lim" title="Not enough sales for Meta to finish learning">Learning limited</span>':''))+'</div><div class="mb-stats">'+info+'</div>'+setDo(rows)+'</div></td></tr>';
       body+=shRow(sc);
       body+='<tr class="mb-ad mb-tot" style="--sc:'+sc+'"><td class="adtd">Ad set total, last 7 days (includes paused ads)</td><td></td><td class="num">'+money(st.sp)+'</td><td class="num">'+(s0.sp?money(s0.sp):'$0')+'</td><td class="num">'+st.pc+'</td>'+cppCell(({d7:st,d3:s3,d1:s1,d0:s0})[CPPW],stg,CPPW==='d7'?undefined:cpp(st))+roasCell(st)+(s0.sp?roasCell(s0):'<td></td>')+'<td class="num">'+sf.toFixed(2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
       var key=cn+'|'+sn,pk=key+'|P';
@@ -467,7 +473,7 @@ function render(){
       else body+='<tr class="mb-more mb-foot" style="--sc:'+sc+'"><td colspan="'+NC+'"><div class="mb-in"></div></td></tr>'});body+='<tr class="mb-cend"><td colspan="'+NC+'"></td></tr>';body=body.slice(0,b0)+body.slice(b0).replace(/<tr class="/g,'<tr class="fn-'+fn+' ')});
   var none='<span class="mut">None</span>',acts=ACTS.length?ACTS.map(function(x){return '<span class="mb-ti">'+esc(x)+'</span>'}).join(''):'<span class="mut">Nothing paused or cut in the last 24 hours</span>';
   var tp=function(c,t,n,b){return '<div class="mb-tp '+c+'"><div class="mb-tph"><i></i><b>'+t+'</b><span>'+n+'</span></div><div class="mb-tpb">'+b+'</div></div>'};
-  document.getElementById('mb-today').innerHTML=tp('info','Changes in the last 24 hours',ACTS.length,acts)+tp('bad','Villains still live: pause',villL.length,villL.join('')||none)+tp('warn','Close to Villain',nearL.length,nearL.join('')||none)+tp('good','Heroes and Superheroes',heroL.length,heroL.join('')||none);
+  document.getElementById('mb-today').innerHTML=tp('info','Changes in the last 24 hours',ACTS.length,acts);/* 28/11 Quan: pause/keep lists now live on each ad set card */
   var tot=agg(DATA.ads),trs=tot.sp?tot.rev/tot.sp:0;
   var mchip=function(v){return v<=S.mer?'<span class="mb-chip good"><i></i>At or under ideal</span>':'<span class="mb-chip '+(v<=2*S.mer?'warn':'bad')+'"><i></i>'+(v/S.mer).toFixed(1)+'x the ideal</span>'};
   var ht=function(l,v,x,sx){return '<div class="mb-h"><small>'+l+'</small><b>'+v+'</b>'+(x||'')+'<em>'+sx+'</em></div>'};
